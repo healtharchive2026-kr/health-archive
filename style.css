@@ -1498,8 +1498,9 @@ mark{background:#ffe082;border-radius:2px;padding:0 1px;}
 .fb-admin-banner{
   background:#3a2e00;color:#fae100;font-size:12px;font-weight:600;
   padding:6px 10px;border-radius:6px;margin-bottom:8px;
-  display:flex;align-items:center;justify-content:space-between;
+  align-items:center;justify-content:space-between;
 }
+.fb-admin-banner:not([hidden]){display:flex;}
 .fb-admin-banner button{
   border:none;background:#fae100;color:#3a2e00;font-size:11px;font-weight:700;
   padding:3px 8px;border-radius:4px;cursor:pointer;
