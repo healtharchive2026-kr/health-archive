@@ -7,7 +7,7 @@
 <link rel="icon" href="data:,">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="style.css?v=20260630-home-cleanup">
+<link rel="stylesheet" href="style.css?v=20260630-feedback1">
 </head>
 <body>
 <header class="site-header">
@@ -42,6 +42,7 @@
           <a href="#events" data-tab="events" class="nav-link">학회/박람회</a>
         </div>
       </div>
+      <a href="#feedback" data-tab="feedback" class="nav-link">피드백 및 문의</a>
     </nav>
   </div>
 </header>
@@ -832,6 +833,33 @@
     </div>
   </section>
 
+  <section id="feedback" class="tab-section">
+    <div class="section-head">
+      <h2>피드백 및 문의</h2>
+      <p class="section-sub">아직 테스트 단계인 사이트입니다. 익명으로 자유롭게 의견·문의를 남겨주세요. 대화는 작성일로부터 10일간만 보관됩니다.</p>
+    </div>
+    <div class="fb-wrap">
+      <div class="fb-chat-card">
+        <div class="fb-chat-header">
+          <span class="fb-chat-title">피드백 채팅</span>
+          <button type="button" id="fb-admin-toggle" class="fb-admin-btn">관리자</button>
+        </div>
+        <div id="fb-messages" class="fb-messages">
+          <div class="fb-empty" id="fb-empty">아직 메시지가 없습니다. 첫 메시지를 남겨보세요!</div>
+        </div>
+        <div class="fb-composer">
+          <div id="fb-admin-banner" class="fb-admin-banner" hidden>관리자 모드로 답변 중입니다 <button type="button" id="fb-admin-exit">종료</button></div>
+          <div class="fb-input-row">
+            <textarea id="fb-input" class="fb-input" maxlength="200" placeholder="메시지를 입력하세요 (최대 200자)" rows="2"></textarea>
+            <button type="button" id="fb-send" class="fb-send-btn">전송</button>
+          </div>
+          <div class="fb-input-meta"><span id="fb-count">0</span>/200</div>
+        </div>
+      </div>
+      <div class="fb-contact-note">문의 메일: <a href="mailto:healtharchive2026@gmail.com">healtharchive2026@gmail.com</a></div>
+    </div>
+  </section>
+
 </main>
 
 <div class="intro-modal-overlay" id="intro-modal-overlay">
@@ -875,5 +903,6 @@
 <script src="data/daily_quotes.js"></script>
 <script src="market.js"></script>
 <script src="app.js?v=20260630-home-cleanup"></script>
+<script type="module" src="feedback.js?v=20260630-feedback1"></script>
 </body>
 </html>
