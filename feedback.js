@@ -153,18 +153,17 @@ function setupComposer() {
 }
 
 function setupAdminToggle() {
-  const toggleBtn = document.getElementById("fb-admin-toggle");
+  const titleEl = document.getElementById("fb-admin-toggle");
   const banner = document.getElementById("fb-admin-banner");
   const exitBtn = document.getElementById("fb-admin-exit");
-  if (!toggleBtn) return;
+  if (!titleEl) return;
 
   function reflect() {
-    const on = isAdmin();
-    if (banner) banner.hidden = !on;
-    toggleBtn.hidden = on;
+    if (banner) banner.hidden = !isAdmin();
   }
 
-  toggleBtn.addEventListener("click", () => {
+  titleEl.addEventListener("click", () => {
+    if (isAdmin()) return;
     const pw = prompt("관리자 비밀번호를 입력하세요");
     if (pw === null) return;
     if (pw === ADMIN_PASSCODE) {

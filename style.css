@@ -1451,12 +1451,7 @@ mark{background:#ffe082;border-radius:2px;padding:0 1px;}
   justify-content:space-between;
   flex:0 0 auto;
 }
-.fb-chat-title{font-weight:700;color:#3a2e00;}
-.fb-admin-btn{
-  border:none;background:#3a2e00;color:#fae100;
-  font-size:12px;font-weight:600;padding:5px 10px;border-radius:6px;cursor:pointer;
-}
-.fb-admin-btn:hover{opacity:.85;}
+.fb-chat-title{font-weight:700;color:#3a2e00;cursor:pointer;user-select:none;}
 
 .fb-messages{
   flex:1 1 auto;
