@@ -59,14 +59,16 @@ function allNews() {
 function renderHeroNews() {
   const el = document.getElementById('hero-news-list');
   const pad = n => String(n).padStart(2, '0');
-  const news = allNews();
-  const latestKey = news.map(n => (n.pubDate || '').slice(0, 10)).find(Boolean);
-  const cutoff = latestKey ? new Date(`${latestKey}T00:00:00`) : null;
-  if (cutoff) cutoff.setDate(cutoff.getDate() - 6);
-  const cutoffKey = cutoff ? `${cutoff.getFullYear()}-${pad(cutoff.getMonth() + 1)}-${pad(cutoff.getDate())}` : '';
-  const list = cutoffKey ? news.filter(n => (n.pubDate || '').slice(0, 10) >= cutoffKey) : news;
+
+  // 오늘 기준 최근 3일치만 표시 (4개 출처 모두 포함)
+  const cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - 3);
+  const cutoffKey = `${cutoff.getFullYear()}-${pad(cutoff.getMonth()+1)}-${pad(cutoff.getDate())}`;
+
+  const list = allNews().filter(n => (n.pubDate || '').slice(0, 10) >= cutoffKey);
+
   if (!list.length) {
-    el.innerHTML = '<div class="hero-news-empty">아직 수집된 뉴스가 없습니다.</div>';
+    el.innerHTML = '<div class="hero-news-empty">최근 3일간 수집된 뉴스가 없습니다.</div>';
     return;
   }
   el.innerHTML = list.map(n => `
