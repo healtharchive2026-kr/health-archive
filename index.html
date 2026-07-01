@@ -3,39 +3,957 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HealthArchive — 점검 중</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0;}
-body{
-  font-family:"Pretendard","Segoe UI","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
-  background:#f5f8f4;
-  display:flex;align-items:center;justify-content:center;
-  min-height:100vh;color:#27322e;
-}
-.wrap{text-align:center;padding:40px 24px;}
-.logo{font-size:28px;font-weight:800;color:#2f6d57;margin-bottom:40px;letter-spacing:0;}
-.logo b{color:#27322e;font-weight:400;}
-.icon{font-size:56px;margin-bottom:24px;}
-h1{font-size:22px;font-weight:700;margin-bottom:14px;color:#27322e;}
-p{font-size:15px;color:#6f7872;line-height:1.7;max-width:420px;margin:0 auto;}
-.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#2f6d57;margin:32px 4px 0;
-  animation:blink 1.2s ease-in-out infinite;}
-.dot:nth-child(2){animation-delay:.2s;}
-.dot:nth-child(3){animation-delay:.4s;}
-@keyframes blink{0%,80%,100%{opacity:.2;}40%{opacity:1;}}
-</style>
+<title>건강기능식품 개발자 아카이브</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="style.css?v=20260701-safetydb4">
 </head>
 <body>
-<div class="wrap">
-  <div class="logo">Health<b>Archive</b></div>
-  <div class="icon">🔧</div>
-  <h1>현재 사이트 점검 중입니다</h1>
-  <p>더 나은 서비스 제공을 위해 일시적으로 점검 중입니다.<br>잠시 후 다시 방문해 주세요.</p>
-  <div>
-    <span class="dot"></span>
-    <span class="dot"></span>
-    <span class="dot"></span>
+<header class="site-header">
+  <div class="container header-inner">
+    <div class="logo"><img src="assets/logo-icon.png" alt="" class="logo-icon"><span class="logo-text">Health<b>Archive</b></span><img src="assets/leaf-badge.png" alt="" class="logo-leaf"></div>
+    <nav class="main-nav">
+      <a href="#home" data-tab="home" class="nav-link active">홈</a>
+      <div class="nav-group">
+        <span class="nav-group-label">원료·성분 DB <span class="nav-caret">▾</span></span>
+        <div class="nav-dropdown">
+          <a href="#ingredients" data-tab="ingredients" class="nav-link">개별인정/고시형 원료</a>
+          <a href="#compare" data-tab="compare" class="nav-link">기능성별 비교</a>
+          <a href="#foodraw" data-tab="foodraw" class="nav-link">식품원료목록</a>
+          <a href="#safety-db" data-tab="safety-db" class="nav-link">안전성 데이터베이스</a>
+        </div>
+      </div>
+      <div class="nav-group">
+        <span class="nav-group-label">임상·연구설계 <span class="nav-caret">▾</span></span>
+        <div class="nav-dropdown">
+          <a href="#biomarkers" data-tab="biomarkers" class="nav-link">기능성별 프로토콜</a>
+          <a href="#trials" data-tab="trials" class="nav-link">임상정보 데이터베이스</a>
+        </div>
+      </div>
+      <div class="nav-group">
+        <span class="nav-group-label">인허가·심의 자료 <span class="nav-caret">▾</span></span>
+        <div class="nav-dropdown">
+          <a href="#nifds" data-tab="nifds" class="nav-link">심의 관련</a>
+          <a href="#minutes" data-tab="minutes" class="nav-link">식약처 회의록</a>
+          <a href="#laws" data-tab="laws" class="nav-link">가이드라인/공전/법령</a>
+        </div>
+      </div>
+      <div class="nav-group">
+        <span class="nav-group-label">시장·동향 <span class="nav-caret">▾</span></span>
+        <div class="nav-dropdown">
+          <a href="#products" data-tab="products" class="nav-link">신규 등록 제품</a>
+          <a href="#market" data-tab="market" class="nav-link">시장현황</a>
+          <a href="#news" data-tab="news" class="nav-link">식품 뉴스</a>
+          <a href="#events" data-tab="events" class="nav-link">학회/박람회</a>
+        </div>
+      </div>
+      <a href="#feedback" data-tab="feedback" class="nav-link">피드백 및 문의</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+
+  <section id="home" class="tab-section active">
+    <div class="hero hero-dark">
+      <img src="assets/logo-icon.png" alt="" class="hero-watermark">
+      <div class="hero-intro">
+        <div class="hero-copy">
+          <div class="visitor-counter" id="visitor-counter">
+            <span class="vc-item"><span class="vc-label">총 누적 방문자</span><span class="vc-num" id="vc-total">-</span></span>
+            <span class="vc-sep"></span>
+            <span class="vc-item"><span class="vc-label">오늘 방문자</span><span class="vc-num" id="vc-today">-</span></span>
+          </div>
+          <h1>건강기능식품 개발자 아카이브</h1>
+          <p class="hero-lede">원료, 심의, 법령, 제품, 논문 리포트를 개발 검토 흐름에 맞게 모아둔 작업용 포털입니다.</p>
+        </div>
+
+        <div class="hero-side">
+          <div class="daily-quote-card" id="daily-quote"></div>
+          <div class="hero-stats-row">
+            <a class="hero-stat-chip" data-goto="ingredients">
+              <span class="hsc-num" id="stat-ingredients">0</span>
+              <span class="hsc-label">개별인정</span>
+            </a>
+            <a class="hero-stat-chip" data-goto="ingredients">
+              <span class="hsc-num" id="stat-converted">0</span>
+              <span class="hsc-label">고시형</span>
+            </a>
+            <a class="hero-stat-chip" data-goto="minutes">
+              <span class="hsc-num" id="stat-minutes">0</span>
+              <span class="hsc-label">회의록</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-search-board">
+        <div class="hero-search-copy">
+          <span>통합 검색</span>
+          <strong>전체 자료에서 한 번에 찾기</strong>
+        </div>
+        <div class="global-search-shell">
+          <form class="global-search-form" id="global-search-form">
+            <span class="hsr-icon">⌕</span>
+            <input type="text" id="global-search-input" autocomplete="off" placeholder="원료명, 기능성, 제품, 회의록, 논문, 뉴스 검색">
+            <button type="submit">통합검색</button>
+          </form>
+          <div class="global-search-results" id="global-search-results"></div>
+        </div>
+      </div>
+
+      <div class="hero-section-head hero-menu-head">
+        <span>전체 메뉴</span>
+      </div>
+      <div class="hero-categories">
+        <div class="hero-cat">
+          <div class="hero-cat-header">
+            <span class="hero-cat-icon">01</span>
+            <span class="hero-cat-label">원료·성분 DB</span>
+          </div>
+          <div class="hero-cat-cards">
+            <a class="nav-card" data-goto="ingredients"><span class="nav-card-icon">원료</span><span class="nav-card-title">개별·고시형 원료</span><span class="nav-card-desc">인정 현황·전환 이력</span></a>
+            <a class="nav-card" data-goto="compare"><span class="nav-card-icon">비교</span><span class="nav-card-title">기능성별 비교</span><span class="nav-card-desc">카테고리별 정렬 보기</span></a>
+            <a class="nav-card" data-goto="foodraw"><span class="nav-card-icon">목록</span><span class="nav-card-title">식품원료목록</span><span class="nav-card-desc">별표 원료 검색</span></a>
+            <a class="nav-card" data-goto="safety-db"><span class="nav-card-icon">안전</span><span class="nav-card-title">안전성 데이터베이스</span><span class="nav-card-desc">내장 9종·외부 49종</span></a>
+          </div>
+        </div>
+
+        <div class="hero-cat">
+          <div class="hero-cat-header">
+            <span class="hero-cat-icon">02</span>
+            <span class="hero-cat-label">임상·연구설계</span>
+          </div>
+          <div class="hero-cat-cards">
+            <a class="nav-card" data-goto="biomarkers"><span class="nav-card-icon">지표</span><span class="nav-card-title">기능성별 프로토콜</span><span class="nav-card-desc">대상자·시험모델</span></a>
+            <a class="nav-card" data-goto="trials"><span class="nav-card-icon">임상</span><span class="nav-card-title">임상정보 데이터베이스</span><span class="nav-card-desc">NCT·기관·평가변수</span></a>
+          </div>
+        </div>
+
+        <div class="hero-cat">
+          <div class="hero-cat-header">
+            <span class="hero-cat-icon">03</span>
+            <span class="hero-cat-label">인허가·심의 자료</span>
+          </div>
+          <div class="hero-cat-cards">
+            <a class="nav-card" data-goto="nifds"><span class="nav-card-icon">심의</span><span class="nav-card-title">심의 관련</span><span class="nav-card-desc">위원 명단·담당부서</span></a>
+            <a class="nav-card" data-goto="minutes"><span class="nav-card-icon">회의</span><span class="nav-card-title">식약처 회의록</span><span class="nav-card-desc">회차별 대상 원료</span></a>
+            <a class="nav-card" data-goto="laws"><span class="nav-card-icon">자료</span><span class="nav-card-title">가이드라인/공전/법령</span><span class="nav-card-desc">작성 기준·공식 자료</span></a>
+          </div>
+        </div>
+
+        <div class="hero-cat">
+          <div class="hero-cat-header">
+            <span class="hero-cat-icon">04</span>
+            <span class="hero-cat-label">시장·동향</span>
+          </div>
+          <div class="hero-cat-cards">
+            <a class="nav-card" data-goto="products"><span class="nav-card-icon">제품</span><span class="nav-card-title">신규 등록 제품</span><span class="nav-card-desc">최근 신고 목록</span></a>
+            <a class="nav-card" data-goto="market"><span class="nav-card-icon">시장</span><span class="nav-card-title">시장현황</span><span class="nav-card-desc">매출·기능성 추이</span></a>
+            <a class="nav-card" data-goto="news"><span class="nav-card-icon">뉴스</span><span class="nav-card-title">식품 뉴스</span><span class="nav-card-desc">업계 동향 기사</span></a>
+            <a class="nav-card" data-goto="events"><span class="nav-card-icon">일정</span><span class="nav-card-title">학회/박람회</span><span class="nav-card-desc">국내외 주요 일정</span></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-grid">
+        <div class="hero-news-card">
+          <div class="hero-news-head">
+            <h3>최신 뉴스 (Recent News)</h3>
+            <a class="hero-news-more" data-goto="news">더보기 →</a>
+          </div>
+          <div class="hero-news-list" id="hero-news-list"></div>
+        </div>
+        <div class="hero-law-card">
+          <h3>법령/공전 바로가기</h3>
+          <div class="hero-law-buttons">
+            <a class="law-quick-btn" target="_blank" rel="noopener" href="https://www.law.go.kr/LSW/lsSc.do?section=&menuId=1&subMenuId=15&tabMenuId=81&eventGubun=060101&query=건강기능식품에 관한 법률">건강기능식품법</a>
+            <a class="law-quick-btn" target="_blank" rel="noopener" href="https://www.law.go.kr/LSW/lsSc.do?section=&menuId=1&subMenuId=15&tabMenuId=81&eventGubun=060101&query=식품위생법">식품위생법</a>
+            <a class="law-quick-btn" target="_blank" rel="noopener" href="https://various.foodsafetykorea.go.kr/fsd/#/ext/Document/FC">식품공전</a>
+            <a class="law-quick-btn" target="_blank" rel="noopener" href="https://various.foodsafetykorea.go.kr/fsd/#/ext/Document/FF">건강기능식품공전</a>
+          </div>
+          <div class="hero-guide-block">
+            <h3>가이드라인 바로가기</h3>
+            <div class="hero-law-buttons">
+              <a class="law-quick-btn" data-goto="laws" data-lawtab="general-guideline">일반가이드라인</a>
+              <a class="law-quick-btn" data-goto="laws" data-lawtab="functional-guideline">기능성 가이드라인</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="market" class="tab-section">
+    <h2>시장현황</h2>
+    <p class="compare-intro">식약처 「식품 등의 생산실적」 자료를 바탕으로 한 건강기능식품 매출액 추이입니다 (2021~2025, 단위: 억원).</p>
+
+    <div class="market-card">
+      <p class="sec-title">건강기능식품 총 매출액 구성 추이</p>
+      <div class="legend-row">
+        <span class="leg-item"><span class="leg-dot" style="background:var(--gosi);"></span>고시형</span>
+        <span class="leg-item"><span class="leg-dot" style="background:var(--indiv);"></span>개별인정형</span>
+      </div>
+      <div class="chart-area">
+        <canvas id="stackChart" role="img" aria-label="2021-2025 고시형 및 개별인정형 매출액 누적 막대 차트">고시형+개별인정형 총매출 2021~2025</canvas>
+      </div>
+      <p class="unit-note">단위: 억원</p>
+    </div>
+
+    <div class="market-card market-tbl-card">
+      <p class="sec-title">개별인정형 기능성별 매출액 추이 (억원)</p>
+      <div class="market-table-wrap">
+        <table id="market-func-table">
+          <thead>
+            <tr>
+              <th>기능성</th>
+              <th>2021</th><th>2022</th><th>2023</th><th>2024</th><th>2025</th>
+              <th>1Y CAGR</th><th>3Y CAGR</th>
+              <th style="min-width:72px;">비중(25)</th>
+            </tr>
+          </thead>
+          <tbody id="ftb"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="ingredients" class="tab-section">
+    <h2>개별인정/고시형 원료</h2>
+    <div class="year-layout">
+      <aside class="year-sidebar" id="ingredient-year-sidebar"></aside>
+      <div class="year-main">
+        <div class="toolbar">
+          <input type="text" id="ingredient-search" placeholder="원료명, 회사, 기능성, 고시번호로 검색...">
+          <span class="result-count" id="ingredient-count"></span>
+        </div>
+        <div class="table-wrap">
+          <table id="ingredient-table">
+            <thead>
+              <tr><th>고시번호</th><th>원료명</th><th>회사</th><th>기능성</th><th>섭취량</th><th>소비자리포트</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="products" class="tab-section">
+    <h2>신규 등록 제품</h2>
+    <p class="compare-intro">식약처 「건강기능식품 종합정보 서비스」에 매일 새로 신고·등록되는 제품입니다. 매일 자동으로 업데이트되며, <strong>등록일자 기준 최근 30일 이내 제품만 표시</strong>됩니다.</p>
+    <div class="toolbar">
+      <input type="text" id="products-search" placeholder="제품명, 제조사명, 기능성으로 검색...">
+      <span class="result-count" id="products-count"></span>
+    </div>
+    <div class="table-wrap">
+      <table id="products-table">
+        <thead>
+          <tr><th>등록일자</th><th>제품명</th><th>제조사명</th><th>기능성</th><th>신고번호</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="minutes" class="tab-section">
+    <h2>식약처 건강기능식품심의위원회 회의록</h2>
+    <div class="year-layout">
+      <aside class="year-sidebar" id="minutes-year-sidebar"></aside>
+      <div class="year-main">
+        <div class="toolbar">
+          <input type="text" id="minutes-search" placeholder="회차, 연도, 대상 원료로 검색...">
+          <span class="result-count" id="minutes-count"></span>
+        </div>
+        <div class="table-wrap">
+          <table id="minutes-table">
+            <thead>
+              <tr><th>연도</th><th>회의명</th><th>대상 원료</th><th>회의록</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="laws" class="tab-section">
+    <h2>일반가이드라인 / 기능성 가이드라인 / 공전 / 법령</h2>
+
+    <div class="law-subnav" id="law-subnav">
+      <div class="law-subtab active" data-lawtab="general-guideline">일반가이드라인</div>
+      <div class="law-subtab" data-lawtab="functional-guideline">기능성 가이드라인</div>
+      <div class="law-subtab law-subtab-spacer" data-lawtab="code">공전</div>
+      <div class="law-subtab" data-lawtab="general">법령</div>
+    </div>
+
+    <div class="law-pane active" id="law-pane-general-guideline">
+      <p class="compare-intro">개별인정형 기능성 원료 신청 시 제출자료 구성과 작성 기준을 확인하는 일반 작성 가이드라인입니다.</p>
+      <div class="toolbar">
+        <input type="text" id="general-guideline-search" placeholder="작성 가이드라인명으로 검색...">
+        <span class="result-count" id="general-guideline-count"></span>
+      </div>
+      <div class="law-link-grid" id="general-guideline-grid"></div>
+    </div>
+
+    <div class="law-pane" id="law-pane-functional-guideline">
+      <p class="compare-intro">기능성별 평가 가이드라인 PDF입니다. 개별인정원료 신청 시 인체적용시험 설계의 근거가 됩니다.</p>
+      <div class="toolbar">
+        <input type="text" id="guideline-search" placeholder="기능성명으로 검색... (예: 간 건강, 체지방, 눈 건강)">
+        <span class="result-count" id="guideline-count"></span>
+      </div>
+      <div class="law-link-grid" id="guideline-grid"></div>
+    </div>
+
+    <div class="law-pane" id="law-pane-code">
+      <p class="compare-intro">식품공전·건강기능식품공전은 식약처 「식품분야 공전 온라인 서비스」에서 최신 고시 기준으로 확인할 수 있습니다.</p>
+      <div class="law-link-grid">
+        <a class="law-link-card" target="_blank" rel="noopener" href="https://various.foodsafetykorea.go.kr/fsd/#/ext/Document/FC">
+          <h3>식품공전 →</h3>
+          <p>식품의 기준 및 규격 (제1. 총칙 ~ 개별 식품유형별 기준·규격)</p>
+        </a>
+        <a class="law-link-card" target="_blank" rel="noopener" href="https://various.foodsafetykorea.go.kr/fsd/#/ext/Document/FF">
+          <h3>건강기능식품공전 →</h3>
+          <p>건강기능식품 공통기준·규격 및 고시형 원료별 기준·규격</p>
+        </a>
+      </div>
+    </div>
+
+    <div class="law-pane" id="law-pane-general">
+      <p class="compare-intro">건강기능식품·식품 관련 일반 법령은 국가법령정보센터에서 항상 최신 조문으로 확인할 수 있습니다 (클릭 시 새 탭으로 이동).</p>
+      <div class="law-link-grid">
+        <a class="law-link-card" target="_blank" rel="noopener" href="https://www.law.go.kr/LSW/lsSc.do?section=&menuId=1&subMenuId=15&tabMenuId=81&eventGubun=060101&query=건강기능식품에 관한 법률">
+          <h3>건강기능식품에 관한 법률</h3>
+          <p>건강기능식품의 제조·인정·판매 등 관련 법률 (시행령·시행규칙 포함)</p>
+        </a>
+        <a class="law-link-card" target="_blank" rel="noopener" href="https://www.law.go.kr/LSW/lsSc.do?section=&menuId=1&subMenuId=15&tabMenuId=81&eventGubun=060101&query=식품위생법">
+          <h3>식품위생법</h3>
+          <p>일반식품 전반의 위생·안전관리에 관한 법률 (시행령·시행규칙 포함)</p>
+        </a>
+        <a class="law-link-card" target="_blank" rel="noopener" href="https://www.law.go.kr/LSW/lsSc.do?section=&menuId=1&subMenuId=15&tabMenuId=81&eventGubun=060101&query=식품안전기본법">
+          <h3>식품안전기본법</h3>
+          <p>식품안전 정책의 기본 원칙을 규정하는 법률</p>
+        </a>
+        <a class="law-link-card" target="_blank" rel="noopener" href="https://www.law.go.kr/LSW/lsSc.do?section=&menuId=1&subMenuId=15&tabMenuId=81&eventGubun=060101&query=어린이 식생활안전관리 특별법">
+          <h3>어린이 식생활안전관리 특별법</h3>
+          <p>어린이 대상 식품의 안전·영양 관리에 관한 특별법</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section id="biomarkers" class="tab-section">
+    <h2>기능성별 프로토콜</h2>
+    <p class="compare-intro">기능성 평가 가이드와 인체적용시험 설계 가이드를 기준으로, 기능성별 임상·전임상 프로토콜과 측정 바이오마커를 함께 확인합니다.</p>
+
+    <div class="biomarker-shell">
+      <div class="biomarker-list-panel">
+        <div class="toolbar biomarker-toolbar">
+          <input type="text" id="biomarker-search" placeholder="기능성명으로 검색...">
+          <span class="result-count" id="biomarker-count"></span>
+        </div>
+        <div class="biomarker-card-list" id="biomarker-card-list"></div>
+      </div>
+
+      <div class="biomarker-detail-panel" id="biomarker-detail-panel">
+        <div class="biomarker-empty">왼쪽에서 기능성을 선택하세요.</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="trials" class="tab-section">
+    <div class="section-title-row">
+      <div>
+        <h2>임상정보 데이터베이스</h2>
+        <p class="compare-intro">ClinicalTrials.gov에 등록된 국내 소재 보충제·건강기능식품 관련 임상연구를 검색합니다.</p>
+      </div>
+      <span class="section-badge">Supplement Only</span>
+    </div>
+
+    <div class="trials-search-panel">
+      <form id="trials-search-form" class="trials-search-form">
+        <div class="trials-search-main">
+          <label for="trials-search-input">검색어</label>
+          <div class="trials-search-row">
+            <input type="text" id="trials-search-input" value="supplement + natural product" placeholder="원료명, 기능성, natural product, herbal extract 등">
+            <button type="submit">검색</button>
+          </div>
+          <p class="trials-search-help">CRIS 데이터베이스 기준으로서 영문 키워드 작성 필수</p>
+        </div>
+        <div class="trials-filter-row">
+          <label><span>상태</span><select id="trials-status-filter"><option value="">전체</option></select></label>
+          <label><span>시작연도</span><select id="trials-year-filter"><option value="">전체</option></select></label>
+          <label><span>지역</span><select id="trials-city-filter"><option value="">전체</option></select></label>
+          <label class="trials-check"><input type="checkbox" id="trials-supplement-only" checked> 보충제·식품 중재만</label>
+        </div>
+      </form>
+    </div>
+
+    <div class="trials-stat-grid">
+      <div class="trials-stat-card"><span id="trials-total-count">0</span><p>검색 결과</p></div>
+      <div class="trials-stat-card"><span id="trials-visible-count">0</span><p>현재 표시</p></div>
+      <div class="trials-stat-card"><span id="trials-site-count">0</span><p>기관 수</p></div>
+      <div class="trials-stat-card"><span id="trials-pi-count">0</span><p>연구자 수</p></div>
+    </div>
+
+    <div class="trials-status-line" id="trials-status-line">검색어를 입력해 국내 임상연구를 조회하세요.</div>
+
+    <div class="table-wrap trials-table-wrap">
+      <table id="trials-table" class="trials-table">
+        <thead>
+          <tr><th>NCT ID</th><th>연구 제목</th><th>상태</th><th>시작일</th><th>기관/지역</th><th>원료/기능성</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="trials-detail" id="trials-detail"></div>
+  </section>
+
+  <section id="compare" class="tab-section">
+    <h2>기능성별 비교</h2>
+    <p class="compare-intro">기능성 카드를 클릭하면 해당 원료들을 한 번에 비교할 수 있습니다.</p>
+
+    <div class="category-grid" id="category-grid"></div>
+
+    <div class="compare-panel" id="compare-panel" style="display:none;">
+      <h3 class="compare-panel-title" id="compare-panel-title"></h3>
+      <div class="compare-cats" id="compare-cats"></div>
+      <div class="toolbar">
+        <span class="result-count" id="compare-count"></span>
+      </div>
+      <div class="table-wrap">
+        <table id="compare-table">
+          <thead>
+            <tr><th>원료명</th><th>회사</th><th>섭취량</th><th>기능성</th><th>고시번호</th><th>소비자리포트(인체적용시험)</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="news" class="tab-section">
+    <h2>식품 뉴스</h2>
+    <p class="compare-intro">식품저널·약업닷컴 등 건강기능식품 관련 매체 기사를 매일 자동으로 모아 보여줍니다.</p>
+    <div class="toolbar">
+      <input type="text" id="news-search" placeholder="제목으로 검색...">
+      <span class="result-count" id="news-count"></span>
+    </div>
+    <div class="news-columns" id="news-columns"></div>
+  </section>
+
+  <section id="nifds" class="tab-section">
+    <h2>식약처 관련 자료</h2>
+    <p class="compare-intro">건강기능식품 개별인정 업무와 관련된 식약처(식품의약품안전평가원) 핵심 정보입니다.</p>
+
+    <div class="law-subnav" id="nifds-subnav" style="margin-bottom:20px;">
+      <div class="nifds-subtab active" data-nifdstab="committee">심의위원회 위원 명단</div>
+      <div class="nifds-subtab" data-nifdstab="contacts">영양기능연구과 담당자</div>
+    </div>
+
+    <div class="nifds-pane active" id="nifds-pane-committee">
+      <p class="compare-intro">제11기 건강기능식품심의위원회 분과위원회별 명단 (외부 73명, 내부 6명 / 2025.1.22. 기준 / 임기: 2024.6.23.~2026.6.22.)
+        <a href="https://www.mfds.go.kr/brd/m_532/list.do" target="_blank" rel="noopener" style="color:var(--green);font-weight:600;margin-left:8px;">(출처: 식약처 건강기능식품위원회 →)</a>
+      </p>
+
+      <div class="table-wrap" style="margin-bottom:28px;">
+        <table class="nifds-table nifds-committee-table">
+          <thead>
+            <tr>
+              <th>연번</th>
+              <th>제도분과<br><span class="th-sub">(15명)</span></th>
+              <th>기능성 원료·성분 인정<br>및 기준·규격분과<br><span class="th-sub">(15명)</span></th>
+              <th>인체적용시험<br>평가분과<br><span class="th-sub">(15명)</span></th>
+              <th>표시·광고 분과<br><span class="th-sub">(14명)</span></th>
+              <th>이상사례<br>평가분과<br><span class="th-sub">(16명)</span></th>
+              <th>재평가분과<br><span class="th-sub">(14명)</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>1</td><td>김범근</td><td>강진석</td><td>강건욱</td><td>김근원</td><td>김기봉</td><td>권중기</td></tr>
+            <tr><td>2</td><td>문명재</td><td>김준호</td><td>고성규</td><td>김미경</td><td>김언혜</td><td>김용범</td></tr>
+            <tr><td>3</td><td>박신영</td><td>김지연</td><td>곽승준</td><td>김영완</td><td>김여주</td><td>성지혜</td></tr>
+            <tr><td>4</td><td>심진보</td><td>문기성</td><td>김정하</td><td>김윤희</td><td>김지연</td><td>손동주</td></tr>
+            <tr><td>5</td><td>안영순</td><td>배옥남</td><td>김춘옥</td><td>김일회</td><td>김지은</td><td>송시환</td></tr>
+            <tr><td>6</td><td>유창길</td><td>오덕환</td><td>박경식</td><td>이민형</td><td>김항건</td><td>신재호</td></tr>
+            <tr><td>7</td><td>윤은희</td><td>유형균</td><td>박종선</td><td>이향란</td><td>박해진</td><td>이정주</td></tr>
+            <tr><td>8</td><td>이승민</td><td>이정민</td><td>백진경</td><td>정성근</td><td>신진영</td><td>정현정</td></tr>
+            <tr><td>9</td><td>조양연</td><td>이정빈</td><td>오좌섭</td><td>정승희</td><td>이수현</td><td>최수진</td></tr>
+            <tr><td>10</td><td>최준호</td><td>이해정</td><td>윤수정</td><td>정은효</td><td>정영걸</td><td>한복경</td></tr>
+            <tr><td>11</td><td>하혜진</td><td>정헌상</td><td>임정화</td><td>하정철</td><td>조성권</td><td>한은영</td></tr>
+            <tr><td>12</td><td>한동엽</td><td>최미정</td><td>정수현</td><td>하정헌</td><td>홍지연</td><td>한지유</td></tr>
+            <tr><td>13</td><td>식품안전 정책국장</td><td>식품소비 안전국장</td><td>정영석</td><td>식품안전 정책국장</td><td>식품소비 안전국장</td><td>식품기준 기획관</td></tr>
+            <tr><td>14</td><td>식품소비 안전국장</td><td>식품기준 기획관</td><td>식품기준 기획관</td><td>수입식품안전 정책국장</td><td>소비자위해 예방국장</td><td>식품위해 평가부장</td></tr>
+            <tr><td>15</td><td>수입식품안전 정책국장</td><td>식품위해 평가부장</td><td>식품위해 평가부장</td><td></td><td>식품기준 기획관</td><td></td></tr>
+            <tr><td>16</td><td></td><td></td><td></td><td></td><td>식품위해 평가부장</td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="nifds-info-section">
+        <h3>2026년 최근 심의 현황</h3>
+        <div class="table-wrap">
+          <table class="nifds-table">
+            <thead>
+              <tr><th>일자</th><th>심의명</th><th>담당부서</th><th>비고</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>2026-06-23</td><td>2026년 제1차 이상사례평가분과</td><td>건강기능식품정책과</td><td>심의 결과 공개</td></tr>
+              <tr><td>2026-05-15</td><td>200차(제2차) 기능성원료 인정 분과</td><td>영양기능연구과</td><td>심의 결과 공개</td></tr>
+              <tr><td>2026-04-03</td><td>2026년 제2차 기준·규격 분과</td><td>식품기준과</td><td>심의 결과 공개</td></tr>
+              <tr><td>2026-03-23</td><td>2026년 제2차 기준·규격 분과 개최 알림</td><td>식품기준과</td><td>사전 공지</td></tr>
+              <tr><td>2026-02-27</td><td>2026년 제1회 재평가분과</td><td>식품기준과</td><td>개최/결과 알림</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="nifds-pane" id="nifds-pane-contacts">
+      <p class="compare-intro">식품의약품안전평가원 영양기능연구과 — 건강기능식품 기능성 원료 인정 심사, 기준규격 연구, 영양성분 DB 등을 담당합니다. <a href="https://www.nifds.go.kr/org/m_388/deptInfo.do" target="_blank" rel="noopener" style="color:var(--green);font-weight:600;">(출처: 식약평 조직도 →)</a></p>
+
+      <div class="nifds-contact-search toolbar">
+        <input type="text" id="nifds-search" placeholder="이름, 직급, 담당업무로 검색...">
+        <span class="result-count" id="nifds-count">29명</span>
+      </div>
+
+      <div class="table-wrap">
+        <table class="nifds-table" id="nifds-contact-table">
+          <thead>
+            <tr><th>이름</th><th>직급</th><th>담당업무</th><th>전화번호</th></tr>
+          </thead>
+          <tbody>
+            <tr class="nifds-row-head"><td class="name">한규홍</td><td>과장</td><td>영양기능연구과 업무 총괄</td><td><a href="tel:043-719-4401">043-719-4401</a></td></tr>
+            <tr><td class="name">최원영</td><td>연구관</td><td>건강기능식품 기능성 원료 인정 관리 총괄</td><td><a href="tel:043-719-4402">043-719-4402</a></td></tr>
+            <tr><td class="name">박유경</td><td>연구관</td><td>건강기능식품 및 영양·식생활 관련 연구사업 총괄</td><td><a href="tel:043-719-4421">043-719-4421</a></td></tr>
+            <tr><td class="name">김미옥</td><td>주무관</td><td>건강기능식품 기능성 원료 인정 심사 등</td><td><a href="tel:043-719-4431">043-719-4431</a></td></tr>
+            <tr><td class="name">김효진</td><td>주무관</td><td>기능성 원료 인정심사 체계 개선 연구 등</td><td><a href="tel:043-719-4409">043-719-4409</a></td></tr>
+            <tr><td class="name">이재황</td><td>주무관</td><td>건강기능식품 기능성 원료 인정 심사 등</td><td><a href="tel:043-719-4422">043-719-4422</a></td></tr>
+            <tr><td class="name">조혜진</td><td>주무관</td><td>영양성분 DB 및 시험법 관련 연구 등</td><td><a href="tel:043-719-4405">043-719-4405</a></td></tr>
+            <tr><td class="name">안정선</td><td>주무관</td><td>영양·식생활 관련 연구 등</td><td><a href="tel:043-719-4425">043-719-4425</a></td></tr>
+            <tr><td class="name">홍예원</td><td>주무관</td><td>건강기능식품 시험법 관련 연구 등</td><td><a href="tel:043-719-4429">043-719-4429</a></td></tr>
+            <tr><td class="name">양윤지</td><td>주무관</td><td>건강기능식품 기능성 원료 인정 심사 등</td><td><a href="tel:043-719-4428">043-719-4428</a></td></tr>
+            <tr><td class="name">김유경</td><td>주무관</td><td>건강기능식품 기능성 원료 인정 심사 등</td><td><a href="tel:043-719-4430">043-719-4430</a></td></tr>
+            <tr><td class="name">정희선</td><td>전문연구원</td><td>영양성분 등 시험법 관련 연구</td><td><a href="tel:043-719-4412">043-719-4412</a></td></tr>
+            <tr><td class="name">황금희</td><td>전문연구원</td><td>영양성분 등 시험법 관련 연구</td><td><a href="tel:043-719-4410">043-719-4410</a></td></tr>
+            <tr><td class="name">조부영</td><td>정책연구원</td><td>식품영양성분 DB 구축 지원</td><td><a href="tel:043-719-4423">043-719-4423</a></td></tr>
+            <tr><td class="name">김나희</td><td>전문연구원</td><td>생애주기별 영양위해평가 연구</td><td><a href="tel:043-719-4424">043-719-4424</a></td></tr>
+            <tr><td class="name">조민경</td><td>전문연구원</td><td>생애주기별 영양위해평가 연구</td><td><a href="tel:043-719-4414">043-719-4414</a></td></tr>
+            <tr><td class="name">이미성</td><td>전문연구원</td><td>생애주기별 영양위해평가 연구</td><td><a href="tel:043-719-4415">043-719-4415</a></td></tr>
+            <tr><td class="name">예민지</td><td>전문연구원</td><td>건강기능식품 시험법 관련 연구</td><td><a href="tel:043-719-4407">043-719-4407</a></td></tr>
+            <tr><td class="name">김규빈</td><td>전문연구원</td><td>건강기능식품 시험법 관련 연구</td><td><a href="tel:043-719-4408">043-719-4408</a></td></tr>
+            <tr><td class="name">김하정</td><td>전문연구원</td><td>기능성 원료 인정심사 체계 개선 연구</td><td><a href="tel:043-719-4411">043-719-4411</a></td></tr>
+            <tr><td class="name">김민주</td><td>전문연구원</td><td>기능성 원료 인정심사 체계 개선 연구</td><td><a href="tel:043-719-4427">043-719-4427</a></td></tr>
+            <tr><td class="name">전혜련</td><td>심사원</td><td>건강기능식품 기능성 원료 인정 심사</td><td><a href="tel:043-719-4404">043-719-4404</a></td></tr>
+            <tr><td class="name">유수현</td><td>심사원</td><td>건강기능식품 기능성 원료 인정 심사</td><td><a href="tel:043-719-4403">043-719-4403</a></td></tr>
+            <tr><td class="name">김기옥</td><td>심사원</td><td>건강기능식품 기능성 원료 인정 심사</td><td><a href="tel:043-719-4416">043-719-4416</a></td></tr>
+            <tr><td class="name">최아영</td><td>심사원</td><td>건강기능식품 기능성 원료 인정 심사</td><td><a href="tel:043-719-4419">043-719-4419</a></td></tr>
+            <tr><td class="name">손문정</td><td>심사원</td><td>건강기능식품 기능성 원료 인정 심사</td><td><a href="tel:043-719-4413">043-719-4413</a></td></tr>
+            <tr><td class="name">장시현</td><td>심사원</td><td>건강기능식품 기능성 원료 인정 심사</td><td><a href="tel:043-719-4406">043-719-4406</a></td></tr>
+            <tr><td class="name">임하영</td><td>사무실무원</td><td>기능성 원료 인정 심사 지원 (접수안내 등)</td><td><a href="tel:043-719-4418">043-719-4418</a></td></tr>
+            <tr><td class="name">강유진</td><td>사무실무원</td><td>기능성 원료 인정 심사 지원 (접수안내 등)</td><td><a href="tel:043-719-4417">043-719-4417</a></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="foodraw" class="tab-section">
+    <h2>식품원료목록 <small style="font-weight:400;font-size:14px;color:#888;">(별표 1·2·3)</small></h2>
+    <p style="color:#aaa;margin:-8px 0 16px;font-size:13px;">식품의 기준 및 규격 고시전문 (제2026-40호, 2026.5.19.) 기준 총 5,384건</p>
+
+    <div class="foodraw-toolbar">
+      <input type="text" id="foodraw-search" class="foodraw-input" placeholder="원료명, 학명, 기타명칭 검색...">
+      <div class="foodraw-filters">
+        <label class="foodraw-chip"><input type="checkbox" value="별표1" checked> 별표1 <small>사용가능</small></label>
+        <label class="foodraw-chip"><input type="checkbox" value="별표2" checked> 별표2 <small>제한적</small></label>
+        <label class="foodraw-chip"><input type="checkbox" value="별표3" checked> 별표3 <small>한시적→전환</small></label>
+      </div>
+      <span id="foodraw-count" class="foodraw-count"></span>
+    </div>
+
+    <div class="foodraw-table-wrap">
+      <table class="foodraw-table">
+        <thead>
+          <tr>
+            <th style="width:100px">고유번호</th>
+            <th style="width:130px">명칭</th>
+            <th>기타명칭 / 시장명칭</th>
+            <th>학명 또는 특성</th>
+            <th style="width:100px">사용부위</th>
+            <th style="width:60px">구분</th>
+          </tr>
+        </thead>
+        <tbody id="foodraw-tbody"></tbody>
+      </table>
+    </div>
+    <div id="foodraw-pagination" class="foodraw-pagination"></div>
+  </section>
+
+  <section id="events" class="tab-section">
+    <h2>학회 / 박람회 일정</h2>
+    <p class="compare-intro">건강기능식품·기능성 원료 관련 국내외 주요 박람회 및 학술대회 일정입니다. 일정은 변동될 수 있으니 공식 사이트에서 최종 확인하세요.</p>
+
+    <div class="law-subnav" id="events-year-nav" style="margin-bottom:24px;">
+      <div class="events-yeartab active" data-eyear="2026">2026년</div>
+      <div class="events-yeartab" data-eyear="2027">2027년</div>
+    </div>
+
+    <!-- ===== 2026 ===== -->
+    <div class="events-year-pane active" id="events-pane-2026">
+      <div class="events-split">
+        <div class="events-col">
+          <h3 class="events-col-title">🏛 박람회 · 전시회</h3>
+
+          <div class="ev-card">
+            <div class="ev-header"><span class="ev-title">Natural Products Expo West</span><span class="ev-stars">★★★★★</span></div>
+            <div class="ev-meta"><span class="ev-date">📅 3.3 ~ 3.6</span><span class="ev-loc">📍 Anaheim, USA</span></div>
+            <div class="ev-desc">세계 최대 천연물·건강식품 박람회. 3,600+ 전시업체, 65,000+ 참관객</div>
+          </div>
+
+          <div class="ev-card">
+            <div class="ev-header"><span class="ev-title">Vitafoods Europe</span><span class="ev-stars">★★★★★</span></div>
+            <div class="ev-meta"><span class="ev-date">📅 5.5 ~ 5.7</span><span class="ev-loc">📍 Barcelona, Spain</span></div>
+            <div class="ev-desc">유럽 최대 기능성 원료·뉴트라슈티컬 전시. 1,600+ 전시업체, 30,000+ 참관객</div>
+          </div>
+
+          <div class="ev-card">
+            <div class="ev-header"><span class="ev-title">서울푸드 (Seoul Food & Hotel)</span><span class="ev-stars">★★★★</span></div>
+            <div class="ev-meta"><span class="ev-date">📅 6.9 ~ 6.12</span><span class="ev-loc">📍 일산 킨텍스</span></div>
+            <div class="ev-desc">국내 최대 국제식품전시회. 49개국 1,800개 기업 참여</div>
+          </div>
+
+          <div class="ev-card">
+            <div class="ev-header"><span class="ev-title">CPhI / Hi Korea</span><span class="ev-stars">★★★★</span></div>
+            <div class="ev-meta"><span class="ev-date">📅 8.25 ~ 8.27</span><span class="ev-loc">📍 서울 COEX</span></div>
+            <div class="ev-desc">제약·바이오·건강기능식품 산업 전시회. 70개국 420개사, 12,000+ 참관객</div>
+          </div>
+
+          <div class="ev-card">
+            <div class="ev-header"><span class="ev-title">Vitafoods Asia</span><span class="ev-stars">★★★★</span></div>
+            <div class="ev-meta"><span class="ev-date">📅 9.2 ~ 9.4</span><span class="ev-loc">📍 Bangkok, Thailand</span></div>
+            <div class="ev-desc">아시아 최대 뉴트라슈티컬 전시. 600+ 전시업체, 21,000+ 참관객</div>
+          </div>
+
+          <div class="ev-card">
+            <div class="ev-header"><span class="ev-title">CPhI Worldwide</span><span class="ev-stars">★★★★</span></div>
+            <div class="ev-meta"><span class="ev-date">📅 10.6 ~ 10.8</span><span class="ev-loc">📍 Milan, Italy</span></div>
+            <div class="ev-desc">세계 최대 제약·원료 전시회. 건강기능식품 원료 소싱에 활용</div>
+          </div>
+
+          <div class="ev-card">
+            <div class="ev-header"><span class="ev-title">Health Ingredients Japan (Hi Japan)</span><span class="ev-stars">★★★★</span></div>
+            <div class="ev-meta"><span class="ev-date">📅 10.14 ~ 10.16</span><span class="ev-loc">📍 Tokyo Big Sight</span></div>
+            <div class="ev-desc">일본 최대 건강식품·기능성 원료 전시. 670+ 전시업체</div>
+          </div>
+
+          <div class="ev-card">
+            <div class="ev-header"><span class="ev-title">SupplySide Global</span><span class="ev-stars">★★★★★</span></div>
+            <div class="ev-meta"><span class="ev-date">📅 10.28 ~ 10.30</span><span class="ev-loc">📍 Las Vegas, USA</span></div>
+            <div class="ev-desc">북미 최대 건강·영양 원료 전시. 1,500+ 전시업체, 20,000+ 참관객</div>
+          </div>
+
+          <div class="ev-card">
+            <div class="ev-header"><span class="ev-title">Food Week Korea (서울국제식품산업대전)</span><span class="ev-stars">★★★</span></div>
+            <div class="ev-meta"><span class="ev-date">📅 11.4 ~ 11.7</span><span class="ev-loc">📍 서울 COEX</span></div>
+            <div class="ev-desc">국내 대표 식품산업 전시. 30개국 1,000개사, 60,000+ 참관객</div>
+          </div>
+
+          <div class="ev-card">
+            <div class="ev-header"><span class="ev-title">Fi Europe (Food Ingredients Europe)</span><span class="ev-stars">★★★★</span></div>
+            <div class="ev-meta"><span class="ev-date">📅 11.17 ~ 11.19</span><span class="ev-loc">📍 Frankfurt, Germany</span></div>
+            <div class="ev-desc">유럽 최대 식품 원료 전시. 135개국 25,000+ 참관객</div>
+          </div>
+        </div>
+
+        <div class="events-col">
+          <h3 class="events-col-title">🎓 학회 · 학술대회</h3>
+
+          <div class="ev-card">
+            <div class="ev-header"><span class="ev-title">대한약학회 춘계 국제학술대회</span><span class="ev-stars">★★★</span></div>
+            <div class="ev-meta"><span class="ev-date">📅 4.23 ~ 4.24</span><span class="ev-loc">📍 청주 오송 컨벤션센터</span></div>
+            <div class="ev-desc">약학 전반 연구 발표. 천연물·생약 관련 세션 포함</div>
+          </div>
+
+          <div class="ev-card">
+            <div class="ev-header"><span class="ev-title">한국영양학회 춘계 심포지엄</span><span class="ev-stars">★★★</span></div>
+            <div class="ev-meta"><span class="ev-date">📅 4.24</span><span class="ev-loc">📍 한국 (장소 확인 필요)</span></div>
+            <div class="ev-desc">영양학 최신 연구 동향 공유. 기능성 원료 관련 발표 포함</div>
+          </div>
+
+          <div class="ev-card">
+            <div class="ev-header"><span class="ev-title">한국식품영양학회 춘계 학술대회</span><span class="ev-stars">★★★</span></div>
+            <div class="ev-meta"><span class="ev-date">📅 5.15</span><span class="ev-loc">📍 한국 (장소 확인 필요)</span></div>
+            <div class="ev-desc">식품영양 분야 연구 교류. 건강기능식품 관련 세션</div>
+          </div>
+
+          <div class="ev-card">
+            <div class="ev-header"><span class="ev-title">한국식품과학회 (KoSFoST) 국제학술대회</span><span class="ev-stars">★★★★</span></div>
+            <div class="ev-meta"><span class="ev-date">📅 7.1 ~ 7.3</span><span class="ev-loc">📍 대전 컨벤션센터</span></div>
+            <div class="ev-desc">국내 최대 식품과학 학술대회. 3,000명 규모. 기능성 식품 세션 다수</div>
+          </div>
+
+          <div class="ev-card">
+            <div class="ev-header"><span class="ev-title">IFT FIRST (식품과학기술 연례학회)</span><span class="ev-stars">★★★★★</span></div>
+            <div class="ev-meta"><span class="ev-date">📅 7.12 ~ 7.15</span><span class="ev-loc">📍 Chicago, USA</span></div>
+            <div class="ev-desc">세계 최대 식품과학기술 학회. 450+ 포스터, 100+ 과학세션</div>
+          </div>
+
+          <div class="ev-card">
+            <div class="ev-header"><span class="ev-title">ASN NUTRITION 2026</span><span class="ev-stars">★★★★</span></div>
+            <div class="ev-meta"><span class="ev-date">📅 7.25 ~ 7.28</span><span class="ev-loc">📍 Washington DC, USA</span></div>
+            <div class="ev-desc">미국영양학회 연례학회. 영양·기능성 연구 최대 규모 국제학회</div>
+          </div>
+
+          <div class="ev-card">
+            <div class="ev-header"><span class="ev-title">ISNFF (국제기능성식품학회)</span><span class="ev-stars">★★★★</span></div>
+            <div class="ev-meta"><span class="ev-date">📅 8.2 ~ 8.6</span><span class="ev-loc">📍 Sarawak, Malaysia</span></div>
+            <div class="ev-desc">뉴트라슈티컬·기능성 식품 전문 국제학회. 제18회 대회</div>
+          </div>
+
+          <div class="ev-card">
+            <div class="ev-header"><span class="ev-title">대한약학회 추계 학술대회</span><span class="ev-stars">★★★</span></div>
+            <div class="ev-meta"><span class="ev-date">📅 10.21 ~ 10.23</span><span class="ev-loc">📍 수원 컨벤션센터</span></div>
+            <div class="ev-desc">약학 전반 추계 발표. 생약학·천연물화학 세션</div>
+          </div>
+
+          <div class="ev-card">
+            <div class="ev-header"><span class="ev-title">IUFoST 세계식품과학기술대회</span><span class="ev-stars">★★★★★</span></div>
+            <div class="ev-meta"><span class="ev-date">📅 10.25 ~ 10.29</span><span class="ev-loc">📍 Hong Kong</span></div>
+            <div class="ev-desc">식품과학기술 최고 권위 세계대회 (격년). 기능성 식품·안전성 주요 의제</div>
+          </div>
+
+          <div class="ev-card">
+            <div class="ev-header"><span class="ev-title">한국식품영양과학회 (KFN) 학술대회</span><span class="ev-stars">★★★★</span></div>
+            <div class="ev-meta"><span class="ev-date">📅 10.28 ~ 10.30</span><span class="ev-loc">📍 제주국제컨벤션센터</span></div>
+            <div class="ev-desc">식품영양과학 전문 학술대회. 주제: Reinventing Food and Nutrition toward 2050</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 2027 ===== -->
+    <div class="events-year-pane" id="events-pane-2027">
+      <div class="events-split">
+        <div class="events-col">
+          <h3 class="events-col-title">🏛 박람회 · 전시회</h3>
+
+          <div class="ev-card">
+            <div class="ev-header"><span class="ev-title">Natural Products Expo West</span><span class="ev-stars">★★★★★</span></div>
+            <div class="ev-meta"><span class="ev-date">📅 3.2 ~ 3.5</span><span class="ev-loc">📍 Anaheim, USA</span></div>
+            <div class="ev-desc">세계 최대 천연물·건강식품 박람회</div>
+          </div>
+
+          <div class="ev-card">
+            <div class="ev-header"><span class="ev-title">Vitafoods Europe</span><span class="ev-stars">★★★★★</span></div>
+            <div class="ev-meta"><span class="ev-date">📅 5.18 ~ 5.20</span><span class="ev-loc">📍 Barcelona, Spain</span></div>
+            <div class="ev-desc">유럽 최대 기능성 원료·뉴트라슈티컬 전시</div>
+          </div>
+
+          <div class="ev-card">
+            <div class="ev-header"><span class="ev-title">서울푸드 (Seoul Food & Hotel)</span><span class="ev-stars">★★★★</span></div>
+            <div class="ev-meta"><span class="ev-date">📅 6월 예정</span><span class="ev-loc">📍 일산 킨텍스</span></div>
+            <div class="ev-desc">국내 최대 국제식품전시회 (일정 미확정)</div>
+          </div>
+
+          <div class="ev-card">
+            <div class="ev-header"><span class="ev-title">CPhI / Hi Korea</span><span class="ev-stars">★★★★</span></div>
+            <div class="ev-meta"><span class="ev-date">📅 8월 예정</span><span class="ev-loc">📍 서울 COEX</span></div>
+            <div class="ev-desc">제약·바이오·건강기능식품 산업 전시 (일정 미확정)</div>
+          </div>
+
+          <div class="ev-card">
+            <div class="ev-header"><span class="ev-title">Vitafoods Asia</span><span class="ev-stars">★★★★</span></div>
+            <div class="ev-meta"><span class="ev-date">📅 9월 예정</span><span class="ev-loc">📍 Bangkok, Thailand</span></div>
+            <div class="ev-desc">아시아 최대 뉴트라슈티컬 전시 (일정 미확정)</div>
+          </div>
+
+          <div class="ev-card">
+            <div class="ev-header"><span class="ev-title">Health Ingredients Japan (Hi Japan)</span><span class="ev-stars">★★★★</span></div>
+            <div class="ev-meta"><span class="ev-date">📅 10월 예정</span><span class="ev-loc">📍 Tokyo Big Sight</span></div>
+            <div class="ev-desc">일본 최대 건강식품·기능성 원료 전시 (일정 미확정)</div>
+          </div>
+
+          <div class="ev-card">
+            <div class="ev-header"><span class="ev-title">SupplySide Global</span><span class="ev-stars">★★★★★</span></div>
+            <div class="ev-meta"><span class="ev-date">📅 10월 예정</span><span class="ev-loc">📍 Las Vegas, USA</span></div>
+            <div class="ev-desc">북미 최대 건강·영양 원료 전시 (일정 미확정)</div>
+          </div>
+
+          <div class="ev-card">
+            <div class="ev-header"><span class="ev-title">Food Week Korea</span><span class="ev-stars">★★★</span></div>
+            <div class="ev-meta"><span class="ev-date">📅 11월 예정</span><span class="ev-loc">📍 서울 COEX</span></div>
+            <div class="ev-desc">국내 대표 식품산업 전시 (일정 미확정)</div>
+          </div>
+
+          <div class="ev-card">
+            <div class="ev-header"><span class="ev-title">Fi Europe (Food Ingredients Europe)</span><span class="ev-stars">★★★★</span></div>
+            <div class="ev-meta"><span class="ev-date">📅 11월 예정</span><span class="ev-loc">📍 유럽 (장소 미확정)</span></div>
+            <div class="ev-desc">유럽 최대 식품 원료 전시 (일정 미확정)</div>
+          </div>
+        </div>
+
+        <div class="events-col">
+          <h3 class="events-col-title">🎓 학회 · 학술대회</h3>
+
+          <div class="ev-card">
+            <div class="ev-header"><span class="ev-title">대한약학회 춘계 국제학술대회</span><span class="ev-stars">★★★</span></div>
+            <div class="ev-meta"><span class="ev-date">📅 4월 예정</span><span class="ev-loc">📍 한국 (장소 미확정)</span></div>
+            <div class="ev-desc">약학 전반 연구 발표. 천연물·생약 관련 세션 포함</div>
+          </div>
+
+          <div class="ev-card">
+            <div class="ev-header"><span class="ev-title">한국영양학회 춘계 심포지엄</span><span class="ev-stars">★★★</span></div>
+            <div class="ev-meta"><span class="ev-date">📅 4~5월 예정</span><span class="ev-loc">📍 한국 (장소 미확정)</span></div>
+            <div class="ev-desc">영양학 최신 연구 동향. 기능성 원료 관련 발표</div>
+          </div>
+
+          <div class="ev-card">
+            <div class="ev-header"><span class="ev-title">한국식품영양학회 춘계 학술대회</span><span class="ev-stars">★★★</span></div>
+            <div class="ev-meta"><span class="ev-date">📅 5월 예정</span><span class="ev-loc">📍 한국 (장소 미확정)</span></div>
+            <div class="ev-desc">식품영양 분야 연구 교류 (일정 미확정)</div>
+          </div>
+
+          <div class="ev-card">
+            <div class="ev-header"><span class="ev-title">한국식품과학회 (KoSFoST) 국제학술대회</span><span class="ev-stars">★★★★</span></div>
+            <div class="ev-meta"><span class="ev-date">📅 6~7월 예정</span><span class="ev-loc">📍 한국 (장소 미확정)</span></div>
+            <div class="ev-desc">국내 최대 식품과학 학술대회. 기능성 식품 세션 다수</div>
+          </div>
+
+          <div class="ev-card">
+            <div class="ev-header"><span class="ev-title">IFT FIRST (식품과학기술 연례학회)</span><span class="ev-stars">★★★★★</span></div>
+            <div class="ev-meta"><span class="ev-date">📅 7월 예정</span><span class="ev-loc">📍 USA (장소 미확정)</span></div>
+            <div class="ev-desc">세계 최대 식품과학기술 학회</div>
+          </div>
+
+          <div class="ev-card">
+            <div class="ev-header"><span class="ev-title">ASN NUTRITION 2027</span><span class="ev-stars">★★★★</span></div>
+            <div class="ev-meta"><span class="ev-date">📅 7월 예정</span><span class="ev-loc">📍 USA (장소 미확정)</span></div>
+            <div class="ev-desc">미국영양학회 연례학회. 영양·기능성 연구 국제학회</div>
+          </div>
+
+          <div class="ev-card">
+            <div class="ev-header"><span class="ev-title">대한약학회 추계 학술대회</span><span class="ev-stars">★★★</span></div>
+            <div class="ev-meta"><span class="ev-date">📅 10월 예정</span><span class="ev-loc">📍 한국 (장소 미확정)</span></div>
+            <div class="ev-desc">약학 전반 추계 발표. 생약학·천연물화학 세션</div>
+          </div>
+
+          <div class="ev-card">
+            <div class="ev-header"><span class="ev-title">한국식품영양과학회 (KFN) 학술대회</span><span class="ev-stars">★★★★</span></div>
+            <div class="ev-meta"><span class="ev-date">📅 10월 예정</span><span class="ev-loc">📍 한국 (장소 미확정)</span></div>
+            <div class="ev-desc">식품영양과학 전문 학술대회 (일정 미확정)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="feedback" class="tab-section">
+    <div class="section-head">
+      <h2>피드백 및 문의</h2>
+      <p class="section-sub">아직 테스트 단계인 사이트입니다. 익명으로 자유롭게 의견·문의를 남겨주세요. 대화는 작성일로부터 10일간만 보관됩니다.</p>
+    </div>
+    <div class="fb-wrap">
+      <div class="fb-chat-card">
+        <div class="fb-chat-header">
+          <span class="fb-chat-title" id="fb-admin-toggle">피드백 채팅</span>
+        </div>
+        <div id="fb-messages" class="fb-messages">
+          <div class="fb-empty" id="fb-empty">아직 메시지가 없습니다. 첫 메시지를 남겨보세요!</div>
+        </div>
+        <div class="fb-composer">
+          <div id="fb-admin-banner" class="fb-admin-banner" hidden>관리자 모드로 답변 중입니다 <button type="button" id="fb-admin-exit">종료</button></div>
+          <div class="fb-input-row">
+            <textarea id="fb-input" class="fb-input" maxlength="200" placeholder="메시지를 입력하세요 (최대 200자)" rows="2"></textarea>
+            <button type="button" id="fb-send" class="fb-send-btn">전송</button>
+          </div>
+          <div class="fb-input-meta"><span id="fb-count">0</span>/200</div>
+        </div>
+      </div>
+      <div class="fb-contact-note">문의 메일: <a href="mailto:healtharchive2026@gmail.com">healtharchive2026@gmail.com</a></div>
+    </div>
+  </section>
+
+  <section id="safety-db" class="tab-section">
+    <div class="section-title-row">
+      <div>
+        <h2>안전성 데이터베이스 통합검색</h2>
+        <p class="compare-intro">국내외 공식 안전성·신소재식품 데이터베이스 9종(내장 12,573건)을 한 번에 검색하고, 외부 49개 데이터베이스로 바로 연결합니다.</p>
+      </div>
+      <span class="section-badge">내장 9개 · 외부 49개</span>
+    </div>
+
+    <div class="sdb-overview" id="sdb-overview"></div>
+
+    <div class="toolbar">
+      <input type="text" id="sdb-q" placeholder="데이터베이스 로딩 중…" disabled>
+      <button type="button" id="sdb-search-btn" class="sdb-search-btn" disabled>로딩중…</button>
+      <button type="button" id="sdb-reset-btn" class="sdb-reset-btn">초기화</button>
+      <span class="result-count" id="sdb-total"></span>
+    </div>
+
+    <div class="sdb-init-msg" id="sdb-init-msg">성분명을 입력하면 내장 데이터베이스 결과와 외부 데이터베이스 링크를 함께 제공합니다 (영문 권장).</div>
+
+    <div class="sdb-results" id="sdb-results">
+      <div class="sdb-section">
+        <div class="sdb-section-hd"><span class="sdb-section-title">내장 데이터베이스 결과</span><span class="result-count" id="sdb-db-total"></span></div>
+        <div class="sdb-filter-row" id="sdb-filter-row"></div>
+        <div class="sdb-card-grid" id="sdb-card-grid"></div>
+      </div>
+
+      <div class="sdb-section">
+        <div class="sdb-section-hd"><span class="sdb-section-title">외부 데이터베이스 링크</span><span class="result-count" id="sdb-ext-note"></span></div>
+        <div id="sdb-ext-sectors"></div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div class="intro-modal-overlay" id="intro-modal-overlay">
+  <div class="intro-modal" role="dialog" aria-modal="true" aria-labelledby="intro-modal-title">
+    <button type="button" class="intro-modal-close" id="intro-modal-close" aria-label="닫기">×</button>
+    <h3 id="intro-modal-title">안내드립니다</h3>
+    <p class="intro-modal-body">
+      해당 사이트는 오로지 제 편의를 위해 만들어 봤습니다. 다만 같은 업계 종사자 분들이 편하게 같이 이용하면 좋을 것 같아 시험삼아 오픈합니다.<br><br>
+      현재 지속적으로 구축중이기에 많이 부족합니다. 저장공간 이슈로 일부자료 PDF가 업로드되지 않습니다 (빠른시일 내 해결해보겠습니다)<br><br>
+      다만 소중한 의견 주시면 잘 반영해보도록 하겠습니다.<br>
+      이메일 : <a href="mailto:healtharchive2026@gmail.com">healtharchive2026@gmail.com</a>
+    </p>
+    <div class="intro-modal-actions">
+      <button type="button" class="intro-modal-btn intro-modal-btn-ghost" id="intro-modal-hide-today">오늘 그만보기</button>
+      <button type="button" class="intro-modal-btn intro-modal-btn-primary" id="intro-modal-confirm">닫기</button>
+    </div>
   </div>
 </div>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-notice">현재 테스트 중이오니 편하게 이용하시고 소중한 의견 이메일로도 부탁드리겠습니다. 감사합니다<br>이메일 주소 : <a href="mailto:healtharchive2026@gmail.com">healtharchive2026@gmail.com</a></div>
+    <div class="footer-logo"><img src="assets/logo-icon.png" alt="" class="logo-icon"><span class="logo-text">Health<b>Archive</b></span><img src="assets/leaf-badge.png" alt="" class="logo-leaf"></div>
+    <div>© Health Archive — 개인 운영 정보 아카이브</div>
+  </div>
+</footer>
+
+<script src="libs/chart.umd.js"></script>
+<script src="data/ingredients.js?v=20260629-scheduler1225"></script>
+<script src="data/products.js?v=20260629-scheduler1225"></script>
+<script src="data/minutes.js?v=20260629-scheduler1225"></script>
+<script src="data/guidelines.js?v=20260629-glossary"></script>
+<script src="data/drive_links.js?v=20260630-gdrive"></script>
+<script src="data/biomarker_protocols.js?v=20260629-mechanisms"></script>
+<script src="data/news.js?v=20260630-news0930"></script>
+<script src="data/news_yakup.js?v=20260630-news0930"></script>
+<script src="data/news_sciencedaily.js?v=20260630-news0930"></script>
+<script src="data/news_thinkfood.js?v=20260630-news0930"></script>
+<script src="data/status.js?v=20260630-news0930"></script>
+<script src="data/food_ingredients.js"></script>
+<script src="data/daily_quotes.js"></script>
+<script src="data/safety_db.js"></script>
+<script src="market.js"></script>
+<script src="safety-db.js?v=20260701-db-labels"></script>
+<script src="app.js?v=20260701-db-labels"></script>
+<script type="module" src="feedback.js?v=20260630-feedback1"></script>
 </body>
 </html>

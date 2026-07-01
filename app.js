@@ -957,10 +957,9 @@ function renderCompareTable() {
 
 // GitHub Pages는 Git LFS 바이너리를 서빙하지 못하므로, relPath(로컬 상대경로)에
 // 매핑된 구글 드라이브 파일이 있으면 그 링크로, 없으면 기존 로컬 경로로 대체한다.
+const R2_BASE = 'https://pub-8de20e0282d641669c335beedd7cfedd.r2.dev';
 function pdfHref(relPath) {
-  const ids = (typeof DRIVE_FILE_IDS !== 'undefined') ? DRIVE_FILE_IDS : {};
-  const id = ids[relPath];
-  return id ? `https://drive.google.com/file/d/${id}/view` : relPath;
+  return R2_BASE + '/' + relPath;
 }
 
 function escapeHtml(s) {
