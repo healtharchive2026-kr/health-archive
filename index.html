@@ -9,7 +9,7 @@
 <link rel="icon" href="data:,">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="style.css?v=20260703-home-flow">
+<link rel="stylesheet" href="style.css?v=20260703-home-flow-split">
 </head>
 <body>
 <header class="site-header">
@@ -74,7 +74,7 @@
             <span class="vc-item"><span class="vc-label">오늘 방문자</span><span class="vc-num" id="vc-today">-</span></span>
           </div>
           <h1>건강기능식품 개발자 아카이브</h1>
-          <p class="hero-lede">개발방향 매핑에서 출발해 원료 개발, 데이터베이스 대조, 안전성 검색, 심의·법령 확인, 연구·시장 검토까지 이어지는 작업용 포털입니다.</p>
+          <p class="hero-lede">개발방향 매핑에서 출발해 원료 개발, 데이터베이스 대조, 안전성 검색, 심의·법령 확인, 연구·임상 검토와 시장·동향 확인까지 이어지는 작업용 포털입니다.</p>
         </div>
 
         <div class="hero-side">
@@ -139,8 +139,13 @@
         </a>
         <a class="home-flow-step" data-goto="compare">
           <span class="home-flow-num">06</span>
-          <strong>연구·시장</strong>
-          <span>임상·제품·동향 검토</span>
+          <strong>연구·임상</strong>
+          <span>기능성·프로토콜·임상 검토</span>
+        </a>
+        <a class="home-flow-step" data-goto="products">
+          <span class="home-flow-num">07</span>
+          <strong>시장·동향</strong>
+          <span>제품·시장·뉴스 확인</span>
         </a>
       </div>
 
@@ -201,12 +206,21 @@
         <div class="hero-cat">
           <div class="hero-cat-header">
             <span class="hero-cat-icon">05</span>
-            <span class="hero-cat-label">연구 · 시장 · 동향</span>
+            <span class="hero-cat-label">연구 · 임상</span>
           </div>
           <div class="hero-cat-cards">
             <a class="nav-card" data-goto="compare"><span class="nav-card-icon">비교</span><span class="nav-card-title">기능성별 비교</span><span class="nav-card-desc">카테고리별 정렬 보기</span></a>
             <a class="nav-card" data-goto="biomarkers"><span class="nav-card-icon">지표</span><span class="nav-card-title">기능성별 프로토콜</span><span class="nav-card-desc">대상자·시험모델</span></a>
             <a class="nav-card" data-goto="trials"><span class="nav-card-icon">임상</span><span class="nav-card-title">임상정보 데이터베이스</span><span class="nav-card-desc">NCT·기관·평가변수</span></a>
+          </div>
+        </div>
+
+        <div class="hero-cat">
+          <div class="hero-cat-header">
+            <span class="hero-cat-icon">06</span>
+            <span class="hero-cat-label">시장 · 동향</span>
+          </div>
+          <div class="hero-cat-cards">
             <a class="nav-card" data-goto="products"><span class="nav-card-icon">제품</span><span class="nav-card-title">신규 등록 제품</span><span class="nav-card-desc">최근 신고 목록</span></a>
             <a class="nav-card" data-goto="market"><span class="nav-card-icon">시장</span><span class="nav-card-title">시장현황</span><span class="nav-card-desc">매출·기능성 추이</span></a>
             <a class="nav-card" data-goto="news"><span class="nav-card-icon">뉴스</span><span class="nav-card-title">식품 뉴스</span><span class="nav-card-desc">업계 동향 기사</span></a>
