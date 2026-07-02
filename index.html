@@ -9,7 +9,7 @@
 <link rel="icon" href="data:,">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="style.css?v=20260703-devmap">
+<link rel="stylesheet" href="style.css?v=20260703-home-flow">
 </head>
 <body>
 <header class="site-header">
@@ -18,32 +18,33 @@
     <nav class="main-nav">
       <a href="#home" data-tab="home" class="nav-link active">홈</a>
       <a href="#devmap" data-tab="devmap" class="nav-link">개발방향 매핑</a>
+      <a href="#material-dev" data-tab="material-dev" class="nav-link">원료 개발</a>
       <div class="nav-group">
-        <span class="nav-group-label">원료·성분 DB <span class="nav-caret">▾</span></span>
+        <span class="nav-group-label">데이터베이스 <span class="nav-caret">▾</span></span>
         <div class="nav-dropdown">
-          <a href="#ingredients" data-tab="ingredients" class="nav-link">개별인정/고시형 원료</a>
-          <a href="#compare" data-tab="compare" class="nav-link">기능성별 비교</a>
           <a href="#foodraw" data-tab="foodraw" class="nav-link">식품원료목록</a>
-          <a href="#temp-approval" data-tab="temp-approval" class="nav-link">한시적 인정 원료</a>
-          <a href="#blocked" data-tab="blocked" class="nav-link">해외직구 차단 원료·성분</a>
+          <a href="#ingredients" data-tab="ingredients" class="nav-link">개별인정/고시형 원료</a>
+          <a href="#temp-approval" data-tab="temp-approval" class="nav-link">한시적 인정 원료 현황</a>
           <a href="#gmo-ingredients" data-tab="gmo-ingredients" class="nav-link">유전자재조합식품 원료</a>
-          <a href="#safety-db" data-tab="safety-db" class="nav-link">안전성 데이터베이스</a>
+          <a href="#blocked" data-tab="blocked" class="nav-link">해외직구 차단 원료·성분</a>
         </div>
       </div>
+      <a href="#safety-db" data-tab="safety-db" class="nav-link">안전성</a>
       <div class="nav-group">
-        <span class="nav-group-label">임상·연구설계 <span class="nav-caret">▾</span></span>
-        <div class="nav-dropdown">
-          <a href="#biomarkers" data-tab="biomarkers" class="nav-link">기능성별 프로토콜</a>
-          <a href="#trials" data-tab="trials" class="nav-link">임상정보 데이터베이스</a>
-        </div>
-      </div>
-      <div class="nav-group">
-        <span class="nav-group-label">인허가·심의 자료 <span class="nav-caret">▾</span></span>
+        <span class="nav-group-label">심의·법령·가이드라인 <span class="nav-caret">▾</span></span>
         <div class="nav-dropdown">
           <a href="#nifds" data-tab="nifds" class="nav-link">심의 관련</a>
-          <a href="#minutes" data-tab="minutes" class="nav-link">식약처 회의록</a>
+          <a href="#minutes" data-tab="minutes" class="nav-link">건기식 심의 회의록</a>
           <a href="#gmo-minutes" data-tab="gmo-minutes" class="nav-link">유전자재조합식품 회의록</a>
-          <a href="#laws" data-tab="laws" class="nav-link">가이드라인/공전/법령</a>
+          <a href="#laws" data-tab="laws" class="nav-link">법령·공전·가이드라인</a>
+        </div>
+      </div>
+      <div class="nav-group">
+        <span class="nav-group-label">연구·임상 <span class="nav-caret">▾</span></span>
+        <div class="nav-dropdown">
+          <a href="#compare" data-tab="compare" class="nav-link">기능성별 비교</a>
+          <a href="#biomarkers" data-tab="biomarkers" class="nav-link">기능성별 프로토콜</a>
+          <a href="#trials" data-tab="trials" class="nav-link">임상정보 데이터베이스</a>
         </div>
       </div>
       <div class="nav-group">
@@ -73,7 +74,7 @@
             <span class="vc-item"><span class="vc-label">오늘 방문자</span><span class="vc-num" id="vc-today">-</span></span>
           </div>
           <h1>건강기능식품 개발자 아카이브</h1>
-          <p class="hero-lede">원료, 심의, 법령, 제품, 논문 리포트를 개발 검토 흐름에 맞게 모아둔 작업용 포털입니다.</p>
+          <p class="hero-lede">개발방향 매핑에서 출발해 원료 개발, 데이터베이스 대조, 안전성 검색, 심의·법령 확인, 연구·시장 검토까지 이어지는 작업용 포털입니다.</p>
         </div>
 
         <div class="hero-side">
@@ -103,11 +104,44 @@
         <div class="global-search-shell">
           <form class="global-search-form" id="global-search-form">
             <span class="hsr-icon">⌕</span>
-            <input type="text" id="global-search-input" autocomplete="off" placeholder="원료명, 기능성, 제품, 회의록, 논문, 뉴스 검색">
+            <input type="text" id="global-search-input" autocomplete="off" placeholder="원료명, 기능성, 안전성, 회의록, 법령, 제품, 뉴스 검색">
             <button type="submit">통합검색</button>
           </form>
           <div class="global-search-results" id="global-search-results"></div>
         </div>
+      </div>
+
+      <div class="home-flow">
+        <a class="home-flow-step" data-goto="devmap">
+          <span class="home-flow-num">01</span>
+          <strong>개발방향 매핑</strong>
+          <span>트랙·게이트 선별</span>
+        </a>
+        <a class="home-flow-step" data-goto="material-dev" data-devtab="individual-dev">
+          <span class="home-flow-num">02</span>
+          <strong>원료 개발</strong>
+          <span>제출자료 패키지 설계</span>
+        </a>
+        <a class="home-flow-step" data-goto="ingredients">
+          <span class="home-flow-num">03</span>
+          <strong>데이터베이스</strong>
+          <span>원료·인정현황 대조</span>
+        </a>
+        <a class="home-flow-step" data-goto="safety-db">
+          <span class="home-flow-num">04</span>
+          <strong>안전성</strong>
+          <span>안전성 DB 검색</span>
+        </a>
+        <a class="home-flow-step" data-goto="laws">
+          <span class="home-flow-num">05</span>
+          <strong>심의·법령</strong>
+          <span>회의록·가이드라인 확인</span>
+        </a>
+        <a class="home-flow-step" data-goto="compare">
+          <span class="home-flow-num">06</span>
+          <strong>연구·시장</strong>
+          <span>임상·제품·동향 검토</span>
+        </a>
       </div>
 
       <div class="hero-section-head hero-menu-head">
@@ -117,46 +151,62 @@
         <div class="hero-cat">
           <div class="hero-cat-header">
             <span class="hero-cat-icon">01</span>
-            <span class="hero-cat-label">원료·성분 DB</span>
+            <span class="hero-cat-label">원료 개발</span>
           </div>
           <div class="hero-cat-cards">
-            <a class="nav-card" data-goto="ingredients"><span class="nav-card-icon">원료</span><span class="nav-card-title">개별·고시형 원료</span><span class="nav-card-desc">인정 현황·전환 이력</span></a>
-            <a class="nav-card" data-goto="compare"><span class="nav-card-icon">비교</span><span class="nav-card-title">기능성별 비교</span><span class="nav-card-desc">카테고리별 정렬 보기</span></a>
-            <a class="nav-card" data-goto="foodraw"><span class="nav-card-icon">목록</span><span class="nav-card-title">식품원료목록</span><span class="nav-card-desc">별표 원료 검색</span></a>
-            <a class="nav-card" data-goto="blocked"><span class="nav-card-icon">차단</span><span class="nav-card-title">해외직구 차단 원료</span><span class="nav-card-desc">반입차단 원료·성분 목록</span></a>
-            <a class="nav-card" data-goto="safety-db"><span class="nav-card-icon">안전</span><span class="nav-card-title">안전성 데이터베이스</span><span class="nav-card-desc">내장 9종·외부 49종</span></a>
+            <a class="nav-card" data-goto="devmap"><span class="nav-card-icon">매핑</span><span class="nav-card-title">개발방향 매핑</span><span class="nav-card-desc">트랙·게이트 선별</span></a>
+            <a class="nav-card" data-goto="material-dev" data-devtab="individual-dev"><span class="nav-card-icon">개별</span><span class="nav-card-title">개별인정원료 개발</span><span class="nav-card-desc">제출자료·첨부서류 체크</span></a>
+            <a class="nav-card" data-goto="material-dev" data-devtab="temporary-dev"><span class="nav-card-icon">한시</span><span class="nav-card-title">한시적 인정 원료 개발</span><span class="nav-card-desc">식품원료 인정자료 정리</span></a>
           </div>
         </div>
 
         <div class="hero-cat">
           <div class="hero-cat-header">
             <span class="hero-cat-icon">02</span>
-            <span class="hero-cat-label">임상·연구설계</span>
+            <span class="hero-cat-label">데이터베이스</span>
           </div>
           <div class="hero-cat-cards">
-            <a class="nav-card" data-goto="biomarkers"><span class="nav-card-icon">지표</span><span class="nav-card-title">기능성별 프로토콜</span><span class="nav-card-desc">대상자·시험모델</span></a>
-            <a class="nav-card" data-goto="trials"><span class="nav-card-icon">임상</span><span class="nav-card-title">임상정보 데이터베이스</span><span class="nav-card-desc">NCT·기관·평가변수</span></a>
+            <a class="nav-card" data-goto="foodraw"><span class="nav-card-icon">식품</span><span class="nav-card-title">식품원료목록</span><span class="nav-card-desc">별표 원료 검색</span></a>
+            <a class="nav-card" data-goto="ingredients"><span class="nav-card-icon">원료</span><span class="nav-card-title">개별·고시형 원료</span><span class="nav-card-desc">인정 현황·전환 이력</span></a>
+            <a class="nav-card" data-goto="temp-approval"><span class="nav-card-icon">한시</span><span class="nav-card-title">한시적 인정 원료 현황</span><span class="nav-card-desc">인정·사용 조건 확인</span></a>
+            <a class="nav-card" data-goto="gmo-ingredients"><span class="nav-card-icon">GMO</span><span class="nav-card-title">유전자재조합식품 원료</span><span class="nav-card-desc">심사 대상 원료·성분</span></a>
+            <a class="nav-card" data-goto="blocked"><span class="nav-card-icon">차단</span><span class="nav-card-title">해외직구 차단 원료</span><span class="nav-card-desc">반입차단 원료·성분 목록</span></a>
           </div>
         </div>
 
         <div class="hero-cat">
           <div class="hero-cat-header">
             <span class="hero-cat-icon">03</span>
-            <span class="hero-cat-label">인허가·심의 자료</span>
+            <span class="hero-cat-label">안전성</span>
           </div>
           <div class="hero-cat-cards">
-            <a class="nav-card" data-goto="nifds"><span class="nav-card-icon">심의</span><span class="nav-card-title">심의 관련</span><span class="nav-card-desc">위원 명단·담당부서</span></a>
-            <a class="nav-card" data-goto="minutes"><span class="nav-card-icon">회의</span><span class="nav-card-title">식약처 회의록</span><span class="nav-card-desc">회차별 대상 원료</span></a>
-            <a class="nav-card" data-goto="laws"><span class="nav-card-icon">자료</span><span class="nav-card-title">가이드라인/공전/법령</span><span class="nav-card-desc">작성 기준·공식 자료</span></a>
+            <a class="nav-card" data-goto="safety-db"><span class="nav-card-icon">안전</span><span class="nav-card-title">안전성 DB 검색기</span><span class="nav-card-desc">내장 9종·외부 49종</span></a>
+            <a class="nav-card" data-goto="blocked"><span class="nav-card-icon">차단</span><span class="nav-card-title">반입차단 성분 확인</span><span class="nav-card-desc">안전성 리스크 1차 점검</span></a>
           </div>
         </div>
 
         <div class="hero-cat">
           <div class="hero-cat-header">
             <span class="hero-cat-icon">04</span>
-            <span class="hero-cat-label">시장·동향</span>
+            <span class="hero-cat-label">심의 · 법령 · 가이드라인</span>
           </div>
           <div class="hero-cat-cards">
+            <a class="nav-card" data-goto="nifds"><span class="nav-card-icon">심의</span><span class="nav-card-title">심의 관련</span><span class="nav-card-desc">위원 명단·담당부서</span></a>
+            <a class="nav-card" data-goto="minutes"><span class="nav-card-icon">건기식</span><span class="nav-card-title">건기식 심의 회의록</span><span class="nav-card-desc">회차별 대상 원료</span></a>
+            <a class="nav-card" data-goto="gmo-minutes"><span class="nav-card-icon">GMO</span><span class="nav-card-title">유전자재조합식품 회의록</span><span class="nav-card-desc">안전성심사 회의 안내·결과</span></a>
+            <a class="nav-card" data-goto="laws"><span class="nav-card-icon">법령</span><span class="nav-card-title">법령·공전·가이드라인</span><span class="nav-card-desc">작성 기준·공식 자료</span></a>
+          </div>
+        </div>
+
+        <div class="hero-cat">
+          <div class="hero-cat-header">
+            <span class="hero-cat-icon">05</span>
+            <span class="hero-cat-label">연구 · 시장 · 동향</span>
+          </div>
+          <div class="hero-cat-cards">
+            <a class="nav-card" data-goto="compare"><span class="nav-card-icon">비교</span><span class="nav-card-title">기능성별 비교</span><span class="nav-card-desc">카테고리별 정렬 보기</span></a>
+            <a class="nav-card" data-goto="biomarkers"><span class="nav-card-icon">지표</span><span class="nav-card-title">기능성별 프로토콜</span><span class="nav-card-desc">대상자·시험모델</span></a>
+            <a class="nav-card" data-goto="trials"><span class="nav-card-icon">임상</span><span class="nav-card-title">임상정보 데이터베이스</span><span class="nav-card-desc">NCT·기관·평가변수</span></a>
             <a class="nav-card" data-goto="products"><span class="nav-card-icon">제품</span><span class="nav-card-title">신규 등록 제품</span><span class="nav-card-desc">최근 신고 목록</span></a>
             <a class="nav-card" data-goto="market"><span class="nav-card-icon">시장</span><span class="nav-card-title">시장현황</span><span class="nav-card-desc">매출·기능성 추이</span></a>
             <a class="nav-card" data-goto="news"><span class="nav-card-icon">뉴스</span><span class="nav-card-title">식품 뉴스</span><span class="nav-card-desc">업계 동향 기사</span></a>
@@ -378,6 +428,247 @@
     </div>
 
     <p class="devmap-footnote">실무 트리아지용 매핑입니다. 최종 트랙·소관부서·제출자료는 사안별 사전상담(식약처)으로 확정하세요.<br>근거: 건강기능식품법 §15 · 고시 제2024-79호 · 식품위생법 §7② · 동 시행규칙 §5 · 수입식품안전관리특별법 §25조의3 · 식약처 소관(식품기준과/신소재식품과/평가원 영양기능연구과) · 2025 확인분.</p>
+  </section>
+
+  <section id="material-dev" class="tab-section">
+    <div class="section-title-row">
+      <div>
+        <h2>원료 개발</h2>
+        <p class="compare-intro">개별인정원료와 한시적 인정 원료를 실제 신청자료 묶음 기준으로 정리한 개발 체크리스트입니다. 세부 요구자료는 원료의 유래, 제조공정, 식용근거, 섭취량, 기능성 주장 수준에 따라 달라질 수 있습니다.</p>
+      </div>
+      <span class="section-badge">Submission Checklist</span>
+    </div>
+
+    <div class="law-subnav material-dev-subnav" id="material-dev-subnav">
+      <button type="button" class="material-dev-subtab active" data-devtab="individual-dev">개별인정원료 개발</button>
+      <button type="button" class="material-dev-subtab" data-devtab="temporary-dev">한시적 인정 원료 개발</button>
+    </div>
+
+    <div class="material-dev-pane active" id="material-dev-pane-individual-dev">
+      <div class="material-dev-summary">
+        <div>
+          <span class="material-dev-kicker">TRACK 1</span>
+          <h3>개별인정원료 신청자료 구성</h3>
+          <p>건강기능식품 기능성 원료 인정을 목표로 하는 트랙입니다. 기본적으로 원료 정보, 안전성, 기능성, 기준·규격 및 시험법을 하나의 심사 패키지로 설계합니다.</p>
+        </div>
+        <div class="material-dev-source">
+          <span>공식 기준 자료</span>
+          <a href="https://www.mfds.go.kr/brd/m_1060/view.do?seq=15701" target="_blank" rel="noopener">MFDS 제출자료 작성 가이드</a>
+          <a href="#laws" data-goto="laws" data-lawtab="general-guideline">사이트 내 일반가이드라인</a>
+        </div>
+      </div>
+
+      <div class="material-dev-grid">
+        <div class="material-dev-card">
+          <span class="material-dev-step">01</span>
+          <h4>신청 개요와 총괄 요약</h4>
+          <ul>
+            <li>신청 원료명, 기능성 내용, 섭취대상, 일일섭취량, 섭취방법</li>
+            <li>제출자료 전체의 총괄 요약본</li>
+            <li>인정받으려는 기능성 표현과 적용 제품 범위</li>
+          </ul>
+        </div>
+        <div class="material-dev-card">
+          <span class="material-dev-step">02</span>
+          <h4>기원·개발경위</h4>
+          <ul>
+            <li>기원 원재료의 학명, 사용부위, 산지, 식용·섭취 이력</li>
+            <li>개발 배경, 표준화 목적, 기존 원료와의 차별점</li>
+            <li>의약품 전용 원료, 반입차단 원료, GMO·세포배양 여부 사전 확인</li>
+          </ul>
+        </div>
+        <div class="material-dev-card">
+          <span class="material-dev-step">03</span>
+          <h4>국내외 인정·사용현황</h4>
+          <ul>
+            <li>국내 식품·건강기능식품 사용 이력</li>
+            <li>해외 GRAS, NDI, Novel Food, 보충제 사용 사례</li>
+            <li>섭취량, 대상자, 제품 형태, 이상사례 자료</li>
+          </ul>
+        </div>
+        <div class="material-dev-card">
+          <span class="material-dev-step">04</span>
+          <h4>제조방법과 품질관리</h4>
+          <ul>
+            <li>원재료 입고부터 최종 원료까지의 제조공정도</li>
+            <li>추출·농축·정제·발효·건조·표준화 조건</li>
+            <li>배치별 관리기준, 잔류용매, 오염물질, 미생물 관리</li>
+          </ul>
+        </div>
+        <div class="material-dev-card">
+          <span class="material-dev-step">05</span>
+          <h4>원료 특성과 기준·규격</h4>
+          <ul>
+            <li>성상, 지표성분 또는 기능성분, 함량 규격</li>
+            <li>시험방법, 시험법 밸리데이션, 기준규격 설정 근거</li>
+            <li>안정성, 보관조건, 유통기한 설정 근거</li>
+          </ul>
+        </div>
+        <div class="material-dev-card">
+          <span class="material-dev-step">06</span>
+          <h4>안전성 자료</h4>
+          <ul>
+            <li>섭취근거와 인체 섭취량 평가</li>
+            <li>단회·반복투여·유전독성 등 원료 특성별 독성시험</li>
+            <li>알레르기, 취약군, 의약품 병용, 이상사례 검토</li>
+          </ul>
+        </div>
+        <div class="material-dev-card">
+          <span class="material-dev-step">07</span>
+          <h4>기능성 자료</h4>
+          <ul>
+            <li>인체적용시험 설계, 결과보고서, 통계분석</li>
+            <li>동물·시험관 자료와 작용기전 설명</li>
+            <li>기능성별 바이오마커, 유효섭취량, 근거 종합</li>
+          </ul>
+        </div>
+        <div class="material-dev-card">
+          <span class="material-dev-step">08</span>
+          <h4>섭취방법·주의사항</h4>
+          <ul>
+            <li>일일섭취량 산출, 섭취기간, 섭취방법</li>
+            <li>섭취 시 주의사항, 제외 대상, 표시 문안 초안</li>
+            <li>최종 제품 적용 시 규격 유지 방안</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="material-dev-docs">
+        <h3>첨부 서류 패키지</h3>
+        <div class="material-dev-doc-list">
+          <span>신청서</span>
+          <span>제출자료 요약본</span>
+          <span>원료 설명서</span>
+          <span>제조공정도</span>
+          <span>원재료 규격서</span>
+          <span>COA·시험성적서</span>
+          <span>시험법 밸리데이션</span>
+          <span>안정성 자료</span>
+          <span>국내외 사용현황</span>
+          <span>안전성 시험보고서</span>
+          <span>인체적용시험 보고서</span>
+          <span>IRB·통계분석 자료</span>
+          <span>작용기전 자료</span>
+          <span>문헌검색 전략·원문</span>
+          <span>섭취량 산출근거</span>
+          <span>주의사항 문안</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="material-dev-pane" id="material-dev-pane-temporary-dev">
+      <div class="material-dev-summary">
+        <div>
+          <span class="material-dev-kicker">TRACK 2</span>
+          <h3>한시적 인정 원료 신청자료 구성</h3>
+          <p>식품공전에 등재되지 않은 식품원료를 일정 조건에서 사용할 수 있도록 검토받는 트랙입니다. 핵심은 식품원료로서의 기원, 제조방법, 원료 특성, 사용현황, 안전성 근거를 납득 가능하게 묶는 것입니다.</p>
+        </div>
+        <div class="material-dev-source">
+          <span>공식 기준 자료</span>
+          <a href="https://www.foodsafetykorea.go.kr/portal/board/board.do?menu_grp=MENU_NEW04&menu_no=2966" target="_blank" rel="noopener">식품원료 한시적 인정</a>
+          <a href="https://www.foodsafetykorea.go.kr/portal/board/board.do?menu_grp=MENU_NEW04&menu_no=2949" target="_blank" rel="noopener">식품원료 의사결정도</a>
+        </div>
+      </div>
+
+      <div class="material-dev-grid">
+        <div class="material-dev-card">
+          <span class="material-dev-step">01</span>
+          <h4>신청 개요와 요약본</h4>
+          <ul>
+            <li>한시적으로 인정받으려는 원료명, 사용목적, 사용식품 범위</li>
+            <li>제출자료 요약본과 핵심 판단 근거</li>
+            <li>기존 식품원료 목록 해당 여부와 미등재 사유</li>
+          </ul>
+        </div>
+        <div class="material-dev-card">
+          <span class="material-dev-step">02</span>
+          <h4>기원·개발경위</h4>
+          <ul>
+            <li>원재료의 생물학적 기원, 사용부위, 채취·배양·생산 방식</li>
+            <li>개발 배경, 전통 식경험, 해외 식품 사용 맥락</li>
+            <li>GMO·세포배양·신소재 해당 여부와 선행심사 필요성</li>
+          </ul>
+        </div>
+        <div class="material-dev-card">
+          <span class="material-dev-step">03</span>
+          <h4>국내외 인정·사용현황</h4>
+          <ul>
+            <li>국내외 식품 사용 사례와 섭취량</li>
+            <li>해외 승인, 판매, 규격, 안전성 평가 사례</li>
+            <li>사용 국가, 제품 형태, 대상 소비자, 섭취기간</li>
+          </ul>
+        </div>
+        <div class="material-dev-card">
+          <span class="material-dev-step">04</span>
+          <h4>제조방법</h4>
+          <ul>
+            <li>원재료 처리, 추출·분리·발효·건조 등 제조공정</li>
+            <li>사용 보조제, 용매, 배지, 효소, 미생물 관리</li>
+            <li>공정 중 위해요소와 제거·저감 관리</li>
+          </ul>
+        </div>
+        <div class="material-dev-card">
+          <span class="material-dev-step">05</span>
+          <h4>원료 특성</h4>
+          <ul>
+            <li>성상, 주요 성분, 영양·화학적 조성</li>
+            <li>규격, 시험방법, 오염물질·미생물 기준</li>
+            <li>식품원료로서 구분 가능한 식별 기준</li>
+          </ul>
+        </div>
+        <div class="material-dev-card">
+          <span class="material-dev-step">06</span>
+          <h4>안전성·섭취근거</h4>
+          <ul>
+            <li>식용근거, 섭취량 평가, 노출량 산출</li>
+            <li>독성, 알레르기, 항영양성분, 유해성분 검토</li>
+            <li>취약군, 장기섭취, 병용섭취 관련 위해 가능성</li>
+          </ul>
+        </div>
+        <div class="material-dev-card">
+          <span class="material-dev-step">07</span>
+          <h4>사용조건과 기준규격</h4>
+          <ul>
+            <li>사용 가능한 식품 유형과 사용량 범위</li>
+            <li>제조·보관·유통 조건, 품질 유지 기준</li>
+            <li>공전 등재 또는 별표 전환 가능성 검토</li>
+          </ul>
+        </div>
+        <div class="material-dev-card">
+          <span class="material-dev-step">08</span>
+          <h4>특수 원료 추가자료</h4>
+          <ul>
+            <li>유전자변형균주 유래: 숙주, 삽입유전자, 최종물 잔존성</li>
+            <li>세포배양 원료: 세포주, 배지, 스캐폴드, 배양공정 안전성</li>
+            <li>미생물·발효 원료: 균주 동정, 병원성, 내성유전자 검토</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="material-dev-docs">
+        <h3>첨부 서류 패키지</h3>
+        <div class="material-dev-doc-list">
+          <span>한시적 인정 신청서</span>
+          <span>제출자료 요약본</span>
+          <span>기원·개발경위 자료</span>
+          <span>국내외 사용현황</span>
+          <span>해외 인정·판매 증빙</span>
+          <span>제조공정도</span>
+          <span>공정 관리자료</span>
+          <span>원료 규격서</span>
+          <span>시험성적서</span>
+          <span>시험방법 자료</span>
+          <span>식용근거 자료</span>
+          <span>섭취량 산출근거</span>
+          <span>안전성 검토자료</span>
+          <span>독성시험 보고서</span>
+          <span>문헌 원문</span>
+          <span>사용조건 제안서</span>
+        </div>
+      </div>
+    </div>
+
+    <p class="devmap-footnote">위 목록은 신청 전 자료 설계용 체크리스트입니다. 최종 필수 제출범위는 식약처 고시, 민원인 안내서, 사전검토 결과와 원료 특성에 따라 조정하세요.</p>
   </section>
 
   <section id="market" class="tab-section">
@@ -1157,7 +1448,7 @@
   <section id="safety-db" class="tab-section">
     <div class="section-title-row">
       <div>
-        <h2>안전성 데이터베이스 통합검색</h2>
+        <h2>안전성 DB 검색기</h2>
         <p class="compare-intro">국내외 공식 안전성·신소재식품 데이터베이스 9종(내장 12,573건)을 한 번에 검색하고, 외부 49개 데이터베이스로 바로 연결합니다.</p>
       </div>
       <span class="section-badge">내장 9개 · 외부 49개</span>
@@ -1196,7 +1487,7 @@
     <h3 id="intro-modal-title">안내드립니다</h3>
     <p class="intro-modal-body">
       해당 사이트는 오로지 제 편의를 위해 만들어 봤습니다. 다만 같은 업계 종사자 분들이 편하게 같이 이용하면 좋을 것 같아 시험삼아 오픈합니다.<br><br>
-      현재 지속적으로 구축중이기에 많이 부족합니다. 저장공간 이슈로 일부자료 PDF가 업로드되지 않습니다 (빠른시일 내 해결해보겠습니다)<br><br>
+      현재 지속적으로 구축중이기에 많이 부족합니다. 일부 자료와 링크는 순차적으로 보완하고 있습니다.<br><br>
       다만 소중한 의견 주시면 잘 반영해보도록 하겠습니다.<br>
       소중한 의견은 <strong>피드백 및 문의</strong> 란에 부탁드립니다.
     </p>
@@ -1234,8 +1525,8 @@
 <script src="data/daily_quotes.js"></script>
 <script src="data/safety_db.js"></script>
 <script src="market.js"></script>
-<script src="safety-db.js?v=20260701-db-labels"></script>
-<script src="app.js?v=20260701-db-labels"></script>
+<script src="safety-db.js?v=20260703-safety-label"></script>
+<script src="app.js?v=20260703-nav-dev"></script>
 <script src="feedback.js?v=20260702-feedback-security"></script>
 </body>
 </html>

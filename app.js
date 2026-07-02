@@ -232,6 +232,7 @@ const GLOBAL_SEARCH_GROUPS = [
   ['ingredients', '개별인정/고시형 원료'],
   ['minutes', '회의록'],
   ['products', '신규 제품'],
+  ['material-dev', '원료 개발'],
   ['biomarkers', '기능성별 프로토콜'],
   ['trials', '임상정보 데이터베이스'],
   ['news', '뉴스'],
@@ -243,6 +244,7 @@ const GLOBAL_RESULT_BADGE_LABELS = {
   ingredients: '원료',
   minutes: '회의록',
   products: '제품',
+  'material-dev': '개발',
   biomarkers: '지표',
   trials: '임상',
   news: '뉴스',
@@ -301,6 +303,29 @@ function collectGlobalSearchResults(q) {
     fmtProductDate(p.reportDate),
     p.name,
     `${p.name} ${p.company} ${p.efficacy} ${p.reportNo}`
+  ));
+
+  [
+    {
+      title: '개별인정원료 개발',
+      subtitle: '제출자료 · 안전성 · 기능성 · 기준규격 · 첨부서류',
+      haystack: '개별인정원료 개발 신청 제출자료 안전성 기능성 기준 규격 인체적용시험 제조방법 기원 개발경위 첨부서류',
+      devtab: 'individual-dev'
+    },
+    {
+      title: '한시적 인정 원료 개발',
+      subtitle: '식품원료 한시적 인정 · 기원 · 제조방법 · 안전성',
+      haystack: '한시적 인정 원료 개발 식품원료 신청 제출자료 기원 개발경위 국내외 사용현황 제조방법 원료 특성 안전성 첨부서류',
+      devtab: 'temporary-dev'
+    }
+  ].forEach(item => add(
+    'material-dev', 'material-dev',
+    item.title,
+    item.subtitle,
+    '원료 개발',
+    item.title,
+    item.haystack,
+    { devtab: item.devtab }
   ));
 
   const biomarkerProtocols = (typeof BIOMARKER_PROTOCOLS !== 'undefined') ? BIOMARKER_PROTOCOLS : {};
@@ -418,7 +443,7 @@ function renderGlobalSearchResults() {
     : globalSearchState.results.filter(r => r.group === globalSearchState.activeGroup);
 
   const items = visible.map(r => `
-    <button type="button" class="global-result-item" data-target="${escapeHtml(r.target)}" data-query="${escapeHtml(r.routeQuery)}"${r.lawtab ? ` data-lawtab="${escapeHtml(r.lawtab)}"` : ''}>
+    <button type="button" class="global-result-item" data-target="${escapeHtml(r.target)}" data-query="${escapeHtml(r.routeQuery)}"${r.lawtab ? ` data-lawtab="${escapeHtml(r.lawtab)}"` : ''}${r.devtab ? ` data-devtab="${escapeHtml(r.devtab)}"` : ''}>
       <span class="global-result-badge">${escapeHtml(GLOBAL_RESULT_BADGE_LABELS[r.group] || GLOBAL_SEARCH_LABELS[r.group])}</span>
       <span class="global-result-main">
         <span class="global-result-title">${escapeHtml(r.title)}</span>
@@ -443,8 +468,11 @@ function renderGlobalSearchResults() {
     item.addEventListener('click', () => {
       const target = item.dataset.target;
       const query = item.dataset.query || globalSearchState.q;
-      routeHeroSearch(target, query, { lawtab: item.dataset.lawtab });
+      routeHeroSearch(target, query, { lawtab: item.dataset.lawtab, devtab: item.dataset.devtab });
       navigateTo(target);
+      if (target === 'material-dev' && item.dataset.devtab) {
+        selectMaterialDevTab(item.dataset.devtab);
+      }
       history.replaceState(null, '', '#' + target);
     });
   });
@@ -996,6 +1024,8 @@ function setupTabs() {
     link.addEventListener('click', e => {
       e.preventDefault();
       activate(link.dataset.tab);
+      if (link.dataset.lawtab) selectLawTab(link.dataset.lawtab);
+      if (link.dataset.devtab) selectMaterialDevTab(link.dataset.devtab);
       history.replaceState(null, '', '#' + link.dataset.tab);
     });
   });
@@ -1007,6 +1037,9 @@ function setupTabs() {
       activate(target);
       if (target === 'laws' && el.dataset.lawtab) {
         selectLawTab(el.dataset.lawtab);
+      }
+      if (target === 'material-dev' && el.dataset.devtab) {
+        selectMaterialDevTab(el.dataset.devtab);
       }
       history.replaceState(null, '', '#' + target);
     });
@@ -1032,6 +1065,21 @@ function setupLawTabs() {
   const subtabs = document.querySelectorAll('.law-subtab');
   subtabs.forEach(tab => {
     tab.addEventListener('click', () => selectLawTab(tab.dataset.lawtab));
+  });
+}
+
+function selectMaterialDevTab(devtab) {
+  const subtabs = document.querySelectorAll('.material-dev-subtab');
+  const panes = document.querySelectorAll('.material-dev-pane');
+  const selected = document.querySelector(`.material-dev-subtab[data-devtab="${devtab}"]`);
+  if (!selected) return;
+  subtabs.forEach(t => t.classList.toggle('active', t === selected));
+  panes.forEach(p => p.classList.toggle('active', p.id === 'material-dev-pane-' + devtab));
+}
+
+function setupMaterialDevTabs() {
+  document.querySelectorAll('.material-dev-subtab').forEach(tab => {
+    tab.addEventListener('click', () => selectMaterialDevTab(tab.dataset.devtab));
   });
 }
 
@@ -1933,6 +1981,7 @@ function setupTempApproval() {
 document.addEventListener('DOMContentLoaded', () => {
   setupTabs();
   setupLawTabs();
+  setupMaterialDevTabs();
   setupNifdsTabs();
   setupNifdsSearch();
   setupEventsTabs();

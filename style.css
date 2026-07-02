@@ -52,17 +52,17 @@ body{
 .logo-text b{color:var(--text);font-weight:400;}
 .logo-icon{height:28px;width:auto;display:block;}
 .logo-leaf{height:16px;width:auto;display:block;margin-left:-2px;}
-.main-nav{display:flex;gap:8px;align-items:center;}
+.main-nav{display:flex;gap:6px;align-items:center;}
 .main-nav > .nav-link{
-  text-decoration:none;color:var(--muted);font-weight:500;font-size:15px;
-  padding:8px 12px;border-bottom:2px solid transparent;
+  text-decoration:none;color:var(--muted);font-weight:500;font-size:14px;
+  padding:8px 9px;border-bottom:2px solid transparent;
 }
 .main-nav > .nav-link.active,.main-nav > .nav-link:hover{color:var(--green);border-bottom-color:var(--green);}
 
 .nav-group{position:relative;}
 .nav-group-label{
   display:flex;align-items:center;gap:4px;cursor:pointer;
-  color:var(--muted);font-weight:600;font-size:15px;padding:8px 14px;
+  color:var(--muted);font-weight:600;font-size:14px;padding:8px 9px;
   border-bottom:2px solid transparent;transition:color .12s;user-select:none;
 }
 .nav-caret{font-size:11px;transition:transform .15s;}
@@ -70,7 +70,7 @@ body{
 .nav-group:hover .nav-caret{transform:rotate(180deg);}
 
 .nav-dropdown{
-  display:none;position:absolute;top:100%;left:0;min-width:200px;
+  display:none;position:absolute;top:100%;left:0;min-width:220px;
   background:#fff;border:1px solid var(--border);border-radius:10px;
   box-shadow:var(--shadow-lg);padding:8px 0;z-index:20;
 }
@@ -290,6 +290,52 @@ main{padding:40px 24px 80px;}
   margin:20px 0 18px;
   box-shadow:0 18px 44px rgba(50,69,60,.08),0 1px 0 rgba(255,255,255,.80) inset;
   backdrop-filter:blur(14px);
+}
+.home-flow{
+  display:grid;
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:10px;
+  margin:0 0 20px;
+}
+.home-flow-step{
+  min-width:0;
+  min-height:104px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  gap:8px;
+  padding:13px;
+  border:1px solid rgba(218,229,221,.95);
+  border-radius:8px;
+  background:rgba(255,255,255,.78);
+  color:var(--text);
+  text-decoration:none;
+  box-shadow:0 12px 28px rgba(48,73,63,.07);
+  transition:border-color .12s,background .12s,transform .12s,box-shadow .12s;
+}
+.home-flow-step:hover{
+  border-color:rgba(47,109,87,.52);
+  background:#fff;
+  transform:translateY(-2px);
+  box-shadow:0 16px 34px rgba(48,73,63,.10);
+}
+.home-flow-num{
+  color:var(--accent-2);
+  font-size:11px;
+  font-weight:900;
+}
+.home-flow-step strong{
+  min-width:0;
+  color:var(--text);
+  font-size:13px;
+  line-height:1.25;
+  word-break:keep-all;
+}
+.home-flow-step span:last-child{
+  color:var(--muted);
+  font-size:11px;
+  line-height:1.35;
+  word-break:keep-all;
 }
 .hero-search-copy span{
   display:block;
@@ -516,7 +562,7 @@ main{padding:40px 24px 80px;}
   font-weight:800;
   line-height:1.25;
   word-break:keep-all;
-  white-space:nowrap;
+  white-space:normal;
 }
 .nav-card-desc{
   min-width:0;
@@ -1152,6 +1198,58 @@ td.name{font-weight:600;}
 .law-pane{display:none;}
 .law-pane.active{display:block;}
 
+/* ── 원료 개발 ── */
+.material-dev-subnav{align-items:flex-end;}
+.material-dev-subtab{
+  appearance:none;border:0;background:transparent;border-bottom:2px solid transparent;
+  padding:10px 18px;cursor:pointer;color:var(--muted);font:inherit;font-weight:700;font-size:14px;
+}
+.material-dev-subtab:hover{color:var(--green);}
+.material-dev-subtab.active{color:var(--green);border-bottom-color:var(--green);}
+.material-dev-pane{display:none;}
+.material-dev-pane.active{display:block;}
+.material-dev-summary{
+  display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:18px;align-items:start;
+  margin-bottom:22px;padding:20px 22px;background:var(--paper-soft);border:1px solid var(--border);
+  border-radius:10px;
+}
+.material-dev-kicker{
+  display:inline-flex;margin-bottom:8px;padding:4px 10px;border-radius:999px;background:var(--green-light);
+  color:var(--green);font-size:11px;font-weight:800;
+}
+.material-dev-summary h3{margin:0 0 8px;font-size:20px;color:var(--text);}
+.material-dev-summary p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.65;}
+.material-dev-source{
+  display:flex;flex-direction:column;gap:8px;padding-left:16px;border-left:1px solid var(--border);
+}
+.material-dev-source span{font-size:11px;font-weight:800;color:var(--accent-2);}
+.material-dev-source a{
+  color:var(--green);font-size:12.5px;font-weight:700;text-decoration:none;line-height:1.35;
+}
+.material-dev-source a:hover{text-decoration:underline;}
+.material-dev-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:22px;}
+.material-dev-card{
+  background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px;box-shadow:var(--shadow-sm);
+  min-width:0;
+}
+.material-dev-step{
+  display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:7px;
+  background:var(--accent-light);color:var(--accent);font-size:12px;font-weight:800;margin-bottom:10px;
+}
+.material-dev-card h4{margin:0 0 8px;font-size:14px;color:var(--text);}
+.material-dev-card ul{margin:0;padding-left:17px;color:var(--muted);font-size:12.5px;line-height:1.62;}
+.material-dev-card li{margin:0 0 4px;}
+.material-dev-docs{
+  background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px 20px;box-shadow:var(--shadow-sm);
+  margin-bottom:22px;
+}
+.material-dev-docs h3{margin:0 0 12px;font-size:16px;color:var(--green);}
+.material-dev-doc-list{display:flex;flex-wrap:wrap;gap:8px;}
+.material-dev-doc-list span{
+  display:inline-flex;align-items:center;min-height:30px;padding:6px 10px;border-radius:7px;
+  background:var(--paper-soft);border:1px solid var(--border);color:var(--text);font-size:12px;font-weight:600;
+}
+
 .law-link-grid{
   display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;
 }
@@ -1256,6 +1354,14 @@ td.name{font-weight:600;}
   .devmap-axis-grid{grid-template-columns:1fr;}
   .devmap-track-grid{grid-template-columns:1fr;}
   .devmap-strategy-grid{grid-template-columns:1fr;}
+  .material-dev-summary{grid-template-columns:1fr;}
+  .material-dev-source{padding-left:0;border-left:0;border-top:1px solid var(--border);padding-top:14px;}
+  .material-dev-grid{grid-template-columns:1fr 1fr;}
+}
+@media (max-width:620px){
+  .material-dev-grid{grid-template-columns:1fr;}
+  .material-dev-subnav{overflow-x:auto;}
+  .material-dev-subtab{white-space:nowrap;}
 }
 
 /* ── 식품 뉴스 ── */
@@ -1459,6 +1565,7 @@ mark{background:#ffe082;border-radius:2px;padding:0 1px;}
   .hero-intro{grid-template-columns:1fr;gap:24px;}
   .hero-stats-row{grid-template-columns:repeat(3,1fr);}
   .hero-search-board{grid-template-columns:1fr;align-items:start;}
+  .home-flow{grid-template-columns:repeat(3,minmax(0,1fr));}
   .hero-search-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
   .hero-categories{grid-template-columns:1fr 1fr;}
   .biomarker-shell{grid-template-columns:1fr;}
@@ -1487,7 +1594,13 @@ mark{background:#ffe082;border-radius:2px;padding:0 1px;}
   }
   .main-nav > .nav-link,.nav-group-label{white-space:nowrap;}
   .main-nav > .nav-link,.nav-group-label{font-size:12px;padding:5px 0;}
-  .nav-dropdown{display:none!important;}
+  .nav-group{display:contents;}
+  .nav-group-label{display:none;}
+  .nav-dropdown{
+    display:contents!important;
+    position:static;min-width:0;padding:0;border:0;border-radius:0;box-shadow:none;background:transparent;
+  }
+  .nav-dropdown .nav-link{display:inline-block;font-size:12px;padding:5px 0;margin-right:8px;}
   .hero{padding:28px;}
   .hero h1{font-size:24px;}
   .year-layout{flex-direction:column;}
@@ -1500,6 +1613,8 @@ mark{background:#ffe082;border-radius:2px;padding:0 1px;}
   .hero-lede{font-size:15px;line-height:1.65;}
   .hero-stats-row{grid-template-columns:1fr;}
   .hero-search-board{padding:14px;}
+  .home-flow{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .home-flow-step{min-height:96px;padding:12px;}
   .global-search-form input{font-size:13px;padding:13px 2px;}
   .global-search-form button{padding:0 14px;font-size:13px;}
   .global-result-item{grid-template-columns:1fr;gap:5px;padding:13px 14px;}
@@ -1573,7 +1688,7 @@ mark{background:#ffe082;border-radius:2px;padding:0 1px;}
 }
 .bd-delete-btn:hover{background:var(--crimson-light);color:var(--crimson);}
 
-/* ===== 안전성 데이터베이스 통합검색 ===== */
+/* ===== 안전성 DB 검색기 ===== */
 .sdb-overview{
   display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin-bottom:20px;
 }
