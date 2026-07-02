@@ -1,9 +1,6 @@
 (function () {
   var API = 'https://healtharchive-api.kimsingun.workers.dev';
-  var ADMIN_PW = '7835';
   var TOKENS_KEY = 'ha_board_tokens';
-
-  function isAdmin() { return sessionStorage.getItem('ha_bd_admin') === '1'; }
 
   function getTokens() {
     try { return JSON.parse(localStorage.getItem(TOKENS_KEY) || '{}'); } catch (e) { return {}; }
@@ -41,7 +38,7 @@
 
     var tokens = getTokens();
     var html = posts.map(function (p) {
-      var canDelete = isAdmin() || !!tokens[p.id];
+      var canDelete = !!tokens[p.id];
       return '<div class="bd-post" id="post-' + p.id + '">' +
         '<div class="bd-post-text">' + escapeHtml(p.text) + '</div>' +
         '<div class="bd-post-foot">' +
@@ -73,7 +70,11 @@
   function deletePost(id) {
     if (!confirm('이 게시물을 삭제하시겠습니까?')) return;
     var tokens = getTokens();
-    var token = isAdmin() ? ADMIN_PW : (tokens[id] || '');
+    var token = tokens[id] || '';
+    if (!token) {
+      alert('이 브라우저에서 작성한 게시물만 삭제할 수 있습니다.');
+      return;
+    }
 
     fetch(API + '/posts/' + id, {
       method: 'DELETE',
@@ -138,43 +139,8 @@
     });
   }
 
-  function setupAdmin() {
-    var toggle = document.getElementById('bd-admin-toggle');
-    var banner = document.getElementById('bd-admin-banner');
-    var exitBtn = document.getElementById('bd-admin-exit');
-
-    function reflect() {
-      if (banner) banner.hidden = !isAdmin();
-      loadPosts();
-    }
-
-    if (toggle) {
-      toggle.addEventListener('click', function () {
-        if (isAdmin()) return;
-        var pw = prompt('관리자 비밀번호를 입력하세요');
-        if (pw === null) return;
-        if (pw === ADMIN_PW) {
-          sessionStorage.setItem('ha_bd_admin', '1');
-          reflect();
-        } else {
-          alert('비밀번호가 올바르지 않습니다.');
-        }
-      });
-    }
-
-    if (exitBtn) {
-      exitBtn.addEventListener('click', function () {
-        sessionStorage.removeItem('ha_bd_admin');
-        reflect();
-      });
-    }
-
-    reflect();
-  }
-
   document.addEventListener('DOMContentLoaded', function () {
     setupWrite();
-    setupAdmin();
     loadPosts();
   });
 })();

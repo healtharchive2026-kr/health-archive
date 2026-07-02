@@ -1524,21 +1524,10 @@ mark{background:#ffe082;border-radius:2px;padding:0 1px;}
 
 /* ===== 피드백 및 문의 (게시판) ===== */
 .section-head{margin-bottom:20px;}
-.section-head h2{margin:0 0 6px;cursor:pointer;user-select:none;}
+.section-head h2{margin:0 0 6px;}
 .section-sub{color:#666;font-size:14px;margin:0;}
 
 .bd-wrap{max-width:680px;margin:0 auto;}
-
-.bd-admin-banner{
-  background:#27322e;color:#fff;font-size:13px;font-weight:600;
-  padding:10px 16px;border-radius:8px;margin-bottom:14px;
-  align-items:center;justify-content:space-between;
-}
-.bd-admin-banner:not([hidden]){display:flex;}
-.bd-admin-banner button{
-  border:none;background:#fff;color:#27322e;font-size:12px;font-weight:700;
-  padding:4px 10px;border-radius:5px;cursor:pointer;
-}
 
 .bd-write-card{
   background:#fff;border:1px solid var(--border);border-radius:10px;

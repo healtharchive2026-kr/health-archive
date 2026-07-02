@@ -6,7 +6,7 @@ scripts/
 SETUP.md
 data/*.json
 
-# PDF는 GitHub Pages가 Git LFS를 서빙하지 못해 구글 드라이브로 호스팅 (data/drive_links.js 참고)
+# PDF는 GitHub Pages 대신 Cloudflare R2 공개 버킷에서 제공
 laws/guidelines/
 laws/general-guidelines/
 minutes-pdfs/*.pdf

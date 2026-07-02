@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src https://cdn.jsdelivr.net; img-src 'self' data:; connect-src 'self' https://api.counterapi.dev https://clinicaltrials.gov https://healtharchive-api.kimsingun.workers.dev; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <title>건강기능식품 개발자 아카이브</title>
 <link rel="icon" href="data:,">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
@@ -1135,13 +1137,10 @@
 
   <section id="feedback" class="tab-section">
     <div class="section-head">
-      <h2 id="bd-admin-toggle">피드백 및 문의</h2>
+      <h2>피드백 및 문의</h2>
       <p class="section-sub">사이트 테스트 중입니다. 익명으로 자유롭게 의견·오류·문의를 남겨주세요. 게시물은 작성일로부터 30일간 보관됩니다.</p>
     </div>
     <div class="bd-wrap">
-      <div id="bd-admin-banner" class="bd-admin-banner" hidden>
-        관리자 모드 활성화 <button type="button" id="bd-admin-exit">종료</button>
-      </div>
       <div class="bd-write-card">
         <textarea id="bd-input" class="bd-input" maxlength="200" placeholder="의견이나 문의사항을 입력하세요 (최대 200자, 익명)" rows="3"></textarea>
         <div class="bd-write-foot">
@@ -1221,7 +1220,6 @@
 <script src="data/products.js?v=20260629-scheduler1225"></script>
 <script src="data/minutes.js?v=20260629-scheduler1225"></script>
 <script src="data/guidelines.js?v=20260629-glossary"></script>
-<script src="data/drive_links.js?v=20260630-gdrive"></script>
 <script src="data/biomarker_protocols.js?v=20260629-mechanisms"></script>
 <script src="data/news.js?v=20260630-news0930"></script>
 <script src="data/news_yakup.js?v=20260630-news0930"></script>
@@ -1238,6 +1236,6 @@
 <script src="market.js"></script>
 <script src="safety-db.js?v=20260701-db-labels"></script>
 <script src="app.js?v=20260701-db-labels"></script>
-<script src="feedback.js?v=20260701-board1"></script>
+<script src="feedback.js?v=20260702-feedback-security"></script>
 </body>
 </html>
