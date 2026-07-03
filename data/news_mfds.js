@@ -1,0 +1,1 @@
+var NEWS_MFDS_DATA = [{"seq": "50158", "title": "불면증·우울증·불안증 치료효과 내세운 해외직구식품...소비자 주의 당부", "link": "https://www.mfds.go.kr/brd/m_99/view.do?seq=50158&srchFr=&srchTo=&srchWord=&srchTp=&itm_seq_1=0&itm_seq_2=0&multi_itm_seq=0&company_cd=&company_nm=&page=1", "pubDate": "2026-07-03 10:53:00", "source": "mfds"}];

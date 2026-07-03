@@ -49,26 +49,24 @@ async function loadData() {
 // ---------- 홈 히어로 ----------
 
 function allNews() {
-  const a = (typeof NEWS_DATA !== 'undefined') ? NEWS_DATA : [];
-  const b = (typeof NEWS_YAKUP_DATA !== 'undefined') ? NEWS_YAKUP_DATA : [];
-  const c = (typeof NEWS_THINKFOOD_DATA !== 'undefined') ? NEWS_THINKFOOD_DATA : [];
-  const d = (typeof NEWS_SCIENCEDAILY_DATA !== 'undefined') ? NEWS_SCIENCEDAILY_DATA : [];
-  return a.concat(b, c, d).sort((x, y) => (y.pubDate || '').localeCompare(x.pubDate || ''));
+  return NEWS_SOURCES
+    .flatMap(src => src.data())
+    .sort((x, y) => (y.pubDate || '').localeCompare(x.pubDate || ''));
 }
 
 function renderHeroNews() {
   const el = document.getElementById('hero-news-list');
   const pad = n => String(n).padStart(2, '0');
 
-  // 오늘 기준 최근 3일치만 표시 (4개 출처 모두 포함)
+  // 오늘 기준 최근 7일치만 표시 (뉴스 출처 전체 포함)
   const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - 3);
+  cutoff.setDate(cutoff.getDate() - 7);
   const cutoffKey = `${cutoff.getFullYear()}-${pad(cutoff.getMonth()+1)}-${pad(cutoff.getDate())}`;
 
   const list = allNews().filter(n => (n.pubDate || '').slice(0, 10) >= cutoffKey);
 
   if (!list.length) {
-    el.innerHTML = '<div class="hero-news-empty">최근 3일간 수집된 뉴스가 없습니다.</div>';
+    el.innerHTML = '<div class="hero-news-empty">최근 7일간 수집된 뉴스가 없습니다.</div>';
     return;
   }
   el.innerHTML = list.map(n => `
@@ -1301,9 +1299,11 @@ function fmtNewsDate(s) {
 
 const NEWS_SOURCES = [
   { key: 'foodnews', label: '식품저널', data: () => (typeof NEWS_DATA !== 'undefined' ? NEWS_DATA : []) },
-  { key: 'yakup', label: '약업닷컴', data: () => (typeof NEWS_YAKUP_DATA !== 'undefined' ? NEWS_YAKUP_DATA : []) },
   { key: 'thinkfood', label: '식품음료신문', data: () => (typeof NEWS_THINKFOOD_DATA !== 'undefined' ? NEWS_THINKFOOD_DATA : []) },
-  { key: 'sciencedaily', label: 'ScienceDaily', data: () => (typeof NEWS_SCIENCEDAILY_DATA !== 'undefined' ? NEWS_SCIENCEDAILY_DATA : []) },
+  { key: 'mfds', label: '식약처 보도자료', data: () => (typeof NEWS_MFDS_DATA !== 'undefined' ? NEWS_MFDS_DATA : []) },
+  { key: 'nutraingredients', label: 'NutraIngredients', data: () => (typeof NEWS_NUTRAINGREDIENTS_DATA !== 'undefined' ? NEWS_NUTRAINGREDIENTS_DATA : []) },
+  { key: 'supplysidesj', label: 'SupplySide SJ', data: () => (typeof NEWS_SUPPLYSIDESJ_DATA !== 'undefined' ? NEWS_SUPPLYSIDESJ_DATA : []) },
+  { key: 'nutritioninsight', label: 'Nutrition Insight', data: () => (typeof NEWS_NUTRITIONINSIGHT_DATA !== 'undefined' ? NEWS_NUTRITIONINSIGHT_DATA : []) },
 ];
 
 function renderNews(query) {

@@ -1365,7 +1365,7 @@ td.name{font-weight:600;}
 }
 
 /* ── 식품 뉴스 ── */
-.news-columns{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+.news-columns{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
 .news-col{border:1px solid var(--border);border-radius:10px;background:var(--card);overflow:hidden;display:flex;flex-direction:column;}
 .news-col-head{padding:12px 14px;font-size:14px;font-weight:700;color:var(--green);border-bottom:1px solid var(--border);background:var(--green-light);}
 .news-col-body{display:flex;flex-direction:column;max-height:560px;overflow-y:auto;}
