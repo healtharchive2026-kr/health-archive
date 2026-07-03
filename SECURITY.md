@@ -7,7 +7,7 @@ that is not already intended for public release.
 ## Reporting a Vulnerability
 
 Please report suspected vulnerabilities through the site's feedback channel or
-to the repository owner directly. Include the affected URL, a short reproduction
+by email to healtharchive2026@gmail.com. Include the affected URL, a short reproduction
 path, and whether any public data was exposed or modified.
 
 ## Operational Notes

@@ -1641,6 +1641,8 @@ mark{background:#ffe082;border-radius:2px;padding:0 1px;}
 .section-head{margin-bottom:20px;}
 .section-head h2{margin:0 0 6px;}
 .section-sub{color:#666;font-size:14px;margin:0;}
+.contact-sub{margin-top:8px;}
+.contact-link{color:var(--green);font-weight:800;text-decoration:underline;text-underline-offset:3px;}
 
 .bd-wrap{max-width:680px;margin:0 auto;}
 
