@@ -998,6 +998,7 @@ function escapeHtml(s) {
 function setupTabs() {
   const links = document.querySelectorAll('.nav-link');
   const sections = document.querySelectorAll('.tab-section');
+  const menuToggle = document.querySelector('.mobile-menu-toggle');
 
   function activate(tab) {
     links.forEach(l => l.classList.toggle('active', l.dataset.tab === tab));
@@ -1015,8 +1016,21 @@ function setupTabs() {
     if (tab === 'safety-db' && typeof initSafetyDbTab === 'function') {
       requestAnimationFrame(initSafetyDbTab);
     }
+    document.body.classList.remove('mobile-nav-open');
+    if (menuToggle) {
+      menuToggle.setAttribute('aria-expanded', 'false');
+      menuToggle.setAttribute('aria-label', '메뉴 열기');
+    }
   }
   window.navigateTo = activate;
+
+  if (menuToggle) {
+    menuToggle.addEventListener('click', () => {
+      const open = document.body.classList.toggle('mobile-nav-open');
+      menuToggle.setAttribute('aria-expanded', String(open));
+      menuToggle.setAttribute('aria-label', open ? '메뉴 닫기' : '메뉴 열기');
+    });
+  }
 
   links.forEach(link => {
     link.addEventListener('click', e => {

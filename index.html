@@ -51,7 +51,10 @@
 <header class="site-header">
   <div class="container header-inner">
     <div class="logo"><img src="assets/logo-icon.png" alt="" class="logo-icon"><span class="logo-text">Health<b>Archive</b></span><img src="assets/leaf-badge.png" alt="" class="logo-leaf"></div>
-    <nav class="main-nav">
+    <button class="mobile-menu-toggle" type="button" aria-label="메뉴 열기" aria-expanded="false" aria-controls="main-nav">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="main-nav" id="main-nav">
       <a href="#home" data-tab="home" class="nav-link active">홈</a>
       <a href="#devmap" data-tab="devmap" class="nav-link">개발방향 매핑</a>
       <a href="#material-dev" data-tab="material-dev" class="nav-link">원료 개발</a>
@@ -1580,7 +1583,7 @@
 <script src="data/safety_db.js"></script>
 <script src="market.js"></script>
 <script src="safety-db.js?v=20260703-safety-label"></script>
-<script src="app.js?v=20260703-nav-dev"></script>
+<script src="app.js?v=20260703-mobile-nav"></script>
 <script src="feedback.js?v=20260702-feedback-security"></script>
 </body>
 </html>
