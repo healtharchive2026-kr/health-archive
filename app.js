@@ -88,10 +88,24 @@ function todayDateStr() {
 function setupIntroModal() {
   const overlay = document.getElementById('intro-modal-overlay');
   if (!overlay) return;
+  const title = document.getElementById('intro-modal-title');
+  const body = overlay.querySelector('.intro-modal-body');
   const closeBtn = document.getElementById('intro-modal-close');
   const confirmBtn = document.getElementById('intro-modal-confirm');
   const hideTodayBtn = document.getElementById('intro-modal-hide-today');
   const STORAGE_KEY = 'ha-intro-hide-until';
+
+  if (title) title.textContent = 'HealthArchive 안내';
+  if (body) {
+    body.innerHTML = `
+      본 사이트는 제 업무 편의를 위해 취미로 만들었다가, 같은 업계 종사자 분들과 함께 이용하면 좋을 것 같아 오픈하였습니다.<br><br>
+      많은 부분이 아직 어색해 보일 수 있지만, 소중한 의견 및 피드백을 주시면 적극 반영해보도록 하겠습니다.<br><br>
+      핸드폰으로 편하게 보실 수 있게끔 하였으나 일부 렌더링이 맞지 않을 수 있습니다.<br>
+      (모바일 어플도 만들어볼 계획입니다)<br><br>
+      <strong>소중한 의견 및 피드백 주실 곳</strong><br>
+      우측 상단 <strong>피드백 및 문의</strong> 또는 <a href="mailto:healtharchive2026@gmail.com">Healtharchive2026@gmail.com</a>
+    `;
+  }
 
   function close() { overlay.classList.remove('active'); }
 
