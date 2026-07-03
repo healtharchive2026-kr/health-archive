@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: http://www.healtharchive.kr/sitemap.xml
+Sitemap: https://www.healtharchive.kr/sitemap.xml
