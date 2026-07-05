@@ -36,6 +36,93 @@ GET_HEADERS = {
     "Accept-Encoding": "identity",
 }
 
+CATEGORY_RULES = [
+    ("어린이", "키 성장"),
+    ("키성장", "키 성장"),
+    ("키 성장", "키 성장"),
+    ("기억력", "기억력 개선"),
+    ("인지기능", "인지 개선"),
+    ("인지력", "인지 개선"),
+    ("긴장완화", "긴장 완화"),
+    ("긴장 완화", "긴장 완화"),
+    ("수면", "수면"),
+    ("피로", "피로 개선"),
+    ("치아", "치아 건강"),
+    ("잇몸", "잇몸 건강"),
+    ("눈 건강", "눈 건강"),
+    ("황반색소", "눈 건강"),
+    ("피부", "피부 건강"),
+    ("모발", "모발 건강"),
+    ("기관·기관지", "호흡기 건강"),
+    ("기관지", "호흡기 건강"),
+    ("기침", "호흡기 건강"),
+    ("가래", "호흡기 건강"),
+    ("간 건강", "간 건강"),
+    ("간손상", "간 건강"),
+    ("위 건강", "위 건강"),
+    ("위 점막", "위 건강"),
+    ("장 건강", "장 건강"),
+    ("배변활동", "장 건강"),
+    ("체지방", "체지방 감소"),
+    ("칼슘", "칼슘"),
+    ("혈당", "혈당"),
+    ("갱년기 여성", "여성 갱년기"),
+    ("여성 건강", "여성 갱년기"),
+    ("갱년기 남성", "남성 갱년기"),
+    ("월경", "월경"),
+    ("중성지방", "혈중중성지방"),
+    ("콜레스테롤", "콜레스테롤"),
+    ("혈압", "혈압조절"),
+    ("혈행", "혈행개선"),
+    ("면역과민", "면역과민"),
+    ("코상태", "면역과민"),
+    ("면역기능", "면역"),
+    ("면역 기능", "면역"),
+    ("면역", "면역"),
+    ("항산화", "항산화"),
+    ("관절", "관절 건강"),
+    ("연골", "관절 건강"),
+    ("뼈 건강", "뼈 건강"),
+    ("근력", "근력 개선"),
+    ("운동수행능력", "운동수행능력"),
+    ("질 건강", "질 건강"),
+    ("전립선", "전립선 건강"),
+    ("요로", "요로 건강"),
+]
+
+
+def infer_category(text):
+    normalized = re.sub(r'\s+', ' ', text or '').strip()
+    if not normalized:
+        return ''
+
+    matches = []
+    for keyword, category in CATEGORY_RULES:
+        if keyword in normalized and category not in matches:
+            matches.append(category)
+
+    if not matches:
+        return ''
+
+    # 같은 계열의 표현이 여러 번 잡힌 것은 첫 카테고리로 정리하고,
+    # 서로 다른 기능성이 섞인 경우에는 기존 데이터 관례에 맞춰 복합으로 둔다.
+    return matches[0] if len(matches) == 1 else '복합'
+
+
+def fill_missing_categories(ingredients):
+    changed = 0
+    for row in ingredients:
+        if (row.get('category') or '').strip():
+            continue
+        category = infer_category(' '.join([
+            row.get('efficacy') or '',
+            row.get('name') or '',
+        ]))
+        if category:
+            row['category'] = category
+            changed += 1
+    return changed
+
 
 def log(msg):
     ts = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -115,6 +202,7 @@ def fetch_detail(ntctxt_no):
         'name': name,
         'noticeNo': notice_no,
         'company': company,
+        'category': infer_category(f"{efficacy} {name}"),
         'efficacy': efficacy,
         'dailyIntake': daily_intake,
         'report': None,
@@ -123,6 +211,7 @@ def fetch_detail(ntctxt_no):
 
 def main():
     ingredients = read_records(DATA_FILE, JS_FILE)
+    filled_count = fill_missing_categories(ingredients)
 
     known_notices = {r['noticeNo'] for r in ingredients if r.get('noticeNo')}
     max_id = max((r.get('id', 0) for r in ingredients), default=0)
@@ -161,9 +250,9 @@ def main():
         log(f"added {detail['noticeNo']} - {detail['name']}")
         time.sleep(1)  # be polite to the server
 
-    if new_count:
+    if new_count or filled_count:
         write_records(ingredients, DATA_FILE, JS_FILE, 'INGREDIENTS_DATA')
-        log(f"DONE: {new_count} new ingredient(s) added. total={len(ingredients)}")
+        log(f"DONE: {new_count} new ingredient(s) added, {filled_count} category value(s) filled. total={len(ingredients)}")
     else:
         log("DONE: no new ingredients found.")
 
