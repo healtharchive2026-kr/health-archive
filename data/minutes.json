@@ -1,0 +1,682 @@
+[
+  {
+    "id": 1,
+    "meetingNo": 200,
+    "meetingName": "제200차 건강기능식품심의위원회",
+    "year": "2026",
+    "ingredients": [
+      "오미자추출혼합물",
+      "Lactobacillusdelbrueckiisubsp. lactisCKDB001 프로바이오틱스",
+      "삽주추출분말(GP-MUCoAT)",
+      "지골피추출분말(GP-Gumcare01)",
+      "비파엽추출물",
+      "파비플로라추출물",
+      "두충등복합물(HL PD28)",
+      "Latilactobacillussakei K040706 열처리배양건조물",
+      "락티플랜티바실러스 플랜타룸 KM2 열처리배양건조물",
+      "쥐꼬리망초추출물(WG002)",
+      "산수유추출물등복합물(리베스틴®)",
+      "마리골드꽃주정추출물(지아잔틴함유)",
+      "L-아르기닌",
+      "살라시아레티큘라타추출물",
+      "루테인지아잔틴복합추출물",
+      "황기추출물등복합물(HT042)"
+    ],
+    "pdf": "제200차.pdf"
+  },
+  {
+    "id": 2,
+    "meetingNo": 199,
+    "meetingName": "제199차 건강기능식품심의위원회",
+    "year": "2026",
+    "ingredients": [
+      "LactococcuslactisJBK329",
+      "WeissellacibariaCMU 프로바이오틱스(OraCMU)",
+      "정어리펩타이드 에스피백엔",
+      "찔레나무뿌리추출물(RosaFloraⓇ)",
+      "레몬버베나추출물(RelaxPLXⓇ)",
+      "LatilactobacillussakeiK040706 열처리배양건조물",
+      "포도블루베리추출혼합분말(메모페놀)",
+      "BaciluscoagulansBC99 프로바이오틱스",
+      "WeissellaconfusaWIKIM51 프로바이오틱스(Wilac D001)",
+      "강황추출물",
+      "홍삼오일(KGC11o)",
+      "사탕수수왁스알코올(폴리코사놀)",
+      "마리골드꽃주정추출물(지아잔틴함유)"
+    ],
+    "pdf": "제199차.pdf"
+  },
+  {
+    "id": 3,
+    "meetingNo": 198,
+    "meetingName": "제198차 건강기능식품심의위원회",
+    "year": "2025",
+    "ingredients": [
+      "미배아발효가바",
+      "키라임카카오추출복합물(TheolimⓇ)",
+      "아커만시아뮤시니필라HB05열처리배양건조물(HB05P)",
+      "아쉬아간다추출분말(KSM-66Ⓡ)",
+      "사프란추출물(AffronⓇ)",
+      "프로바이오틱스 HY7017",
+      "피롤로퀴놀린퀴논디소듐염(BioPQQ)",
+      "마리골드꽃주정추출물(지아잔틴함유)",
+      "저분자콜라겐펩타이드"
+    ],
+    "pdf": "제198차.pdf"
+  },
+  {
+    "id": 4,
+    "meetingNo": 197,
+    "meetingName": "제197차 건강기능식품심의위원회",
+    "year": "2025",
+    "ingredients": [
+      "피롤로퀴놀린퀴논이나트륨염(mnemoPQQⓇ)",
+      "서목태추출물(BeanOptin)",
+      "보리수나무열매추출물",
+      "어린도두꼬투리추출물",
+      "강황추출물(TurmXTRA 60N)",
+      "강황추출물(Theracurmin Super)",
+      "콘드로이친황산염(ScanDroitinTM)",
+      "ATG-K2 프로바이오틱스",
+      "마르멜로추출물",
+      "산수유추출물등복합물(리베스틴Ⓡ)"
+    ],
+    "pdf": "제197차.pdf"
+  },
+  {
+    "id": 5,
+    "meetingNo": 196,
+    "meetingName": "제196차 건강기능식품심의위원회",
+    "year": "2025",
+    "ingredients": [
+      "지초추출분말",
+      "피롤로퀴놀린퀴논디소듐염(BioPQQ)",
+      "백수오호프추출복합물(LG-CWHL)",
+      "LatilactobacillussakeiLB-P12",
+      "CaHMB(Calcium β-Hydroxy-β-methylbutyrate)",
+      "크릴오일(FJH-KO)",
+      "저분자콜라겐펩타이드",
+      "롱비다강황추출물(LongvidaⓇ)"
+    ],
+    "pdf": "제196차.pdf"
+  },
+  {
+    "id": 6,
+    "meetingNo": 195,
+    "meetingName": "제195차 건강기능식품심의위원회",
+    "year": "2025",
+    "ingredients": [
+      "쥬브콜케이 프로테오글리칸에프",
+      "미선나무잎추출물",
+      "백출양춘사추출복합물",
+      "홍어껍질콜라겐펩타이드",
+      "Lacticaseibacillusparacaseisubsp. paracasei 327(K-1) 열처리배양건조물",
+      "홀리바질추출물(Holixer)",
+      "발효녹용농축분말",
+      "롱비다강황추출물(LongvidaⓇ)",
+      "Akkermansia muciniphila EB-AMDK19 열처리배양건조물",
+      "자색옥수수추출분말",
+      "테트라셀미스추이건조분말",
+      "서목태추출물(BeanOptin)"
+    ],
+    "pdf": "제195차.pdf"
+  },
+  {
+    "id": 7,
+    "meetingNo": 194,
+    "meetingName": "제194차 건강기능식품심의위원회",
+    "year": "2025",
+    "ingredients": [
+      "정향추출물",
+      "괭생이모자반추출물",
+      "백출오미자복합추출물",
+      "LactiplantibacillusplantarumKM2 발효배양열처리복합물",
+      "해바라기종자박추출물(Sun Dy Fit)",
+      "살라시아추출물",
+      "인디안구스베리등복합물(IB Complex)",
+      "한삼덩굴추출분말(HSy2)",
+      "유산균발효굴추출물(FGO)",
+      "밀배유추출물"
+    ],
+    "pdf": "제194차.pdf"
+  },
+  {
+    "id": 8,
+    "meetingNo": 193,
+    "meetingName": "제193차 건강기능식품심의위원회",
+    "year": "2025",
+    "ingredients": [
+      "파비플로라생강뿌리추출물",
+      "복분자추출물(RE-20)",
+      "병풀추출분말(Himalca)",
+      "저분자녹각콜라겐(NP-2007)",
+      "포사인플라센타펩타이드(PPP)",
+      "발효오미자추출물",
+      "Lactiplantibacillus plantarum LMT1-48 프로바이오틱스",
+      "Akkermansia muciniphila HB05 열처리배양건조물(HB05P)",
+      "Latilactobacillus sakei Probio65 열처리배양건조물",
+      "L. plantarum LM1004 열처리배양건조물",
+      "감태추출물등복합물",
+      "루테인지아잔틴복합물(Gleamax/Vividawn™)",
+      "미숙여주주정추출분말",
+      "마카젤라틴화분말"
+    ],
+    "pdf": "제193차.pdf"
+  },
+  {
+    "id": 9,
+    "meetingNo": 192,
+    "meetingName": "제192차 건강기능식품심의위원회",
+    "year": "2025",
+    "ingredients": [
+      "사삼추출분말(Adenora®)",
+      "덖음귤피추출분말(JRC)",
+      "모로오렌지추출분말(Morosil®)",
+      "마르멜로추출물",
+      "로즈마리잎추출물등복합물(Zerodyn)",
+      "골드키위유산균발효물(Kiwibiotics®)",
+      "대두배아발효물(SE5-OH)",
+      "사탕수수왁스알코올(폴리코사놀)",
+      "발효녹용농축분말",
+      "라임과피주정추출물(Somno-ing DC1)",
+      "상추추출물",
+      "미숙여주주정추출분말",
+      "히알루론산"
+    ],
+    "pdf": "제192차.pdf"
+  },
+  {
+    "id": 10,
+    "meetingNo": 191,
+    "meetingName": "제191차 건강기능식품심의위원회",
+    "year": "2025",
+    "ingredients": [
+      "L. sakei Probio65 열처리배양건조물",
+      "밀배유추출물(CeramosidesⓇ)",
+      "헛개과병추출물등복합물",
+      "프로폴리스망고스틴껍질복합물",
+      "보스웰리아추출물(FJH-BS)",
+      "프로바이오틱스복합물NVP-2106",
+      "분마초추출물(SAGX)",
+      "키토올리고당(GO2KA1)",
+      "쇠비름주정추출분말(KDC16-2)",
+      "유청단백가수분해물"
+    ],
+    "pdf": "제191차.pdf"
+  },
+  {
+    "id": 11,
+    "meetingNo": 190,
+    "meetingName": "제190차 건강기능식품심의위원회",
+    "year": "2025",
+    "ingredients": [
+      "마키베리추출물(MaquiBrightⓇ)",
+      "티아이소크라이시스루테아분말",
+      "L. plantarum KC3프로바이오틱스와 익모초추출물복합물(CKDB-315)",
+      "장미꽃잎추출물(NOVAROSEⓇ)",
+      "호로파종자추출물(FenuEstroⓇ)",
+      "LatilactobacilluscurvatusLB-P9",
+      "네오아가로올리고당(NAO)",
+      "BCS-001F(블랙커민추출분말)",
+      "그래인오브파라다이스추출물(AfperFit)",
+      "LacticaseibacillusrhamnosusHDB1258",
+      "락토페린(우유정제단백질)",
+      "기장밀추출복합물(KeranatTM)",
+      "마리골드꽃추출물"
+    ],
+    "pdf": "제190차.pdf"
+  },
+  {
+    "id": 12,
+    "meetingNo": 189,
+    "meetingName": "제189차 건강기능식품심의위원회",
+    "year": "2024",
+    "ingredients": [
+      "두충등복합물(HL DP28)",
+      "저분자콜라겐펩타이드",
+      "금빛제비집추출물",
+      "아누카사과추출물(Keraful™)",
+      "산딸기추출물등혼합물",
+      "유산균발효대두분말(Gastro-AD)",
+      "털부처꽃추출물",
+      "Lacticaseibacillus paracasei BEPC22와 Lactiplantibacillus plantarum BELP53 프로바이오틱스 복합물(BN-202M)",
+      "Lactiplantibacillus plantarum SKO-001 프로바이오틱스",
+      "콩발아배아주정추출분말(SOYAQUEEN)",
+      "황칠잎추출물"
+    ],
+    "pdf": "제189차.pdf"
+  },
+  {
+    "id": 13,
+    "meetingNo": 188,
+    "meetingName": "제188차 건강기능식품심의위원회",
+    "year": "2024",
+    "ingredients": [
+      "크릴오일",
+      "죽엽추출물등복합물(NOVABIUM®)",
+      "강화효소홍삼추출분말 Rg3",
+      "참당귀황기추출복합물(SHPro®)",
+      "두충등복합물(HL PD28)",
+      "유산균발효굴추출물",
+      "인삼열매농축분말",
+      "유청펩타이드(HW-3)",
+      "아쉬아간다추출물(Sensoril®)",
+      "Lactiplantibacillus plantarum PBS067 등 프로바이오틱스 복합물(PBS)",
+      "보스웰리아추출물",
+      "비즈왁스알코올(Bees Wax Alcohol BWA)",
+      "피엘에이지(PLAG)",
+      "홍삼",
+      "난각막분말",
+      "저분자콜라겐펩타이드"
+    ],
+    "pdf": "제188차.pdf"
+  },
+  {
+    "id": 14,
+    "meetingNo": 187,
+    "meetingName": "제187차 건강기능식품심의위원회",
+    "year": "2024",
+    "ingredients": [
+      "나한과추출분말(DKB131)",
+      "유청펩타이드(HW-3)",
+      "바디밸런스 콜라겐펩타이드(BODYBALANCE® P)",
+      "배초향등복합추출물(AGEs Blocker™)",
+      "배초향감초복합추출물(Bronch™)",
+      "육계황기추출복합물(YH complex)",
+      "그릭마운틴티주정추출물(CONCENTAL)",
+      "양춘사추출물",
+      "마리골드꽃추출물",
+      "뽕나무가지주정추출분말"
+    ],
+    "pdf": "제187차.pdf"
+  },
+  {
+    "id": 15,
+    "meetingNo": 186,
+    "meetingName": "제186차 건강기능식품심의위원회",
+    "year": "2024",
+    "ingredients": [
+      "황해쑥추출분말",
+      "작약추출물등복합물(HT074)",
+      "황기추출물등복합물(HT042)",
+      "녹용당귀등복합추출물",
+      "홍삼",
+      "마카젤라틴화분말"
+    ],
+    "pdf": "제186차.pdf"
+  },
+  {
+    "id": 16,
+    "meetingNo": 185,
+    "meetingName": "제185차 건강기능식품심의위원회",
+    "year": "2024",
+    "ingredients": [
+      "감태추출물",
+      "Lactobacillus acidophilus KBL409 프로바이오틱스",
+      "루바브뿌리추출물(ERr731Ⓡ)",
+      "Lactobacillus plantarum GCWB1001",
+      "팔밋올레산 함유 알래스카폴락 정제어유(7-MEGA™)",
+      "천마추출물",
+      "오미자추출물",
+      "호박씨추출물등복합물"
+    ],
+    "pdf": "제185차.pdf"
+  },
+  {
+    "id": 17,
+    "meetingNo": 184,
+    "meetingName": "제184차 건강기능식품심의위원회",
+    "year": "2024",
+    "ingredients": [
+      "숙잠동결건조분말",
+      "Lacticaseibacillus paracasei HY7017",
+      "인삼열매농축액",
+      "기장추출물등복합물",
+      "파비플로라추출물",
+      "보스웰리아추출물(BOSMAX)",
+      "크릴오일(superba™ boost)",
+      "L. plantarum LC27 B. longum LC67 복합물(NVP-1702)"
+    ],
+    "pdf": "제184차.pdf"
+  },
+  {
+    "id": 18,
+    "meetingNo": 183,
+    "meetingName": "제183차 건강기능식품심의위원회",
+    "year": "2024",
+    "ingredients": [
+      "오미자등복합추출물(Osteo-F)",
+      "황칠엽 등 복합물(HDR-2)",
+      "칸나추출물(젬브린)",
+      "타마린드등주정추출복합물(Tamaflex)",
+      "NEMⓇ(난각막추출물)",
+      "솔로몬씰추출물",
+      "오리나무추출물등복합물",
+      "개다래(실버바인)추출분말",
+      "피쉬콜라겐펩타이드",
+      "병풀추출분말",
+      "전호잎추출물",
+      "콩발효추출물"
+    ],
+    "pdf": "제183차.pdf"
+  },
+  {
+    "id": 19,
+    "meetingNo": 182,
+    "meetingName": "제182차 건강기능식품심의위원회",
+    "year": "2024",
+    "ingredients": [
+      "락토바실러스 플란타럼 PBS067 등 복합물(PBS)",
+      "풋사과 농축분말(APPLOZIN)",
+      "감잎추출분말등복합물(BLMo308)",
+      "리모실락토바실러스 루테리 PBS072 등 복합물 MetSyn 프로바이오틱스",
+      "그래인오브파라다이스추출물(AfperFit)",
+      "비피도박테리움 락티스 아이디씨씨(IDCC) 4301 프로바이오틱스",
+      "영지버섯균사체추출분말(Immulink MBGⓇ)",
+      "숙잠동결건조분말",
+      "백편두추출분말(NOVAponinⓇ)",
+      "흑차추출물",
+      "크릴오일(SuperbaTM Boost)",
+      "쇠비름주정추출분말(KDC16-2)"
+    ],
+    "pdf": "제182차.pdf"
+  },
+  {
+    "id": 20,
+    "meetingNo": 180,
+    "meetingName": "제180차 건강기능식품심의위원회",
+    "year": "2023",
+    "ingredients": [
+      "발효굴추출물",
+      "페릴라(들깨)오일(SD-PO)",
+      "밀크세라마이드",
+      "레드오렌지추출물(Red Orange Complex)",
+      "저분자콜라겐펩타이드",
+      "타마린드등주정추출복합물(TamaflexTM)",
+      "참나리추출분말",
+      "약쑥추출분말",
+      "락토페린(우유정제단백질)",
+      "두충등복합물(KGC08EA)",
+      "백수오한속단추출복합물"
+    ],
+    "pdf": "제180차.pdf"
+  },
+  {
+    "id": 21,
+    "meetingNo": 178,
+    "meetingName": "제178차 건강기능식품심의위원회",
+    "year": "2023",
+    "ingredients": [
+      "어린배추출물(Uphenon)",
+      "녹용효소분해추출물",
+      "삼백초추출물(LHF618)",
+      "당조고추건조분말",
+      "바실러스 코아귤란스 SNZ 1969",
+      "저분자콜라겐펩타이드",
+      "흑효모배양액분말(폴리칸)",
+      "패추출물",
+      "유산균발효마늘추출분말",
+      "홍삼오일"
+    ],
+    "pdf": "제178차.pdf"
+  },
+  {
+    "id": 22,
+    "meetingNo": 177,
+    "meetingName": "제177차 건강기능식품심의위원회",
+    "year": "2023",
+    "ingredients": [
+      "우유 유래 세라마이드",
+      "난각막분말(OVOdermⓇ-AS)",
+      "새싹인삼추출분말",
+      "발효굴추출물",
+      "CaHMB",
+      "풋사과추출물 애플페논(Applephenon)",
+      "헤모힘 당귀등 혼합추출물"
+    ],
+    "pdf": "제177차.pdf"
+  },
+  {
+    "id": 23,
+    "meetingNo": 176,
+    "meetingName": "제176차 건강기능식품심의위원회",
+    "year": "2023",
+    "ingredients": [
+      "피쉬콜라겐펩타이드(NaticolⓇ)",
+      "두충등복합물(KGC08EA)",
+      "인삼열매농축분말",
+      "녹용황기등 복합추출물",
+      "패추출물",
+      "약쑥추출분말(Gasto-R)",
+      "해바라기종자추출물"
+    ],
+    "pdf": "제176차.pdf"
+  },
+  {
+    "id": 24,
+    "meetingNo": 175,
+    "meetingName": "제175차 건강기능식품심의위원회",
+    "year": "2023",
+    "ingredients": [
+      "산삼배양근추출발효물(HLJG0701-β)",
+      "칸나추출물(젬브린)",
+      "새싹보리추출물(RexcliverⓇ)",
+      "숙잠동결건조분말",
+      "L.plantarumLC27 및 B.longumLC67 복합물(프로바이오틱스\nNVP1702)",
+      "녹용당귀등 복합추출물",
+      "베르가모트오렌지추출물",
+      "락토페린(우유정제단백질)",
+      "Lactobacillus 5종 복합물(MED-01)",
+      "흑효모배양액분말(폴리칸)",
+      "와사비잎추출물(NCWL01)",
+      "흑생강추출물",
+      "헤모힘 당귀등 혼합추출물"
+    ],
+    "pdf": "제175차.pdf"
+  },
+  {
+    "id": 25,
+    "meetingNo": 174,
+    "meetingName": "제174차 건강기능식품심의위원회",
+    "year": "2023",
+    "ingredients": [
+      "풋귤 주정추출물",
+      "유글레나",
+      "맥아구절초추출복합물",
+      "저분자유청단백가수분해물",
+      "크릴오일(SuperbaTM Boost)",
+      "L.fermentumMG4231+MG4244(MED-02)",
+      "Weissella confusa WIKIM51",
+      "홍어껍질 콜라겐 펩타이드",
+      "아쉬아간다(센소릴)",
+      "스피루리나추출물(SM70EE)",
+      "저분자콜라겐펩타이드"
+    ],
+    "pdf": "제174차.pdf"
+  },
+  {
+    "id": 26,
+    "meetingNo": 173,
+    "meetingName": "제173차 건강기능식품심의위원회",
+    "year": "2023",
+    "ingredients": [
+      "양춘사추출물",
+      "칸나추출물(Zembrin®)",
+      "마카 젤라틴화 분말"
+    ],
+    "pdf": "제173차.pdf"
+  },
+  {
+    "id": 27,
+    "meetingNo": 172,
+    "meetingName": "제172차 건강기능식품심의위원회",
+    "year": "2023",
+    "ingredients": [
+      "BifidobacteriumbreveB-3 프로바이오틱스",
+      "사철쑥녹차추출복합물",
+      "황칠엽등 복합물(HDR-2)",
+      "저분자유청단백가수분해물",
+      "Lactobacillus plantarum TWK10",
+      "초피잎추출농축액",
+      "단삼주정추출분말",
+      "CJ저분자콜라겐펩타이드",
+      "헤모힘 당귀등 혼합추출물"
+    ],
+    "pdf": "제172차.pdf"
+  },
+  {
+    "id": 28,
+    "meetingNo": 168,
+    "meetingName": "제168차 건강기능식품심의위원회",
+    "year": "2022",
+    "ingredients": [
+      "오미자등복합추출물",
+      "아쉬아간다추출물",
+      "산삼배양근추출발효물(HLJG0701-β)",
+      "프로바이오틱스 Lactobacillus casei HY2782와 갈근추출물\n혼합물",
+      "산수유복합추출물",
+      "금빛제비집추출물",
+      "루바브뿌리추출물",
+      "루테인지아잔틴추출복합물",
+      "히알루론산",
+      "저분자콜라겐펩타이드",
+      "락토페린(우유정제단백질)"
+    ],
+    "pdf": "제168차.pdf"
+  },
+  {
+    "id": 29,
+    "meetingNo": 167,
+    "meetingName": "제167차 건강기능식품심의위원회",
+    "year": "2022",
+    "ingredients": [
+      "고삼추출물",
+      "전호잎추출물",
+      "증숙생강추출분말",
+      "생강추출물(SGE)",
+      "연어이리추출물(PRP연어핵산)"
+    ],
+    "pdf": "제167차.pdf"
+  },
+  {
+    "id": 30,
+    "meetingNo": 166,
+    "meetingName": "제166차 건강기능식품심의위원회",
+    "year": "2022",
+    "ingredients": [
+      "락토바실러스 플란타룸 HAC01(LactobacillusplantarumHAC01)",
+      "산수유복합추출물",
+      "효소처리 녹차카테킨",
+      "단델리온 등 복합물(LD100)",
+      "서목태(쥐눈이콩)펩타이드",
+      "유산균다시마발효추출물",
+      "댕댕이나무열매추출분말",
+      "연어이리추출물(PRP연어핵산)",
+      "EPA 및 DHA 함유유지"
+    ],
+    "pdf": "제166차.pdf"
+  },
+  {
+    "id": 31,
+    "meetingNo": 165,
+    "meetingName": "제165차 건강기능식품심의위원회",
+    "year": "2022",
+    "ingredients": [
+      "보스웰리아추출물(SERRATRIN)",
+      "BacilluscoagulansUnique IS-2 프로바이오틱스",
+      "흰목이버섯추출분말",
+      "감잎주정추출분말",
+      "WeissellacibariaJW15 프로바이오틱스",
+      "L-글루탐산발효 가바분말",
+      "비수리추출분말",
+      "복분자추출물(RE-20)",
+      "저분자콜라겐펩타이드SH, GT",
+      "들쭉열매추출분말"
+    ],
+    "pdf": "제165차.pdf"
+  },
+  {
+    "id": 32,
+    "meetingNo": 164,
+    "meetingName": "제164차 건강기능식품심의위원회",
+    "year": "2022",
+    "ingredients": [
+      "증숙도라지추출분말",
+      "유산균복합물(AB-LIFE®)",
+      "가자추출물(Ayuflex®)",
+      "락토바실러스플란타룸 HAC01",
+      "레몬버베나추출물 등 복합물",
+      "산수유추출물등복합물",
+      "크랜베리추출물(Cran-Max)"
+    ],
+    "pdf": "제164차.pdf"
+  },
+  {
+    "id": 33,
+    "meetingNo": 9,
+    "meetingName": "제9차 건강기능식품심의위원회",
+    "year": "2022",
+    "ingredients": [
+      "밀크세라마이드",
+      "비수리추출분말",
+      "복분자동결건조분말",
+      "크릴오일(FJH-KO)",
+      "크릴오일 등 복합물(FlexPro MD)",
+      "크릴오일(SuperbaTM boost)",
+      "SLENDACORⓇ(모링가추출물등 복합물)",
+      "중쇄지방산 및 디글리세라이드 함유 유지(MDCG)",
+      "현삼추출물(Brainon)",
+      "유산균C29-발효대두복합물(DW2009)",
+      "Bacilluscoagulansunique IS-2",
+      "마카 젤라틴화 분말"
+    ],
+    "pdf": "제9차.pdf"
+  },
+  {
+    "id": 34,
+    "meetingNo": 8,
+    "meetingName": "제8차 건강기능식품심의위원회",
+    "year": "2022",
+    "ingredients": [
+      "고온처리녹차추출물",
+      "흰목이버섯추출분말",
+      "홍삼오일(KGC11o)",
+      "갈화진피복합물",
+      "맥아구절초추출복합물",
+      "Lactobacillus plantarum TWK10",
+      "CaHMB",
+      "팔밋올레산 함유 알래스카폴락 정제어유(7-MEGATM)",
+      "가다랑어 엘라스틴 펩타이드",
+      "새싹보리 추출물(RexcliverⓇ)",
+      "아티초크잎추출물",
+      "포도잎추출물(HP-01)",
+      "자일로올리고당",
+      "Weissella cibaria JW15 유산균",
+      "천심련추출물(ParActinⓇ)",
+      "해국추출물",
+      "키토산"
+    ],
+    "pdf": "제8차.pdf"
+  },
+  {
+    "id": 35,
+    "meetingNo": 1,
+    "meetingName": "제1차 건강기능식품심의위원회",
+    "year": "2022",
+    "ingredients": [
+      "타히보추출물(Tabetri®)",
+      "황국(Aspergillus 발효물 MK01)",
+      "콘타이드(Corntide)",
+      "Lactobacillus plantarum LMT1-48",
+      "사삼추출물",
+      "Weissella cibaria CMU",
+      "저분자콜라겐펩타이드GT",
+      "저분자콜라겐펩타이드SH",
+      "천심련추출물(ParActin®)",
+      "저분자콜라겐펩타이드",
+      "EPA 및 DHA 함유 유지",
+      "수국잎열수추출물"
+    ],
+    "pdf": "제1차.pdf"
+  }
+]

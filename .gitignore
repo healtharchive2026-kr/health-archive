@@ -2,7 +2,11 @@
 .DS_Store
 Thumbs.db
 audit-screenshots/
-scripts/
+scripts/*
+!scripts/_status.py
+!scripts/_data_files.py
+!scripts/update_*.py
+!scripts/register_tasks.ps1
 SETUP.md
 data/*.json
 

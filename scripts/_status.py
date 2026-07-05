@@ -6,6 +6,7 @@
 """
 import json
 import os
+import re
 from datetime import datetime
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -19,6 +20,14 @@ def touch(key, count=None, new_count=None):
         try:
             with open(STATUS_JSON, encoding='utf-8') as f:
                 status = json.load(f)
+        except Exception:
+            status = {}
+    elif os.path.exists(STATUS_JS):
+        try:
+            with open(STATUS_JS, encoding='utf-8') as f:
+                text = f.read()
+            m = re.search(r'var\s+STATUS_DATA\s*=\s*(.*?);\s*$', text, re.S)
+            status = json.loads(m.group(1)) if m else {}
         except Exception:
             status = {}
 
