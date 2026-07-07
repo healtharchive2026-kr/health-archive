@@ -10,19 +10,19 @@
     "newCount": 0
   },
   "products": {
-    "lastRun": "2026-07-07 11:22:38",
+    "lastRun": "2026-07-07 17:02:25",
     "count": 147,
     "newCount": 0
   },
   "news": {
-    "lastRun": "2026-07-07 11:23:01",
+    "lastRun": "2026-07-07 17:02:47",
     "count": 9,
     "newCount": 0
   },
   "news_thinkfood": {
-    "lastRun": "2026-07-07 11:23:02",
+    "lastRun": "2026-07-07 17:02:49",
     "count": 94,
-    "newCount": 8
+    "newCount": 0
   },
   "news_mfds": {
     "lastRun": "2026-07-06 14:09:30",
@@ -30,19 +30,19 @@
     "newCount": 2
   },
   "news_nutraingredients": {
-    "lastRun": "2026-07-07 11:23:36",
-    "count": 32,
-    "newCount": 5
+    "lastRun": "2026-07-07 17:03:19",
+    "count": 34,
+    "newCount": 2
   },
   "news_supplysidesj": {
-    "lastRun": "2026-07-07 11:23:38",
+    "lastRun": "2026-07-07 17:03:20",
     "count": 53,
-    "newCount": 1
+    "newCount": 0
   },
   "news_nutritioninsight": {
-    "lastRun": "2026-07-07 11:23:43",
-    "count": 33,
-    "newCount": 2
+    "lastRun": "2026-07-07 17:03:25",
+    "count": 36,
+    "newCount": 3
   },
   "temp_approval": {
     "lastRun": "2026-07-06 14:09:22",
