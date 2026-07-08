@@ -2,6 +2,67 @@ let ingredients = [];
 let minutes = [];
 let ingredientYear = null; // null = "전체"
 let minutesYear = null;
+let appDataReady = Promise.resolve();
+let ingredientMinuteUiReady = false;
+let compareTabReady = false;
+const scriptLoadPromises = new Map();
+const tabInitPromises = new Map();
+
+const TAB_SCRIPT_DEPS = {
+  market: ['libs/chart.umd.js'],
+  products: ['data/products.js?v=20260709-perf'],
+  foodraw: ['data/food_ingredients.js?v=20260709-perf'],
+  'temp-approval': ['data/temp_approval.js?v=20260709-perf'],
+  blocked: ['data/blocked_ingredients.js?v=20260709-perf'],
+  'gmo-minutes': ['data/gmo_minutes.js?v=20260709-perf', 'data/gmo_ingredients.js?v=20260709-perf'],
+  'gmo-ingredients': ['data/gmo_minutes.js?v=20260709-perf', 'data/gmo_ingredients.js?v=20260709-perf'],
+  'safety-db': ['data/safety_db.js?v=20260709-perf', 'safety-db.js?v=20260709-perf']
+};
+
+const GLOBAL_SEARCH_SCRIPT_DEPS = [
+  'data/products.js?v=20260709-perf',
+  'data/food_ingredients.js?v=20260709-perf'
+];
+
+function loadScriptOnce(src) {
+  if (scriptLoadPromises.has(src)) return scriptLoadPromises.get(src);
+
+  const existing = Array.from(document.scripts).some(script => {
+    const value = script.getAttribute('src') || '';
+    return value === src || value.split('?')[0] === src.split('?')[0];
+  });
+  if (existing) {
+    const resolved = Promise.resolve();
+    scriptLoadPromises.set(src, resolved);
+    return resolved;
+  }
+
+  const promise = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = src;
+    script.defer = true;
+    script.onload = resolve;
+    script.onerror = () => reject(new Error(`Failed to load ${src}`));
+    document.body.appendChild(script);
+  });
+  scriptLoadPromises.set(src, promise);
+  return promise;
+}
+
+function loadScripts(list) {
+  return (list || []).reduce((promise, src) => promise.then(() => loadScriptOnce(src)), Promise.resolve());
+}
+
+function runStartupTask(name, task) {
+  try {
+    const result = task();
+    if (result && typeof result.catch === 'function') {
+      result.catch(err => console.error(`${name} failed`, err));
+    }
+  } catch (err) {
+    console.error(`${name} failed`, err);
+  }
+}
 
 function parseNotice(noticeNo) {
   const m = /제(\d{4})-(\d+)호/.exec(noticeNo || '');
@@ -22,28 +83,18 @@ async function loadData() {
   minutes.sort((a, b) => (b.yearNum - a.yearNum) || ((b.meetingNo || 0) - (a.meetingNo || 0)));
 
   const convertedCount = ingredients.filter(r => r.noticeConverted).length;
-  document.getElementById('stat-ingredients').textContent = ingredients.length - convertedCount;
-  document.getElementById('stat-converted').textContent = convertedCount;
-  document.getElementById('stat-minutes').textContent = minutes.length;
+  const statIngredients = document.getElementById('stat-ingredients');
+  const statConverted = document.getElementById('stat-converted');
+  const statMinutes = document.getElementById('stat-minutes');
+  if (statIngredients) statIngredients.textContent = ingredients.length - convertedCount;
+  if (statConverted) statConverted.textContent = convertedCount;
+  if (statMinutes) statMinutes.textContent = minutes.length;
 
   const latestIngYear = ingredients.length ? ingredients[0].year : null;
   const latestMinYear = minutes.length ? minutes[0].yearNum : null;
 
   ingredientYear = latestIngYear;
   minutesYear = latestMinYear;
-
-  buildYearSidebar('ingredient-year-sidebar', ingredients, r => r.year, ingredientYear, y => {
-    ingredientYear = y;
-    applyIngredientFilter();
-  });
-  buildYearSidebar('minutes-year-sidebar', minutes, r => r.yearNum, minutesYear, y => {
-    minutesYear = y;
-    applyMinutesFilter();
-  });
-
-  applyIngredientFilter();
-  applyMinutesFilter();
-  setupCompareTab();
 }
 
 // ---------- 홈 히어로 ----------
@@ -494,15 +545,28 @@ function setupGlobalSearch() {
   const form = document.getElementById('global-search-form');
   const input = document.getElementById('global-search-input');
   if (!form || !input) return;
+  let searchSeq = 0;
 
   function runSearch() {
+    const seq = ++searchSeq;
     const q = input.value.trim();
     globalSearchState.q = q;
     globalSearchState.activeGroup = 'all';
-    const collected = q ? collectGlobalSearchResults(q) : { results: [], counts: {} };
-    globalSearchState.results = collected.results;
-    globalSearchState.counts = collected.counts;
-    renderGlobalSearchResults();
+
+    const ready = q ? loadScripts(GLOBAL_SEARCH_SCRIPT_DEPS) : Promise.resolve();
+    ready.then(() => {
+      if (seq !== searchSeq) return;
+      const collected = q ? collectGlobalSearchResults(q) : { results: [], counts: {} };
+      globalSearchState.results = collected.results;
+      globalSearchState.counts = collected.counts;
+      renderGlobalSearchResults();
+    }).catch(err => {
+      console.error(err);
+      const collected = q ? collectGlobalSearchResults(q) : { results: [], counts: {} };
+      globalSearchState.results = collected.results;
+      globalSearchState.counts = collected.counts;
+      renderGlobalSearchResults();
+    });
   }
 
   input.addEventListener('input', runSearch);
@@ -561,6 +625,107 @@ function applyMinutesFilter() {
     );
   }
   renderMinutes(list);
+}
+
+function initIngredientMinuteUi() {
+  if (ingredientMinuteUiReady) return;
+  ingredientMinuteUiReady = true;
+
+  buildYearSidebar('ingredient-year-sidebar', ingredients, r => r.year, ingredientYear, y => {
+    ingredientYear = y;
+    applyIngredientFilter();
+  });
+  buildYearSidebar('minutes-year-sidebar', minutes, r => r.yearNum, minutesYear, y => {
+    minutesYear = y;
+    applyMinutesFilter();
+  });
+
+  const ingredientSearch = document.getElementById('ingredient-search');
+  const minutesSearch = document.getElementById('minutes-search');
+  if (ingredientSearch) ingredientSearch.addEventListener('input', applyIngredientFilter);
+  if (minutesSearch) minutesSearch.addEventListener('input', applyMinutesFilter);
+
+  applyIngredientFilter();
+  applyMinutesFilter();
+}
+
+function initCompareTabOnce() {
+  if (compareTabReady) return;
+  compareTabReady = true;
+  setupCompareTab();
+}
+
+function initTabContent(tab) {
+  if (!tab || tab === 'home') return Promise.resolve();
+  if (tabInitPromises.has(tab)) return tabInitPromises.get(tab);
+
+  const promise = loadScripts(TAB_SCRIPT_DEPS[tab])
+    .then(() => appDataReady)
+    .then(() => {
+      switch (tab) {
+        case 'ingredients':
+        case 'minutes':
+          initIngredientMinuteUi();
+          break;
+        case 'compare':
+          initCompareTabOnce();
+          break;
+        case 'laws':
+          setupLawTabs();
+          setupGuidelines();
+          break;
+        case 'material-dev':
+          setupMaterialDevTabs();
+          break;
+        case 'nifds':
+          setupNifdsTabs();
+          setupNifdsSearch();
+          break;
+        case 'events':
+          setupEventsTabs();
+          break;
+        case 'biomarkers':
+          setupBiomarkers();
+          break;
+        case 'news':
+          setupNews();
+          break;
+        case 'products':
+          setupProducts();
+          break;
+        case 'trials':
+          setupTrials();
+          break;
+        case 'foodraw':
+          setupFoodRaw();
+          break;
+        case 'temp-approval':
+          setupTempApproval();
+          break;
+        case 'blocked':
+          setupBlocked();
+          break;
+        case 'gmo-minutes':
+          setupGmoMinutes();
+          break;
+        case 'gmo-ingredients':
+          setupGmoIngredients();
+          break;
+        case 'market':
+          if (typeof initMarketTab === 'function') requestAnimationFrame(initMarketTab);
+          break;
+        case 'safety-db':
+          if (typeof initSafetyDbTab === 'function') requestAnimationFrame(initSafetyDbTab);
+          break;
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      tabInitPromises.delete(tab);
+    });
+
+  tabInitPromises.set(tab, promise);
+  return promise;
 }
 
 function splitEfficacy(text) {
@@ -1024,12 +1189,7 @@ function setupTabs() {
     window.scrollTo({top:0, behavior:'instant'});
     // 시장현황 차트는 탭이 보일 때(레이아웃 확정 후) 처음 한 번만 그린다.
     // (display:none 상태에서 그리면 Chart.js가 크기를 0으로 계산함)
-    if (tab === 'market' && typeof initMarketTab === 'function') {
-      requestAnimationFrame(initMarketTab);
-    }
-    if (tab === 'safety-db' && typeof initSafetyDbTab === 'function') {
-      requestAnimationFrame(initSafetyDbTab);
-    }
+    initTabContent(tab);
     document.body.classList.remove('mobile-nav-open');
     if (menuToggle) {
       menuToggle.setAttribute('aria-expanded', 'false');
@@ -2007,30 +2167,12 @@ function setupTempApproval() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  appDataReady = loadData().catch(err => console.error('loadData failed', err));
   setupTabs();
-  setupLawTabs();
-  setupMaterialDevTabs();
-  setupNifdsTabs();
-  setupNifdsSearch();
-  setupEventsTabs();
-  setupGuidelines();
-  setupBiomarkers();
-  setupNews();
-  setupProducts();
-  setupTrials();
-  setupFoodRaw();
-  setupTempApproval();
-  setupBlocked();
-  setupGmoMinutes();
-  setupGmoIngredients();
-  renderHeroNews();
-  renderDailyQuote();
-  setupVisitorCounter();
-  setupIntroModal();
   setupHeroSearch();
-  loadData().then(() => {
-    document.getElementById('ingredient-search').addEventListener('input', applyIngredientFilter);
-    document.getElementById('minutes-search').addEventListener('input', applyMinutesFilter);
-    setupGlobalSearch();
-  });
+  runStartupTask('renderHeroNews', renderHeroNews);
+  runStartupTask('renderDailyQuote', renderDailyQuote);
+  runStartupTask('setupVisitorCounter', setupVisitorCounter);
+  runStartupTask('setupIntroModal', setupIntroModal);
+  appDataReady.then(() => setupGlobalSearch());
 });
