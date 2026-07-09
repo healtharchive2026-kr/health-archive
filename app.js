@@ -1902,6 +1902,63 @@ function setupMaterialDevTabs() {
   document.querySelectorAll('.material-dev-subtab').forEach(tab => {
     tab.addEventListener('click', () => selectMaterialDevTab(tab.dataset.devtab));
   });
+  setupMaterialDevChecklist();
+}
+
+// 기존 제출자료 목록을 정적·비저장 인터랙티브 체크리스트로 전환.
+// 체크 상태는 메모리에만 존재하며 새로고침 시 초기화 — 어떤 입력도 저장·전송하지 않는다.
+function mdcUpdateProgress(pane) {
+  const total = pane.querySelectorAll('.mdc-item').length;
+  const done = pane.querySelectorAll('.mdc-item.mdc-checked').length;
+  const doneEl = pane.querySelector('.mdc-done');
+  const fill = pane.querySelector('.mdc-bar-fill');
+  if (doneEl) doneEl.textContent = done;
+  if (fill) fill.style.width = (total ? Math.round(done / total * 100) : 0) + '%';
+}
+
+function setupMaterialDevChecklist() {
+  document.querySelectorAll('.material-dev-pane').forEach(pane => {
+    if (pane.querySelector('.mdc-progress')) return; // 중복 방지
+    const items = pane.querySelectorAll('.material-dev-card li, .material-dev-doc-list span');
+    if (!items.length) return;
+
+    items.forEach(el => {
+      el.classList.add('mdc-item');
+      el.setAttribute('role', 'checkbox');
+      el.setAttribute('aria-checked', 'false');
+      el.setAttribute('tabindex', '0');
+      const toggle = () => {
+        const on = el.classList.toggle('mdc-checked');
+        el.setAttribute('aria-checked', on ? 'true' : 'false');
+        mdcUpdateProgress(pane);
+      };
+      el.addEventListener('click', toggle);
+      el.addEventListener('keydown', e => {
+        if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggle(); }
+      });
+    });
+
+    const bar = document.createElement('div');
+    bar.className = 'mdc-progress';
+    bar.innerHTML =
+      '<div class="mdc-progress-head">' +
+        '<span class="mdc-progress-label">확인 <b class="mdc-done">0</b> / ' + items.length + ' 항목</span>' +
+        '<span class="mdc-actions">' +
+          '<button type="button" class="mdc-btn mdc-reset">초기화</button>' +
+          '<button type="button" class="mdc-btn mdc-print">인쇄 / PDF 저장</button>' +
+        '</span>' +
+      '</div>' +
+      '<div class="mdc-bar"><span class="mdc-bar-fill" style="width:0%"></span></div>' +
+      '<p class="mdc-note">항목을 눌러 확인 표시할 수 있습니다. 확인 상태는 저장되지 않으며 새로고침 시 초기화됩니다 — 어떤 입력·작업 내용도 서버로 전송·저장되지 않습니다.</p>';
+    pane.insertBefore(bar, pane.firstChild);
+
+    bar.querySelector('.mdc-reset').addEventListener('click', () => {
+      items.forEach(el => { el.classList.remove('mdc-checked'); el.setAttribute('aria-checked', 'false'); });
+      mdcUpdateProgress(pane);
+    });
+    bar.querySelector('.mdc-print').addEventListener('click', () => window.print());
+    mdcUpdateProgress(pane);
+  });
 }
 
 function renderGuidelineCards(gridId, countId, list, basePath, summaryFactory) {

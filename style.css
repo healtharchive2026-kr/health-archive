@@ -1489,6 +1489,38 @@ td.name{font-weight:600;}
   background:var(--paper-soft);border:1px solid var(--border);color:var(--text);font-size:12px;font-weight:600;
 }
 
+/* ── 제출자료 체크리스트 (정적·비저장) ── */
+.mdc-progress{background:var(--paper-soft,#f7faf7);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:16px;}
+.mdc-progress-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px;}
+.mdc-progress-label{font-size:13px;font-weight:700;color:var(--text);}
+.mdc-progress-label b{color:var(--green);font-size:15px;}
+.mdc-actions{display:flex;gap:8px;}
+.mdc-btn{border:1px solid var(--border);background:#fff;color:var(--muted);border-radius:8px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;}
+.mdc-btn:hover{border-color:var(--green);color:var(--green);}
+.mdc-bar{height:8px;background:#eef2f0;border-radius:999px;overflow:hidden;}
+.mdc-bar-fill{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--green),#5cae86);transition:width .2s;}
+.mdc-note{margin:10px 0 0;font-size:11px;color:var(--muted);line-height:1.5;}
+.material-dev-card li.mdc-item{list-style:none;position:relative;padding-left:23px;cursor:pointer;transition:color .12s;}
+.material-dev-card li.mdc-item::before{content:'';position:absolute;left:0;top:2px;width:14px;height:14px;border:1.5px solid var(--border);border-radius:4px;background:#fff;box-sizing:border-box;}
+.material-dev-card li.mdc-item.mdc-checked::before{background:var(--green);border-color:var(--green);}
+.material-dev-card li.mdc-item.mdc-checked::after{content:'✓';position:absolute;left:2.4px;top:0.5px;color:#fff;font-size:11px;font-weight:800;line-height:1;}
+.material-dev-card li.mdc-item.mdc-checked{color:var(--muted);text-decoration:line-through;text-decoration-color:rgba(47,109,87,.45);}
+.material-dev-card li.mdc-item:hover::before{border-color:var(--green);}
+.material-dev-doc-list span.mdc-item{cursor:pointer;gap:7px;}
+.material-dev-doc-list span.mdc-item::before{content:'';width:13px;height:13px;border:1.5px solid var(--border);border-radius:4px;background:#fff;flex-shrink:0;box-sizing:border-box;}
+.material-dev-doc-list span.mdc-item.mdc-checked{background:var(--green-light);border-color:var(--green);color:var(--green);}
+.material-dev-doc-list span.mdc-item.mdc-checked::before{background:var(--green);border-color:var(--green);}
+.material-dev-doc-list span.mdc-item:hover::before{border-color:var(--green);}
+
+@media print{
+  .site-header,.site-footer,.cmp-tray,.cmdk-overlay,.ingx-overlay,.cmp-overlay,.mobile-menu-toggle,.mdc-actions,.material-dev-subnav,.section-badge{display:none!important;}
+  .tab-section{display:none!important;}
+  .tab-section.active{display:block!important;}
+  .material-dev-grid{display:block!important;}
+  .material-dev-card{break-inside:avoid;border:1px solid #ccc!important;margin-bottom:10px;box-shadow:none!important;}
+  body{background:#fff!important;}
+}
+
 .law-link-grid{
   display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;
 }
