@@ -958,12 +958,12 @@ function reportCellHtml(r) {
 function renderIngredients(list) {
   const tbody = document.querySelector('#ingredient-table tbody');
   const displayList = mergeConvertedIngredientRows(list);
-  tbody.innerHTML = displayList.map(r => {
+  tbody.innerHTML = displayList.map((r, i) => {
     const lines = splitEfficacy(r.efficacy).map(l => `<div class="efficacy-line">${escapeHtml(l)}</div>`).join('');
     return `
     <tr>
       <td class="notice">${noticeCellHtml(r)}</td>
-      <td class="name">${escapeHtml(r.name)}${nameTagsHtml(r)}</td>
+      <td class="name"><button type="button" class="ing-name-btn" data-idx="${i}">${escapeHtml(r.name)}</button>${nameTagsHtml(r)}</td>
       <td>${companyCellHtml(r)}</td>
       <td>${lines}</td>
       <td>${escapeHtml(r.dailyIntake || '-')}</td>
@@ -971,10 +971,188 @@ function renderIngredients(list) {
     </tr>
   `;
   }).join('');
+  tbody.querySelectorAll('.ing-name-btn').forEach(btn => {
+    btn.addEventListener('click', () => openIngredientDetail(displayList[+btn.dataset.idx]));
+  });
   const mergedAway = list.length - displayList.length;
   document.getElementById('ingredient-count').textContent = mergedAway > 0
     ? `${displayList.length}건 (원자료 ${list.length}건)`
     : `${list.length}건`;
+}
+
+// ---------- 원료 인텔리전스 (연결 탐색 패널) ----------
+
+function ingxNorm(s) {
+  return String(s || '').toLowerCase().replace(/[\s()·,.\-\/'"·「」]/g, '');
+}
+
+// 원료명이 회의록 상정원료 목록에 포함되는지 (표기가 서로 달라 양방향 부분일치로 판정)
+function ingxNameMatches(ingName, candidates) {
+  const a = ingxNorm(ingName);
+  if (a.length < 2) return false;
+  return (candidates || []).some(c => {
+    const b = ingxNorm(c);
+    if (b.length < 2) return false;
+    if (a === b) return true;
+    if (a.length >= 3 && b.includes(a)) return true;
+    if (b.length >= 3 && a.includes(b)) return true;
+    return false;
+  });
+}
+
+function ingxRelatedMinutes(r) {
+  if (typeof minutes === 'undefined' || !Array.isArray(minutes)) return [];
+  const names = (r._mergedRows ? r._mergedRows.map(x => x.name) : [r.name]).filter(Boolean);
+  return minutes.filter(m => names.some(n => ingxNameMatches(n, m.ingredients)));
+}
+
+function ingxSimilar(r) {
+  if (typeof ingredients === 'undefined' || !Array.isArray(ingredients)) return [];
+  const selfName = r.name;
+  const cat = r.category;
+  const seen = new Set([ingxNorm(selfName)]);
+  const pick = [];
+  const push = x => {
+    const key = ingxNorm(x.name);
+    if (seen.has(key)) return;
+    seen.add(key);
+    pick.push(x);
+  };
+  if (cat) ingredients.forEach(x => { if (x.category === cat) push(x); });
+  if (pick.length < 6 && r.allSystems) {
+    ingredients.forEach(x => {
+      if (pick.length >= 12) return;
+      if (x.allSystems && x.allSystems.some(s => r.allSystems.includes(s))) push(x);
+    });
+  }
+  return pick.slice(0, 10);
+}
+
+function ingxBiomarkerMatch(cat) {
+  const protocols = (typeof BIOMARKER_PROTOCOLS !== 'undefined') ? BIOMARKER_PROTOCOLS : {};
+  if (!cat) return null;
+  const catN = ingxNorm(cat);
+  const keys = Object.keys(protocols);
+  let hit = keys.find(k => ingxNorm(k) === catN);
+  if (!hit) hit = keys.find(k => { const kn = ingxNorm(k); return kn.includes(catN) || catN.includes(kn); });
+  return hit || null;
+}
+
+function openIngredientDetail(r) {
+  if (!r) return;
+  const overlay = document.getElementById('ingx-overlay');
+  const body = document.getElementById('ingx-body');
+  if (!overlay || !body) return;
+
+  const companies = uniqueRowValues(mergedRows(r), 'company');
+  const notices = uniqueRowValues(mergedRows(r), 'noticeNo');
+  const effLines = splitEfficacy(r.efficacy);
+  const relMinutes = ingxRelatedMinutes(r);
+  const similar = ingxSimilar(r);
+  const bmKey = ingxBiomarkerMatch(r.category);
+
+  const metaCells = [
+    ['업체', companies.length ? companies.join(' · ') : '-'],
+    ['인정번호', notices.length ? notices.join(', ') : (r.noticeNo || '-')],
+    ['일일섭취량', r.dailyIntake || '-'],
+    ['인정연도', r.year || '-'],
+  ].map(([k, v]) => `<div class="ingx-meta-cell"><span>${escapeHtml(k)}</span><p>${escapeHtml(v)}</p></div>`).join('');
+
+  const catBadge = r.category
+    ? `<span class="ingx-cat-badge">${escapeHtml(r.category)}</span>`
+    : '<span class="ingx-cat-badge ingx-cat-none">분류 확인필요</span>';
+  const convBadge = r.noticeConverted ? '<span class="ingx-conv-badge">고시형 전환</span>' : '';
+
+  const reportRows = mergedRows(r).filter(row => row.report);
+  const reportHtml = reportRows.length
+    ? `<div class="ingx-section"><h4>소비자 리포트</h4><div class="ingx-report-links">${
+        reportRows.map(row => `<a class="ingx-report-link" href="${escapeHtml(pdfHref('reports/' + row.report))}" target="_blank" rel="noopener">${escapeHtml(row.noticeNo || 'PDF')} 리포트 ↗</a>`).join('')
+      }</div></div>`
+    : '';
+
+  const minutesHtml = relMinutes.length
+    ? `<div class="ingx-section"><h4>관련 심의 회의록 <span class="ingx-cnt">${relMinutes.length}</span></h4><div class="ingx-minute-list">${
+        relMinutes.slice(0, 12).map(m => `
+          <div class="ingx-minute-row">
+            <span class="ingx-minute-name">${escapeHtml(m.meetingName)}</span>
+            <span class="ingx-minute-year">${escapeHtml(m.year || '')}</span>
+            ${m.pdf ? `<a class="ingx-minute-link" href="${escapeHtml(pdfHref('minutes-pdfs/' + m.pdf))}" target="_blank" rel="noopener">회의록 ↗</a>` : '<span class="ingx-minute-none">-</span>'}
+          </div>`).join('')
+      }</div></div>`
+    : '<div class="ingx-section"><h4>관련 심의 회의록</h4><p class="ingx-empty">일치하는 회의록을 찾지 못했습니다.</p></div>';
+
+  const similarHtml = similar.length
+    ? `<div class="ingx-section"><h4>유사 원료 <span class="ingx-cnt">${similar.length}</span></h4><div class="ingx-similar-list">${
+        similar.map((x, i) => `<button type="button" class="ingx-similar-chip" data-si="${i}"><strong>${escapeHtml(x.name)}</strong><span>${escapeHtml(x.category || '-')} · ${escapeHtml((x.company || '').split(' · ')[0] || '-')}</span></button>`).join('')
+      }</div></div>`
+    : '';
+
+  const links = [];
+  if (r.category) links.push(`<button type="button" class="ingx-action" data-act="compare">이 기능성 원료 비교 →</button>`);
+  links.push(`<button type="button" class="ingx-action" data-act="trials">이 원료로 임상시험 검색 →</button>`);
+  if (bmKey) links.push(`<button type="button" class="ingx-action" data-act="biomarker">기능성별 프로토콜 보기 →</button>`);
+
+  body.innerHTML = `
+    <div class="ingx-head">
+      <div class="ingx-kicker">개별인정 원료</div>
+      <h3>${escapeHtml(r.name)}</h3>
+      <div class="ingx-badges">${catBadge}${convBadge}</div>
+    </div>
+    <div class="ingx-meta-grid">${metaCells}</div>
+    <div class="ingx-section">
+      <h4>인정 기능성</h4>
+      <ul class="ingx-eff-list">${effLines.map(l => `<li>${escapeHtml(l)}</li>`).join('')}</ul>
+    </div>
+    ${reportHtml}
+    ${minutesHtml}
+    ${similarHtml}
+    <div class="ingx-actions">${links.join('')}</div>
+  `;
+
+  body.querySelectorAll('.ingx-similar-chip').forEach(btn => {
+    btn.addEventListener('click', () => openIngredientDetail(similar[+btn.dataset.si]));
+  });
+  body.querySelectorAll('.ingx-action').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const act = btn.dataset.act;
+      closeIngredientDetail();
+      if (act === 'compare') {
+        navigateTo('compare');
+        if (typeof selectCategoryCard === 'function') { try { selectCategoryCard(r.category); } catch (e) {} }
+        history.replaceState(null, '', '#compare');
+      } else if (act === 'trials') {
+        routeHeroSearch('trials', r.name);
+        navigateTo('trials');
+        history.replaceState(null, '', '#trials');
+      } else if (act === 'biomarker') {
+        routeHeroSearch('biomarkers', bmKey);
+        navigateTo('biomarkers');
+        history.replaceState(null, '', '#biomarkers');
+      }
+    });
+  });
+
+  overlay.hidden = false;
+  document.body.classList.add('ingx-open');
+  body.scrollTop = 0;
+}
+
+function closeIngredientDetail() {
+  const overlay = document.getElementById('ingx-overlay');
+  if (!overlay) return;
+  overlay.hidden = true;
+  document.body.classList.remove('ingx-open');
+}
+
+function setupIngredientDetail() {
+  const overlay = document.getElementById('ingx-overlay');
+  const closeBtn = document.getElementById('ingx-close');
+  if (!overlay) return;
+  if (closeBtn) closeBtn.addEventListener('click', closeIngredientDetail);
+  overlay.addEventListener('click', e => { if (e.target === overlay) closeIngredientDetail(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && !overlay.hidden) closeIngredientDetail();
+  });
 }
 
 function renderMinutes(list) {
@@ -1266,9 +1444,9 @@ function renderCompareTable() {
   const displayList = mergeConvertedIngredientRows(list);
 
   const tbody = document.querySelector('#compare-table tbody');
-  tbody.innerHTML = displayList.map(r => `
+  tbody.innerHTML = displayList.map((r, i) => `
     <tr>
-      <td class="name">${escapeHtml(r.name)}${nameTagsHtml(r)}</td>
+      <td class="name"><button type="button" class="ing-name-btn" data-idx="${i}">${escapeHtml(r.name)}</button>${nameTagsHtml(r)}</td>
       <td>${companyCellHtml(r)}</td>
       <td>${escapeHtml(r.dailyIntake || '-')}</td>
       <td>${escapeHtml(r.efficacy || '-')}</td>
@@ -1276,6 +1454,9 @@ function renderCompareTable() {
       <td>${reportCellHtml(r)}</td>
     </tr>
   `).join('');
+  tbody.querySelectorAll('.ing-name-btn').forEach(btn => {
+    btn.addEventListener('click', () => openIngredientDetail(displayList[+btn.dataset.idx]));
+  });
   const mergedAway = list.length - displayList.length;
   document.getElementById('compare-count').textContent = mergedAway > 0
     ? `${displayList.length}건 (원자료 ${list.length}건)`
@@ -2291,6 +2472,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupTabs();
   setupHeroSearch();
   setupCommandPalette();
+  setupIngredientDetail();
   runStartupTask('renderHeroNews', renderHeroNews);
   runStartupTask('renderDailyQuote', renderDailyQuote);
   runStartupTask('setupVisitorCounter', setupVisitorCounter);
