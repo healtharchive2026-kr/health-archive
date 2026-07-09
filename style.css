@@ -43,12 +43,77 @@ body{
   box-shadow:0 1px 0 rgba(18,32,26,.02);
   backdrop-filter:blur(20px);
 }
-.header-inner{display:flex;align-items:center;justify-content:space-between;height:62px;}
+.header-inner{display:flex;align-items:center;justify-content:flex-start;height:62px;}
 .logo{display:flex;align-items:center;gap:6px;font-size:20px;letter-spacing:0;}
 .logo-text{font-weight:800;color:var(--green);}
 .logo-text b{color:var(--text);font-weight:400;}
 .logo-icon{height:28px;width:auto;display:block;}
 .logo-leaf{height:16px;width:auto;display:block;margin-left:-2px;}
+
+/* ── 통합검색 트리거 (헤더) ── */
+.cmdk-trigger{
+  display:inline-flex;align-items:center;gap:8px;
+  margin-left:auto;margin-right:14px;
+  padding:7px 12px;border:1px solid var(--border);border-radius:10px;
+  background:#fff;color:var(--muted);cursor:pointer;
+  font-family:inherit;font-size:12.5px;font-weight:650;box-shadow:var(--shadow-sm);
+  transition:border-color .14s,color .14s,box-shadow .14s;
+}
+.cmdk-trigger:hover{border-color:var(--green);color:var(--green);box-shadow:var(--shadow-md);}
+.cmdk-trigger-icon{font-size:15px;line-height:1;}
+.cmdk-trigger-kbd{display:inline-flex;gap:3px;}
+.cmdk-trigger-kbd kbd{
+  font-family:inherit;font-size:10px;font-weight:700;color:var(--muted);
+  background:var(--paper-soft,#f4f7f4);border:1px solid var(--border);border-bottom-width:2px;
+  border-radius:5px;padding:1px 5px;line-height:1.4;
+}
+
+/* ── 커맨드 팔레트 ── */
+.cmdk-overlay{
+  position:fixed;inset:0;z-index:1000;
+  background:rgba(20,32,26,.44);backdrop-filter:blur(3px);
+  display:flex;align-items:flex-start;justify-content:center;
+  padding:12vh 16px 16px;
+}
+.cmdk-overlay[hidden]{display:none;}
+body.cmdk-open{overflow:hidden;}
+.cmdk-panel{
+  width:100%;max-width:640px;background:var(--paper-solid,#fff);
+  border:1px solid var(--border);border-radius:16px;overflow:hidden;
+  box-shadow:0 30px 80px rgba(20,40,30,.35);
+  display:flex;flex-direction:column;max-height:76vh;
+  animation:cmdkPop .16s ease;
+}
+@keyframes cmdkPop{from{opacity:0;transform:translateY(-8px) scale(.98);}to{opacity:1;transform:none;}}
+.cmdk-input-row{display:flex;align-items:center;gap:10px;padding:16px 18px;border-bottom:1px solid var(--border);}
+.cmdk-input-icon{font-size:20px;color:var(--green);line-height:1;}
+.cmdk-input{flex:1;min-width:0;border:0;outline:0;background:transparent;font-size:16px;color:var(--text);font-family:inherit;}
+.cmdk-close{border:1px solid var(--border);background:var(--paper-soft,#f4f7f4);color:var(--muted);border-radius:7px;padding:3px 8px;font-size:11px;font-weight:700;cursor:pointer;}
+.cmdk-close:hover{color:var(--green);border-color:var(--green);}
+.cmdk-results{overflow-y:auto;padding:8px;flex:1;}
+.cmdk-hint{padding:26px 20px;text-align:center;color:var(--muted);font-size:13px;line-height:1.6;}
+.cmdk-item{
+  width:100%;display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px;
+  border:0;background:transparent;text-align:left;cursor:pointer;
+  padding:11px 12px;border-radius:10px;
+}
+.cmdk-item.active{background:var(--green-light);}
+.cmdk-badge{
+  justify-self:start;min-width:42px;box-sizing:border-box;text-align:center;
+  background:linear-gradient(135deg,#eef8f2,#eaf1ff);color:var(--green);
+  border-radius:7px;padding:5px 8px;font-size:11px;font-weight:800;white-space:nowrap;
+}
+.cmdk-item-main{min-width:0;display:block;}
+.cmdk-item-title{display:block;color:var(--text);font-size:14px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cmdk-item-sub{display:block;color:var(--muted);font-size:12px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cmdk-item-meta{color:#8a8171;font-size:11.5px;white-space:nowrap;}
+.cmdk-foot{
+  display:flex;align-items:center;gap:16px;padding:10px 16px;border-top:1px solid var(--border);
+  background:var(--paper-soft,#f7faf7);color:var(--muted);font-size:11.5px;
+}
+.cmdk-foot kbd{font-family:inherit;font-size:10px;font-weight:700;background:#fff;border:1px solid var(--border);border-radius:4px;padding:1px 5px;margin-right:2px;}
+.cmdk-foot-brand{margin-left:auto;font-weight:700;color:var(--green);}
+
 .mobile-menu-toggle{display:none;}
 .main-nav{display:flex;gap:6px;align-items:center;}
 .main-nav > .nav-link{
@@ -1812,4 +1877,15 @@ mark{background:#ffe082;border-radius:2px;padding:0 1px;}
 
 @media (max-width:640px){
   .sdb-card-grid{grid-template-columns:1fr;}
+}
+
+@media (max-width:640px){
+  .header-inner{grid-template-columns:1fr auto auto;column-gap:8px;}
+  .cmdk-trigger{margin:0;padding:0;width:40px;height:40px;justify-content:center;border-radius:8px;}
+  .cmdk-trigger-label,.cmdk-trigger-kbd{display:none;}
+  .cmdk-trigger-icon{font-size:18px;}
+  .cmdk-overlay{padding:8vh 10px 10px;}
+  .cmdk-panel{max-height:84vh;}
+  .cmdk-item{grid-template-columns:auto minmax(0,1fr);gap:9px;}
+  .cmdk-item-meta{display:none;}
 }

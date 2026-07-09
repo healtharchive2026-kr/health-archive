@@ -45,12 +45,17 @@
 <link rel="icon" href="data:,">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="style.css?v=20260708-minimal-pro">
+<link rel="stylesheet" href="style.css?v=20260709-cmdk">
 </head>
 <body>
 <header class="site-header">
   <div class="container header-inner">
     <div class="logo"><img src="assets/logo-icon.png" alt="" class="logo-icon"><span class="logo-text">Health<b>Archive</b></span><img src="assets/leaf-badge.png" alt="" class="logo-leaf"></div>
+    <button class="cmdk-trigger" type="button" id="cmdk-trigger" aria-label="통합 검색 열기">
+      <span class="cmdk-trigger-icon">⌕</span>
+      <span class="cmdk-trigger-label">통합검색</span>
+      <span class="cmdk-trigger-kbd"><kbd>Ctrl</kbd><kbd>K</kbd></span>
+    </button>
     <button class="mobile-menu-toggle" type="button" aria-label="메뉴 열기" aria-expanded="false" aria-controls="main-nav">
       <span></span><span></span><span></span>
     </button>
@@ -1560,6 +1565,23 @@
   </div>
 </footer>
 
+<div class="cmdk-overlay" id="cmdk-overlay" hidden>
+  <div class="cmdk-panel" role="dialog" aria-modal="true" aria-label="통합 검색">
+    <div class="cmdk-input-row">
+      <span class="cmdk-input-icon">⌕</span>
+      <input type="text" id="cmdk-input" class="cmdk-input" placeholder="원료·기능성·회의차수·NCT·저널·법령… 무엇이든 검색" autocomplete="off" spellcheck="false">
+      <button type="button" class="cmdk-close" id="cmdk-close" aria-label="닫기">Esc</button>
+    </div>
+    <div class="cmdk-results" id="cmdk-results"></div>
+    <div class="cmdk-foot">
+      <span><kbd>↑</kbd><kbd>↓</kbd> 이동</span>
+      <span><kbd>Enter</kbd> 열기</span>
+      <span><kbd>Esc</kbd> 닫기</span>
+      <span class="cmdk-foot-brand">HealthArchive 통합검색</span>
+    </div>
+  </div>
+</div>
+
 <script src="data/ingredients.js?v=20260629-scheduler1225"></script>
 <script src="data/minutes.js?v=20260629-scheduler1225"></script>
 <script src="data/guidelines.js?v=20260629-glossary"></script>
@@ -1574,7 +1596,7 @@
 <script src="data/status.js?v=20260630-news0930"></script>
 <script src="data/daily_quotes.js"></script>
 <script src="market.js"></script>
-<script src="app.js?v=20260709-perf2"></script>
+<script src="app.js?v=20260709-cmdk"></script>
 <script src="feedback.js?v=20260704-email-fallback"></script>
 </body>
 </html>

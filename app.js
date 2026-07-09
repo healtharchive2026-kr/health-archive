@@ -576,6 +576,126 @@ function setupGlobalSearch() {
   });
 }
 
+// ---------- 커맨드 팔레트 (⌘/Ctrl+K 통합검색) ----------
+
+function setupCommandPalette() {
+  const overlay = document.getElementById('cmdk-overlay');
+  const input = document.getElementById('cmdk-input');
+  const resultsEl = document.getElementById('cmdk-results');
+  const trigger = document.getElementById('cmdk-trigger');
+  const closeBtn = document.getElementById('cmdk-close');
+  if (!overlay || !input || !resultsEl) return;
+
+  let flat = [];
+  let sel = 0;
+  let seq = 0;
+
+  const HINT = '검색어를 입력하세요. 원료명·기능성·회의차수·NCT·저널·법령 등 전체 자료에서 한 번에 찾습니다.';
+
+  function isOpen() { return !overlay.hidden; }
+
+  function open() {
+    if (isOpen()) return;
+    overlay.hidden = false;
+    document.body.classList.add('cmdk-open');
+    input.value = '';
+    flat = []; sel = 0;
+    resultsEl.innerHTML = '<div class="cmdk-hint">' + HINT + '</div>';
+    setTimeout(() => input.focus(), 20);
+    loadScripts(GLOBAL_SEARCH_SCRIPT_DEPS).catch(() => {});
+  }
+
+  function close() {
+    overlay.hidden = true;
+    document.body.classList.remove('cmdk-open');
+  }
+
+  function highlight() {
+    const items = resultsEl.querySelectorAll('.cmdk-item');
+    items.forEach((el, i) => el.classList.toggle('active', i === sel));
+    const active = items[sel];
+    if (active) active.scrollIntoView({ block: 'nearest' });
+  }
+
+  function render() {
+    if (!flat.length) {
+      const q = input.value.trim();
+      resultsEl.innerHTML = q
+        ? '<div class="cmdk-hint">“' + escapeHtml(q) + '” 검색 결과가 없습니다.</div>'
+        : '<div class="cmdk-hint">' + HINT + '</div>';
+      return;
+    }
+    resultsEl.innerHTML = flat.map((r, i) =>
+      '<button type="button" class="cmdk-item' + (i === sel ? ' active' : '') + '" data-i="' + i + '">' +
+        '<span class="cmdk-badge">' + escapeHtml(GLOBAL_RESULT_BADGE_LABELS[r.group] || GLOBAL_SEARCH_LABELS[r.group] || '') + '</span>' +
+        '<span class="cmdk-item-main">' +
+          '<span class="cmdk-item-title">' + escapeHtml(r.title) + '</span>' +
+          '<span class="cmdk-item-sub">' + escapeHtml(r.subtitle || GLOBAL_SEARCH_LABELS[r.group] || '') + '</span>' +
+        '</span>' +
+        '<span class="cmdk-item-meta">' + escapeHtml(r.meta || '') + '</span>' +
+      '</button>'
+    ).join('');
+    resultsEl.querySelectorAll('.cmdk-item').forEach(el => {
+      el.addEventListener('mousemove', () => { const i = +el.dataset.i; if (i !== sel) { sel = i; highlight(); } });
+      el.addEventListener('click', () => activate(+el.dataset.i));
+    });
+  }
+
+  function activate(i) {
+    const r = flat[i];
+    if (!r) return;
+    close();
+    routeHeroSearch(r.target, r.routeQuery || input.value.trim(), { lawtab: r.lawtab, devtab: r.devtab });
+    navigateTo(r.target);
+    if (r.target === 'material-dev' && r.devtab && typeof selectMaterialDevTab === 'function') {
+      selectMaterialDevTab(r.devtab);
+    }
+    history.replaceState(null, '', '#' + r.target);
+  }
+
+  function runSearch() {
+    const mySeq = ++seq;
+    const q = input.value.trim();
+    if (!q) { flat = []; sel = 0; render(); return; }
+    loadScripts(GLOBAL_SEARCH_SCRIPT_DEPS).then(() => {
+      if (mySeq !== seq) return;
+      const collected = collectGlobalSearchResults(q);
+      flat = collected.results.slice().sort((a, b) => (b.score - a.score)).slice(0, 40);
+      sel = 0;
+      render();
+    }).catch(() => {
+      const collected = collectGlobalSearchResults(q);
+      flat = collected.results.slice(0, 40); sel = 0; render();
+    });
+  }
+
+  input.addEventListener('input', runSearch);
+  input.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); if (flat.length) { sel = (sel + 1) % flat.length; highlight(); } }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); if (flat.length) { sel = (sel - 1 + flat.length) % flat.length; highlight(); } }
+    else if (e.key === 'Enter') { e.preventDefault(); activate(sel); }
+    else if (e.key === 'Escape') { e.preventDefault(); close(); }
+  });
+
+  if (trigger) trigger.addEventListener('click', open);
+  if (closeBtn) closeBtn.addEventListener('click', close);
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+
+  document.addEventListener('keydown', e => {
+    const k = (e.key || '').toLowerCase();
+    if ((e.metaKey || e.ctrlKey) && k === 'k') {
+      e.preventDefault();
+      isOpen() ? close() : open();
+    } else if (e.key === 'Escape' && isOpen()) {
+      close();
+    } else if (e.key === '/' && !isOpen()) {
+      const t = e.target;
+      const typing = t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable);
+      if (!typing) { e.preventDefault(); open(); }
+    }
+  });
+}
+
 function buildYearSidebar(containerId, data, yearFn, activeYear, onSelect) {
   const container = document.getElementById(containerId);
   const counts = new Map();
@@ -2170,6 +2290,7 @@ document.addEventListener('DOMContentLoaded', () => {
   appDataReady = loadData().catch(err => console.error('loadData failed', err));
   setupTabs();
   setupHeroSearch();
+  setupCommandPalette();
   runStartupTask('renderHeroNews', renderHeroNews);
   runStartupTask('renderDailyQuote', renderDailyQuote);
   runStartupTask('setupVisitorCounter', setupVisitorCounter);
