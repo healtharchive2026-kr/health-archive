@@ -45,7 +45,7 @@
 <link rel="icon" href="data:,">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="style.css?v=20260709-stats">
+<link rel="stylesheet" href="style.css?v=20260710-cmp">
 </head>
 <body>
 <header class="site-header">
@@ -1625,6 +1625,27 @@
   </div>
 </div>
 
+<div class="cmp-tray" id="cmp-tray" hidden>
+  <div class="cmp-tray-inner">
+    <span class="cmp-tray-label">비교함</span>
+    <div class="cmp-tray-chips" id="cmp-tray-chips"></div>
+    <div class="cmp-tray-actions">
+      <button type="button" class="cmp-tray-clear" id="cmp-tray-clear">비우기</button>
+      <button type="button" class="cmp-tray-open" id="cmp-tray-open" disabled>비교표 보기</button>
+    </div>
+  </div>
+</div>
+
+<div class="cmp-overlay" id="cmp-overlay" hidden>
+  <div class="cmp-modal" role="dialog" aria-modal="true" aria-label="원료 비교">
+    <div class="cmp-modal-head">
+      <h3>원료 비교</h3>
+      <button type="button" class="cmp-modal-close" id="cmp-modal-close" aria-label="닫기">×</button>
+    </div>
+    <div class="cmp-modal-body" id="cmp-modal-body"></div>
+  </div>
+</div>
+
 <div class="cmdk-overlay" id="cmdk-overlay" hidden>
   <div class="cmdk-panel" role="dialog" aria-modal="true" aria-label="통합 검색">
     <div class="cmdk-input-row">
@@ -1656,7 +1677,7 @@
 <script src="data/status.js?v=20260630-news0930"></script>
 <script src="data/daily_quotes.js"></script>
 <script src="market.js"></script>
-<script src="app.js?v=20260709-stats3"></script>
+<script src="app.js?v=20260710-cmp"></script>
 <script src="feedback.js?v=20260704-email-fallback"></script>
 </body>
 </html>

@@ -577,6 +577,117 @@ function setupGlobalSearch() {
   });
 }
 
+// ---------- 다중 원료 비교함 ----------
+
+const compareTray = [];
+const COMPARE_MAX = 4;
+
+function inCompare(name) {
+  return compareTray.some(x => ingxNorm(x.name) === ingxNorm(name));
+}
+
+function toggleCompare(r) {
+  if (!r) return;
+  const idx = compareTray.findIndex(x => ingxNorm(x.name) === ingxNorm(r.name));
+  if (idx >= 0) {
+    compareTray.splice(idx, 1);
+  } else {
+    if (compareTray.length >= COMPARE_MAX) { alert('최대 ' + COMPARE_MAX + '개까지 비교할 수 있습니다.'); return; }
+    compareTray.push(r);
+  }
+  renderCompareTray();
+  syncCompareButtons();
+}
+
+function syncCompareButtons() {
+  document.querySelectorAll('.ing-cmp-btn').forEach(btn => {
+    const on = inCompare(btn.getAttribute('data-name') || '');
+    btn.classList.toggle('active', on);
+    btn.textContent = on ? '✓' : '＋';
+    btn.title = on ? '비교함에서 제거' : '비교함에 추가';
+  });
+  // 상세 패널 버튼도 동기화
+  const panelBtn = document.querySelector('.ingx-action[data-act="compare-add"]');
+  if (panelBtn) {
+    const on = inCompare(panelBtn.getAttribute('data-name') || '');
+    panelBtn.textContent = on ? '✓ 비교함에서 제거' : '＋ 비교함에 추가';
+  }
+}
+
+function renderCompareTray() {
+  const tray = document.getElementById('cmp-tray');
+  const chips = document.getElementById('cmp-tray-chips');
+  const openBtn = document.getElementById('cmp-tray-open');
+  if (!tray || !chips || !openBtn) return;
+  if (!compareTray.length) { tray.hidden = true; return; }
+  tray.hidden = false;
+  chips.innerHTML = compareTray.map((r, i) =>
+    '<span class="cmp-chip"><span class="cmp-chip-name">' + escapeHtml(r.name) + '</span>' +
+    '<button type="button" class="cmp-chip-x" data-i="' + i + '" aria-label="제거">×</button></span>'
+  ).join('');
+  chips.querySelectorAll('.cmp-chip-x').forEach(x =>
+    x.addEventListener('click', () => { compareTray.splice(+x.dataset.i, 1); renderCompareTray(); syncCompareButtons(); }));
+  openBtn.disabled = compareTray.length < 2;
+  openBtn.textContent = '비교표 보기 (' + compareTray.length + ')';
+}
+
+function openCompareModal() {
+  if (compareTray.length < 2) return;
+  const overlay = document.getElementById('cmp-overlay');
+  const body = document.getElementById('cmp-modal-body');
+  if (!overlay || !body) return;
+  const items = compareTray.slice();
+
+  const rows = [
+    ['업체', r => escapeHtml(uniqueRowValues(mergedRows(r), 'company').join(' · ') || '-')],
+    ['인정번호', r => escapeHtml(uniqueRowValues(mergedRows(r), 'noticeNo').join(', ') || r.noticeNo || '-')],
+    ['인정연도', r => escapeHtml(String(r.year || '-'))],
+    ['일일섭취량', r => escapeHtml(r.dailyIntake || '-')],
+    ['분류', r => r.category ? '<span class="cmp-cat">' + escapeHtml(r.category) + '</span>' : '-'],
+    ['기능성', r => escapeHtml(r.efficacy || '-')],
+    ['고시형 전환', r => r.noticeConverted ? '예' : '아니오'],
+    ['소비자 리포트', r => {
+      const rep = mergedRows(r).find(x => x.report);
+      return rep ? '<a class="report-link" href="' + escapeHtml(pdfHref('reports/' + rep.report)) + '" target="_blank" rel="noopener">PDF ↗</a>' : '-';
+    }],
+  ];
+
+  body.innerHTML =
+    '<div class="cmp-table-wrap"><table class="cmp-table">' +
+    '<thead><tr><th class="cmp-attr"></th>' +
+    items.map(r => '<th>' + escapeHtml(r.name) + '</th>').join('') + '</tr></thead>' +
+    '<tbody>' +
+    rows.map(([label, fn]) =>
+      '<tr><th class="cmp-attr">' + label + '</th>' +
+      items.map(r => '<td>' + fn(r) + '</td>').join('') + '</tr>'
+    ).join('') +
+    '</tbody></table></div>';
+
+  overlay.hidden = false;
+  document.body.classList.add('cmp-open');
+}
+
+function closeCompareModal() {
+  const overlay = document.getElementById('cmp-overlay');
+  if (!overlay) return;
+  overlay.hidden = true;
+  document.body.classList.remove('cmp-open');
+}
+
+function setupCompareTray() {
+  const clearBtn = document.getElementById('cmp-tray-clear');
+  const openBtn = document.getElementById('cmp-tray-open');
+  const closeBtn = document.getElementById('cmp-modal-close');
+  const overlay = document.getElementById('cmp-overlay');
+  if (clearBtn) clearBtn.addEventListener('click', () => { compareTray.length = 0; renderCompareTray(); syncCompareButtons(); });
+  if (openBtn) openBtn.addEventListener('click', openCompareModal);
+  if (closeBtn) closeBtn.addEventListener('click', closeCompareModal);
+  if (overlay) overlay.addEventListener('click', e => { if (e.target === overlay) closeCompareModal(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && overlay && !overlay.hidden) closeCompareModal();
+  });
+}
+
 // ---------- 홈 데이터 대시보드 ----------
 
 function renderHomeDashboard() {
@@ -1172,7 +1283,7 @@ function renderIngredients(list) {
     return `
     <tr>
       <td class="notice">${noticeCellHtml(r)}</td>
-      <td class="name"><button type="button" class="ing-name-btn" data-idx="${i}">${escapeHtml(r.name)}</button>${nameTagsHtml(r)}</td>
+      <td class="name"><button type="button" class="ing-name-btn" data-idx="${i}">${escapeHtml(r.name)}</button><button type="button" class="ing-cmp-btn" data-idx="${i}" data-name="${escapeHtml(r.name)}" title="비교함에 추가">＋</button>${nameTagsHtml(r)}</td>
       <td>${companyCellHtml(r)}</td>
       <td>${lines}</td>
       <td>${escapeHtml(r.dailyIntake || '-')}</td>
@@ -1183,6 +1294,10 @@ function renderIngredients(list) {
   tbody.querySelectorAll('.ing-name-btn').forEach(btn => {
     btn.addEventListener('click', () => openIngredientDetail(displayList[+btn.dataset.idx]));
   });
+  tbody.querySelectorAll('.ing-cmp-btn').forEach(btn => {
+    btn.addEventListener('click', () => toggleCompare(displayList[+btn.dataset.idx]));
+  });
+  syncCompareButtons();
   const mergedAway = list.length - displayList.length;
   document.getElementById('ingredient-count').textContent = mergedAway > 0
     ? `${displayList.length}건 (원자료 ${list.length}건)`
@@ -1297,6 +1412,7 @@ function openIngredientDetail(r) {
     : '';
 
   const links = [];
+  links.push(`<button type="button" class="ingx-action ingx-action-cmp" data-act="compare-add" data-name="${escapeHtml(r.name)}">${inCompare(r.name) ? '✓ 비교함에서 제거' : '＋ 비교함에 추가'}</button>`);
   if (r.category) links.push(`<button type="button" class="ingx-action" data-act="compare">이 기능성 원료 비교 →</button>`);
   links.push(`<button type="button" class="ingx-action" data-act="trials">이 원료로 임상시험 검색 →</button>`);
   if (bmKey) links.push(`<button type="button" class="ingx-action" data-act="biomarker">기능성별 프로토콜 보기 →</button>`);
@@ -1324,6 +1440,11 @@ function openIngredientDetail(r) {
   body.querySelectorAll('.ingx-action').forEach(btn => {
     btn.addEventListener('click', () => {
       const act = btn.dataset.act;
+      if (act === 'compare-add') {
+        toggleCompare(r);
+        btn.textContent = inCompare(r.name) ? '✓ 비교함에서 제거' : '＋ 비교함에 추가';
+        return;
+      }
       closeIngredientDetail();
       if (act === 'compare') {
         navigateTo('compare');
@@ -1655,7 +1776,7 @@ function renderCompareTable() {
   const tbody = document.querySelector('#compare-table tbody');
   tbody.innerHTML = displayList.map((r, i) => `
     <tr>
-      <td class="name"><button type="button" class="ing-name-btn" data-idx="${i}">${escapeHtml(r.name)}</button>${nameTagsHtml(r)}</td>
+      <td class="name"><button type="button" class="ing-name-btn" data-idx="${i}">${escapeHtml(r.name)}</button><button type="button" class="ing-cmp-btn" data-idx="${i}" data-name="${escapeHtml(r.name)}" title="비교함에 추가">＋</button>${nameTagsHtml(r)}</td>
       <td>${companyCellHtml(r)}</td>
       <td>${escapeHtml(r.dailyIntake || '-')}</td>
       <td>${escapeHtml(r.efficacy || '-')}</td>
@@ -1666,6 +1787,10 @@ function renderCompareTable() {
   tbody.querySelectorAll('.ing-name-btn').forEach(btn => {
     btn.addEventListener('click', () => openIngredientDetail(displayList[+btn.dataset.idx]));
   });
+  tbody.querySelectorAll('.ing-cmp-btn').forEach(btn => {
+    btn.addEventListener('click', () => toggleCompare(displayList[+btn.dataset.idx]));
+  });
+  syncCompareButtons();
   const mergedAway = list.length - displayList.length;
   document.getElementById('compare-count').textContent = mergedAway > 0
     ? `${displayList.length}건 (원자료 ${list.length}건)`
@@ -2682,6 +2807,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupHeroSearch();
   setupCommandPalette();
   setupIngredientDetail();
+  setupCompareTray();
   runStartupTask('renderHeroNews', renderHeroNews);
   runStartupTask('renderDailyQuote', renderDailyQuote);
   runStartupTask('setupVisitorCounter', setupVisitorCounter);
