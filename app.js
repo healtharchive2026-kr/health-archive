@@ -576,6 +576,77 @@ function setupGlobalSearch() {
   });
 }
 
+// ---------- 홈 데이터 대시보드 ----------
+
+function renderHomeDashboard() {
+  // 최근 인정 원료 (loadData에서 연도·번호 내림차순 정렬됨)
+  const ingEl = document.getElementById('dash-recent-ingredients');
+  if (ingEl && typeof ingredients !== 'undefined' && ingredients.length) {
+    const top = ingredients.slice(0, 5);
+    ingEl.innerHTML = top.map((r, i) =>
+      '<button type="button" class="dash-ing-row" data-i="' + i + '">' +
+        '<span class="dash-ing-name">' + escapeHtml(r.name) + '</span>' +
+        '<span class="dash-ing-meta">' + escapeHtml(r.noticeNo || '') + (r.category ? ' · ' + escapeHtml(r.category) : '') + '</span>' +
+      '</button>'
+    ).join('');
+    ingEl.querySelectorAll('.dash-ing-row').forEach(btn =>
+      btn.addEventListener('click', () => openIngredientDetail(top[+btn.dataset.i])));
+  }
+
+  // 기능성 분포 Top
+  const catEl = document.getElementById('dash-category-dist');
+  if (catEl && typeof ingredients !== 'undefined' && ingredients.length) {
+    const counts = new Map();
+    ingredients.forEach(r => { const c = r.category; if (c) counts.set(c, (counts.get(c) || 0) + 1); });
+    const sorted = Array.from(counts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 6);
+    const max = sorted.length ? sorted[0][1] : 1;
+    catEl.innerHTML = sorted.map(([cat, n]) =>
+      '<button type="button" class="dash-cat-row" data-cat="' + escapeHtml(cat) + '">' +
+        '<span class="dash-cat-name">' + escapeHtml(cat) + '</span>' +
+        '<span class="dash-cat-bar"><span class="dash-cat-fill" style="width:' + Math.round(n / max * 100) + '%"></span></span>' +
+        '<span class="dash-cat-num">' + n + '</span>' +
+      '</button>'
+    ).join('');
+    catEl.querySelectorAll('.dash-cat-row').forEach(btn =>
+      btn.addEventListener('click', () => {
+        navigateTo('compare');
+        if (typeof selectCategoryCard === 'function') { try { selectCategoryCard(btn.dataset.cat); } catch (e) {} }
+        history.replaceState(null, '', '#compare');
+      }));
+  }
+
+  // 최근 심의 회의록
+  const minEl = document.getElementById('dash-recent-minutes');
+  if (minEl && typeof minutes !== 'undefined' && minutes.length) {
+    const top = minutes.slice(0, 4);
+    minEl.innerHTML = top.map(m =>
+      '<div class="dash-min-row">' +
+        '<span class="dash-min-name">' + escapeHtml(m.meetingName) + '</span>' +
+        (m.pdf
+          ? '<a class="dash-min-link" href="' + escapeHtml(pdfHref('minutes-pdfs/' + m.pdf)) + '" target="_blank" rel="noopener">PDF ↗</a>'
+          : '<span class="dash-min-year">' + escapeHtml(m.year || '') + '</span>') +
+      '</div>'
+    ).join('');
+  }
+
+  // 최근 신규 제품 (products.js 지연 로드)
+  const prodEl = document.getElementById('dash-recent-products');
+  if (prodEl) {
+    loadScripts(GLOBAL_SEARCH_SCRIPT_DEPS).then(() => {
+      const products = (typeof PRODUCTS_DATA !== 'undefined') ? PRODUCTS_DATA.slice() : [];
+      products.sort((a, b) => (b.reportDate || '').localeCompare(a.reportDate || ''));
+      const top = products.slice(0, 4);
+      if (!top.length) { prodEl.innerHTML = '<div class="hdc-loading">데이터 없음</div>'; return; }
+      prodEl.innerHTML = top.map(p =>
+        '<div class="dash-prod-row">' +
+          '<span class="dash-prod-name">' + escapeHtml(p.name) + '</span>' +
+          '<span class="dash-prod-meta">' + escapeHtml((p.company || '').slice(0, 14)) + ' · ' + escapeHtml(fmtProductDate(p.reportDate)) + '</span>' +
+        '</div>'
+      ).join('');
+    }).catch(() => { prodEl.innerHTML = '<div class="hdc-loading">불러오지 못했습니다</div>'; });
+  }
+}
+
 // ---------- 커맨드 팔레트 (⌘/Ctrl+K 통합검색) ----------
 
 function setupCommandPalette() {
@@ -2477,5 +2548,5 @@ document.addEventListener('DOMContentLoaded', () => {
   runStartupTask('renderDailyQuote', renderDailyQuote);
   runStartupTask('setupVisitorCounter', setupVisitorCounter);
   runStartupTask('setupIntroModal', setupIntroModal);
-  appDataReady.then(() => setupGlobalSearch());
+  appDataReady.then(() => { setupGlobalSearch(); renderHomeDashboard(); });
 });
