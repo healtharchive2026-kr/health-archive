@@ -47,6 +47,9 @@ jobs:
             scripts/update_news_nutraingredients.py
             scripts/update_news_supplysidesj.py
             scripts/update_news_nutritioninsight.py
+            scripts/update_news_sciencedaily.py
+            scripts/update_news_yakup.py
+            scripts/update_paper_reports.py
           )
 
           failed=0
