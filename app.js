@@ -10,6 +10,7 @@ const tabInitPromises = new Map();
 
 const TAB_SCRIPT_DEPS = {
   market: ['libs/chart.umd.js'],
+  stats: ['libs/chart.umd.js'],
   products: ['data/products.js?v=20260709-perf'],
   foodraw: ['data/food_ingredients.js?v=20260709-perf'],
   'temp-approval': ['data/temp_approval.js?v=20260709-perf'],
@@ -647,6 +648,140 @@ function renderHomeDashboard() {
   }
 }
 
+// ---------- 인정 통계 ----------
+
+let statsInitialized = false;
+function initStatsTab() {
+  if (statsInitialized) return;
+  if (typeof ingredients === 'undefined' || !ingredients.length) return;
+  if (typeof Chart === 'undefined') return;
+  statsInitialized = true;
+
+  const INDIV_COLOR = '#e8a020';
+  const GOSI_COLOR = '#1a4e8a';
+  const GREEN = '#2f6d57';
+  const textMuted = '#5b6b66';
+
+  const indivTotal = ingredients.filter(r => !r.noticeConverted).length;
+  const convTotal = ingredients.filter(r => r.noticeConverted).length;
+  const years = ingredients.map(r => r.year).filter(y => y && !isNaN(y));
+  const maxYear = years.length ? Math.max(...years) : 0;
+  const recent5 = ingredients.filter(r => r.year && r.year > maxYear - 5).length;
+
+  // 기업 집계
+  const compCount = new Map();
+  ingredients.forEach(r => {
+    if (!r.company) return;
+    r.company.split(/[·,\/]/).forEach(c => {
+      c = c.trim();
+      if (c) compCount.set(c, (compCount.get(c) || 0) + 1);
+    });
+  });
+  // 기능성 집계
+  const catCount = new Map();
+  ingredients.forEach(r => { if (r.category) catCount.set(r.category, (catCount.get(r.category) || 0) + 1); });
+
+  const badge = document.getElementById('stats-badge');
+  if (badge) badge.textContent = `총 ${ingredients.length.toLocaleString()}건`;
+
+  // KPI 타일
+  const kpiEl = document.getElementById('stats-kpi');
+  if (kpiEl) {
+    const kpis = [
+      ['총 인정 원료', ingredients.length],
+      ['개별인정', indivTotal],
+      ['고시형 전환', convTotal],
+      [`최근 5년(${maxYear - 4}~${maxYear})`, recent5],
+      ['참여 기업', compCount.size],
+      ['기능성 분류', catCount.size],
+    ];
+    kpiEl.innerHTML = kpis.map(([label, n]) =>
+      `<div class="stats-kpi-tile"><span class="skpi-num">${n.toLocaleString()}</span><span class="skpi-label">${escapeHtml(label)}</span></div>`
+    ).join('');
+  }
+
+  // 연도별 추이 (스택 막대)
+  const yearSet = Array.from(new Set(years)).sort((a, b) => a - b);
+  const indivByYear = yearSet.map(y => ingredients.filter(r => r.year === y && !r.noticeConverted).length);
+  const convByYear = yearSet.map(y => ingredients.filter(r => r.year === y && r.noticeConverted).length);
+  const yearCanvas = document.getElementById('statsYearChart');
+  if (yearCanvas) {
+    new Chart(yearCanvas, {
+      type: 'bar',
+      data: {
+        labels: yearSet,
+        datasets: [
+          { label: '개별인정', data: indivByYear, backgroundColor: INDIV_COLOR, stack: 's' },
+          { label: '고시형 전환', data: convByYear, backgroundColor: GOSI_COLOR, stack: 's' },
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } },
+          tooltip: {
+            backgroundColor: '#fff', borderColor: 'rgba(0,0,0,.1)', borderWidth: 1,
+            titleColor: '#1c2a26', bodyColor: textMuted, padding: 10,
+            callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y}건` }
+          }
+        },
+        scales: {
+          x: { stacked: true, grid: { display: false }, ticks: { font: { size: 10 }, color: textMuted } },
+          y: { stacked: true, beginAtZero: true, ticks: { font: { size: 10 }, color: textMuted }, grid: { color: 'rgba(0,0,0,.05)' } }
+        }
+      }
+    });
+  }
+
+  // 기능성 분포 Top 10 (막대 리스트)
+  const catList = document.getElementById('stats-cat-list');
+  if (catList) {
+    const catTop = Array.from(catCount.entries()).sort((a, b) => b[1] - a[1]).slice(0, 10);
+    const catMax = catTop.length ? catTop[0][1] : 1;
+    catList.innerHTML = catTop.map(([cat, n]) =>
+      `<button type="button" class="stats-cat-row" data-cat="${escapeHtml(cat)}">
+        <span class="stats-cat-name">${escapeHtml(cat)}</span>
+        <span class="stats-cat-bar"><span class="stats-cat-fill" style="width:${Math.round(n / catMax * 100)}%"></span></span>
+        <span class="stats-cat-num">${n}</span>
+      </button>`
+    ).join('');
+    catList.querySelectorAll('.stats-cat-row').forEach(btn =>
+      btn.addEventListener('click', () => {
+        navigateTo('compare');
+        if (typeof selectCategoryCard === 'function') { try { selectCategoryCard(btn.dataset.cat); } catch (e) {} }
+        history.replaceState(null, '', '#compare');
+      }));
+  }
+
+  // 기업별 Top 15 (가로 막대)
+  const compTop = Array.from(compCount.entries()).sort((a, b) => b[1] - a[1]).slice(0, 15);
+  const compCanvas = document.getElementById('statsCompanyChart');
+  if (compCanvas) {
+    new Chart(compCanvas, {
+      type: 'bar',
+      data: {
+        labels: compTop.map(c => c[0]),
+        datasets: [{ label: '인정 건수', data: compTop.map(c => c[1]), backgroundColor: GREEN, borderRadius: 4 }]
+      },
+      options: {
+        indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#fff', borderColor: 'rgba(0,0,0,.1)', borderWidth: 1,
+            titleColor: '#1c2a26', bodyColor: textMuted, padding: 10,
+            callbacks: { label: ctx => ` ${ctx.parsed.x}건` }
+          }
+        },
+        scales: {
+          x: { beginAtZero: true, ticks: { font: { size: 10 }, color: textMuted, precision: 0 }, grid: { color: 'rgba(0,0,0,.05)' } },
+          y: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#1c2a26' } }
+        }
+      }
+    });
+  }
+}
+
 // ---------- 커맨드 팔레트 (⌘/Ctrl+K 통합검색) ----------
 
 function setupCommandPalette() {
@@ -904,6 +1039,9 @@ function initTabContent(tab) {
           break;
         case 'market':
           if (typeof initMarketTab === 'function') requestAnimationFrame(initMarketTab);
+          break;
+        case 'stats':
+          setTimeout(initStatsTab, 0);
           break;
         case 'safety-db':
           if (typeof initSafetyDbTab === 'function') requestAnimationFrame(initSafetyDbTab);

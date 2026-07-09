@@ -412,6 +412,35 @@ main{padding:40px 24px 80px;}
   margin:20px 0 18px;
   box-shadow:var(--shadow-md);
 }
+/* ── 인정 통계 ── */
+.stats-kpi-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;margin-bottom:18px;}
+.stats-kpi-tile{
+  background:var(--paper-solid,#fff);border:1px solid var(--border);border-radius:12px;
+  padding:16px 14px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;gap:5px;
+}
+.skpi-num{font-size:24px;font-weight:800;color:var(--green);letter-spacing:0;line-height:1;}
+.skpi-label{font-size:11.5px;color:var(--muted);font-weight:600;}
+.stats-chart-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:16px;margin-bottom:16px;}
+.stats-card{background:var(--paper-solid,#fff);border:1px solid var(--border);border-radius:14px;padding:18px 20px;box-shadow:var(--shadow-sm);min-width:0;}
+.stats-card-wide{margin-bottom:16px;}
+.stats-card-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.stats-card-head h3{margin:0;font-size:15px;font-weight:800;color:var(--text);}
+.stats-card-sub{font-size:11.5px;color:var(--muted);}
+.stats-chart-area{position:relative;width:100%;height:300px;}
+.stats-chart-tall{height:440px;}
+.stats-cat-list{display:flex;flex-direction:column;gap:6px;}
+.stats-cat-row{
+  border:0;background:none;padding:6px 6px;margin:0;border-radius:8px;cursor:pointer;
+  display:grid;grid-template-columns:96px minmax(0,1fr) auto;align-items:center;gap:10px;transition:background .12s;
+}
+.stats-cat-row:hover{background:var(--green-light);}
+.stats-cat-name{font-size:12px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.stats-cat-bar{height:8px;border-radius:999px;background:#eef2f0;overflow:hidden;}
+.stats-cat-fill{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--green),#5cae86);}
+.stats-cat-num{font-size:12px;font-weight:800;color:var(--green);min-width:24px;text-align:right;}
+@media (max-width:1100px){ .stats-kpi-grid{grid-template-columns:repeat(3,minmax(0,1fr));} .stats-chart-grid{grid-template-columns:1fr;} }
+@media (max-width:560px){ .stats-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr));} .stats-chart-area{height:260px;} .stats-chart-tall{height:400px;} }
+
 /* ── 홈 데이터 대시보드 ── */
 .home-dash{
   display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:24px;

@@ -45,7 +45,7 @@
 <link rel="icon" href="data:,">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="style.css?v=20260709-dash">
+<link rel="stylesheet" href="style.css?v=20260709-stats">
 </head>
 <body>
 <header class="site-header">
@@ -96,6 +96,7 @@
         <div class="nav-dropdown">
           <a href="#products" data-tab="products" class="nav-link">신규 등록 제품</a>
           <a href="#market" data-tab="market" class="nav-link">시장현황</a>
+          <a href="#stats" data-tab="stats" class="nav-link">인정 통계</a>
           <a href="#news" data-tab="news" class="nav-link">식품 뉴스</a>
           <a href="#events" data-tab="events" class="nav-link">학회/박람회</a>
         </div>
@@ -783,6 +784,36 @@
         </table>
       </div>
     </div>
+  </section>
+
+  <section id="stats" class="tab-section">
+    <div class="section-title-row">
+      <div>
+        <h2>인정 통계</h2>
+        <p class="compare-intro">식약처가 공개한 건강기능식품 기능성 원료 인정 현황(개별인정·고시형 전환)을 연도·기업·기능성별로 집계했습니다. 모두 공개 인정 데이터 기반입니다.</p>
+      </div>
+      <span class="section-badge" id="stats-badge">-</span>
+    </div>
+
+    <div class="stats-kpi-grid" id="stats-kpi"></div>
+
+    <div class="stats-chart-grid">
+      <div class="stats-card">
+        <div class="stats-card-head"><h3>연도별 인정 추이</h3><span class="stats-card-sub">개별인정 · 고시형 전환</span></div>
+        <div class="stats-chart-area"><canvas id="statsYearChart"></canvas></div>
+      </div>
+      <div class="stats-card">
+        <div class="stats-card-head"><h3>기능성 분포 Top 10</h3><span class="stats-card-sub">인정 원료 수 기준</span></div>
+        <div class="stats-cat-list" id="stats-cat-list"></div>
+      </div>
+    </div>
+
+    <div class="stats-card stats-card-wide">
+      <div class="stats-card-head"><h3>기업별 인정 건수 Top 15</h3><span class="stats-card-sub">업체명 기준 집계 (공동 인정 시 각각 합산)</span></div>
+      <div class="stats-chart-area stats-chart-tall"><canvas id="statsCompanyChart"></canvas></div>
+    </div>
+
+    <p class="devmap-footnote">집계 기준: 인정번호 연도 · 업체명 문자열 분리 · 기능성 분류값. 원자료는 각 원료의 식약처 인정 공고이며, 통계는 표시용 근사치입니다.</p>
   </section>
 
   <section id="ingredients" class="tab-section">
@@ -1625,7 +1656,7 @@
 <script src="data/status.js?v=20260630-news0930"></script>
 <script src="data/daily_quotes.js"></script>
 <script src="market.js"></script>
-<script src="app.js?v=20260709-dash"></script>
+<script src="app.js?v=20260709-stats3"></script>
 <script src="feedback.js?v=20260704-email-fallback"></script>
 </body>
 </html>
