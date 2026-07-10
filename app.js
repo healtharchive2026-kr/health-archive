@@ -893,6 +893,157 @@ function initStatsTab() {
   }
 }
 
+// ---------- 화이트스페이스맵 (기능성×유래 매트릭스, 비공개) ----------
+
+const WS_PASSCODE = '7835';
+const WS_SESSION_KEY = 'ha_ws_unlocked';
+
+const WS_ORIGIN_ORDER = ['식물성', '동물성', '미생물(발효)', '정제·합성물', '복합·기타'];
+const WS_MICROBE_KW = ['lactobacillus','lactiplantibacillus','bifidobacterium','bacillus','weissella','leuconostoc',
+  'latilactobacillus','limosilactobacillus','streptococcus','enterococcus','pediococcus','saccharomyces',
+  'lacticaseibacillus','loigolactobacillus','companilactobacillus','levilactobacillus',
+  '프로바이오틱스','유산균','균주','효모','배양건조물','배양물','발효','클로렐라','스피룰리나'];
+const WS_MICROBE_ABBR = /\b[a-z]\.\s?[a-z]{4,}/i;
+const WS_ANIMAL_KW = ['콜라겐','상어','연골','우유','유단백','카제인','태반','로얄젤리','봉독','꿀벌','난각','난백',
+  '홍합','굴','새우','게','갑각류','물고기','어유','참치','연어','돈피','우피','유청','초유','달팽이','지렁이',
+  '오메가-3','오메가3','프로폴리스','크릴','유크림','벌꿀','꿀 ','epa','dha','가다랑어','엘라스틴','실크단백질',
+  '가리비','전복','명태','누에고치','누에','유지방'];
+const WS_PLANT_KW = ['추출물','추출분말','추출대두','속대','포엽','뿌리','뿌리껍질','잎','꽃','종자','열매','씨',
+  '나무','과피','과육','속피','줄기','새싹','뿌리줄기','해조','미세조류','다시마','미역','버섯','균사체','곡물',
+  '현미','보리','콩','옥수수','인삼','홍삼','생강','마늘','양파','녹차','홍차','추출혼합','추출복합','농축분말',
+  '건조분말','추출증류','과립분말','열수추출','발효추출','과즙','착즙','주정추출','열매체','자실체','꽃잎',
+  '크랜베리','무화과','카카오','커피원두','포도','사과','배(','감귤','딸기','블루베리','자몽','레몬','오렌지',
+  '아라비아검','석류','대두유','식물스테롤','폴리페놀','학명'];
+const WS_SYNTH_KW = ['글루코사민','콘드로이친','히알루론산','칼슘','마그네슘','아연','철','비타민','토코페롤',
+  '엽산','나이아신','판토텐산','피리독신','리보플라빈','티아민','코엔자임','시아노코발라민','베타카로틴',
+  '루테인','제아잔틴','타우린','카르니틴','이노시톨','콜린','폴리코사놀','나트륨염','칼륨염',
+  '올리고당','베타글루칸','펩타이드','유비퀴놀','포스파티딜세린','키토산','히드록시메틸셀룰로스',
+  '피니톨','아르기닌','plag','glycerol','ubiquinol'];
+
+function wsClassifyOrigin(name) {
+  const n = (name || '').toLowerCase();
+  if (WS_MICROBE_KW.some(k => n.includes(k)) || WS_MICROBE_ABBR.test(name || '')) return '미생물(발효)';
+  if (WS_ANIMAL_KW.some(k => n.includes(k))) return '동물성';
+  if (WS_PLANT_KW.some(k => n.includes(k))) return '식물성';
+  if (WS_SYNTH_KW.some(k => n.includes(k))) return '정제·합성물';
+  return '복합·기타';
+}
+
+function wsIsUnlocked() {
+  try { return sessionStorage.getItem(WS_SESSION_KEY) === '1'; } catch (e) { return false; }
+}
+
+function wsLevel(n) {
+  if (n === 0) return 0;
+  if (n <= 2) return 1;
+  if (n <= 5) return 2;
+  if (n <= 10) return 3;
+  return 4;
+}
+
+let wsBuilt = false;
+function wsRenderMatrix() {
+  if (wsBuilt) return;
+  if (typeof ingredients === 'undefined' || !ingredients.length) return;
+  wsBuilt = true;
+
+  const catCount = new Map();
+  ingredients.forEach(r => { if (r.category) catCount.set(r.category, (catCount.get(r.category) || 0) + 1); });
+  const topCats = Array.from(catCount.entries()).sort((a, b) => b[1] - a[1]).slice(0, 16).map(c => c[0]);
+
+  // 매트릭스 집계: origin -> category -> {count, items}
+  const grid = {};
+  WS_ORIGIN_ORDER.forEach(o => { grid[o] = {}; topCats.forEach(c => { grid[o][c] = []; }); });
+  ingredients.forEach(r => {
+    if (!r.category || !topCats.includes(r.category)) return;
+    const origin = wsClassifyOrigin(r.name);
+    if (!grid[origin]) return;
+    grid[origin][r.category].push(r);
+  });
+
+  const matrixEl = document.getElementById('ws-matrix');
+  if (!matrixEl) return;
+
+  let html = '<div class="ws-row ws-row-head"><div class="ws-cell ws-cell-corner"></div>' +
+    topCats.map(c => `<div class="ws-cell ws-col-head">${escapeHtml(c)}</div>`).join('') + '</div>';
+
+  WS_ORIGIN_ORDER.forEach(origin => {
+    html += `<div class="ws-row"><div class="ws-cell ws-row-head-cell">${escapeHtml(origin)}</div>`;
+    topCats.forEach(cat => {
+      const items = grid[origin][cat] || [];
+      const lvl = wsLevel(items.length);
+      html += `<button type="button" class="ws-cell ws-data-cell ws-lvl${lvl}" data-origin="${escapeHtml(origin)}" data-cat="${escapeHtml(cat)}">${items.length || ''}</button>`;
+    });
+    html += '</div>';
+  });
+
+  matrixEl.innerHTML = html;
+  matrixEl.querySelectorAll('.ws-data-cell').forEach(cell => {
+    cell.addEventListener('click', () => {
+      const origin = cell.dataset.origin, cat = cell.dataset.cat;
+      const items = grid[origin][cat] || [];
+      const detail = document.getElementById('ws-detail');
+      if (!detail) return;
+      detail.hidden = false;
+      detail.innerHTML = `
+        <div class="ws-detail-head"><h4>${escapeHtml(origin)} × ${escapeHtml(cat)} <span class="ws-detail-cnt">${items.length}건</span></h4></div>
+        ${items.length
+          ? '<div class="ws-detail-list">' + items.slice(0, 30).map((r, i) =>
+              `<button type="button" class="ws-detail-item" data-i="${i}">${escapeHtml(r.name)}</button>`).join('') + '</div>'
+          : '<p class="ingx-empty">해당 조합의 기존 인정 사례가 없습니다 — 화이트스페이스입니다.</p>'}
+      `;
+      detail.querySelectorAll('.ws-detail-item').forEach(btn =>
+        btn.addEventListener('click', () => openIngredientDetail(items[+btn.dataset.i])));
+      detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+  });
+}
+
+function wsUnlock() {
+  try { sessionStorage.setItem(WS_SESSION_KEY, '1'); } catch (e) {}
+  document.getElementById('ws-gate').hidden = true;
+  document.getElementById('ws-content').hidden = false;
+  wsRenderMatrix();
+}
+
+function wsLock() {
+  try { sessionStorage.removeItem(WS_SESSION_KEY); } catch (e) {}
+  document.getElementById('ws-gate').hidden = false;
+  document.getElementById('ws-content').hidden = true;
+  const input = document.getElementById('ws-gate-input');
+  if (input) input.value = '';
+}
+
+function initWhitespaceTab() {
+  if (wsIsUnlocked()) {
+    document.getElementById('ws-gate').hidden = true;
+    document.getElementById('ws-content').hidden = false;
+    wsRenderMatrix();
+  } else {
+    document.getElementById('ws-gate').hidden = false;
+    document.getElementById('ws-content').hidden = true;
+  }
+}
+
+function setupWhitespaceGate() {
+  const form = document.getElementById('ws-gate-form');
+  const input = document.getElementById('ws-gate-input');
+  const err = document.getElementById('ws-gate-err');
+  const lockBtn = document.getElementById('ws-lock-btn');
+  if (form) {
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      if ((input.value || '') === WS_PASSCODE) {
+        if (err) err.hidden = true;
+        wsUnlock();
+      } else {
+        if (err) err.hidden = false;
+      }
+    });
+  }
+  if (lockBtn) lockBtn.addEventListener('click', wsLock);
+}
+
 // ---------- 커맨드 팔레트 (⌘/Ctrl+K 통합검색) ----------
 
 function setupCommandPalette() {
@@ -1153,6 +1304,9 @@ function initTabContent(tab) {
           break;
         case 'stats':
           setTimeout(initStatsTab, 0);
+          break;
+        case 'whitespace':
+          setTimeout(initWhitespaceTab, 0);
           break;
         case 'safety-db':
           if (typeof initSafetyDbTab === 'function') requestAnimationFrame(initSafetyDbTab);
@@ -2865,6 +3019,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupCommandPalette();
   setupIngredientDetail();
   setupCompareTray();
+  setupWhitespaceGate();
   runStartupTask('renderHeroNews', renderHeroNews);
   runStartupTask('renderDailyQuote', renderDailyQuote);
   runStartupTask('setupVisitorCounter', setupVisitorCounter);

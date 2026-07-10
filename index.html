@@ -45,7 +45,7 @@
 <link rel="icon" href="data:,">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="style.css?v=20260710-mdc">
+<link rel="stylesheet" href="style.css?v=20260710-ws">
 </head>
 <body>
 <header class="site-header">
@@ -97,6 +97,7 @@
           <a href="#products" data-tab="products" class="nav-link">신규 등록 제품</a>
           <a href="#market" data-tab="market" class="nav-link">시장현황</a>
           <a href="#stats" data-tab="stats" class="nav-link">인정 통계</a>
+          <a href="#whitespace" data-tab="whitespace" class="nav-link">화이트스페이스맵 🔒</a>
           <a href="#news" data-tab="news" class="nav-link">식품 뉴스</a>
           <a href="#events" data-tab="events" class="nav-link">학회/박람회</a>
         </div>
@@ -814,6 +815,44 @@
     </div>
 
     <p class="devmap-footnote">집계 기준: 인정번호 연도 · 업체명 문자열 분리 · 기능성 분류값. 원자료는 각 원료의 식약처 인정 공고이며, 통계는 표시용 근사치입니다.</p>
+  </section>
+
+  <section id="whitespace" class="tab-section">
+    <div class="ws-gate" id="ws-gate">
+      <div class="ws-gate-box">
+        <div class="ws-gate-icon">🔒</div>
+        <h3>비공개 페이지</h3>
+        <p>화이트스페이스맵은 비밀번호로 보호되어 있습니다.</p>
+        <form id="ws-gate-form" class="ws-gate-form">
+          <input type="password" id="ws-gate-input" placeholder="비밀번호" autocomplete="off">
+          <button type="submit">열기</button>
+        </form>
+        <p class="ws-gate-err" id="ws-gate-err" hidden>비밀번호가 올바르지 않습니다.</p>
+      </div>
+    </div>
+
+    <div class="ws-content" id="ws-content" hidden>
+      <div class="section-title-row">
+        <div>
+          <h2>화이트스페이스맵</h2>
+          <p class="compare-intro">기능성(가로) × 원료 유래(세로)로 인정 원료를 교차 집계한 매트릭스입니다. 원료명 기반 추정 분류이며, 칸이 비어있거나 옅을수록 해당 조합의 기존 인정 사례가 적은 영역입니다.</p>
+        </div>
+        <span class="section-badge">비공개 · 나만 보기</span>
+      </div>
+      <div class="ws-legend">
+        <span class="ws-legend-item"><span class="ws-legend-swatch ws-l0"></span>0건</span>
+        <span class="ws-legend-item"><span class="ws-legend-swatch ws-l1"></span>1~2건</span>
+        <span class="ws-legend-item"><span class="ws-legend-swatch ws-l2"></span>3~5건</span>
+        <span class="ws-legend-item"><span class="ws-legend-swatch ws-l3"></span>6~10건</span>
+        <span class="ws-legend-item"><span class="ws-legend-swatch ws-l4"></span>11건+</span>
+        <button type="button" class="ws-lock-btn" id="ws-lock-btn">🔒 다시 잠그기</button>
+      </div>
+      <div class="ws-matrix-wrap">
+        <div class="ws-matrix" id="ws-matrix"></div>
+      </div>
+      <div class="ws-detail" id="ws-detail" hidden></div>
+      <p class="devmap-footnote">유래 분류는 원료명(학명·균주명·부위 표현)에 기반한 자동 추정입니다 (분류 성공률 약 85%, 나머지는 "복합·기타"). 실무 판단의 참고용이며 정확한 유래는 개별 원료의 인정 공고를 확인하세요.</p>
+    </div>
   </section>
 
   <section id="ingredients" class="tab-section">
@@ -1677,7 +1716,7 @@
 <script src="data/status.js?v=20260630-news0930"></script>
 <script src="data/daily_quotes.js"></script>
 <script src="market.js"></script>
-<script src="app.js?v=20260710-mdc"></script>
+<script src="app.js?v=20260710-ws"></script>
 <script src="feedback.js?v=20260704-email-fallback"></script>
 </body>
 </html>

@@ -463,6 +463,63 @@ body.cmp-open{overflow:hidden;}
   .cmp-table th,.cmp-table td{min-width:130px;}
 }
 
+/* ── 화이트스페이스맵 (비공개) ── */
+.ws-gate{display:flex;align-items:center;justify-content:center;min-height:50vh;padding:40px 16px;}
+.ws-gate-box{width:100%;max-width:340px;text-align:center;background:var(--paper-solid,#fff);border:1px solid var(--border);border-radius:16px;padding:32px 28px;box-shadow:var(--shadow-md);}
+.ws-gate-icon{font-size:32px;margin-bottom:10px;}
+.ws-gate-box h3{margin:0 0 8px;font-size:17px;color:var(--text);}
+.ws-gate-box p{margin:0 0 18px;font-size:13px;color:var(--muted);}
+.ws-gate-form{display:flex;gap:8px;}
+.ws-gate-form input{flex:1;min-width:0;border:1px solid var(--border);border-radius:9px;padding:10px 12px;font-size:14px;text-align:center;letter-spacing:.1em;}
+.ws-gate-form input:focus{outline:none;border-color:var(--green);}
+.ws-gate-form button{border:1px solid var(--green);background:var(--green);color:#fff;border-radius:9px;padding:10px 16px;font-size:13px;font-weight:800;cursor:pointer;}
+.ws-gate-form button:hover{background:#245a47;}
+.ws-gate-err{margin:12px 0 0;color:var(--crimson,#a75c4b);font-size:12px;font-weight:700;}
+.ws-legend{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:16px;font-size:11.5px;color:var(--muted);}
+.ws-legend-item{display:inline-flex;align-items:center;gap:5px;}
+.ws-legend-swatch{width:13px;height:13px;border-radius:4px;display:inline-block;border:1px solid rgba(0,0,0,.06);}
+.ws-l0{background:#f4f6f4;}
+.ws-l1{background:#cdeadb;}
+.ws-l2{background:#8fd0ac;}
+.ws-l3{background:#3f9d6f;}
+.ws-l4{background:#1d6b45;}
+.ws-lock-btn{margin-left:auto;border:1px solid var(--border);background:#fff;color:var(--muted);border-radius:8px;padding:6px 12px;font-size:11.5px;font-weight:700;cursor:pointer;}
+.ws-lock-btn:hover{border-color:var(--crimson,#a75c4b);color:var(--crimson,#a75c4b);}
+.ws-matrix-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;background:#fff;box-shadow:var(--shadow-sm);margin-bottom:16px;}
+.ws-matrix{display:inline-block;min-width:100%;}
+.ws-row{display:flex;}
+.ws-cell{flex-shrink:0;box-sizing:border-box;}
+.ws-cell-corner{width:96px;}
+.ws-col-head{
+  width:64px;padding:8px 4px;font-size:10.5px;font-weight:700;color:var(--green);text-align:center;
+  writing-mode:vertical-rl;text-orientation:mixed;white-space:nowrap;border-bottom:1px solid var(--border);
+}
+.ws-row-head-cell{
+  width:96px;flex-shrink:0;display:flex;align-items:center;padding:0 10px;font-size:11.5px;font-weight:800;
+  color:var(--text);background:var(--paper-soft,#f7faf7);border-right:1px solid var(--border);
+}
+.ws-data-cell{
+  width:64px;height:44px;border:1px solid #fff;border-radius:0;margin:1px;font-size:12px;font-weight:800;
+  color:#1c3a2b;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .1s,box-shadow .1s;
+}
+.ws-data-cell:hover{transform:scale(1.08);box-shadow:0 4px 12px rgba(20,40,30,.2);position:relative;z-index:1;}
+.ws-data-cell.ws-lvl0{background:#f4f6f4;color:#c3c9c5;}
+.ws-data-cell.ws-lvl1{background:#cdeadb;}
+.ws-data-cell.ws-lvl2{background:#8fd0ac;}
+.ws-data-cell.ws-lvl3{background:#3f9d6f;color:#fff;}
+.ws-data-cell.ws-lvl4{background:#1d6b45;color:#fff;}
+.ws-detail{background:var(--paper-solid,#fff);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:16px;box-shadow:var(--shadow-sm);}
+.ws-detail-head h4{margin:0 0 12px;font-size:14px;color:var(--text);}
+.ws-detail-cnt{color:var(--green);font-weight:800;}
+.ws-detail-list{display:flex;flex-wrap:wrap;gap:6px;}
+.ws-detail-item{border:1px solid var(--border);background:#fff;border-radius:8px;padding:6px 10px;font-size:12px;font-weight:600;color:var(--text);cursor:pointer;}
+.ws-detail-item:hover{border-color:var(--green);background:var(--green-light);color:var(--green);}
+@media (max-width:640px){
+  .ws-cell-corner,.ws-row-head-cell{width:64px;font-size:10.5px;padding:0 6px;}
+  .ws-col-head,.ws-data-cell{width:46px;}
+  .ws-data-cell{height:38px;font-size:11px;}
+}
+
 /* ── 인정 통계 ── */
 .stats-kpi-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;margin-bottom:18px;}
 .stats-kpi-tile{
