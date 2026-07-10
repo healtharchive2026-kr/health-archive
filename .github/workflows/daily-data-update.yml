@@ -84,4 +84,11 @@ jobs:
           fi
 
           git commit -m "Auto-update daily data"
+
+          for i in 1 2 3 4 5; do
+            git push && exit 0
+            echo "::warning::push rejected, retrying with rebase (attempt ${i})"
+            git fetch origin
+            git rebase origin/master
+          done
           git push

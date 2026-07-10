@@ -1,0 +1,8 @@
+name = "healtharchive-feedback"
+main = "src/index.js"
+compatibility_date = "2026-07-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "healtharchive-feedback"
+database_id = "fcf56e1f-811f-4198-a5eb-c3f0e2cc87e4"

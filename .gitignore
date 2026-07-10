@@ -1,6 +1,7 @@
 .claude/
 .DS_Store
 Thumbs.db
+cf-worker/.wrangler/
 audit-screenshots/
 scripts/*
 !scripts/_status.py
