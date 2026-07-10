@@ -47,7 +47,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="style.css?v=20260710-extdata2">
+<link rel="stylesheet" href="style.css?v=20260710-demand1">
 </head>
 <body>
 <header class="site-header">
@@ -876,7 +876,7 @@
       <div class="section-title-row">
         <div>
           <h2>화이트스페이스맵</h2>
-          <p class="compare-intro">기능성(가로) × 원료 유래(세로)로 인정 원료를 교차 집계한 매트릭스입니다. 원료명 기반 추정 분류이며, 칸이 비어있거나 옅을수록 해당 조합의 기존 인정 사례가 적은 영역입니다.</p>
+          <p class="compare-intro">기능성(가로) × 원료 유래(세로)로 인정 원료를 교차 집계한 매트릭스입니다. 원료명 기반 추정 분류이며, 칸이 비어있거나 옅을수록 해당 조합의 기존 인정 사례가 적은 영역입니다. 상단 "🔍 수요" 행은 네이버 검색 트렌드 기반 소비자 관심도이며, <strong>★ 표시는 공급(인정 사례)은 적은데 수요는 높은 "진짜 기회 후보"</strong>입니다.</p>
         </div>
         <span class="section-badge">비공개 · 나만 보기</span>
       </div>
@@ -886,13 +886,14 @@
         <span class="ws-legend-item"><span class="ws-legend-swatch ws-l2"></span>3~5건</span>
         <span class="ws-legend-item"><span class="ws-legend-swatch ws-l3"></span>6~10건</span>
         <span class="ws-legend-item"><span class="ws-legend-swatch ws-l4"></span>11건+</span>
+        <span class="ws-legend-item"><span class="ws-opp-star">★</span>기회 후보</span>
         <button type="button" class="ws-lock-btn" id="ws-lock-btn">🔒 다시 잠그기</button>
       </div>
       <div class="ws-matrix-wrap">
         <div class="ws-matrix" id="ws-matrix"></div>
       </div>
       <div class="ws-detail" id="ws-detail" hidden></div>
-      <p class="devmap-footnote">유래 분류는 원료명(학명·균주명·부위 표현)에 기반한 자동 추정입니다 (분류 성공률 약 85%, 나머지는 "복합·기타"). 실무 판단의 참고용이며 정확한 유래는 개별 원료의 인정 공고를 확인하세요.</p>
+      <p class="devmap-footnote">유래 분류는 원료명(학명·균주명·부위 표현)에 기반한 자동 추정입니다 (분류 성공률 약 85%, 나머지는 "복합·기타"). 수요 지수는 네이버 데이터랩 검색어 트렌드(대표 키워드 1~2개, 종합비타민 대비 상대값, 2026-07-10 기준)로 근사 산출한 참고 지표이며 실제 시장수요와 다를 수 있습니다. 실무 판단의 참고용이며 정확한 유래·수요는 별도 조사로 재확인하세요.</p>
     </div>
   </section>
 
@@ -1788,7 +1789,7 @@
 <script src="data/status.js?v=20260630-news0930"></script>
 <script src="data/daily_quotes.js"></script>
 <script src="market.js"></script>
-<script src="app.js?v=20260710-extdata2"></script>
+<script src="app.js?v=20260710-demand1"></script>
 <script src="feedback.js?v=20260704-email-fallback"></script>
 </body>
 </html>

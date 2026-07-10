@@ -24,6 +24,8 @@ const TAB_SCRIPT_DEPS = {
   'safety-db': ['data/safety_db.js?v=20260709-perf', 'safety-db.js?v=20260709-perf'],
 };
 
+const WS_DATA_DEPS = ['data/demand_trends.js?v=20260710-demand1'];
+
 const GLOBAL_SEARCH_SCRIPT_DEPS = [
   'data/products.js?v=20260709-perf',
   'data/food_ingredients.js?v=20260709-perf'
@@ -1085,15 +1087,37 @@ function wsRenderMatrix() {
   const matrixEl = document.getElementById('ws-matrix');
   if (!matrixEl) return;
 
+  const demand = (typeof DEMAND_TRENDS !== 'undefined' && DEMAND_TRENDS.categories) ? DEMAND_TRENDS.categories : {};
+  const demandLevel = cat => {
+    const d = demand[cat];
+    return d && d.level !== null && d.level !== undefined ? d.level : null;
+  };
+
   let html = '<div class="ws-row ws-row-head"><div class="ws-cell ws-cell-corner"></div>' +
     topCats.map(c => `<div class="ws-cell ws-col-head">${escapeHtml(c)}</div>`).join('') + '</div>';
+
+  const demandRow = (typeof DEMAND_TRENDS !== 'undefined')
+    ? '<div class="ws-row ws-row-demand"><div class="ws-cell ws-row-head-cell ws-demand-label">🔍 수요</div>' +
+      topCats.map(c => {
+        const lvl = demandLevel(c);
+        const d = demand[c];
+        return lvl === null
+          ? '<div class="ws-cell ws-demand-cell ws-demand-na" title="측정 불가">-</div>'
+          : `<div class="ws-cell ws-demand-cell ws-demand-lvl${lvl}" title="네이버 검색 수요 지수 ${d.score} (종합비타민=100 기준)">${'●'.repeat(lvl) || '·'}</div>`;
+      }).join('') + '</div>'
+    : '';
+  html += demandRow;
 
   WS_ORIGIN_ORDER.forEach(origin => {
     html += `<div class="ws-row"><div class="ws-cell ws-row-head-cell">${escapeHtml(origin)}</div>`;
     topCats.forEach(cat => {
       const items = grid[origin][cat] || [];
       const lvl = wsLevel(items.length);
-      html += `<button type="button" class="ws-cell ws-data-cell ws-lvl${lvl}" data-origin="${escapeHtml(origin)}" data-cat="${escapeHtml(cat)}">${items.length || ''}</button>`;
+      const dLvl = demandLevel(cat);
+      const isOpportunity = items.length <= 2 && dLvl !== null && dLvl >= 3;
+      const oppMark = isOpportunity ? ' ws-opportunity' : '';
+      const oppStar = isOpportunity ? '<span class="ws-opp-star">★</span>' : '';
+      html += `<button type="button" class="ws-cell ws-data-cell ws-lvl${lvl}${oppMark}" data-origin="${escapeHtml(origin)}" data-cat="${escapeHtml(cat)}" title="${isOpportunity ? '공급 적음 + 수요 높음 (기회 후보)' : ''}">${oppStar}${items.length || ''}</button>`;
     });
     html += '</div>';
   });
@@ -1124,7 +1148,7 @@ function wsUnlock() {
   try { sessionStorage.setItem(WS_SESSION_KEY, '1'); } catch (e) {}
   document.getElementById('ws-gate').hidden = true;
   document.getElementById('ws-content').hidden = false;
-  wsRenderMatrix();
+  loadScripts(WS_DATA_DEPS).then(wsRenderMatrix).catch(() => wsRenderMatrix());
 }
 
 function wsLock() {
@@ -1139,7 +1163,7 @@ function initWhitespaceTab() {
   if (wsIsUnlocked()) {
     document.getElementById('ws-gate').hidden = true;
     document.getElementById('ws-content').hidden = false;
-    wsRenderMatrix();
+    loadScripts(WS_DATA_DEPS).then(wsRenderMatrix).catch(() => wsRenderMatrix());
   } else {
     document.getElementById('ws-gate').hidden = false;
     document.getElementById('ws-content').hidden = true;
