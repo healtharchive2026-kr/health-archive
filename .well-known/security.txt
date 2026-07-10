@@ -1,0 +1,5 @@
+Contact: mailto:healtharchive2026@gmail.com
+Preferred-Languages: ko, en
+Canonical: https://www.healtharchive.kr/.well-known/security.txt
+Policy: https://www.healtharchive.kr/SECURITY.md
+Expires: 2027-07-10T00:00:00+09:00

@@ -1,0 +1,25 @@
+{
+  "name": "HealthArchive",
+  "short_name": "HealthArchive",
+  "description": "건강기능식품 원료 개발, 기능성 평가, 안전성, 심의 자료를 한곳에서 확인하는 실무 아카이브",
+  "lang": "ko-KR",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f7f8f7",
+  "theme_color": "#256f5b",
+  "icons": [
+    {
+      "src": "/assets/logo-icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/logo-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

@@ -760,6 +760,134 @@ function setupCompareTray() {
   });
 }
 
+// ---------- HealthOS 운영 대시보드 ----------
+
+function parseStatusDate(value) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})/.exec(String(value || ''));
+  if (!m) return null;
+  return new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]);
+}
+
+function daysSince(date) {
+  if (!date) return null;
+  return Math.max(0, Math.floor((Date.now() - date.getTime()) / 86400000));
+}
+
+function formatFreshness(date) {
+  const d = daysSince(date);
+  if (d == null) return '상태 미확인';
+  if (d === 0) return '오늘 업데이트';
+  if (d === 1) return '어제 업데이트';
+  return d + '일 전 업데이트';
+}
+
+function healthToneByAge(date) {
+  const d = daysSince(date);
+  if (d == null) return 'warn';
+  if (d <= 1) return 'ok';
+  if (d <= 3) return 'watch';
+  return 'warn';
+}
+
+function renderHealthOS() {
+  const scoreEl = document.getElementById('healthos-score');
+  const captionEl = document.getElementById('healthos-score-caption');
+  const gridEl = document.getElementById('healthos-status-grid');
+  const freshEl = document.getElementById('healthos-freshness');
+  if (!scoreEl || !captionEl || !gridEl || !freshEl) return;
+
+  const status = (typeof STATUS_DATA !== 'undefined') ? STATUS_DATA : {};
+  const statusEntries = Object.entries(status)
+    .map(([key, value]) => ({ key, ...value, date: parseStatusDate(value.lastRun) }))
+    .filter(x => x.lastRun);
+  const freshCount = statusEntries.filter(x => {
+    const d = daysSince(x.date);
+    return d != null && d <= 2;
+  }).length;
+  const freshnessScore = statusEntries.length ? Math.round(freshCount / statusEntries.length * 100) : 0;
+  const httpsScore = location.protocol === 'https:' || location.hostname === 'localhost' ? 100 : 60;
+  const cspScore = document.querySelector('meta[http-equiv="Content-Security-Policy"]') ? 100 : 65;
+  const lazyScore = !Array.from(document.scripts).some(s => /safety_db\.js|food_ingredients\.js/.test(s.src || '')) ? 100 : 70;
+  const score = Math.round((freshnessScore * 0.42) + (httpsScore * 0.22) + (cspScore * 0.18) + (lazyScore * 0.18));
+
+  scoreEl.textContent = score + '%';
+  captionEl.textContent = score >= 90 ? '운영 상태 우수' : score >= 75 ? '운영 상태 양호' : '점검 권장';
+
+  const latest = statusEntries
+    .slice()
+    .sort((a, b) => (b.date ? b.date.getTime() : 0) - (a.date ? a.date.getTime() : 0))[0];
+  const totalNews = ['news', 'news_thinkfood', 'news_mfds', 'news_nutraingredients', 'news_supplysidesj', 'news_nutritioninsight']
+    .reduce((sum, key) => sum + ((status[key] && status[key].count) || 0), 0);
+  const totalNew = Object.values(status).reduce((sum, item) => sum + (item.newCount || 0), 0);
+
+  const cards = [
+    {
+      tone: healthToneByAge(latest && latest.date),
+      label: '데이터 신선도',
+      value: latest ? formatFreshness(latest.date) : '상태 미확인',
+      meta: latest ? '최근 갱신: ' + latest.key : '상태 파일 대기'
+    },
+    {
+      tone: httpsScore === 100 && cspScore === 100 ? 'ok' : 'warn',
+      label: '보안 레이어',
+      value: httpsScore === 100 ? 'HTTPS + CSP' : 'HTTPS 점검 필요',
+      meta: 'Referrer/CSP/권한 최소화 적용'
+    },
+    {
+      tone: 'ok',
+      label: '검색 엔진',
+      value: '동의어 확장',
+      meta: '기능성·이명·영문 키워드 매칭'
+    },
+    {
+      tone: totalNew > 0 ? 'watch' : 'ok',
+      label: '신규 감지',
+      value: totalNew.toLocaleString('ko-KR') + '건',
+      meta: '누적 뉴스 ' + totalNews.toLocaleString('ko-KR') + '건'
+    }
+  ];
+
+  gridEl.innerHTML = cards.map(card => `
+    <div class="healthos-card ${card.tone}">
+      <span class="healthos-card-label">${escapeHtml(card.label)}</span>
+      <strong>${escapeHtml(card.value)}</strong>
+      <p>${escapeHtml(card.meta)}</p>
+    </div>
+  `).join('');
+
+  const labels = {
+    ingredients: '개별인정/고시형 원료',
+    minutes: '심의 회의록',
+    products: '신규 등록 제품',
+    temp_approval: '한시적 인정 원료',
+    news: '식품저널',
+    news_thinkfood: '식품음료신문',
+    news_mfds: '식약처 보도자료',
+    news_nutraingredients: 'NutraIngredients',
+    news_supplysidesj: 'SupplySide SJ',
+    news_nutritioninsight: 'Nutrition Insight'
+  };
+
+  freshEl.innerHTML = statusEntries
+    .sort((a, b) => (b.date ? b.date.getTime() : 0) - (a.date ? a.date.getTime() : 0))
+    .slice(0, 8)
+    .map(item => `
+      <div class="healthos-fresh-row ${healthToneByAge(item.date)}">
+        <span>${escapeHtml(labels[item.key] || item.key)}</span>
+        <strong>${escapeHtml(formatFreshness(item.date))}</strong>
+        <em>${Number(item.count || 0).toLocaleString('ko-KR')}건</em>
+      </div>
+    `).join('') || '<div class="healthos-empty">상태 데이터가 아직 없습니다.</div>';
+}
+
+function registerServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+  if (location.protocol !== 'https:' && location.hostname !== 'localhost') return;
+  navigator.serviceWorker.register('service-worker.js').catch(err => {
+    console.warn('service worker registration failed', err);
+  });
+}
+
 // ---------- 홈 데이터 대시보드 ----------
 
 function renderHomeDashboard() {
@@ -816,7 +944,7 @@ function renderHomeDashboard() {
   // 최근 신규 제품 (products.js 지연 로드)
   const prodEl = document.getElementById('dash-recent-products');
   if (prodEl) {
-    loadScripts(GLOBAL_SEARCH_SCRIPT_DEPS).then(() => {
+    loadScripts(TAB_SCRIPT_DEPS.products).then(() => {
       const products = (typeof PRODUCTS_DATA !== 'undefined') ? PRODUCTS_DATA.slice() : [];
       products.sort((a, b) => (b.reportDate || '').localeCompare(a.reportDate || ''));
       const top = products.slice(0, 4);
@@ -3173,9 +3301,10 @@ document.addEventListener('DOMContentLoaded', () => {
   setupIngredientDetail();
   setupCompareTray();
   setupWhitespaceGate();
+  registerServiceWorker();
   runStartupTask('renderHeroNews', renderHeroNews);
   runStartupTask('renderDailyQuote', renderDailyQuote);
   runStartupTask('setupVisitorCounter', setupVisitorCounter);
   runStartupTask('setupIntroModal', setupIntroModal);
-  appDataReady.then(() => { setupGlobalSearch(); renderHomeDashboard(); });
+  appDataReady.then(() => { setupGlobalSearch(); renderHealthOS(); renderHomeDashboard(); });
 });

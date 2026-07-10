@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src https://cdn.jsdelivr.net; img-src 'self' data:; connect-src 'self' https://api.counterapi.dev https://clinicaltrials.gov; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; font-src https://cdn.jsdelivr.net; img-src 'self' data:; connect-src 'self' https://api.counterapi.dev https://clinicaltrials.gov; worker-src 'self'; manifest-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'; upgrade-insecure-requests">
 <meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="theme-color" content="#256f5b">
 <meta name="description" content="HealthArchive는 건강기능식품 원료 개발, 개별인정원료, 한시적 인정 원료, 식품원료, 안전성, 기능성 평가 가이드라인, 심의 회의록, 임상·시장 자료를 모은 개발자용 정보 아카이브입니다.">
 <meta name="keywords" content="HealthArchive, 건강기능식품, 건강기능식품 원료, 개별인정원료, 한시적 인정 원료, 식품원료, 기능성 원료, 기능성 평가 가이드라인, 인체적용시험, 전임상, 바이오마커, 식약처, 건강기능식품심의위원회, 식품공전, 건강기능식품공전, 안전성 데이터베이스, 원료 개발, 임상정보 DB, ClinicalTrials.gov, 식품 뉴스, 건강기능식품 시장">
 <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large">
@@ -43,9 +44,10 @@
 }
 </script>
 <link rel="icon" href="data:,">
+<link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="style.css?v=20260710-radar">
+<link rel="stylesheet" href="style.css?v=20260710-healthos2">
 </head>
 <body>
 <header class="site-header">
@@ -157,6 +159,52 @@
           <div class="global-search-results" id="global-search-results"></div>
         </div>
       </div>
+
+      <section class="healthos-panel" aria-label="HealthOS 운영 대시보드">
+        <div class="healthos-hero">
+          <div>
+            <span class="healthos-kicker">HealthOS Control Deck</span>
+            <h2>개발 근거, 자동화, 보안 상태를 한 화면에서 관리합니다.</h2>
+            <p>자료를 모아두는 수준을 넘어, 오늘 바로 확인해야 할 리스크와 다음 업무 경로를 제안하는 운영형 아카이브입니다.</p>
+          </div>
+          <div class="healthos-score-card">
+            <span class="healthos-score-label">운영 준비도</span>
+            <strong id="healthos-score">--</strong>
+            <span id="healthos-score-caption">상태 계산 중</span>
+          </div>
+        </div>
+
+        <div class="healthos-grid" id="healthos-status-grid">
+          <div class="healthos-card skeleton"></div>
+          <div class="healthos-card skeleton"></div>
+          <div class="healthos-card skeleton"></div>
+          <div class="healthos-card skeleton"></div>
+        </div>
+
+        <div class="healthos-lower">
+          <div class="healthos-lane">
+            <div class="healthos-lane-head">
+              <span>Smart Workflow</span>
+              <strong>후보 원료 검토 루트</strong>
+            </div>
+            <div class="healthos-actions" id="healthos-actions">
+              <button type="button" data-goto="ingredients">원료 사례 확인</button>
+              <button type="button" data-goto="safety-db">안전성 DB 검색</button>
+              <button type="button" data-goto="biomarkers">프로토콜 설계</button>
+              <button type="button" data-goto="products">시장 제품 대조</button>
+            </div>
+          </div>
+          <div class="healthos-lane">
+            <div class="healthos-lane-head">
+              <span>Data Freshness</span>
+              <strong>업데이트 신선도</strong>
+            </div>
+            <div class="healthos-freshness" id="healthos-freshness">
+              <div class="healthos-empty">상태 계산 중…</div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <div class="hero-section-head hero-menu-head">
         <span>한눈에 보기</span>
@@ -1730,7 +1778,7 @@
 <script src="data/status.js?v=20260630-news0930"></script>
 <script src="data/daily_quotes.js"></script>
 <script src="market.js"></script>
-<script src="app.js?v=20260710-synonym"></script>
+<script src="app.js?v=20260710-healthos2"></script>
 <script src="feedback.js?v=20260704-email-fallback"></script>
 </body>
 </html>
