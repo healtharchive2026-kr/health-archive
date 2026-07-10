@@ -42,7 +42,7 @@ var BIOMARKER_PROTOCOL_DEFS = {
 Object.assign(BIOMARKER_PROTOCOL_DEFS, {
   '간 건강': { clinical: { model: '만 19-75세 성인 중 영상의학적 방법(초음파, MRI 등)으로 지방간이 확인되고 ALT, AST가 정상치를 초과하되 정상 상한치의 3배 미만인 자' }, preclinical: { animalModels: ['고지방식이 유도 NAFLD/NASH 모델', 'CCl4 또는 thioacetamide 유도 간손상 모델', '알코올 또는 acetaminophen 유도 간독성 모델'] } },
   '갱년기 남성건강': { clinical: { model: '남성호르몬 결핍 의심 증상(신체·심리·심장대사·성적 증상)이 있고 총 테스토스테론이 정상 참고범위(예: 3.0 ng/mL 이상)에 있는 남성, 예: AMS 27-50점 및 총 테스토스테론 3.0-5.0 ng/mL' }, preclinical: { animalModels: ['노화 수컷 동물 모델', 'testosterone 저하 또는 orchiectomy 유도 모델', '대사증후군 동반 남성 갱년기 유사 모델'] } },
-  '갱년기 여성건강': { clinical: { model: '폐경 이행기 또는 폐경 여성, FSH 30 mIU/mL 초과, 만 40-65세, Kupperman Index 25점 이상 또는 임상적으로 갱년기 증상을 호소하는 자' }, preclinical: { animalModels: ['난소절제(OVX) 갱년기 모델', 'estrogen 결핍 골·혈관·체온조절 모델', '열감 또는 불안행동 평가 모델'] } },
+  '갱년기 여성건강': { clinical: { model: '폐경 이행기 또는 폐경 여성, FSH 30 mIU/mL 초과, 만 40-65세, 쿠퍼만 지수(Kupperman Index) 25점 이상 또는 임상적으로 갱년기 증상을 호소하는 자' }, preclinical: { animalModels: ['난소절제(OVX) 갱년기 모델', 'estrogen 결핍 골·혈관·체온조절 모델', '열감 또는 불안행동 평가 모델'] } },
   '구취': { clinical: { model: '구취 관능검사 또는 VSC가 기준치 이상이고 구강질환 치료가 급하지 않은 성인' }, preclinical: { animalModels: ['구강 혐기성균 또는 biofilm 기반 VSC 생성 모델', '설태·타액 조성 변화 모델', '구강 염증 동반 모델'] } },
   '근력 및 근기능': { clinical: { model: '50-85세 성인 중 악력 측정치가 표준치 이하인 자, 근기능은 SPPB 9점 초과이면서 보행속도·400m 걷기·의자 일어서기 등이 근감소증 진단범위에는 해당하지 않는 자' }, preclinical: { animalModels: ['덱사메타손 유도 근위축 모델', 'hindlimb unloading 또는 immobilization 비사용성 근위축 모델', '노화 유도 sarcopenia 모델', '운동부하/트레드밀 회복 모델'] } },
   '기관·기관지 건강 (기침·가래)': { clinical: { model: '기침·가래 등 기관지 불편감을 반복적으로 호소하되 약물치료가 필요한 호흡기 질환자는 제외한 성인' }, preclinical: { animalModels: ['LPS 유도 급성 폐염증 모델', 'ovalbumin(OVA) 또는 house dust mite 유도 기도과민 모델', '담배연기 또는 미세먼지 노출 기관지 염증 모델'] } },
@@ -58,10 +58,10 @@ Object.assign(BIOMARKER_PROTOCOL_DEFS, {
   '요로 건강': { clinical: { model: '요로 불편감 또는 반복적 요로 건강 관리가 필요한 성인, 급성 요로감염·항생제 치료 필요자는 제외' }, preclinical: { animalModels: ['uropathogenic E. coli 유도 요로감염 모델', '방광 상피세포 부착 억제 모델', 'LPS 유도 요로 염증 모델'] } },
   '운동수행능력': { clinical: { model: '만 19세 이상 건강한 성인남녀로 트레드밀 또는 사이클 에르고미터 수행이 가능하고, 고강도 운동 지속 수행자·BMI 18.5 이하 또는 30 이상·빈혈 등은 제외' }, preclinical: { animalModels: ['강제수영 부하 모델', '트레드밀 운동부하 모델', '탈진운동 후 회복 모델', '고지방식이 동반 운동능 저하 모델'] } },
   '월경전 불편감 개선': { clinical: { model: '만 19-45세 월경 중 여성, 월경주기 24-35일, 월경전증후군 설문에서 경증-중등도 PMS로 진단된 자' }, preclinical: { animalModels: ['hormone withdrawal 유도 PMS 유사 모델', 'oxytocin 또는 prostaglandin 유도 자궁수축/통증 모델', 'reserpine 또는 stress 유도 정서증상 모델'] } },
-  '위 건강': { clinical: { model: '소화기능: Rome IV 기능성 소화불량 증상 중 1개 이상이 6개월 전 시작·최근 3개월 이상 지속되고 기질적 질환 근거가 없는 자. 위점막 보호: 상복부 통증 및 내시경상 손상이 있으나 약물치료가 급하지 않은 자' }, preclinical: { animalModels: ['ethanol/HCl 유도 위점막 손상 모델', 'indomethacin 또는 NSAID 유도 위손상 모델', 'water immersion restraint stress 유도 위궤양 모델', 'H. pylori 감염 모델'] } },
+  '위 건강': { clinical: { model: '소화기능: 로마 IV(Rome IV) 기능성 소화불량 증상 중 1개 이상이 6개월 전 시작·최근 3개월 이상 지속되고 기질적 질환 근거가 없는 자. 위점막 보호: 상복부 통증 및 내시경상 손상이 있으나 약물치료가 급하지 않은 자' }, preclinical: { animalModels: ['ethanol/HCl 유도 위점막 손상 모델', 'indomethacin 또는 NSAID 유도 위손상 모델', 'water immersion restraint stress 유도 위궤양 모델', 'H. pylori 감염 모델'] } },
   '인지기능·기억력 개선': { clinical: { model: '인지기능: 만 55-85세 성인 중 인지 저하를 호소하고 DSM 치매 기준에는 해당하지 않는 자. 기억력: 만 19-85세 성인 중 기억력 저하를 호소하고 ADHD·치매 기준에는 해당하지 않는 자' }, preclinical: { animalModels: ['scopolamine 유도 기억력 저하 모델', 'Aβ 또는 APP/PS1 알츠하이머 유사 모델', 'D-galactose 또는 노화 유도 인지저하 모델'] } },
   '잇몸 건강': { clinical: { model: '만 19-80세 성인, 치주낭 탐침깊이 3-5 mm, 탐침 시 출혈, 치은염 또는 경증 치주염 증상, 잔존 자연치아 20개 이상인 자' }, preclinical: { animalModels: ['Porphyromonas gingivalis 유도 치주염 모델', 'ligature 유도 치주염 모델', 'LPS 유도 치은 염증 모델'] } },
-  '장 건강': { clinical: { model: '배변활동: Rome IV 기능성 변비 기준(최근 3개월 중 2개 이상 증상, 주 3회 미만 배변 등)에 해당하는 자. 장 면역: 과체중/비만 등 만성질환자 또는 좌식 직업군. 장내균총: 식이통제가 가능한 건강한 성인' }, preclinical: { animalModels: ['loperamide 유도 변비 모델', 'DSS 또는 TNBS 유도 장염 모델', '항생제 유도 dysbiosis 모델', '고지방식이 장내균총 변화 모델'] } },
+  '장 건강': { clinical: { model: '배변활동: 로마 IV(Rome IV) 기능성 변비 기준(최근 3개월 중 2개 이상 증상, 주 3회 미만 배변 등)에 해당하는 자. 장 면역: 과체중/비만 등 만성질환자 또는 좌식 직업군. 장내균총: 식이통제가 가능한 건강한 성인' }, preclinical: { animalModels: ['loperamide 유도 변비 모델', 'DSS 또는 TNBS 유도 장염 모델', '항생제 유도 dysbiosis 모델', '고지방식이 장내균총 변화 모델'] } },
   '전립선 건강': { clinical: { model: '만 40-75세 남성, IPSS 8-19점 범위의 하부요로증상을 보이고 PSA 4.0 ng/mL 이상·최대요속 5 mL/s 미만·잔뇨 150 mL 이상 등은 제외' }, preclinical: { animalModels: ['testosterone propionate 유도 전립선비대 모델', 'DHT 유도 전립선 세포 증식 모델', '전립선 염증 동반 모델'] } },
   '청력 유지': { clinical: { model: '청력 저하 위험 또는 소음 노출 이력이 있으나 즉시 치료가 필요한 이과 질환은 제외한 성인' }, preclinical: { animalModels: ['소음성 난청 모델', 'cisplatin 또는 aminoglycoside 유도 이독성 모델', '노화성 난청 모델'] } },
   '체지방 감소': { clinical: { model: 'BMI 18.5-29.9 kg/m2 정상-과체중 범위이며 약물을 복용하지 않는 자, BMI 30-35 kg/m2 일부 포함 시 약물치료 필요자는 제외' }, preclinical: { animalModels: ['고지방식이 유도 비만 모델', 'ob/ob 또는 db/db 유전성 비만 모델', '식이유도 지방간 동반 비만 모델'] } },
@@ -90,11 +90,11 @@ var BIOMARKER_ENDPOINT_DETAILS = {
     secondary: ['IIEF 또는 ADAM 설문, 피로도·활력·수면 지표를 보조 평가', 'LH·FSH·SHBG와 PSA 등 호르몬 및 전립선 안전성 지표 평가']
   },
   '갱년기 여성건강': {
-    primary: ['Kupperman Index 또는 MRS/MENQOL 총점: 기저치 대비 증상 개선 및 군간 차이 평가', '안면홍조 일지: 일일 빈도·강도와 중등도 이상 홍조 횟수의 변화 평가'],
+    primary: ['쿠퍼만 지수·MRS·MENQOL 총점: 기저치 대비 증상 개선 및 군간 차이를 평가', '안면홍조 일지: 일일 빈도·강도 및 중등도 이상 안면홍조 횟수의 변화량을 평가'],
     secondary: ['FSH·estradiol과 질건조·수면·기분 하위척도를 보조 평가', '자궁내막·유방 관련 검사와 이상반응을 안전성 항목으로 확인']
   },
   '구취': {
-    primary: ['VSC(H2S·CH3SH·(CH3)2S): 휴대형 황화합물 측정기 또는 gas chromatography로 표준화 측정', '관능검사 점수: 훈련된 평가자가 섭취 전후 동일 조건에서 organoleptic score 변화 평가'],
+    primary: ['VSC(H2S·CH3SH·(CH3)2S): 휴대형 황화합물 측정기 또는 가스크로마토그래피를 이용한 표준화 측정', '관능검사 점수: 훈련된 평가자가 섭취 전후 동일 조건에서 관능평가 점수의 변화량을 평가'],
     secondary: ['설태지수·치태지수·타액분비량 및 타액 pH 평가', '구취 관련 구강미생물 정량과 대상자 자가평가 VAS를 탐색적으로 평가']
   },
   '근력 및 근기능': {
@@ -102,7 +102,7 @@ var BIOMARKER_ENDPOINT_DETAILS = {
     secondary: ['DXA/BIA 근육량·제지방량과 근육질 지표 평가', 'CK·LDH·근피로도·운동 후 회복시간 및 삶의 질 평가']
   },
   '기관·기관지 건강 (기침·가래)': {
-    primary: ['기침·가래 일지: 일일 빈도·중증도·야간증상과 무증상일수의 변화 평가', 'CAT·LCQ 또는 기능성에 적합한 호흡기 증상 총점의 기저치 대비 변화 평가'],
+    primary: ['기침·가래 일지: 일일 빈도·중증도·야간증상 및 무증상일수의 변화량을 평가', 'CAT·LCQ: 기능성에 적합한 호흡기 증상 총점의 기저치 대비 변화량을 평가'],
     secondary: ['FEV1·FVC·PEF 등 폐기능과 필요 시 기관지반응성 평가', '혈청·객담 염증지표와 호흡기 삶의 질, 구제약 사용량 평가']
   },
   '긴장완화': {
@@ -111,14 +111,14 @@ var BIOMARKER_ENDPOINT_DETAILS = {
   },
   '눈 건강': {
     primary: ['건조한 눈: OSDI와 TBUT를 공동 또는 사전 지정 주평가변수로 설정하고 동일 검사자가 측정', '눈 피로: 표준화 시각작업 전후 눈 피로 VAS·설문 총점 변화 평가', '황반 건강: MPOD 또는 대비감도·광스트레스 회복시간을 기능성 표현에 맞춰 선택'],
-    secondary: ['Schirmer test·각결막 염색·눈물 삼투압·시력 평가', 'NEI-VFQ 등 시기능 삶의 질과 눈물 염증지표를 보조 평가']
+    secondary: ['쉬르머 검사·각결막 염색·눈물 삼투압·시력: 객관적 안구건조 및 시기능 지표를 평가', 'NEI-VFQ: 시기능 관련 삶의 질과 눈물 염증지표를 보조 평가']
   },
   '다리 불편감(부기) 관련': {
-    primary: ['하지 둘레 또는 체적: 사전 지정 해부학적 위치·시간대·자세에서 반복 측정하여 변화 평가', '다리 무거움·부기·통증 VAS 또는 validated symptom score의 변화 평가'],
+    primary: ['하지 둘레 또는 체적: 사전 지정한 해부학적 위치·시간대·자세에서 반복 측정하여 변화량을 평가', '다리 불편감: 타당성이 검증된 증상 평가척도 또는 VAS를 이용하여 무거움·부기·통증의 변화량을 평가'],
     secondary: ['정맥초음파·말초혈류·피부온도 및 모세혈관 투과성 지표 평가', '부종 발생시간·일상활동 불편감과 삶의 질 평가']
   },
   '면역과민반응': {
-    primary: ['비염·피부·호흡기 영역별 validated 증상 총점과 무증상일수의 변화 평가', '총·특이 IgE 및 호산구: 대상 질환과 알레르겐을 사전 지정하여 기저치 대비 변화 평가'],
+    primary: ['증상 평가척도: 비염·피부·호흡기 영역별로 타당성이 검증된 증상 총점과 무증상일수의 변화량을 평가', '총·특이 IgE 및 호산구: 대상 질환과 알레르겐을 사전 지정하여 기저치 대비 변화량을 평가'],
     secondary: ['IL-4·IL-5·IL-13·histamine 등 Th2/비만세포 관련 지표 평가', '구제약 사용량, 삶의 질 및 피부·비강 객관지표를 보조 평가']
   },
   '면역기능': {
@@ -126,7 +126,7 @@ var BIOMARKER_ENDPOINT_DETAILS = {
     secondary: ['림프구 아형·IgA·IL-2·IFN-γ 등 세포성·점막면역 지표 평가', '결석일수·구제약 사용량·CRP와 안전성 혈액검사 평가']
   },
   '모발 건강': {
-    primary: ['Phototrichogram 모발 밀도·굵기: 동일 두피 표적부위를 표식하여 기저치 대비 변화 평가', '성장기/휴지기 모발 비율 또는 단위면적 성장모발 수의 변화 평가'],
+    primary: ['포토트리코그램 모발 밀도·굵기: 동일 두피 표적부위를 표식하여 기저치 대비 변화량을 평가', '성장기/휴지기 모발 비율: 단위면적당 성장모발 수와 모발주기 비율의 변화량을 평가'],
     secondary: ['표준화 세정 후 탈락모발 수·인장강도·두피 상태 평가', '전문가 전반평가와 대상자 만족도·삶의 질 설문 평가']
   },
   '배뇨 건강': {
@@ -154,19 +154,19 @@ var BIOMARKER_ENDPOINT_DETAILS = {
     secondary: ['증상 없는 일수·일상활동 장애·구제진통제 사용량 평가', '삶의 질·수면·기분과 prostaglandin 등 탐색적 지표 평가']
   },
   '위 건강': {
-    primary: ['위점막 보호: 내시경 erosion·발적·출혈 등 표준화 점수의 기저치 대비 변화 평가', '소화기능: GIS·Nepean Dyspepsia Index 또는 Rome IV 기반 증상 총점 변화 평가'],
+    primary: ['위점막 보호: 내시경상 미란·발적·출혈의 표준화 점수를 이용하여 기저치 대비 변화량을 평가', '소화기능: GSRS·네피언 소화불량 지수 또는 로마 IV 기반 증상 총점의 변화량을 평가'],
     secondary: ['상복부통증·포만감·속쓰림 VAS와 증상 없는 일수 평가', 'H. pylori 관련 지표·위장관 삶의 질·구제약 사용량 평가']
   },
   '인지기능·기억력 개선': {
-    primary: ['기억력: verbal/visual learning, delayed recall 및 recognition을 포함한 검증된 검사배터리 변화 평가', '인지기능: attention·executive function·processing speed 중 기능성 표현에 맞는 composite score를 사전 지정'],
+    primary: ['기억력 검사: 언어·시각 학습, 지연회상 및 재인을 포함하여 타당성이 검증된 검사 배터리의 변화량을 평가', '인지기능 검사: 주의력·실행기능·처리속도 중 기능성 표현에 적합한 복합점수를 사전 지정하여 평가'],
     secondary: ['MoCA·MMSE 등 전반인지와 주관적 기억감퇴 설문 평가', 'BDNF·뇌파·기분·수면 및 일상기능 지표를 탐색적으로 평가']
   },
   '잇몸 건강': {
-    primary: ['Gingival Index와 Bleeding on Probing 비율을 보정된 검사자가 기저치 대비 평가', '치주낭 깊이(PPD)·임상부착수준(CAL)을 사전 지정 치아부위에서 반복 측정'],
-    secondary: ['Plaque Index·치은열구액과 P. gingivalis 등 치주미생물 평가', 'IL-1β·TNF-α 등 국소 염증지표와 구강건강 삶의 질 평가']
+    primary: ['GI·BOP: 보정된 검사자가 치은지수와 탐침 시 출혈 비율의 기저치 대비 변화량을 평가', 'PPD·CAL: 사전 지정 치아부위에서 치주낭 깊이와 임상 부착 수준을 반복 측정'],
+    secondary: ['PI·치은열구액·치주미생물: 치태지수와 P. gingivalis 등 치주미생물을 평가', 'IL-1β·TNF-α: 국소 염증지표와 구강건강 관련 삶의 질을 평가']
   },
   '장 건강': {
-    primary: ['배변활동: 주당 자발적·완전 자발적 배변횟수(CSBM)와 반응자 비율 평가', 'Bristol Stool Form Scale 및 PAC-SYM/복부불편감 총점 변화 평가'],
+    primary: ['배변활동: 주당 자발적·완전 자발적 배변횟수(CSBM)와 반응자 비율을 평가', '브리스톨 대변 형태 척도·PAC-SYM: 대변 형태와 변비·복부불편감 총점의 변화량을 평가'],
     secondary: ['장 통과시간·구제완하제 사용량·배변곤란 정도 평가', '장내미생물 다양성·표적균·SCFA와 장 관련 삶의 질 평가']
   },
   '전립선 건강': {
@@ -183,10 +183,10 @@ var BIOMARKER_ENDPOINT_DETAILS = {
   },
   '치아 건강': {
     primary: ['새 우식병소·초기우식 진행 또는 DMFS/DMFT 변화량을 표준 진단기준으로 평가', '치면세균막·산생성도와 타액 pH 회복곡선을 표준화 당부하 전후 평가'],
-    secondary: ['타액분비량·완충능·S. mutans 및 Lactobacillus 수 평가', '법랑질 탈회·재광화 지표와 구강건강 자가평가를 보조 평가']
+    secondary: ['타액분비량·완충능·우식 관련 세균: S. mutans와 유산균속의 균수를 평가', '법랑질 탈회·재광화 지표와 구강건강 자가평가를 보조 평가']
   },
   '칼슘 흡수 촉진': {
-    primary: ['안정동위원소법의 fractional calcium absorption 또는 calcium retention을 사전 지정 주평가변수로 평가', '표준 칼슘부하 후 혈청·소변 칼슘 변화 또는 AUC를 동일 채취일정으로 평가'],
+    primary: ['분획 칼슘 흡수율: 안정동위원소법으로 측정한 칼슘 흡수율 또는 칼슘 체내 보유율을 주평가변수로 사전 지정', '칼슘 부하검사: 표준 칼슘부하 후 혈청·소변 칼슘 변화량 또는 AUC를 동일 채취일정으로 평가'],
     secondary: ['PTH·25(OH)D·인·마그네슘과 CTX·P1NP 등 골대사 지표 평가', '장기시험 시 DXA 골밀도와 칼슘 관련 이상반응 평가']
   },
   '콩팥에서 요독물질 관련': {
@@ -194,7 +194,7 @@ var BIOMARKER_ENDPOINT_DETAILS = {
     secondary: ['eGFR·creatinine·BUN·cystatin C 등 신기능 보조지표 평가', '장내미생물·염증·산화스트레스와 배변 관련 지표 평가']
   },
   '피로 개선': {
-    primary: ['FSS·CIS 또는 Chalder Fatigue Scale 중 검증된 주척도 총점의 변화 평가', '피로 VAS와 일상기능 저하 정도를 동일 시점에서 반복 평가'],
+    primary: ['FSS·CIS·Chalder 피로 척도: 타당성이 검증된 주평가척도 총점의 변화량을 평가', '피로 VAS: 피로도와 일상기능 저하 정도를 동일 시점에서 반복 평가'],
     secondary: ['운동부하 후 lactate·암모니아·CK와 회복시간 평가', '수면·기분·삶의 질·cortisol 및 활동량을 보조 평가']
   },
   '피부 건강': {
@@ -202,29 +202,161 @@ var BIOMARKER_ENDPOINT_DETAILS = {
     secondary: ['melanin index·피부거칠기·피부장벽 회복과 전문가 평가', '대상자 만족도·피부 삶의 질 및 염증·산화스트레스 지표 평가']
   },
   '항산화': {
-    primary: ['MDA·F2-isoprostane 등 지질 산화지표 또는 8-OHdG 등 DNA 산화지표를 사전 지정하여 변화 평가', 'TAC·ORAC 등 총 항산화능을 동일 분석법으로 기저치 대비 평가'],
+    primary: ['MDA·F2-isoprostane·8-OHdG: 지질 또는 DNA 산화손상 지표 중 주평가변수를 사전 지정하여 변화량을 평가', 'TAC·ORAC: 총 항산화능을 동일 분석법으로 측정하여 기저치 대비 변화량을 평가'],
     secondary: ['SOD·GPx·catalase·GSH/GSSG 등 내인성 항산화 방어지표 평가', 'CRP·염증성 cytokine과 산화 LDL 등 탐색지표 평가']
   },
   '혈당 조절': {
     primary: ['공복혈당과 HbA1c의 기저치 대비 변화량 및 군간 차이 평가', '표준 식사부하 후 0-120분 혈당 iAUC·2시간 혈당을 사전 지정 일정으로 평가'],
-    secondary: ['공복·식후 insulin과 HOMA-IR·Matsuda index 평가', 'C-peptide·fructosamine·연속혈당 변동성 및 지질대사 지표 평가']
+    secondary: ['공복·식후 인슐린·HOMA-IR·마쓰다 지수: 인슐린 분비 및 감수성을 평가', 'C-peptide·프럭토사민·연속혈당 변동성 및 지질대사 지표를 평가']
   },
   '혈압 조절': {
     primary: ['진료실 수축기·이완기혈압: 표준 휴식 후 반복 측정 평균의 기저치 대비 변화 평가', '24시간 활동혈압의 주간·야간 평균 또는 사전 지정 시간대 혈압 변화 평가'],
     secondary: ['맥압·중심혈압·PWV·혈관탄성 평가', 'ACE activity·renin·aldosterone·NO와 심박수 평가']
   },
   '혈중 중성지방 개선': {
-    primary: ['공복 혈청 triglyceride의 기저치 대비 절대·백분율 변화와 군간 차이 평가', '지방부하 시험 후 triglyceride 0-6시간 iAUC 또는 peak response 평가'],
+    primary: ['공복 혈청 중성지방: 기저치 대비 절대·백분율 변화량과 군간 차이를 평가', '식후 중성지방: 지방부하 시험 후 0-6시간 iAUC 또는 최고 반응값을 평가'],
     secondary: ['총콜레스테롤·LDL-C·HDL-C·non-HDL-C·ApoB 평가', 'VLDL·유리지방산·간지방 및 인슐린저항성 지표 평가']
   },
   '혈중 콜레스테롤 개선': {
     primary: ['LDL-C의 기저치 대비 절대·백분율 변화와 군간 차이 평가', '총콜레스테롤 또는 non-HDL-C를 사전 지정 공동·보조 유효성 지표로 평가'],
-    secondary: ['HDL-C·triglyceride·ApoB·ApoA1 및 LDL particle 지표 평가', '산화 LDL·담즙산 배설과 염증지표를 탐색적으로 평가']
+    secondary: ['HDL-C·중성지방·ApoB·ApoA1 및 LDL 입자 지표를 평가', '산화 LDL·담즙산 배설과 염증지표를 탐색적으로 평가']
   },
   '혈행 개선': {
-    primary: ['Collagen·ADP 유도 혈소판 응집률과 최대응집률을 동일 agonist 농도·분석법으로 평가', '전혈·혈장 점도 또는 적혈구 변형능의 기저치 대비 변화 평가'],
-    secondary: ['말초혈류·FMD·laser Doppler 및 NO 관련 지표 평가', 'fibrinogen·D-dimer·PT/aPTT와 출혈 관련 안전성 항목 평가']
+    primary: ['콜라겐·ADP 유도 혈소판 응집: 동일한 작용제 농도와 분석법으로 응집률 및 최대응집률을 평가', '전혈·혈장 점도 또는 적혈구 변형능의 기저치 대비 변화량을 평가'],
+    secondary: ['말초혈류·FMD·레이저 도플러 및 NO 관련 지표를 평가', 'fibrinogen·D-dimer·PT·aPTT와 출혈 관련 안전성 항목을 평가']
   }
+};
+
+// 식품의약품안전평가원 「건강기능식품 기능성 평가를 위한 주요 용어집」(2024.9.)의 영문명·약어·한글명을 기준으로 구성한다.
+var BIOMARKER_TERM_GLOSSARY = {
+  'MRI-PDFF': { en: 'magnetic resonance imaging-proton density fat fraction', ko: '자기공명영상 양성자밀도 지방분율' },
+  'AMS': { en: 'Aging Males\' Symptoms questionnaire', ko: '남성 갱년기 평가 설문지' },
+  'IIEF': { en: 'International Index of Erectile Function questionnaire', ko: '국제 성기능 지표 설문지' },
+  'ADAM': { en: 'Androgen Deficiency in the Aging Male questionnaire', ko: '남성 갱년기 증상 설문지' },
+  'ALT': { en: 'alanine aminotransferase', ko: '알라닌 아미노전이효소' },
+  'AST': { en: 'aspartate aminotransferase', ko: '아스파르트산 아미노전이효소' },
+  'γ-GTP': { en: 'gamma-glutamyl transpeptidase', ko: '감마-글루타밀 전이효소' },
+  'ALP': { en: 'alkaline phosphatase', ko: '알칼리 인산분해효소' },
+  'LH': { en: 'luteinizing hormone', ko: '황체 형성 호르몬' },
+  'FSH': { en: 'follicle-stimulating hormone', ko: '난포 자극 호르몬' },
+  'SHBG': { en: 'sex hormone-binding globulin', ko: '성호르몬 결합 글로불린' },
+  'PSA': { en: 'prostate-specific antigen', ko: '전립선 특이 항원' },
+  'MRS': { en: 'Menopause Rating Scale', ko: '갱년기 평가지수' },
+  'MENQOL': { en: 'Menopause-Specific Quality of Life questionnaire', ko: '갱년기 삶의 질 평가' },
+  'VSC': { en: 'volatile sulfur compounds', ko: '휘발성 황화합물' },
+  'H2S': { en: 'hydrogen sulfide', ko: '황화수소' },
+  'CH3SH': { en: 'methyl mercaptan', ko: '메틸메르캅탄' },
+  'SPPB': { en: 'Short Physical Performance Battery', ko: '간편 신체기능 검사' },
+  'DXA': { en: 'dual-energy X-ray absorptiometry', ko: '이중에너지 엑스선 흡수계측법' },
+  'BIA': { en: 'bioelectrical impedance analysis', ko: '생체 전기 저항 분석법' },
+  'CK': { en: 'creatine kinase', ko: '크레아틴 인산효소' },
+  'LDH': { en: 'lactate dehydrogenase', ko: '젖산 탈수소효소' },
+  'CAT': { en: 'COPD Assessment Test', ko: '만성폐쇄성폐질환 평가검사' },
+  'LCQ': { en: 'Leicester Cough Questionnaire', ko: '레스터 기침 설문지' },
+  'FEV1': { en: 'forced expiratory volume in one second', ko: '1초간 노력성 호기량' },
+  'FVC': { en: 'forced vital capacity', ko: '노력성 폐활량' },
+  'PEF': { en: 'peak expiratory flow', ko: '최대 호기 유량' },
+  'PSS': { en: 'Perceived Stress Scale', ko: '스트레스 자각 척도' },
+  'STAI': { en: 'State-Trait Anxiety Inventory', ko: '상태-특성 불안 척도' },
+  'SRI': { en: 'Stress Response Inventory', ko: '스트레스 반응 척도' },
+  'HRV': { en: 'heart rate variability', ko: '심박 변이도' },
+  'SDNN': { en: 'standard deviation of normal-to-normal intervals', ko: '정상 심박동 간격의 표준편차' },
+  'RMSSD': { en: 'root mean square of successive differences', ko: '연속 심박동 간격 차이의 제곱평균제곱근' },
+  'OSDI': { en: 'Ocular Surface Disease Index', ko: '안구 표면 질환지수' },
+  'TBUT': { en: 'tear film break-up time', ko: '눈물막 파괴시간 검사' },
+  'MPOD': { en: 'macular pigment optical density', ko: '황반 색소 밀도' },
+  'NEI-VFQ': { en: 'National Eye Institute Visual Function Questionnaire', ko: '미국 국립안연구소 시기능 설문지' },
+  'VAS': { en: 'visual analogue scale', ko: '시각상사척도' },
+  'IgE': { en: 'immunoglobulin E', ko: '면역글로불린 E' },
+  'NK': { en: 'natural killer cell', ko: '자연살해세포' },
+  'CRP': { en: 'C-reactive protein', ko: 'C-반응성 단백질' },
+  'OABSS': { en: 'Overactive Bladder Symptom Score', ko: '과민성 방광 증상 점수' },
+  'IPSS': { en: 'International Prostate Symptom Score', ko: '국제 전립선 증상점수' },
+  'Qmax': { en: 'maximum urinary flow rate', ko: '최대 요속' },
+  'WOMAC': { en: 'Western Ontario and McMaster Universities Osteoarthritis Index', ko: '웨스턴 온타리오·맥마스터 대학교 골관절염 지수' },
+  'CTX-II': { en: 'C-terminal cross-linked telopeptide of type II collagen', ko: '제2형 콜라겐 C-말단 가교 텔로펩타이드' },
+  'COMP': { en: 'cartilage oligomeric matrix protein', ko: '연골 올리고머 기질 단백질' },
+  'CTX': { en: 'C-terminal telopeptide', ko: 'C-말단 텔로펩타이드' },
+  'P1NP': { en: 'procollagen type 1 N-terminal propeptide', ko: '제1형 프로콜라겐 N-말단 프로펩타이드' },
+  'PSQI': { en: 'Pittsburgh Sleep Quality Index', ko: '피츠버그 수면의 질 지표' },
+  'ISI': { en: 'Insomnia Severity Index', ko: '불면증 중증도 지표' },
+  'ESS': { en: 'Epworth Sleepiness Scale', ko: '엡워스 주간졸림척도' },
+  'WASO': { en: 'wake after sleep onset', ko: '입면 후 각성시간' },
+  'N3': { en: 'non-rapid eye movement stage 3 sleep', ko: '비렘수면 3단계' },
+  'REM': { en: 'rapid eye movement sleep', ko: '렘수면' },
+  'VO2max': { en: 'maximal oxygen uptake', ko: '최대 산소 섭취량' },
+  'VO2peak': { en: 'peak oxygen uptake', ko: '최고 산소 섭취량' },
+  'RPE': { en: 'rating of perceived exertion', ko: '운동자각도' },
+  'DRSP': { en: 'Daily Record of Severity of Problems', ko: '월경전 증상 일일 기록지' },
+  'MDQ': { en: 'Menstrual Distress Questionnaire', ko: '월경 불편감 설문지' },
+  'GSRS': { en: 'Gastrointestinal Symptom Rating Scale', ko: '위장 장애 증상 평가 척도' },
+  'MoCA': { en: 'Montreal Cognitive Assessment', ko: '몬트리올 인지평가' },
+  'MMSE': { en: 'Mini-Mental State Examination', ko: '간이 정신상태 검사' },
+  'BDNF': { en: 'brain-derived neurotrophic factor', ko: '뇌 유래 신경 영양인자' },
+  'BOP': { en: 'bleeding on probing', ko: '치은 출혈 지수' },
+  'PPD': { en: 'probing pocket depth', ko: '치주낭 깊이' },
+  'CAL': { en: 'clinical attachment level', ko: '임상 부착 수준' },
+  'CSBM': { en: 'complete spontaneous bowel movement', ko: '완전 자발적 배변' },
+  'PAC-SYM': { en: 'Patient Assessment of Constipation-Symptoms', ko: '환자보고형 변비 증상 평가' },
+  'DPOAE': { en: 'distortion product otoacoustic emissions', ko: '변조 이음향방사' },
+  'ABR': { en: 'auditory brainstem response', ko: '청성뇌간반응' },
+  'DMFS': { en: 'decayed, missing and filled surfaces', ko: '우식·상실·충전 치면 지수' },
+  'DMFT': { en: 'decayed, missing and filled teeth', ko: '우식·상실·충전 치아 지수' },
+  'PTH': { en: 'parathyroid hormone', ko: '부갑상선 호르몬' },
+  '25(OH)D': { en: '25-hydroxyvitamin D', ko: '25-수산화비타민 D' },
+  'AUC': { en: 'area under the curve', ko: '곡선하면적' },
+  'eGFR': { en: 'estimated glomerular filtration rate', ko: '추정 사구체 여과율' },
+  'BUN': { en: 'blood urea nitrogen', ko: '혈액 요소 질소' },
+  'FSS': { en: 'Fatigue Severity Scale', ko: '피로 설문 척도' },
+  'CIS': { en: 'Checklist Individual Strength', ko: '자각 피로 측정 도구' },
+  'TEWL': { en: 'transepidermal water loss', ko: '경피 수분 손실량' },
+  'MDA': { en: 'malondialdehyde', ko: '말론디알데히드' },
+  '8-OHdG': { en: '8-hydroxy-2-deoxyguanosine', ko: '8-옥소-데옥시구아노신' },
+  'TAC': { en: 'total antioxidant capacity', ko: '총 항산화 용량' },
+  'ORAC': { en: 'oxygen radical absorbance capacity', ko: '산소 라디칼 흡수 능력' },
+  'SOD': { en: 'superoxide dismutase', ko: '과산화물 제거효소' },
+  'GPx': { en: 'glutathione peroxidase', ko: '글루타티온 과산화효소' },
+  'HbA1c': { en: 'glycated hemoglobin', ko: '당화혈색소' },
+  'iAUC': { en: 'incremental area under the curve', ko: '증분 곡선하면적' },
+  'HOMA-IR': { en: 'Homeostasis Model Assessment of Insulin Resistance', ko: '인슐린 저항성 지수' },
+  'SBP': { en: 'systolic blood pressure', ko: '수축기 혈압' },
+  'DBP': { en: 'diastolic blood pressure', ko: '이완기 혈압' },
+  'ABPM': { en: 'ambulatory blood pressure monitoring', ko: '24시간 활동 혈압 측정' },
+  'PWV': { en: 'pulse wave velocity', ko: '맥파 전달 속도' },
+  'LDL-C': { en: 'low-density lipoprotein cholesterol', ko: '저밀도 지단백 콜레스테롤' },
+  'HDL-C': { en: 'high-density lipoprotein cholesterol', ko: '고밀도 지단백 콜레스테롤' },
+  'ApoB': { en: 'apolipoprotein B', ko: '아포지단백질 B' },
+  'ApoA1': { en: 'apolipoprotein A1', ko: '아포지단백질 A1' },
+  'FMD': { en: 'flow-mediated dilation', ko: '혈류매개 혈관확장' },
+  'NO': { en: 'nitric oxide', ko: '산화질소' },
+  'PT': { en: 'prothrombin time', ko: '프로트롬빈 시간' },
+  'aPTT': { en: 'activated partial thromboplastin time', ko: '활성화 부분 트롬보플라스틴 시간' }
+  ,'ACE': { en: 'angiotensin-converting enzyme', ko: '안지오텐신-전환효소' }
+  ,'ADP': { en: 'adenosine diphosphate', ko: '아데노신 이인산' }
+  ,'BMD': { en: 'bone mineral density', ko: '골밀도' }
+  ,'BMI': { en: 'body mass index', ko: '체질량지수' }
+  ,'C-peptide': { en: 'connecting peptide', ko: 'C-펩타이드' }
+  ,'D-dimer': { en: 'D-dimer', ko: 'D-이합체' }
+  ,'F2-isoprostane': { en: 'F2-isoprostane', ko: 'F2-이소프로스탄' }
+  ,'GSH/GSSG': { en: 'reduced glutathione/oxidized glutathione ratio', ko: '환원형·산화형 글루타티온 비' }
+  ,'LF/HF': { en: 'low-frequency/high-frequency power ratio', ko: '저주파·고주파 성분 비' }
+  ,'IgA': { en: 'immunoglobulin A', ko: '면역글로불린 A' }
+  ,'IFN-γ': { en: 'interferon gamma', ko: '인터페론 감마' }
+  ,'IL-1β': { en: 'interleukin-1 beta', ko: '인터루킨-1 베타' }
+  ,'IL-2': { en: 'interleukin-2', ko: '인터루킨-2' }
+  ,'IL-4': { en: 'interleukin-4', ko: '인터루킨-4' }
+  ,'IL-5': { en: 'interleukin-5', ko: '인터루킨-5' }
+  ,'IL-13': { en: 'interleukin-13', ko: '인터루킨-13' }
+  ,'TNF-α': { en: 'tumor necrosis factor alpha', ko: '종양괴사인자 알파' }
+  ,'Th2': { en: 'type 2 helper T cell', ko: '제2형 보조 T세포' }
+  ,'SCFA': { en: 'short-chain fatty acids', ko: '단쇄지방산' }
+  ,'VLDL': { en: 'very-low-density lipoprotein', ko: '초저밀도 지단백' }
+  ,'LDL': { en: 'low-density lipoprotein', ko: '저밀도 지단백' }
+  ,'T-score': { en: 'T-score', ko: '티 점수' }
+  ,'pH': { en: 'potential of hydrogen', ko: '수소이온농도지수' }
+  ,'GI': { en: 'Gingival Index', ko: '치은지수' }
+  ,'PI': { en: 'Plaque Index', ko: '치태지수' }
+  ,'DNA': { en: 'deoxyribonucleic acid', ko: '데옥시리보핵산' }
 };
 
 var BIOMARKER_MECHANISM_DEFS = {

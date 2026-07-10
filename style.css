@@ -1705,7 +1705,7 @@ td.name{font-weight:600;}
   background:#fff;
   padding:10px 11px;
 }
-.irb-draft-row span{
+.irb-draft-row > span{
   display:block;
   color:var(--accent-2);
   font-size:11px;
@@ -1881,7 +1881,7 @@ td.name{font-weight:600;}
 }
 .biomarker-field{margin-top:12px;}
 .biomarker-field:first-of-type{margin-top:0;}
-.biomarker-field span{
+.biomarker-field > span{
   display:block;
   color:var(--accent-2);
   font-size:12px;
@@ -1895,6 +1895,75 @@ td.name{font-weight:600;}
   line-height:1.6;
 }
 .biomarker-field ul{padding-left:18px;}
+.endpoint-list{
+  display:flex;
+  flex-direction:column;
+  gap:0;
+  border-top:1px solid var(--border);
+}
+.endpoint-item{
+  min-width:0;
+  padding:11px 0;
+  border-bottom:1px solid var(--border);
+}
+.endpoint-name{
+  display:block;
+  color:var(--text);
+  font-size:13px;
+  line-height:1.45;
+  margin-bottom:7px;
+}
+.endpoint-term-list{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  margin-bottom:8px;
+}
+.endpoint-term{
+  display:grid;
+  grid-template-columns:minmax(58px,auto) minmax(0,1.35fr) minmax(0,1fr);
+  gap:8px;
+  align-items:start;
+  padding:7px 8px;
+  background:#f4f7f5;
+  color:#536259;
+  font-size:11px;
+  line-height:1.45;
+}
+.endpoint-term b{color:var(--green);font-size:11px;}
+.endpoint-term span{
+  display:block;
+  margin:0;
+  color:#59665e;
+  font-size:11px;
+  font-weight:600;
+}
+.endpoint-term em{
+  color:#39483f;
+  font-style:normal;
+  font-weight:800;
+}
+.endpoint-definition{margin:0;}
+.endpoint-definition div{
+  display:grid;
+  grid-template-columns:62px minmax(0,1fr);
+  gap:8px;
+}
+.endpoint-definition dt{
+  color:var(--accent-2);
+  font-size:11px;
+  font-weight:800;
+}
+.endpoint-definition dd{
+  margin:0;
+  color:#536259;
+  font-size:12px;
+  line-height:1.55;
+  overflow-wrap:anywhere;
+}
+.endpoint-empty{color:var(--muted);font-size:12px;}
+.irb-draft-endpoint-row .endpoint-list{border-top-color:rgba(47,109,87,.16);}
+.irb-draft-endpoint-row .endpoint-item{border-bottom-color:rgba(47,109,87,.16);}
 .biomarker-endpoint-note{
   margin:14px 0 0;
   padding:10px 11px;
@@ -2560,6 +2629,8 @@ mark{background:#ffe082;border-radius:2px;padding:0 1px;}
   .biomarker-detail-head{flex-direction:column;}
   .biomarker-source-links{justify-content:flex-start;}
   .biomarker-protocol-grid{grid-template-columns:1fr;}
+  .endpoint-term{grid-template-columns:1fr;gap:2px;}
+  .endpoint-definition div{grid-template-columns:1fr;gap:3px;}
   .irb-draft-head{flex-direction:column;}
   .section-title-row{flex-direction:column;}
   .trials-search-row{flex-direction:column;}

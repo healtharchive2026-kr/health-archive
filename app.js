@@ -3245,6 +3245,59 @@ function listHtml(items) {
   return list.map(item => `<li>${escapeHtml(item)}</li>`).join('');
 }
 
+function endpointGlossaryTerms(text) {
+  const glossary = (typeof BIOMARKER_TERM_GLOSSARY !== 'undefined') ? BIOMARKER_TERM_GLOSSARY : {};
+  const source = String(text || '');
+  const matches = Object.keys(glossary)
+    .filter(term => source.includes(term))
+    .sort((a, b) => b.length - a.length);
+  return matches
+    .filter(term => !matches.some(other => other !== term && other.includes(term)))
+    .map(term => ({ abbreviation: term, ...glossary[term] }));
+}
+
+function endpointItemHtml(item) {
+  const text = String(item || '').trim();
+  const separator = text.indexOf(':');
+  const name = separator >= 0 ? text.slice(0, separator).trim() : text;
+  const evaluation = separator >= 0 ? text.slice(separator + 1).trim() : '세부 평가방법은 기능성 평가 가이드 및 시험계획서에 따라 설정';
+  const terms = endpointGlossaryTerms(text);
+  return `
+    <article class="endpoint-item">
+      <strong class="endpoint-name">${escapeHtml(name || '-')}</strong>
+      ${terms.length ? `
+        <div class="endpoint-term-list">
+          ${terms.map(term => `
+            <div class="endpoint-term">
+              <b>${escapeHtml(term.abbreviation)}</b>
+              <span>${escapeHtml(term.en)}</span>
+              <em>${escapeHtml(term.ko)}</em>
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+      <dl class="endpoint-definition">
+        <div><dt>평가 내용</dt><dd>${escapeHtml(evaluation || '-')}</dd></div>
+      </dl>
+    </article>
+  `;
+}
+
+function endpointListHtml(items) {
+  const list = (items || []).filter(Boolean);
+  if (!list.length) return '<div class="endpoint-empty">-</div>';
+  return `<div class="endpoint-list">${list.map(endpointItemHtml).join('')}</div>`;
+}
+
+function endpointFieldHtml(label, items) {
+  return `
+    <div class="biomarker-field biomarker-endpoint-field">
+      <span>${escapeHtml(label)}</span>
+      ${endpointListHtml(items)}
+    </div>
+  `;
+}
+
 function fieldHtml(label, value) {
   if (!value) return '';
   return `
@@ -3297,6 +3350,15 @@ function irbDraftListRowHtml(label, items) {
   `;
 }
 
+function irbDraftEndpointRowHtml(label, items) {
+  return `
+    <div class="irb-draft-row irb-draft-list-row irb-draft-endpoint-row">
+      <span>${escapeHtml(label)}</span>
+      ${endpointListHtml(items)}
+    </div>
+  `;
+}
+
 function biomarkerIrbDraftHtml(item) {
   const clinical = item.clinical || {};
   const primary = clinical.primaryEndpointDetails || clinical.primaryBiomarkers || [];
@@ -3317,8 +3379,8 @@ function biomarkerIrbDraftHtml(item) {
         ${irbDraftRowHtml('권장 시험설계', '무작위배정 · 이중눈가림 · 위약대조 · 평행군')}
         ${irbDraftRowHtml('예상 섭취기간', clinical.duration || '8-12주 범위에서 기능성 가이드와 선행연구를 검토하여 설정')}
         ${irbDraftRowHtml('시험군·대조군', '시험원료 섭취군과 동일 제형 위약 대조군')}
-        ${irbDraftListRowHtml('1차 유효성 평가변수', primary)}
-        ${irbDraftListRowHtml('2차 유효성 평가변수', secondary)}
+        ${irbDraftEndpointRowHtml('1차 유효성 평가변수', primary)}
+        ${irbDraftEndpointRowHtml('2차 유효성 평가변수', secondary)}
         ${irbDraftListRowHtml('안전성 평가', ['이상반응 및 병용약물 기록', '활력징후 및 일반 혈액·생화학 검사', '시험 중단 기준과 중대한 이상반응 보고 절차'])}
         ${irbDraftRowHtml('통계분석 개요', '분석집단(ITT/PP) 정의, 군간 변화량 비교, 결측치 처리와 유의수준을 통계분석계획서에서 사전 확정')}
       </div>
@@ -3340,6 +3402,7 @@ function renderBiomarkerDetail(item) {
     ? pdfHref('laws/guidelines/' + item.guideFile)
     : '';
   const generalHref = pdfHref('laws/general-guidelines/인체적용시험 설계 가이드[개정판]_2024.05.pdf');
+  const glossaryHref = pdfHref('laws/general-guidelines/건강기능식품 기능성 평가를 위한 주요 용어집_2024.09.pdf');
 
   detail.innerHTML = `
     <div class="biomarker-detail-head">
@@ -3350,6 +3413,7 @@ function renderBiomarkerDetail(item) {
       <div class="biomarker-source-links">
         ${guideHref ? `<a href="${guideHref}" target="_blank" rel="noopener">기능성 평가 가이드</a>` : ''}
         <a href="${generalHref}" target="_blank" rel="noopener">인체적용시험 설계 가이드</a>
+        <a href="${glossaryHref}" target="_blank" rel="noopener">주요 용어집</a>
       </div>
     </div>
 
@@ -3357,9 +3421,9 @@ function renderBiomarkerDetail(item) {
       ${protocolSectionHtml('임상 프로토콜', [
         fieldHtml('대상자 모델', clinical.model),
         fieldHtml('기간', clinical.duration),
-        `<div class="biomarker-field"><span>1차 유효성 평가변수</span><ul>${listHtml(clinical.primaryEndpointDetails || clinical.primaryBiomarkers)}</ul></div>`,
-        `<div class="biomarker-field"><span>2차 유효성 평가변수</span><ul>${listHtml(clinical.secondaryEndpointDetails || clinical.secondaryBiomarkers)}</ul></div>`,
-        '<p class="biomarker-endpoint-note">가이드의 후보 지표 전체를 사용하는 것이 아니라 원료의 작용기전·선행시험·기능성 표현에 맞춰 1차 변수를 1-2개로 사전 특정합니다.</p>'
+        endpointFieldHtml('1차 유효성 평가변수', clinical.primaryEndpointDetails || clinical.primaryBiomarkers),
+        endpointFieldHtml('2차 유효성 평가변수', clinical.secondaryEndpointDetails || clinical.secondaryBiomarkers),
+        '<p class="biomarker-endpoint-note">기능성 평가 가이드의 후보 지표 중 원료의 작용기전, 선행시험 및 기능성 표현에 부합하는 1차 평가변수 1-2개를 시험계획서에 사전 특정합니다. 약어·영문명·국문명은 식품의약품안전평가원 「건강기능식품 기능성 평가를 위한 주요 용어집」(2024.9.)의 표기를 기준으로 합니다.</p>'
       ])}
 
       ${protocolSectionHtml('전임상 프로토콜', [
@@ -3383,7 +3447,7 @@ function renderBiomarkerDetail(item) {
         ...Array.from(irbPanel.querySelectorAll('.irb-draft-row')).map(row => {
           const label = row.querySelector('span')?.textContent.trim() || '';
           const value = row.querySelector('p')?.textContent.trim()
-            || Array.from(row.querySelectorAll('li')).map(li => li.textContent.trim()).join('; ');
+            || Array.from(row.querySelectorAll('.endpoint-item, li')).map(entry => entry.textContent.replace(/\s+/g, ' ').trim()).join('; ');
           return `${label}: ${value || '-'}`;
         })
       ].join('\n');
