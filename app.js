@@ -11,6 +11,8 @@ let precheckLastQuery = '';
 let precheckSafetyCache = null;
 const scriptLoadPromises = new Map();
 const tabInitPromises = new Map();
+const HOME_WATCH_KEY = 'ha_home_watchlist';
+const HOME_RECENT_KEY = 'ha_home_recent';
 
 const TAB_SCRIPT_DEPS = {
   market: ['libs/chart.umd.js'],
@@ -40,6 +42,33 @@ const PRECHECK_DATA_DEPS = [
 ];
 
 const RADAR_DATA_DEPS = ['data/radar_log.js?v=20260710-radar1'];
+
+const HOME_TAB_LABELS = {
+  precheck: '원료 Pre-Check',
+  devmap: '개발방향 매핑',
+  'material-dev': '원료 개발',
+  whitespace: '화이트스페이스맵',
+  ingredients: '개별·고시형 원료',
+  foodraw: '식품원료목록',
+  'temp-approval': '한시적 인정 원료',
+  'safety-db': '원료 안전성 DB',
+  blocked: '해외직구 차단 원료',
+  'gmo-ingredients': '유전자재조합식품 원료',
+  laws: '법령·공전·가이드라인',
+  nifds: '심의 관련',
+  minutes: '건기식 심의 회의록',
+  'gmo-minutes': '유전자재조합식품 회의록',
+  compare: '기능성별 비교',
+  biomarkers: '기능성별 프로토콜',
+  trials: '임상정보 DB',
+  products: '신규 등록 제품',
+  market: '시장현황',
+  stats: '인정 통계',
+  radar: '레귤러토리 레이더',
+  news: '식품 뉴스',
+  events: '학회/박람회',
+  feedback: '문의'
+};
 
 function loadScriptOnce(src) {
   if (scriptLoadPromises.has(src)) return scriptLoadPromises.get(src);
@@ -812,6 +841,132 @@ function registerServiceWorker() {
 }
 
 // ---------- 홈 데이터 대시보드 ----------
+
+function homeReadList(key) {
+  try {
+    const value = JSON.parse(localStorage.getItem(key) || '[]');
+    return Array.isArray(value) ? value : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function homeWriteList(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
+}
+
+function runHomePrecheck(query) {
+  const q = String(query || '').trim();
+  if (!q) return;
+  if (typeof navigateTo === 'function') navigateTo('precheck');
+  history.replaceState(null, '', '#precheck');
+  setTimeout(() => {
+    const input = document.getElementById('precheck-input');
+    const form = document.getElementById('precheck-form');
+    if (!input || !form) return;
+    input.value = q;
+    if (typeof form.requestSubmit === 'function') form.requestSubmit();
+    else form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+  }, 80);
+}
+
+function addHomeWatchItem(raw) {
+  const name = String(raw || '').trim();
+  if (!name) return;
+  const current = homeReadList(HOME_WATCH_KEY);
+  const next = [name, ...current.filter(x => x !== name)].slice(0, 12);
+  homeWriteList(HOME_WATCH_KEY, next);
+}
+
+function removeHomeWatchItem(name) {
+  homeWriteList(HOME_WATCH_KEY, homeReadList(HOME_WATCH_KEY).filter(x => x !== name));
+}
+
+function recordHomeRecent(tab) {
+  if (!tab || tab === 'home') return;
+  const title = HOME_TAB_LABELS[tab] || tab;
+  const current = homeReadList(HOME_RECENT_KEY);
+  const next = [{ tab, title, at: Date.now() }, ...current.filter(x => x.tab !== tab)].slice(0, 6);
+  homeWriteList(HOME_RECENT_KEY, next);
+  renderHomeRecentList();
+}
+
+function renderHomeWatchList() {
+  const el = document.getElementById('home-watch-list');
+  if (!el) return;
+  const items = homeReadList(HOME_WATCH_KEY);
+  if (!items.length) {
+    el.innerHTML = '<div class="ops-empty">관심 원료를 저장하면 홈에서 바로 다시 점검할 수 있습니다.</div>';
+    return;
+  }
+  el.innerHTML = items.map(name =>
+    '<button type="button" class="ops-chip" data-watch="' + escapeHtml(name) + '">' +
+      '<span>' + escapeHtml(name) + '</span>' +
+      '<span class="ops-chip-x" data-remove-watch="' + escapeHtml(name) + '">×</span>' +
+    '</button>'
+  ).join('');
+  el.querySelectorAll('[data-watch]').forEach(btn => {
+    btn.addEventListener('click', () => runHomePrecheck(btn.dataset.watch));
+  });
+  el.querySelectorAll('[data-remove-watch]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      removeHomeWatchItem(btn.dataset.removeWatch);
+      renderHomeWatchList();
+    });
+  });
+}
+
+function renderHomeRecentList() {
+  const el = document.getElementById('home-recent-list');
+  if (!el) return;
+  const items = homeReadList(HOME_RECENT_KEY).slice(0, 4);
+  if (!items.length) {
+    el.innerHTML = '<div class="ops-empty">탭을 열면 최근 접근 항목이 여기에 표시됩니다.</div>';
+    return;
+  }
+  el.innerHTML = items.map(item =>
+    '<button type="button" class="ops-recent-item" data-recent-tab="' + escapeHtml(item.tab) + '">' +
+      '<strong>' + escapeHtml(item.title || item.tab) + '</strong>' +
+      '<span>열기</span>' +
+    '</button>'
+  ).join('');
+  el.querySelectorAll('[data-recent-tab]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (typeof navigateTo === 'function') navigateTo(btn.dataset.recentTab);
+      history.replaceState(null, '', '#' + btn.dataset.recentTab);
+    });
+  });
+}
+
+function setupHomeOpsPanel() {
+  const form = document.getElementById('home-precheck-form');
+  const input = document.getElementById('home-precheck-input');
+  const watchInput = document.getElementById('home-watch-input');
+  const watchBtn = document.getElementById('home-watch-add');
+
+  if (form && input) {
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      runHomePrecheck(input.value);
+    });
+  }
+  if (watchInput && watchBtn) {
+    watchBtn.addEventListener('click', () => {
+      addHomeWatchItem(watchInput.value);
+      watchInput.value = '';
+      renderHomeWatchList();
+    });
+    watchInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        watchBtn.click();
+      }
+    });
+  }
+  renderHomeWatchList();
+  renderHomeRecentList();
+}
 
 function renderHomeDashboard() {
   // 최근 인정 원료 (loadData에서 연도·번호 내림차순 정렬됨)
@@ -2699,6 +2854,7 @@ function setupTabs() {
     // 시장현황 차트는 탭이 보일 때(레이아웃 확정 후) 처음 한 번만 그린다.
     // (display:none 상태에서 그리면 Chart.js가 크기를 0으로 계산함)
     initTabContent(tab);
+    recordHomeRecent(tab);
     document.body.classList.remove('mobile-nav-open');
     if (menuToggle) {
       menuToggle.setAttribute('aria-expanded', 'false');
@@ -3738,6 +3894,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupTabs();
   setupHeroSearch();
   setupCommandPalette();
+  setupHomeOpsPanel();
   setupIngredientDetail();
   setupCompareTray();
   setupWhitespaceGate();

@@ -47,7 +47,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="style.css?v=20260710-intel2">
+<link rel="stylesheet" href="style.css?v=20260710-intel3">
 </head>
 <body>
 <header class="site-header">
@@ -165,6 +165,38 @@
           </form>
           <div class="global-search-results" id="global-search-results"></div>
         </div>
+      </div>
+
+      <div class="ops-board" id="ops-board">
+        <section class="ops-card ops-card-primary">
+          <div class="ops-card-head">
+            <span>Start</span>
+            <h3>원료 바로 점검</h3>
+          </div>
+          <form class="ops-precheck-form" id="home-precheck-form">
+            <input type="text" id="home-precheck-input" autocomplete="off" placeholder="원재료명 입력">
+            <button type="submit">Pre-Check</button>
+          </form>
+          <p>입력 즉시 원료 Pre-Check 탭에서 인정 이력·식품원료·차단성분·해외 안전성 자료를 대조합니다.</p>
+        </section>
+        <section class="ops-card">
+          <div class="ops-card-head">
+            <span>Watchlist</span>
+            <h3>관심 원료</h3>
+          </div>
+          <div class="ops-watch-add">
+            <input type="text" id="home-watch-input" autocomplete="off" placeholder="관심 원료 추가">
+            <button type="button" id="home-watch-add">추가</button>
+          </div>
+          <div class="ops-chip-list" id="home-watch-list"></div>
+        </section>
+        <section class="ops-card">
+          <div class="ops-card-head">
+            <span>Recent</span>
+            <h3>최근 접근</h3>
+          </div>
+          <div class="ops-recent-list" id="home-recent-list"></div>
+        </section>
       </div>
 
       <div class="hero-section-head hero-menu-head">
@@ -1977,7 +2009,7 @@
 <script src="data/status.js?v=20260630-news0930"></script>
 <script src="data/daily_quotes.js"></script>
 <script src="market.js"></script>
-<script src="app.js?v=20260710-navflow1"></script>
+<script src="app.js?v=20260710-ops1"></script>
 <script src="feedback.js?v=20260704-email-fallback"></script>
 </body>
 </html>

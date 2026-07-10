@@ -627,6 +627,63 @@ main{padding:40px 24px 80px;}
   position:absolute;top:0;left:0;right:0;height:2px;
   background:linear-gradient(90deg,var(--signal),var(--signal-2) 50%,transparent 90%);
 }
+
+.ops-board{
+  display:grid;
+  grid-template-columns:1.25fr .95fr .95fr;
+  gap:14px;
+  margin:0 0 22px;
+}
+.ops-card{
+  position:relative;
+  background:linear-gradient(180deg,#fff,var(--paper-soft));
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:16px;
+  box-shadow:var(--shadow-sm);
+  min-width:0;
+  overflow:hidden;
+}
+.ops-card::before{
+  content:"";
+  position:absolute;left:0;top:0;bottom:0;width:3px;
+  background:linear-gradient(180deg,var(--signal),rgba(124,38,53,.18));
+  opacity:.7;
+}
+.ops-card-primary{background:linear-gradient(135deg,#fff,#fff7f3);}
+.ops-card-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:12px;}
+.ops-card-head span{font-size:10.5px;font-weight:900;color:var(--signal);text-transform:uppercase;letter-spacing:.08em;}
+.ops-card-head h3{margin:0;font-size:15px;font-weight:850;color:var(--text);}
+.ops-card p{margin:10px 0 0;color:var(--muted);font-size:12.5px;line-height:1.55;}
+.ops-precheck-form,.ops-watch-add{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;}
+.ops-precheck-form input,.ops-watch-add input{
+  width:100%;min-width:0;border:1px solid var(--border);border-radius:10px;
+  background:#fff;color:var(--text);padding:11px 12px;font-size:13.5px;
+}
+.ops-precheck-form input:focus,.ops-watch-add input:focus{outline:none;border-color:var(--signal);box-shadow:0 0 0 3px rgba(124,38,53,.08);}
+.ops-precheck-form button,.ops-watch-add button{
+  border:1px solid var(--signal);background:var(--signal);color:#fff;border-radius:10px;
+  padding:0 14px;font-size:12.5px;font-weight:850;cursor:pointer;white-space:nowrap;
+}
+.ops-watch-add button{background:#fff;color:var(--signal);}
+.ops-precheck-form button:hover,.ops-watch-add button:hover{filter:brightness(.96);}
+.ops-chip-list{display:flex;flex-wrap:wrap;gap:7px;min-height:36px;}
+.ops-chip{
+  display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(124,38,53,.22);
+  background:#fff;color:var(--signal);border-radius:999px;padding:7px 9px 7px 11px;
+  font-size:12px;font-weight:800;cursor:pointer;max-width:100%;
+}
+.ops-chip:hover{border-color:var(--signal);background:#fff7f3;}
+.ops-chip-x{border:0;background:rgba(124,38,53,.1);color:var(--signal);border-radius:50%;width:17px;height:17px;line-height:1;font-size:12px;cursor:pointer;}
+.ops-empty{color:var(--muted);font-size:12.5px;line-height:1.5;padding:7px 0;}
+.ops-recent-list{display:flex;flex-direction:column;gap:7px;}
+.ops-recent-item{
+  border:1px solid var(--border);background:#fff;border-radius:10px;padding:9px 10px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;cursor:pointer;
+}
+.ops-recent-item:hover{border-color:rgba(124,38,53,.35);background:#fff7f3;}
+.ops-recent-item strong{font-size:12.5px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ops-recent-item span{font-size:11px;color:var(--muted);white-space:nowrap;}
 /* ── 다중 원료 비교함 ── */
 .ing-cmp-btn{
   display:inline-flex;align-items:center;justify-content:center;
@@ -2221,6 +2278,7 @@ mark{background:#ffe082;border-radius:2px;padding:0 1px;}
   .hero-intro{grid-template-columns:1fr;gap:24px;}
   .hero-stats-row{grid-template-columns:repeat(3,1fr);}
   .hero-search-board{grid-template-columns:1fr;align-items:start;}
+  .ops-board{grid-template-columns:1fr 1fr;}
   .home-flow{grid-template-columns:repeat(3,minmax(0,1fr));}
   .hero-search-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
   .hero-categories{grid-template-columns:1fr 1fr;}
@@ -2304,6 +2362,8 @@ mark{background:#ffe082;border-radius:2px;padding:0 1px;}
   .hero-lede{font-size:15px;line-height:1.65;}
   .hero-stats-row{grid-template-columns:1fr;}
   .hero-search-board{padding:14px;}
+  .ops-board{grid-template-columns:1fr;}
+  .ops-card{padding:14px;}
   .home-flow{grid-template-columns:repeat(2,minmax(0,1fr));}
   .home-flow-step{min-height:96px;padding:12px;}
   .global-search-form input{font-size:13px;padding:13px 2px;}
