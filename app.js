@@ -5,6 +5,10 @@ let minutesYear = null;
 let appDataReady = Promise.resolve();
 let ingredientMinuteUiReady = false;
 let compareTabReady = false;
+let precheckUiReady = false;
+let precheckLastIngredientMatches = [];
+let precheckLastQuery = '';
+let precheckSafetyCache = null;
 const scriptLoadPromises = new Map();
 const tabInitPromises = new Map();
 
@@ -24,6 +28,14 @@ const TAB_SCRIPT_DEPS = {
 const GLOBAL_SEARCH_SCRIPT_DEPS = [
   'data/products.js?v=20260709-perf',
   'data/food_ingredients.js?v=20260709-perf'
+];
+
+const PRECHECK_DATA_DEPS = [
+  'data/food_ingredients.js?v=20260709-perf',
+  'data/temp_approval.js?v=20260709-perf',
+  'data/blocked_ingredients.js?v=20260709-perf',
+  'data/gmo_ingredients.js?v=20260709-perf',
+  'data/safety_db.js?v=20260709-perf'
 ];
 
 function loadScriptOnce(src) {
@@ -288,8 +300,36 @@ function routeHeroSearch(target, q, options = {}) {
     input.dispatchEvent(new Event('input'));
   } else if (target === 'foodraw') {
     const input = document.getElementById('foodraw-search');
-    input.value = q;
-    input.dispatchEvent(new Event('input'));
+    if (input) {
+      input.value = q;
+      input.dispatchEvent(new Event('input'));
+    }
+  } else if (target === 'temp-approval') {
+    const input = document.getElementById('temp-approval-search');
+    if (input) {
+      input.value = q;
+      input.dispatchEvent(new Event('input'));
+    }
+  } else if (target === 'blocked') {
+    const input = document.getElementById('blocked-search');
+    if (input) {
+      input.value = q;
+      input.dispatchEvent(new Event('input'));
+    }
+  } else if (target === 'gmo-ingredients') {
+    const input = document.getElementById('gmo-ingr-search');
+    if (input) {
+      input.value = q;
+      input.dispatchEvent(new Event('input'));
+    }
+  } else if (target === 'safety-db') {
+    const input = document.getElementById('sdb-q');
+    const btn = document.getElementById('sdb-search-btn');
+    if (input) {
+      input.value = q;
+      input.dispatchEvent(new Event('input'));
+      if (btn && !btn.disabled) btn.click();
+    }
   }
 }
 
@@ -758,126 +798,6 @@ function setupCompareTray() {
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && overlay && !overlay.hidden) closeCompareModal();
   });
-}
-
-// ---------- HealthOS 운영 대시보드 ----------
-
-function parseStatusDate(value) {
-  const m = /^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2})/.exec(String(value || ''));
-  if (!m) return null;
-  return new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]);
-}
-
-function daysSince(date) {
-  if (!date) return null;
-  return Math.max(0, Math.floor((Date.now() - date.getTime()) / 86400000));
-}
-
-function formatFreshness(date) {
-  const d = daysSince(date);
-  if (d == null) return '상태 미확인';
-  if (d === 0) return '오늘 업데이트';
-  if (d === 1) return '어제 업데이트';
-  return d + '일 전 업데이트';
-}
-
-function healthToneByAge(date) {
-  const d = daysSince(date);
-  if (d == null) return 'warn';
-  if (d <= 1) return 'ok';
-  if (d <= 3) return 'watch';
-  return 'warn';
-}
-
-function renderHealthOS() {
-  const scoreEl = document.getElementById('healthos-score');
-  const captionEl = document.getElementById('healthos-score-caption');
-  const gridEl = document.getElementById('healthos-status-grid');
-  const freshEl = document.getElementById('healthos-freshness');
-  if (!scoreEl || !captionEl || !gridEl || !freshEl) return;
-
-  const status = (typeof STATUS_DATA !== 'undefined') ? STATUS_DATA : {};
-  const statusEntries = Object.entries(status)
-    .map(([key, value]) => ({ key, ...value, date: parseStatusDate(value.lastRun) }))
-    .filter(x => x.lastRun);
-  const freshCount = statusEntries.filter(x => {
-    const d = daysSince(x.date);
-    return d != null && d <= 2;
-  }).length;
-  const freshnessScore = statusEntries.length ? Math.round(freshCount / statusEntries.length * 100) : 0;
-  const httpsScore = location.protocol === 'https:' || location.hostname === 'localhost' ? 100 : 60;
-  const cspScore = document.querySelector('meta[http-equiv="Content-Security-Policy"]') ? 100 : 65;
-  const lazyScore = !Array.from(document.scripts).some(s => /safety_db\.js|food_ingredients\.js/.test(s.src || '')) ? 100 : 70;
-  const score = Math.round((freshnessScore * 0.42) + (httpsScore * 0.22) + (cspScore * 0.18) + (lazyScore * 0.18));
-
-  scoreEl.textContent = score + '%';
-  captionEl.textContent = score >= 90 ? '운영 상태 우수' : score >= 75 ? '운영 상태 양호' : '점검 권장';
-
-  const latest = statusEntries
-    .slice()
-    .sort((a, b) => (b.date ? b.date.getTime() : 0) - (a.date ? a.date.getTime() : 0))[0];
-  const totalNews = ['news', 'news_thinkfood', 'news_mfds', 'news_nutraingredients', 'news_supplysidesj', 'news_nutritioninsight']
-    .reduce((sum, key) => sum + ((status[key] && status[key].count) || 0), 0);
-  const totalNew = Object.values(status).reduce((sum, item) => sum + (item.newCount || 0), 0);
-
-  const cards = [
-    {
-      tone: healthToneByAge(latest && latest.date),
-      label: '데이터 신선도',
-      value: latest ? formatFreshness(latest.date) : '상태 미확인',
-      meta: latest ? '최근 갱신: ' + latest.key : '상태 파일 대기'
-    },
-    {
-      tone: httpsScore === 100 && cspScore === 100 ? 'ok' : 'warn',
-      label: '보안 레이어',
-      value: httpsScore === 100 ? 'HTTPS + CSP' : 'HTTPS 점검 필요',
-      meta: 'Referrer/CSP/권한 최소화 적용'
-    },
-    {
-      tone: 'ok',
-      label: '검색 엔진',
-      value: '동의어 확장',
-      meta: '기능성·이명·영문 키워드 매칭'
-    },
-    {
-      tone: totalNew > 0 ? 'watch' : 'ok',
-      label: '신규 감지',
-      value: totalNew.toLocaleString('ko-KR') + '건',
-      meta: '누적 뉴스 ' + totalNews.toLocaleString('ko-KR') + '건'
-    }
-  ];
-
-  gridEl.innerHTML = cards.map(card => `
-    <div class="healthos-card ${card.tone}">
-      <span class="healthos-card-label">${escapeHtml(card.label)}</span>
-      <strong>${escapeHtml(card.value)}</strong>
-      <p>${escapeHtml(card.meta)}</p>
-    </div>
-  `).join('');
-
-  const labels = {
-    ingredients: '개별인정/고시형 원료',
-    minutes: '심의 회의록',
-    products: '신규 등록 제품',
-    temp_approval: '한시적 인정 원료',
-    news: '식품저널',
-    news_thinkfood: '식품음료신문',
-    news_mfds: '식약처 보도자료',
-    news_nutraingredients: 'NutraIngredients',
-    news_supplysidesj: 'SupplySide SJ',
-    news_nutritioninsight: 'Nutrition Insight'
-  };
-
-  freshEl.innerHTML = statusEntries
-    .sort((a, b) => (b.date ? b.date.getTime() : 0) - (a.date ? a.date.getTime() : 0))
-    .slice(0, 8)
-    .map(item => `
-      <div class="healthos-fresh-row ${healthToneByAge(item.date)}">
-        <span>${escapeHtml(labels[item.key] || item.key)}</span>
-        <strong>${escapeHtml(formatFreshness(item.date))}</strong>
-        <em>${Number(item.count || 0).toLocaleString('ko-KR')}건</em>
-      </div>
-    `).join('') || '<div class="healthos-empty">상태 데이터가 아직 없습니다.</div>';
 }
 
 function registerServiceWorker() {
@@ -1521,6 +1441,311 @@ function initCompareTabOnce() {
   setupCompareTab();
 }
 
+// ---------- 원료 Pre-Check ----------
+
+function precheckNormText(s) {
+  return ingxNorm(s)
+    .replace(/추출분말|추출물|추출|분말|농축분말|농축액|농축|주정|열수|건조물|배양건조물|열처리|프로바이오틱스|복합물|오일|유지|원료|정제|분리|과육|뿌리|껍질|줄기|열매|종자|씨앗|잎|꽃/g, '');
+}
+
+function precheckTerms(q) {
+  const raw = String(q || '').toLowerCase()
+    .split(/[\s,;:()·\/\[\]{}"'<>]+/)
+    .map(x => x.trim())
+    .filter(x => x.length >= 2 && !/^(and|or|the|extract|powder|oil)$/i.test(x));
+  const terms = [ingxNorm(q), precheckNormText(q)];
+  raw.forEach(x => {
+    terms.push(ingxNorm(x));
+    terms.push(precheckNormText(x));
+  });
+  return Array.from(new Set(terms.filter(x => x && x.length >= 2)));
+}
+
+function precheckScore(q, haystack) {
+  const qNorm = ingxNorm(q);
+  const hNorm = ingxNorm(haystack);
+  if (!qNorm || !hNorm) return 0;
+  const qCore = precheckNormText(q);
+  const hCore = precheckNormText(haystack);
+  if (hNorm === qNorm || (qCore && hCore === qCore)) return 120;
+  if (hNorm.includes(qNorm)) return 98;
+  if (qNorm.length >= 4 && qNorm.includes(hNorm)) return 88;
+  if (qCore && hCore.includes(qCore)) return 86;
+
+  const terms = precheckTerms(q);
+  let score = 0;
+  terms.forEach(t => {
+    if (t.length < 2) return;
+    if (hNorm.includes(t)) score += t.length >= 5 ? 28 : 20;
+    else if (hCore.includes(t)) score += t.length >= 5 ? 22 : 16;
+  });
+  return Math.min(score, 76);
+}
+
+function precheckFind(data, q, textFn, limit = 10, minScore = 34) {
+  return (data || [])
+    .map(row => ({ row, score: precheckScore(q, textFn(row)) }))
+    .filter(x => x.score >= minScore)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, limit);
+}
+
+function precheckSafetyRows() {
+  if (precheckSafetyCache) return precheckSafetyCache;
+  const db = (typeof SAFETY_DB !== 'undefined') ? SAFETY_DB : {};
+  const rows = [];
+  Object.keys(db || {}).forEach(key => {
+    (db[key] || []).forEach(r => rows.push({
+      source: r.s || key,
+      name: r.n || r.name || '',
+      status: r.status || '',
+      date: r.date || '',
+      url: r.u || r.url || ''
+    }));
+  });
+  precheckSafetyCache = rows;
+  return rows;
+}
+
+function precheckResultLabel(match) {
+  return match.score >= 92 ? '강한 매칭' : '유사 매칭';
+}
+
+function precheckKpi(label, value, meta, tone = '') {
+  return `<div class="precheck-kpi ${tone}">
+    <span>${escapeHtml(label)}</span>
+    <strong>${escapeHtml(value)}</strong>
+    <em>${escapeHtml(meta)}</em>
+  </div>`;
+}
+
+function precheckIngredientCards(matches) {
+  if (!matches.length) return '<div class="precheck-none">동일·유사 개별인정/고시형 원료를 찾지 못했습니다.</div>';
+  return matches.slice(0, 8).map((m, i) => {
+    const r = m.row;
+    const type = r.noticeConverted ? '고시형 전환' : '개별인정';
+    const report = r.report
+      ? `<a class="precheck-mini-link" href="${escapeHtml(pdfHref('reports/' + r.report))}" target="_blank" rel="noopener">PDF</a>`
+      : '';
+    return `<div class="precheck-match-card">
+      <div class="precheck-match-main">
+        <span class="precheck-match-type">${escapeHtml(type)} · ${escapeHtml(precheckResultLabel(m))}</span>
+        <strong>${escapeHtml(r.name || '-')}</strong>
+        <p>${escapeHtml([r.category, r.efficacy].filter(Boolean).join(' · ') || '-')}</p>
+      </div>
+      <div class="precheck-match-meta">
+        <span>${escapeHtml(r.noticeNo || '-')}</span>
+        <span>${escapeHtml(r.dailyIntake || '-')}</span>
+      </div>
+      <div class="precheck-match-actions">
+        <button type="button" class="precheck-mini-link precheck-ing-open" data-i="${i}">상세</button>
+        ${report}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function precheckSimpleCards(matches, emptyText, mapper) {
+  if (!matches.length) return `<div class="precheck-none">${escapeHtml(emptyText)}</div>`;
+  return matches.slice(0, 8).map(m => {
+    const data = mapper(m.row, m);
+    const link = data.url ? `<a class="precheck-mini-link" href="${escapeHtml(data.url)}" target="_blank" rel="noopener">원문</a>` : '';
+    return `<div class="precheck-simple-card">
+      <span>${escapeHtml(data.label || precheckResultLabel(m))}</span>
+      <strong>${escapeHtml(data.title || '-')}</strong>
+      <p>${escapeHtml(data.meta || '-')}</p>
+      ${link}
+    </div>`;
+  }).join('');
+}
+
+function precheckSection(title, count, body, actionTarget, q) {
+  const action = actionTarget
+    ? `<button type="button" class="precheck-section-go" data-precheck-go="${escapeHtml(actionTarget)}" data-query="${escapeHtml(q)}">탭에서 보기</button>`
+    : '';
+  return `<section class="precheck-section">
+    <div class="precheck-section-head">
+      <h3>${escapeHtml(title)} <span>${count}</span></h3>
+      ${action}
+    </div>
+    <div class="precheck-section-body">${body}</div>
+  </section>`;
+}
+
+function precheckSummary(q, matches) {
+  const { ingredient, food, temp, blocked, gmo, safety } = matches;
+  const directIngredient = ingredient.filter(x => x.score >= 92);
+  const converted = ingredient.filter(x => x.row.noticeConverted);
+  let tone = 'watch';
+  let title = '근거 확인 필요';
+  let desc = '현재 보유 DB에서 강한 근거가 제한적입니다. 식품원료 등재, 식용경험, 제조공정, 안전성 자료부터 확인하세요.';
+
+  if (blocked.length) {
+    tone = 'danger';
+    title = '차단·주의 신호 우선 확인';
+    desc = '해외직구 차단 원료·성분 또는 유사 명칭이 매칭되었습니다. 개발 착수 전 원재료와 지표성분 범위를 먼저 분리해 확인해야 합니다.';
+  } else if (directIngredient.length) {
+    tone = 'ok';
+    title = '동일·유사 인정 이력 있음';
+    desc = '개별인정 또는 고시형 전환 사례가 확인됩니다. 차별화 포인트, 지표성분, 기능성 주장 범위부터 설계하는 방향이 적합합니다.';
+  } else if (temp.length || food.length) {
+    tone = 'base';
+    title = '원재료 근거 기반 검토 가능';
+    desc = '식품원료 또는 한시적 인정 원료 근거가 확인됩니다. 기능성 개발 전 식용근거와 안전성 자료 수준을 먼저 정리하세요.';
+  } else if (safety.length) {
+    tone = 'watch';
+    title = '안전성 자료 선검토 필요';
+    desc = '해외 안전성 DB에 유사 자료가 있습니다. 섭취량, 독성, 사용조건 자료로 연결 가능한지 먼저 검토하세요.';
+  }
+
+  const recs = [];
+  if (blocked.length) recs.push('차단 원료·성분과 동일 물질인지, 원재료·추출물·지표성분 범위가 분리되는지 먼저 확인');
+  if (gmo.length) recs.push('유전자변형 식품/미생물 유래 여부 또는 식품첨가물 해당성을 선검토');
+  if (directIngredient.length) recs.push('동일·유사 인정 사례의 기능성, 일일섭취량, 지표성분, 시험법을 비교해 차별화 전략 수립');
+  if (converted.length) recs.push('고시형 전환 사례가 있어 건강기능식품공전 기준·규격과 기능성 범위를 우선 대조');
+  if (temp.length) recs.push('한시적 인정 사례가 있어 원재료 유래, 식용근거, 사용조건, 제출자료 수준을 비교');
+  if (food.length) recs.push('식품원료목록 등재 근거를 바탕으로 사용부위, 학명, 기타명칭, 제한사항 확인');
+  if (safety.length) recs.push('GRAS·Novel Food·NCCIH·ODS 등 해외 자료를 안전성 검토자료 초안에 연결');
+  if (!recs.length) recs.push('공개 DB 매칭이 약하므로 원산지, 사용부위, 제조공정, 국내외 식용경험 자료를 먼저 확보');
+
+  const kpis = [
+    precheckKpi('인정 원료', String(ingredient.length), directIngredient.length ? `${directIngredient.length}건 강한 매칭` : '유사 사례 기준', ingredient.length ? 'ok' : ''),
+    precheckKpi('식품원료', String(food.length), '식품원료목록 매칭', food.length ? 'base' : ''),
+    precheckKpi('한시적 인정', String(temp.length), '식품원료 인정 이력', temp.length ? 'base' : ''),
+    precheckKpi('주의 신호', String(blocked.length + gmo.length), '차단/GMO 유사명칭', blocked.length ? 'danger' : (gmo.length ? 'watch' : ''))
+  ].join('');
+
+  return `<div class="precheck-summary ${tone}">
+    <div>
+      <span class="precheck-summary-label">Pre-Check Result</span>
+      <h3>${escapeHtml(title)}</h3>
+      <p>${escapeHtml(desc)}</p>
+      <div class="precheck-query-pill">검색어: ${escapeHtml(q)}</div>
+    </div>
+    <div class="precheck-rec">
+      <strong>추천 검토 방향</strong>
+      <ul>${recs.slice(0, 6).map(x => `<li>${escapeHtml(x)}</li>`).join('')}</ul>
+    </div>
+    <div class="precheck-kpis">${kpis}</div>
+  </div>`;
+}
+
+function renderPrecheck(q) {
+  const resultEl = document.getElementById('precheck-results');
+  if (!resultEl) return;
+
+  const food = (typeof FOOD_INGREDIENTS !== 'undefined') ? FOOD_INGREDIENTS : [];
+  const temp = (typeof TEMP_APPROVAL_DATA !== 'undefined') ? TEMP_APPROVAL_DATA : [];
+  const blocked = (typeof BLOCKED_INGREDIENTS_DATA !== 'undefined') ? BLOCKED_INGREDIENTS_DATA : [];
+  const gmo = (typeof GMO_INGREDIENTS_DATA !== 'undefined') ? GMO_INGREDIENTS_DATA : [];
+  const safety = precheckSafetyRows();
+
+  const matches = {
+    ingredient: precheckFind(ingredients, q, r => [r.name, r.company, r.category, r.efficacy, r.dailyIntake].join(' '), 12, 30),
+    food: precheckFind(food, q, r => [r.n, r.a, r.s, r.p, r.d, r.t, r.c].join(' '), 10, 34),
+    temp: precheckFind(temp, q, r => [r.name, r.company, r.certNo].join(' '), 10, 34),
+    blocked: precheckFind(blocked, q, r => [r.nk, r.ne, r.alias, r.t].join(' '), 10, 34),
+    gmo: precheckFind(gmo, q, r => [r.name, r.company, r.meetingNo, r.date].join(' '), 10, 34),
+    safety: precheckFind(safety, q, r => [r.name, r.source, r.status].join(' '), 12, 38)
+  };
+
+  precheckLastIngredientMatches = matches.ingredient;
+  precheckLastQuery = q;
+
+  const ingredientBody = precheckIngredientCards(matches.ingredient);
+  const foodBody = precheckSimpleCards(matches.food, '식품원료목록에서 매칭되는 항목을 찾지 못했습니다.', r => ({
+    label: `${r.t || '식품원료'} · ${r.c || ''}`.trim(),
+    title: r.n,
+    meta: [r.a, r.s, r.p ? `사용부위: ${r.p}` : ''].filter(Boolean).join(' · ')
+  }));
+  const tempBody = precheckSimpleCards(matches.temp, '한시적 인정 원료 목록에서 매칭되는 항목을 찾지 못했습니다.', r => ({
+    label: r.certNo || '한시적 인정',
+    title: r.name,
+    meta: [r.company, r.date].filter(Boolean).join(' · ')
+  }));
+  const riskBody = [
+    precheckSimpleCards(matches.blocked, '해외직구 차단 원료·성분 매칭 없음', r => ({
+      label: r.t || '차단 목록',
+      title: [r.nk, r.ne].filter(Boolean).join(' / '),
+      meta: [r.alias, r.date].filter(Boolean).join(' · ')
+    })),
+    precheckSimpleCards(matches.gmo, '유전자변형식품 심사 대상 유사명칭 매칭 없음', r => ({
+      label: r.meetingNo ? `${r.meetingNo}회` : 'GMO 심사',
+      title: r.name,
+      meta: [r.date, r.company].filter(Boolean).join(' · ')
+    }))
+  ].join('');
+  const safetyBody = precheckSimpleCards(matches.safety, '해외 안전성 DB에서 강한 매칭을 찾지 못했습니다.', r => ({
+    label: r.source || 'Safety DB',
+    title: r.name,
+    meta: [r.status, r.date].filter(Boolean).join(' · '),
+    url: r.url
+  }));
+  const riskTarget = matches.blocked.length ? 'blocked' : (matches.gmo.length ? 'gmo-ingredients' : null);
+
+  resultEl.innerHTML =
+    precheckSummary(q, matches) +
+    precheckSection('동일·유사 인정 이력', matches.ingredient.length, ingredientBody, 'ingredients', q) +
+    '<div class="precheck-two-col">' +
+      precheckSection('식품원료목록 근거', matches.food.length, foodBody, 'foodraw', q) +
+      precheckSection('한시적 인정 원료 근거', matches.temp.length, tempBody, 'temp-approval', q) +
+    '</div>' +
+    precheckSection('리스크 게이트', matches.blocked.length + matches.gmo.length, riskBody, riskTarget, q) +
+    precheckSection('해외 안전성 자료', matches.safety.length, safetyBody, 'safety-db', q);
+
+  resultEl.querySelectorAll('.precheck-ing-open').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = precheckLastIngredientMatches[+btn.dataset.i];
+      if (item) openIngredientDetail(item.row);
+    });
+  });
+  resultEl.querySelectorAll('[data-precheck-go]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.precheckGo;
+      const query = btn.dataset.query || precheckLastQuery;
+      navigateTo(target);
+      initTabContent(target).then(() => routeHeroSearch(target, query));
+      history.replaceState(null, '', '#' + target);
+    });
+  });
+}
+
+function setupPrecheck() {
+  if (precheckUiReady) return;
+  precheckUiReady = true;
+  const form = document.getElementById('precheck-form');
+  const input = document.getElementById('precheck-input');
+  const resultEl = document.getElementById('precheck-results');
+  if (!form || !input || !resultEl) return;
+
+  function run(q) {
+    const query = String(q || '').trim();
+    if (!query) {
+      resultEl.innerHTML = '<div class="precheck-empty"><strong>검토할 원재료명을 입력하세요.</strong><span>원재료명, 학명, 균주명, 영문명을 입력하면 보유 DB를 한 번에 대조합니다.</span></div>';
+      return;
+    }
+    resultEl.innerHTML = '<div class="precheck-loading">관련 데이터베이스를 불러와 사전점검 중입니다…</div>';
+    loadScripts(PRECHECK_DATA_DEPS)
+      .then(() => renderPrecheck(query))
+      .catch(err => {
+        console.error(err);
+        resultEl.innerHTML = '<div class="precheck-empty"><strong>데이터 로딩 중 문제가 발생했습니다.</strong><span>새로고침 후 다시 검색해 주세요.</span></div>';
+      });
+  }
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    run(input.value);
+  });
+
+  document.querySelectorAll('[data-precheck-sample]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      input.value = btn.dataset.precheckSample || '';
+      run(input.value);
+    });
+  });
+}
+
 function initTabContent(tab) {
   if (!tab || tab === 'home') return Promise.resolve();
   if (tabInitPromises.has(tab)) return tabInitPromises.get(tab);
@@ -1542,6 +1767,9 @@ function initTabContent(tab) {
           break;
         case 'material-dev':
           setupMaterialDevTabs();
+          break;
+        case 'precheck':
+          setupPrecheck();
           break;
         case 'nifds':
           setupNifdsTabs();
@@ -3306,5 +3534,5 @@ document.addEventListener('DOMContentLoaded', () => {
   runStartupTask('renderDailyQuote', renderDailyQuote);
   runStartupTask('setupVisitorCounter', setupVisitorCounter);
   runStartupTask('setupIntroModal', setupIntroModal);
-  appDataReady.then(() => { setupGlobalSearch(); renderHealthOS(); renderHomeDashboard(); });
+  appDataReady.then(() => { setupGlobalSearch(); renderHomeDashboard(); });
 });

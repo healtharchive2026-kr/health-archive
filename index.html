@@ -47,7 +47,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="style.css?v=20260710-healthos2">
+<link rel="stylesheet" href="style.css?v=20260710-precheck1">
 </head>
 <body>
 <header class="site-header">
@@ -65,6 +65,7 @@
       <a href="#home" data-tab="home" class="nav-link active">홈</a>
       <a href="#devmap" data-tab="devmap" class="nav-link">개발방향 매핑</a>
       <a href="#material-dev" data-tab="material-dev" class="nav-link">원료 개발</a>
+      <a href="#precheck" data-tab="precheck" class="nav-link">원료 Pre-Check</a>
       <div class="nav-group">
         <span class="nav-group-label">데이터베이스 <span class="nav-caret">▾</span></span>
         <div class="nav-dropdown">
@@ -159,52 +160,6 @@
           <div class="global-search-results" id="global-search-results"></div>
         </div>
       </div>
-
-      <section class="healthos-panel" aria-label="HealthOS 운영 대시보드">
-        <div class="healthos-hero">
-          <div>
-            <span class="healthos-kicker">HealthOS Control Deck</span>
-            <h2>개발 근거, 자동화, 보안 상태를 한 화면에서 관리합니다.</h2>
-            <p>자료를 모아두는 수준을 넘어, 오늘 바로 확인해야 할 리스크와 다음 업무 경로를 제안하는 운영형 아카이브입니다.</p>
-          </div>
-          <div class="healthos-score-card">
-            <span class="healthos-score-label">운영 준비도</span>
-            <strong id="healthos-score">--</strong>
-            <span id="healthos-score-caption">상태 계산 중</span>
-          </div>
-        </div>
-
-        <div class="healthos-grid" id="healthos-status-grid">
-          <div class="healthos-card skeleton"></div>
-          <div class="healthos-card skeleton"></div>
-          <div class="healthos-card skeleton"></div>
-          <div class="healthos-card skeleton"></div>
-        </div>
-
-        <div class="healthos-lower">
-          <div class="healthos-lane">
-            <div class="healthos-lane-head">
-              <span>Smart Workflow</span>
-              <strong>후보 원료 검토 루트</strong>
-            </div>
-            <div class="healthos-actions" id="healthos-actions">
-              <button type="button" data-goto="ingredients">원료 사례 확인</button>
-              <button type="button" data-goto="safety-db">안전성 DB 검색</button>
-              <button type="button" data-goto="biomarkers">프로토콜 설계</button>
-              <button type="button" data-goto="products">시장 제품 대조</button>
-            </div>
-          </div>
-          <div class="healthos-lane">
-            <div class="healthos-lane-head">
-              <span>Data Freshness</span>
-              <strong>업데이트 신선도</strong>
-            </div>
-            <div class="healthos-freshness" id="healthos-freshness">
-              <div class="healthos-empty">상태 계산 중…</div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       <div class="hero-section-head hero-menu-head">
         <span>한눈에 보기</span>
@@ -800,6 +755,43 @@
     </div>
 
     <p class="devmap-footnote">위 목록은 신청 전 자료 설계용 체크리스트입니다. 최종 필수 제출범위는 식약처 고시, 민원인 안내서, 사전검토 결과와 원료 특성에 따라 조정하세요.</p>
+  </section>
+
+  <section id="precheck" class="tab-section">
+    <div class="precheck-hero">
+      <div>
+        <span class="precheck-kicker">Raw Material Pre-Check</span>
+        <h2>원료 Pre-Check</h2>
+        <p>원재료명 하나로 개별인정·고시형 전환·한시적 인정·식품원료목록·차단 성분·해외 안전성 DB를 한 번에 대조해 개발 착수 전 확인할 방향을 정리합니다.</p>
+      </div>
+      <div class="precheck-note">
+        <strong>사전점검용</strong>
+        <span>본 결과는 보유 DB 기준의 실무 검토 보조자료이며, 최종 가능 여부는 원료 규격·제조공정·섭취량·식약처 사전검토에 따라 달라집니다.</span>
+      </div>
+    </div>
+
+    <form class="precheck-search" id="precheck-form">
+      <label for="precheck-input">원재료명</label>
+      <div class="precheck-input-row">
+        <input type="text" id="precheck-input" autocomplete="off" placeholder="예: 홍삼, 마리골드, 아쉬아간다, Lactobacillus plantarum">
+        <button type="submit">사전점검</button>
+      </div>
+      <p>동일 명칭뿐 아니라 추출물·분말·균주·학명·영문명 등 유사 표현까지 함께 탐색합니다.</p>
+    </form>
+
+    <div class="precheck-presets" aria-label="원료 Pre-Check 예시">
+      <button type="button" data-precheck-sample="마리골드">마리골드</button>
+      <button type="button" data-precheck-sample="아쉬아간다">아쉬아간다</button>
+      <button type="button" data-precheck-sample="Lactobacillus plantarum">Lactobacillus plantarum</button>
+      <button type="button" data-precheck-sample="홍삼">홍삼</button>
+    </div>
+
+    <div class="precheck-results" id="precheck-results">
+      <div class="precheck-empty">
+        <strong>검토할 원재료명을 입력하세요.</strong>
+        <span>결과는 개발 가능성 요약, 동일·유사 인정 이력, 식품원료/한시적 인정 근거, 안전성 리스크, 다음 액션 순서로 표시됩니다.</span>
+      </div>
+    </div>
   </section>
 
   <section id="market" class="tab-section">
@@ -1778,7 +1770,7 @@
 <script src="data/status.js?v=20260630-news0930"></script>
 <script src="data/daily_quotes.js"></script>
 <script src="market.js"></script>
-<script src="app.js?v=20260710-healthos2"></script>
+<script src="app.js?v=20260710-precheck1"></script>
 <script src="feedback.js?v=20260704-email-fallback"></script>
 </body>
 </html>
