@@ -1703,6 +1703,120 @@ function precheckSummary(q, matches) {
   </div>`;
 }
 
+// ---------- Pre-Check 확장: 특허·해외 규제·해외 이상사례 (외부 데이터) ----------
+
+function precheckExternalSection(title, subtitle, body) {
+  return `<section class="precheck-section">
+    <div class="precheck-section-head">
+      <h3>${escapeHtml(title)}</h3>
+      <span class="precheck-ext-subtitle">${escapeHtml(subtitle)}</span>
+    </div>
+    <div class="precheck-section-body">${body}</div>
+  </section>`;
+}
+
+function precheckPatentLinksHtml(q) {
+  const qEnc = encodeURIComponent(q);
+  return `<div class="precheck-ext-links">
+    <a class="precheck-ext-link" href="https://patents.google.com/?q=${qEnc}&country=KR" target="_blank" rel="noopener">🇰🇷 한국 특허 검색 (Google Patents) ↗</a>
+    <a class="precheck-ext-link" href="https://patents.google.com/?q=${qEnc}" target="_blank" rel="noopener">🌐 전세계 특허 검색 (Google Patents) ↗</a>
+  </div>
+  <p class="precheck-ext-note">규제상 빈 영역이어도 특허로 선점되어 있을 수 있습니다. R&D 착수 전 조성물·용도 특허를 함께 확인하세요.</p>`;
+}
+
+function precheckForeignRegLinksHtml(q) {
+  const qEnc = encodeURIComponent(q);
+  return `<div class="precheck-ext-links">
+    <a class="precheck-ext-link" href="https://www.google.com/search?q=site:fda.gov+%22new+dietary+ingredient%22+${qEnc}" target="_blank" rel="noopener">🇺🇸 미국 FDA NDI 신고 검색 ↗</a>
+    <a class="precheck-ext-link" href="https://www.google.com/search?q=site:ec.europa.eu+%22novel+food%22+${qEnc}" target="_blank" rel="noopener">🇪🇺 EU Novel Food 카탈로그 검색 ↗</a>
+    <a class="precheck-ext-link" href="https://www.google.com/search?q=site:caa.go.jp+%E6%A9%9F%E8%83%BD%E6%80%A7%E8%A1%A8%E7%A4%BA%E9%A3%9F%E5%93%81+${qEnc}" target="_blank" rel="noopener">🇯🇵 일본 기능성표시식품(FFC) 검색 ↗</a>
+  </div>
+  <p class="precheck-ext-note">해외 인정·등재 이력은 글로벌 진출 가능성과 안전성 참고자료로 활용할 수 있습니다 (검색 결과는 참고용, 공식 데이터베이스에서 재확인 필요).</p>`;
+}
+
+// 원료명에서 영문/학명 부분을 추출한다 (openFDA는 영문 검색만 지원).
+// 제품코드(예: KGC1109)보다 "Genus species" 형태의 실제 성분명을 우선한다.
+function precheckExtractEnglishTerm(q, ingredientMatches) {
+  const qTrim = (q || '').trim();
+  if (/^[A-Za-z][A-Za-z0-9\s\-.]{2,}$/.test(qTrim)) return qTrim;
+
+  const candidates = [];
+  (ingredientMatches || []).forEach(m => {
+    const text = (m.row && m.row.name) || '';
+    const found = text.match(/[A-Za-z][A-Za-z0-9\s\-.]{3,}/g) || [];
+    found.forEach(c => candidates.push(c.trim()));
+  });
+  if (!candidates.length) return '';
+
+  const hasSpaceAndLetters = c => / /.test(c) && /[A-Za-z]{3,}/.test(c);
+  const hasDigit = c => /\d/.test(c);
+  const isCleanWord = c => /^[A-Za-z\s\-.]+$/.test(c) && !hasDigit(c);
+  candidates.sort((a, b) => {
+    const aGood = hasSpaceAndLetters(a) && !hasDigit(a);
+    const bGood = hasSpaceAndLetters(b) && !hasDigit(b);
+    if (aGood !== bGood) return aGood ? -1 : 1;
+    return b.length - a.length;
+  });
+
+  // 원료명에 쓸만한 영문 후보(코드 제외)가 없으면 검색 동의어 사전에서 대체 영문명을 찾는다.
+  if (!isCleanWord(candidates[0]) && typeof SEARCH_SYNONYM_GROUPS_RAW !== 'undefined') {
+    const qNorm = normSearch(qTrim);
+    const group = SEARCH_SYNONYM_GROUPS_RAW.find(g => g.some(t => normSearch(t) === qNorm));
+    const enTerm = group && group.find(t => /^[A-Za-z]/.test(t));
+    if (enTerm) return enTerm;
+  }
+
+  return candidates[0];
+}
+
+let precheckAdverseSeq = 0;
+async function precheckLoadAdverseEvents(q, englishTerm) {
+  const el = document.getElementById('precheck-adverse-body');
+  if (!el) return;
+  const seq = ++precheckAdverseSeq;
+  const term = englishTerm || (/[A-Za-z]/.test(q) ? q : '');
+
+  if (!term) {
+    el.innerHTML = '<p class="ingx-empty">영문/학명 검색어가 없어 해외(미국) 이상사례 DB를 조회하지 못했습니다. 영문 원료명으로도 검색해보세요.</p>';
+    return;
+  }
+
+  el.innerHTML = '<p class="ingx-empty">미국 FDA 이상사례 DB(CAERS) 조회 중…</p>';
+  try {
+    const url = `https://api.fda.gov/food/event.json?search=products.name_brand:"${encodeURIComponent(term)}"&limit=3`;
+    const res = await fetch(url);
+    if (seq !== precheckAdverseSeq) return;
+
+    if (res.status === 404) {
+      el.innerHTML = `<p class="ingx-empty">"${escapeHtml(term)}" 관련 미국 FDA 이상사례 보고가 확인되지 않습니다.</p>`;
+      return;
+    }
+    if (!res.ok) throw new Error('openFDA request failed: ' + res.status);
+
+    const data = await res.json();
+    if (seq !== precheckAdverseSeq) return;
+    const total = (data.meta && data.meta.results && data.meta.results.total) || 0;
+    const items = data.results || [];
+
+    el.innerHTML = `
+      <div class="precheck-adverse-summary">
+        <span class="precheck-adverse-count">${total}건</span>
+        <span>미국 FDA(CAERS) 이상사례 보고 — 검색어: "${escapeHtml(term)}"</span>
+      </div>
+      ${items.length ? '<div class="precheck-adverse-list">' + items.map(it => {
+        const outcomes = (it.outcomes || []).join(', ') || '미상';
+        const product = (it.products && it.products[0] && it.products[0].name_brand) || '';
+        return `<div class="precheck-adverse-item"><strong>${escapeHtml(outcomes)}</strong><span>${escapeHtml(product.slice(0, 70))}</span></div>`;
+      }).join('') + '</div>' : ''}
+      <a class="precheck-ext-link" href="https://www.fda.gov/food/compliance-enforcement-food/cfsan-adverse-event-reporting-system-caers" target="_blank" rel="noopener">CAERS 상세 정보 ↗</a>
+      <p class="precheck-ext-note">※ 소비자 자진 신고 기반 미검증 데이터입니다 (인과관계 확인 안 됨, 국내 미출시 성분도 포함될 수 있음). 안전성 조기 신호 참고용으로만 활용하세요.</p>
+    `;
+  } catch (e) {
+    if (seq !== precheckAdverseSeq) return;
+    el.innerHTML = '<p class="ingx-empty">해외 이상사례 DB 조회에 실패했습니다 (네트워크 또는 API 응답 오류). 잠시 후 다시 시도해주세요.</p>';
+  }
+}
+
 function renderPrecheck(q) {
   const resultEl = document.getElementById('precheck-results');
   if (!resultEl) return;
@@ -1764,7 +1878,12 @@ function renderPrecheck(q) {
       precheckSection('한시적 인정 원료 근거', matches.temp.length, tempBody, 'temp-approval', q) +
     '</div>' +
     precheckSection('리스크 게이트', matches.blocked.length + matches.gmo.length, riskBody, riskTarget, q) +
-    precheckSection('해외 안전성 자료', matches.safety.length, safetyBody, 'safety-db', q);
+    precheckSection('해외 안전성 자료', matches.safety.length, safetyBody, 'safety-db', q) +
+    precheckExternalSection('특허 랜드스케이프', '규제 화이트스페이스가 특허로 막혀있는지 확인', precheckPatentLinksHtml(q)) +
+    precheckExternalSection('해외 규제 동등성 참고', '미국·EU·일본 인정 이력 빠른 확인', precheckForeignRegLinksHtml(q)) +
+    precheckExternalSection('해외 이상사례 조기경보', '미국 FDA(CAERS) 실시간 조회', '<div id="precheck-adverse-body"><p class="ingx-empty">조회 준비 중…</p></div>');
+
+  precheckLoadAdverseEvents(q, precheckExtractEnglishTerm(q, matches.ingredient));
 
   resultEl.querySelectorAll('.precheck-ing-open').forEach(btn => {
     btn.addEventListener('click', () => {
