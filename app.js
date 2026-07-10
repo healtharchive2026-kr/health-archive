@@ -1954,12 +1954,6 @@ function setupPrecheck() {
     run(input.value);
   });
 
-  document.querySelectorAll('[data-precheck-sample]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      input.value = btn.dataset.precheckSample || '';
-      run(input.value);
-    });
-  });
 }
 
 function initTabContent(tab) {

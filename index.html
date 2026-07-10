@@ -47,7 +47,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="style.css?v=20260710-navclean1">
+<link rel="stylesheet" href="style.css?v=20260710-navflow1">
 </head>
 <body>
 <header class="site-header">
@@ -64,35 +64,36 @@
     <nav class="main-nav" id="main-nav">
       <a href="#home" data-tab="home" class="nav-link active">홈</a>
       <div class="nav-group">
-        <span class="nav-group-label">개발 <span class="nav-caret">▾</span></span>
+        <span class="nav-group-label">개발검토 <span class="nav-caret">▾</span></span>
         <div class="nav-dropdown">
           <a href="#precheck" data-tab="precheck" class="nav-link">원료 Pre-Check</a>
-          <a href="#material-dev" data-tab="material-dev" class="nav-link">원료 개발</a>
           <a href="#devmap" data-tab="devmap" class="nav-link">개발방향 매핑</a>
+          <a href="#material-dev" data-tab="material-dev" class="nav-link">원료 개발</a>
+          <a href="#whitespace" data-tab="whitespace" class="nav-link">화이트스페이스맵 🔒</a>
         </div>
       </div>
       <div class="nav-group">
-        <span class="nav-group-label">데이터 <span class="nav-caret">▾</span></span>
+        <span class="nav-group-label">원료 DB <span class="nav-caret">▾</span></span>
         <div class="nav-dropdown">
-          <a href="#foodraw" data-tab="foodraw" class="nav-link">식품원료목록</a>
           <a href="#ingredients" data-tab="ingredients" class="nav-link">개별인정/고시형 원료</a>
+          <a href="#foodraw" data-tab="foodraw" class="nav-link">식품원료목록</a>
           <a href="#temp-approval" data-tab="temp-approval" class="nav-link">한시적 인정 원료 현황</a>
-          <a href="#gmo-ingredients" data-tab="gmo-ingredients" class="nav-link">유전자재조합식품 원료</a>
-          <a href="#blocked" data-tab="blocked" class="nav-link">해외직구 차단 원료·성분</a>
           <a href="#safety-db" data-tab="safety-db" class="nav-link">원료 안전성 DB</a>
+          <a href="#blocked" data-tab="blocked" class="nav-link">해외직구 차단 원료·성분</a>
+          <a href="#gmo-ingredients" data-tab="gmo-ingredients" class="nav-link">유전자재조합식품 원료</a>
         </div>
       </div>
       <div class="nav-group">
-        <span class="nav-group-label">규제·인허가 <span class="nav-caret">▾</span></span>
+        <span class="nav-group-label">규제자료 <span class="nav-caret">▾</span></span>
         <div class="nav-dropdown">
+          <a href="#laws" data-tab="laws" class="nav-link">법령·공전·가이드라인</a>
           <a href="#nifds" data-tab="nifds" class="nav-link">심의 관련</a>
           <a href="#minutes" data-tab="minutes" class="nav-link">건기식 심의 회의록</a>
           <a href="#gmo-minutes" data-tab="gmo-minutes" class="nav-link">유전자재조합식품 회의록</a>
-          <a href="#laws" data-tab="laws" class="nav-link">법령·공전·가이드라인</a>
         </div>
       </div>
       <div class="nav-group">
-        <span class="nav-group-label">연구·임상 <span class="nav-caret">▾</span></span>
+        <span class="nav-group-label">연구설계 <span class="nav-caret">▾</span></span>
         <div class="nav-dropdown">
           <a href="#compare" data-tab="compare" class="nav-link">기능성별 비교</a>
           <a href="#biomarkers" data-tab="biomarkers" class="nav-link">기능성별 프로토콜</a>
@@ -100,12 +101,11 @@
         </div>
       </div>
       <div class="nav-group">
-        <span class="nav-group-label">시장·동향 <span class="nav-caret">▾</span></span>
+        <span class="nav-group-label">시장동향 <span class="nav-caret">▾</span></span>
         <div class="nav-dropdown">
           <a href="#products" data-tab="products" class="nav-link">신규 등록 제품</a>
           <a href="#market" data-tab="market" class="nav-link">시장현황</a>
           <a href="#stats" data-tab="stats" class="nav-link">인정 통계</a>
-          <a href="#whitespace" data-tab="whitespace" class="nav-link">화이트스페이스맵 🔒</a>
           <a href="#radar" data-tab="radar" class="nav-link">레귤러토리 레이더 🔒</a>
           <a href="#news" data-tab="news" class="nav-link">식품 뉴스</a>
           <a href="#events" data-tab="events" class="nav-link">학회/박람회</a>
@@ -189,39 +189,39 @@
       </div>
 
       <div class="home-flow">
-        <a class="home-flow-step" data-goto="devmap">
+        <a class="home-flow-step" data-goto="precheck">
           <span class="home-flow-num">01</span>
+          <strong>원료 Pre-Check</strong>
+          <span>개발 가능성 1차 점검</span>
+        </a>
+        <a class="home-flow-step" data-goto="devmap">
+          <span class="home-flow-num">02</span>
           <strong>개발방향 매핑</strong>
           <span>트랙·게이트 선별</span>
         </a>
         <a class="home-flow-step" data-goto="material-dev" data-devtab="individual-dev">
-          <span class="home-flow-num">02</span>
+          <span class="home-flow-num">03</span>
           <strong>원료 개발</strong>
           <span>제출자료 패키지 설계</span>
         </a>
         <a class="home-flow-step" data-goto="ingredients">
-          <span class="home-flow-num">03</span>
-          <strong>데이터베이스</strong>
-          <span>원료·인정현황 대조</span>
-        </a>
-        <a class="home-flow-step" data-goto="safety-db">
           <span class="home-flow-num">04</span>
-          <strong>안전성</strong>
-          <span>안전성 DB 검색</span>
+          <strong>원료 DB</strong>
+          <span>인정·식품원료·안전성 대조</span>
         </a>
         <a class="home-flow-step" data-goto="laws">
           <span class="home-flow-num">05</span>
-          <strong>심의·법령</strong>
+          <strong>규제자료</strong>
           <span>회의록·가이드라인 확인</span>
         </a>
         <a class="home-flow-step" data-goto="compare">
           <span class="home-flow-num">06</span>
-          <strong>연구·임상</strong>
+          <strong>연구설계</strong>
           <span>기능성·프로토콜·임상 검토</span>
         </a>
         <a class="home-flow-step" data-goto="products">
           <span class="home-flow-num">07</span>
-          <strong>시장·동향</strong>
+          <strong>시장동향</strong>
           <span>제품·시장·뉴스 확인</span>
         </a>
       </div>
@@ -233,57 +233,49 @@
         <div class="hero-cat">
           <div class="hero-cat-header">
             <span class="hero-cat-icon">01</span>
-            <span class="hero-cat-label">원료 개발</span>
+            <span class="hero-cat-label">개발검토</span>
           </div>
           <div class="hero-cat-cards">
+            <a class="nav-card" data-goto="precheck"><span class="nav-card-icon">점검</span><span class="nav-card-title">원료 Pre-Check</span><span class="nav-card-desc">개발 가능성 1차 점검</span></a>
             <a class="nav-card" data-goto="devmap"><span class="nav-card-icon">매핑</span><span class="nav-card-title">개발방향 매핑</span><span class="nav-card-desc">트랙·게이트 선별</span></a>
             <a class="nav-card" data-goto="material-dev" data-devtab="individual-dev"><span class="nav-card-icon">개별</span><span class="nav-card-title">개별인정원료 개발</span><span class="nav-card-desc">제출자료·첨부서류 체크</span></a>
             <a class="nav-card" data-goto="material-dev" data-devtab="temporary-dev"><span class="nav-card-icon">한시</span><span class="nav-card-title">한시적 인정 원료 개발</span><span class="nav-card-desc">식품원료 인정자료 정리</span></a>
+            <a class="nav-card" data-goto="whitespace"><span class="nav-card-icon">전략</span><span class="nav-card-title">화이트스페이스맵 🔒</span><span class="nav-card-desc">기능성·시장 빈 영역 검토</span></a>
           </div>
         </div>
 
         <div class="hero-cat">
           <div class="hero-cat-header">
             <span class="hero-cat-icon">02</span>
-            <span class="hero-cat-label">데이터베이스</span>
+            <span class="hero-cat-label">원료 DB</span>
           </div>
           <div class="hero-cat-cards">
-            <a class="nav-card" data-goto="foodraw"><span class="nav-card-icon">식품</span><span class="nav-card-title">식품원료목록</span><span class="nav-card-desc">별표 원료 검색</span></a>
             <a class="nav-card" data-goto="ingredients"><span class="nav-card-icon">원료</span><span class="nav-card-title">개별·고시형 원료</span><span class="nav-card-desc">인정 현황·전환 이력</span></a>
+            <a class="nav-card" data-goto="foodraw"><span class="nav-card-icon">식품</span><span class="nav-card-title">식품원료목록</span><span class="nav-card-desc">별표 원료 검색</span></a>
             <a class="nav-card" data-goto="temp-approval"><span class="nav-card-icon">한시</span><span class="nav-card-title">한시적 인정 원료 현황</span><span class="nav-card-desc">인정·사용 조건 확인</span></a>
-            <a class="nav-card" data-goto="gmo-ingredients"><span class="nav-card-icon">GMO</span><span class="nav-card-title">유전자재조합식품 원료</span><span class="nav-card-desc">심사 대상 원료·성분</span></a>
+            <a class="nav-card" data-goto="safety-db"><span class="nav-card-icon">안전</span><span class="nav-card-title">원료 안전성 DB</span><span class="nav-card-desc">내장 9종·외부 49종</span></a>
             <a class="nav-card" data-goto="blocked"><span class="nav-card-icon">차단</span><span class="nav-card-title">해외직구 차단 원료</span><span class="nav-card-desc">반입차단 원료·성분 목록</span></a>
+            <a class="nav-card" data-goto="gmo-ingredients"><span class="nav-card-icon">GMO</span><span class="nav-card-title">유전자재조합식품 원료</span><span class="nav-card-desc">심사 대상 원료·성분</span></a>
           </div>
         </div>
 
         <div class="hero-cat">
           <div class="hero-cat-header">
             <span class="hero-cat-icon">03</span>
-            <span class="hero-cat-label">안전성</span>
+            <span class="hero-cat-label">규제자료</span>
           </div>
           <div class="hero-cat-cards">
-            <a class="nav-card" data-goto="safety-db"><span class="nav-card-icon">안전</span><span class="nav-card-title">안전성 DB 검색기</span><span class="nav-card-desc">내장 9종·외부 49종</span></a>
-            <a class="nav-card" data-goto="blocked"><span class="nav-card-icon">차단</span><span class="nav-card-title">반입차단 성분 확인</span><span class="nav-card-desc">안전성 리스크 1차 점검</span></a>
+            <a class="nav-card" data-goto="laws"><span class="nav-card-icon">법령</span><span class="nav-card-title">법령·공전·가이드라인</span><span class="nav-card-desc">작성 기준·공식 자료</span></a>
+            <a class="nav-card" data-goto="nifds"><span class="nav-card-icon">심의</span><span class="nav-card-title">심의 관련</span><span class="nav-card-desc">위원 명단·담당부서</span></a>
+            <a class="nav-card" data-goto="minutes"><span class="nav-card-icon">건기식</span><span class="nav-card-title">건기식 심의 회의록</span><span class="nav-card-desc">회차별 대상 원료</span></a>
+            <a class="nav-card" data-goto="gmo-minutes"><span class="nav-card-icon">GMO</span><span class="nav-card-title">유전자재조합식품 회의록</span><span class="nav-card-desc">안전성심사 회의 안내·결과</span></a>
           </div>
         </div>
 
         <div class="hero-cat">
           <div class="hero-cat-header">
             <span class="hero-cat-icon">04</span>
-            <span class="hero-cat-label">심의 · 법령 · 가이드라인</span>
-          </div>
-          <div class="hero-cat-cards">
-            <a class="nav-card" data-goto="nifds"><span class="nav-card-icon">심의</span><span class="nav-card-title">심의 관련</span><span class="nav-card-desc">위원 명단·담당부서</span></a>
-            <a class="nav-card" data-goto="minutes"><span class="nav-card-icon">건기식</span><span class="nav-card-title">건기식 심의 회의록</span><span class="nav-card-desc">회차별 대상 원료</span></a>
-            <a class="nav-card" data-goto="gmo-minutes"><span class="nav-card-icon">GMO</span><span class="nav-card-title">유전자재조합식품 회의록</span><span class="nav-card-desc">안전성심사 회의 안내·결과</span></a>
-            <a class="nav-card" data-goto="laws"><span class="nav-card-icon">법령</span><span class="nav-card-title">법령·공전·가이드라인</span><span class="nav-card-desc">작성 기준·공식 자료</span></a>
-          </div>
-        </div>
-
-        <div class="hero-cat">
-          <div class="hero-cat-header">
-            <span class="hero-cat-icon">05</span>
-            <span class="hero-cat-label">연구 · 임상</span>
+            <span class="hero-cat-label">연구설계</span>
           </div>
           <div class="hero-cat-cards">
             <a class="nav-card" data-goto="compare"><span class="nav-card-icon">비교</span><span class="nav-card-title">기능성별 비교</span><span class="nav-card-desc">카테고리별 정렬 보기</span></a>
@@ -294,12 +286,14 @@
 
         <div class="hero-cat">
           <div class="hero-cat-header">
-            <span class="hero-cat-icon">06</span>
-            <span class="hero-cat-label">시장 · 동향</span>
+            <span class="hero-cat-icon">05</span>
+            <span class="hero-cat-label">시장동향</span>
           </div>
           <div class="hero-cat-cards">
             <a class="nav-card" data-goto="products"><span class="nav-card-icon">제품</span><span class="nav-card-title">신규 등록 제품</span><span class="nav-card-desc">최근 신고 목록</span></a>
             <a class="nav-card" data-goto="market"><span class="nav-card-icon">시장</span><span class="nav-card-title">시장현황</span><span class="nav-card-desc">매출·기능성 추이</span></a>
+            <a class="nav-card" data-goto="stats"><span class="nav-card-icon">통계</span><span class="nav-card-title">인정 통계</span><span class="nav-card-desc">연도·기능성 인정 흐름</span></a>
+            <a class="nav-card" data-goto="radar"><span class="nav-card-icon">레이더</span><span class="nav-card-title">레귤러토리 레이더 🔒</span><span class="nav-card-desc">신규 등재 변경 다이제스트</span></a>
             <a class="nav-card" data-goto="news"><span class="nav-card-icon">뉴스</span><span class="nav-card-title">식품 뉴스</span><span class="nav-card-desc">업계 동향 기사</span></a>
             <a class="nav-card" data-goto="events"><span class="nav-card-icon">일정</span><span class="nav-card-title">학회/박람회</span><span class="nav-card-desc">국내외 주요 일정</span></a>
           </div>
@@ -778,18 +772,11 @@
     <form class="precheck-search" id="precheck-form">
       <label for="precheck-input">원재료명</label>
       <div class="precheck-input-row">
-        <input type="text" id="precheck-input" autocomplete="off" placeholder="예: 홍삼, 마리골드, 아쉬아간다, Lactobacillus plantarum">
+        <input type="text" id="precheck-input" autocomplete="off" placeholder="원재료명, 학명, 균주명 또는 영문명을 입력하세요">
         <button type="submit">사전점검</button>
       </div>
       <p>동일 명칭뿐 아니라 추출물·분말·균주·학명·영문명 등 유사 표현까지 함께 탐색합니다.</p>
     </form>
-
-    <div class="precheck-presets" aria-label="원료 Pre-Check 예시">
-      <button type="button" data-precheck-sample="마리골드">마리골드</button>
-      <button type="button" data-precheck-sample="아쉬아간다">아쉬아간다</button>
-      <button type="button" data-precheck-sample="Lactobacillus plantarum">Lactobacillus plantarum</button>
-      <button type="button" data-precheck-sample="홍삼">홍삼</button>
-    </div>
 
     <div class="precheck-results" id="precheck-results">
       <div class="precheck-empty">
@@ -1794,7 +1781,7 @@
 <script src="data/status.js?v=20260630-news0930"></script>
 <script src="data/daily_quotes.js"></script>
 <script src="market.js"></script>
-<script src="app.js?v=20260710-navclean1"></script>
+<script src="app.js?v=20260710-navflow1"></script>
 <script src="feedback.js?v=20260704-email-fallback"></script>
 </body>
 </html>

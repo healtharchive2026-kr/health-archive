@@ -1,9 +1,9 @@
-const CACHE_NAME = 'healtharchive-navclean-20260710-1';
+const CACHE_NAME = 'healtharchive-navflow-20260710-1';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/style.css?v=20260710-navclean1',
-  '/app.js?v=20260710-navclean1',
+  '/style.css?v=20260710-navflow1',
+  '/app.js?v=20260710-navflow1',
   '/assets/logo-icon.png',
   '/assets/leaf-badge.png',
   '/data/ingredients.js?v=20260629-scheduler1225',

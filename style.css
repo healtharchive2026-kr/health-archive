@@ -284,12 +284,6 @@ main{padding:40px 24px 80px;}
 }
 .precheck-input-row button:hover{filter:brightness(.96);}
 .precheck-search p{margin:9px 0 0;color:var(--muted);font-size:12.5px;}
-.precheck-presets{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
-.precheck-presets button{
-  border:1px solid var(--border);background:#fff;border-radius:999px;
-  padding:8px 12px;color:var(--green);font:inherit;font-size:12.5px;font-weight:750;cursor:pointer;
-}
-.precheck-presets button:hover{background:var(--green-light);border-color:var(--green);}
 .precheck-results{display:flex;flex-direction:column;gap:14px;}
 .precheck-empty,.precheck-loading{
   border:1px dashed var(--border);border-radius:16px;background:rgba(255,255,255,.72);
