@@ -1648,6 +1648,109 @@ td.name{font-weight:600;}
   line-height:1.55;
 }
 .trial-detail-box ul{padding-left:18px;}
+.irb-draft-card{
+  margin-top:16px;
+  border:1px solid rgba(47,109,87,.24);
+  border-radius:8px;
+  background:linear-gradient(180deg,#fbfefc 0%,#f5faf7 100%);
+  padding:18px;
+}
+.irb-draft-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+  margin-bottom:14px;
+}
+.irb-draft-kicker{
+  display:block;
+  color:var(--green);
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.08em;
+  margin-bottom:4px;
+}
+.irb-draft-head h4{
+  margin:0;
+  color:var(--text);
+  font-size:17px;
+}
+.irb-draft-badge{
+  flex:0 0 auto;
+  padding:5px 8px;
+  border:1px solid rgba(47,109,87,.24);
+  border-radius:6px;
+  color:var(--green);
+  background:#fff;
+  font-size:11px;
+  font-weight:800;
+}
+.irb-draft-source{
+  flex:0 0 auto;
+  color:var(--green);
+  font-size:12px;
+  font-weight:800;
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
+.irb-draft-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px 12px;
+}
+.irb-draft-row{
+  min-width:0;
+  border:1px solid rgba(47,109,87,.15);
+  border-radius:7px;
+  background:#fff;
+  padding:10px 11px;
+}
+.irb-draft-row span{
+  display:block;
+  color:var(--accent-2);
+  font-size:11px;
+  font-weight:900;
+  margin-bottom:4px;
+}
+.irb-draft-row p,.irb-draft-row ul{
+  margin:0;
+  color:#536259;
+  font-size:12px;
+  line-height:1.55;
+  overflow-wrap:anywhere;
+}
+.irb-draft-row ul{padding-left:17px;}
+.irb-draft-list-row{grid-column:span 2;}
+.irb-draft-actions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:13px;
+}
+.irb-draft-actions button{
+  min-height:34px;
+  padding:7px 11px;
+  border-radius:7px;
+  font-size:12px;
+  font-weight:800;
+  cursor:pointer;
+}
+.irb-draft-copy{
+  border:1px solid var(--green);
+  color:#fff;
+  background:var(--green);
+}
+.irb-draft-search{
+  border:1px solid rgba(47,109,87,.28);
+  color:var(--green);
+  background:#fff;
+}
+.irb-draft-note{
+  margin:12px 0 0;
+  color:#68766d;
+  font-size:11px;
+  line-height:1.55;
+}
 
 .biomarker-shell{
   display:grid;
@@ -2350,6 +2453,8 @@ mark{background:#ffe082;border-radius:2px;padding:0 1px;}
   }
   .trials-filter-row,.trials-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
   .trial-detail-grid{grid-template-columns:1fr;}
+  .irb-draft-grid{grid-template-columns:1fr;}
+  .irb-draft-list-row{grid-column:span 1;}
 }
 @media (max-width:640px){
   .site-header{overflow:visible;}
@@ -2446,6 +2551,7 @@ mark{background:#ffe082;border-radius:2px;padding:0 1px;}
   .biomarker-detail-head{flex-direction:column;}
   .biomarker-source-links{justify-content:flex-start;}
   .biomarker-protocol-grid{grid-template-columns:1fr;}
+  .irb-draft-head{flex-direction:column;}
   .section-title-row{flex-direction:column;}
   .trials-search-row{flex-direction:column;}
   .trials-search-row button{min-height:42px;}

@@ -3275,6 +3275,62 @@ function mechanismSectionHtml(items) {
   `;
 }
 
+function irbDraftRowHtml(label, value) {
+  const text = Array.isArray(value)
+    ? value.filter(Boolean).join(' · ')
+    : String(value || '').trim();
+  return `
+    <div class="irb-draft-row">
+      <span>${escapeHtml(label)}</span>
+      <p>${escapeHtml(text || '-')}</p>
+    </div>
+  `;
+}
+
+function irbDraftListRowHtml(label, items) {
+  const list = (items || []).filter(Boolean);
+  return `
+    <div class="irb-draft-row irb-draft-list-row">
+      <span>${escapeHtml(label)}</span>
+      <ul>${listHtml(list)}</ul>
+    </div>
+  `;
+}
+
+function biomarkerIrbDraftHtml(item) {
+  const clinical = item.clinical || {};
+  const primary = clinical.primaryBiomarkers || [];
+  const secondary = clinical.secondaryBiomarkers || [];
+  const title = `${item.name} 인체적용시험 IRB 사전작성 초안`;
+  return `
+    <section class="irb-draft-card" data-irb-panel data-irb-title="${escapeHtml(title)}">
+      <div class="irb-draft-head">
+        <div>
+          <span class="irb-draft-kicker">IRB PRE-DRAFT</span>
+          <h4>${escapeHtml(title)}</h4>
+        </div>
+        <span class="irb-draft-badge">사전검토용</span>
+      </div>
+      <div class="irb-draft-grid">
+        ${irbDraftRowHtml('연구 목적', `${item.name} 관련 기능성 지표의 유효성 및 안전성 평가`)}
+        ${irbDraftRowHtml('대상자 선정 방향', clinical.model)}
+        ${irbDraftRowHtml('권장 시험설계', '무작위배정 · 이중눈가림 · 위약대조 · 평행군')}
+        ${irbDraftRowHtml('예상 섭취기간', clinical.duration || '8-12주 범위에서 기능성 가이드와 선행연구를 검토하여 설정')}
+        ${irbDraftRowHtml('시험군·대조군', '시험원료 섭취군과 동일 제형 위약 대조군')}
+        ${irbDraftListRowHtml('1차 평가변수', primary)}
+        ${irbDraftListRowHtml('2차 평가변수', secondary)}
+        ${irbDraftListRowHtml('안전성 평가', ['이상반응 및 병용약물 기록', '활력징후 및 일반 혈액·생화학 검사', '시험 중단 기준과 중대한 이상반응 보고 절차'])}
+        ${irbDraftRowHtml('통계분석 개요', '분석집단(ITT/PP) 정의, 군간 변화량 비교, 결측치 처리와 유의수준을 통계분석계획서에서 사전 확정')}
+      </div>
+      <div class="irb-draft-actions">
+        <button type="button" class="irb-draft-copy" data-irb-copy>IRB 항목 복사</button>
+        <button type="button" class="irb-draft-search" data-irb-trials="${escapeHtml(item.name)}">임상 DB에서 근거 찾기</button>
+      </div>
+      <p class="irb-draft-note">기능성 평가 가이드와 등록 연구에서 확인할 항목을 정리한 사전작성용 초안입니다. 실제 제출 전 한국 임상 DB의 원문 프로토콜·결과보고서, 시험기관 양식, 통계분석계획서를 확인하세요.</p>
+    </section>
+  `;
+}
+
 function renderBiomarkerDetail(item) {
   const detail = document.getElementById('biomarker-detail-panel');
   if (!detail || !item) return;
@@ -3312,7 +3368,41 @@ function renderBiomarkerDetail(item) {
     </div>
 
     ${mechanismSectionHtml(item.mechanisms)}
+    ${biomarkerIrbDraftHtml(item)}
   `;
+
+  const irbPanel = detail.querySelector('[data-irb-panel]');
+  if (!irbPanel) return;
+  const copyButton = irbPanel.querySelector('[data-irb-copy]');
+  if (copyButton) {
+    copyButton.addEventListener('click', async () => {
+      const text = [
+        irbPanel.dataset.irbTitle,
+        ...Array.from(irbPanel.querySelectorAll('.irb-draft-row')).map(row => {
+          const label = row.querySelector('span')?.textContent.trim() || '';
+          const value = row.querySelector('p')?.textContent.trim()
+            || Array.from(row.querySelectorAll('li')).map(li => li.textContent.trim()).join('; ');
+          return `${label}: ${value || '-'}`;
+        })
+      ].join('\n');
+      try {
+        await navigator.clipboard.writeText(text);
+        copyButton.textContent = '복사됨';
+        setTimeout(() => { copyButton.textContent = 'IRB 항목 복사'; }, 1400);
+      } catch (err) {
+        copyButton.textContent = '복사 실패';
+        setTimeout(() => { copyButton.textContent = 'IRB 항목 복사'; }, 1400);
+      }
+    });
+  }
+  const trialButton = irbPanel.querySelector('[data-irb-trials]');
+  if (trialButton) {
+    trialButton.addEventListener('click', () => {
+      routeHeroSearch('trials', trialButton.dataset.irbTrials);
+      navigateTo('trials');
+      history.replaceState(null, '', '#trials');
+    });
+  }
 }
 
 function renderBiomarkerCards(list, selectedName, onSelect) {
@@ -3702,6 +3792,7 @@ function renderTrialDetail(r) {
   if (!el || !r) return;
   el.classList.add('active');
   const criteria = String(r.eligibilityCriteria || '').split(/\n+/).map(s => s.trim()).filter(Boolean).slice(0, 8);
+  const interventions = trialIngredientTags(r);
   el.innerHTML = `
     <h3>${escapeHtml(r.title || r.nctId)}</h3>
     <div class="trial-detail-grid">
@@ -3712,6 +3803,26 @@ function renderTrialDetail(r) {
       <div class="trial-detail-box"><span>주평가변수</span><ul>${listHtml((r.primaryOutcomes || []).slice(0, 5))}</ul></div>
       <div class="trial-detail-box"><span>선정/제외기준 일부</span><ul>${listHtml(criteria)}</ul></div>
     </div>
+    <section class="irb-draft-card trial-irb-card">
+      <div class="irb-draft-head">
+        <div>
+          <span class="irb-draft-kicker">IRB EXTRACTION</span>
+          <h4>선택 연구 기반 IRB 항목 추출</h4>
+        </div>
+        <a class="irb-draft-source" href="${trialStudyUrl(r.nctId)}" target="_blank" rel="noopener">원문 열기</a>
+      </div>
+      <div class="irb-draft-grid">
+        ${irbDraftRowHtml('연구 식별자', `${r.nctId} · ${r.sponsor || '등록기관 미상'}`)}
+        ${irbDraftRowHtml('연구 설계', r.design)}
+        ${irbDraftRowHtml('대상자 규모·범위', [r.enrollment ? `${r.enrollment}명` : '', r.minAge, r.maxAge, r.sex].filter(Boolean))}
+        ${irbDraftListRowHtml('중재·원료', interventions)}
+        ${irbDraftListRowHtml('1차 평가변수', (r.primaryOutcomes || []).slice(0, 8))}
+        ${irbDraftListRowHtml('2차 평가변수', (r.secondaryOutcomes || []).slice(0, 8))}
+        ${irbDraftListRowHtml('선정·제외기준 발췌', criteria)}
+        ${irbDraftRowHtml('안전성 확인', '이상반응, 중대한 이상반응, 중도탈락 사유와 시험 전후 안전성 검사 항목을 원문에서 확인')}
+      </div>
+      <p class="irb-draft-note">ClinicalTrials.gov 등록정보에서 추출한 검토용 항목입니다. 한국 임상 DB의 업로드 결과보고서 또는 원문 프로토콜이 확보되면 해당 문서와 대조하여 IRB 제출안을 확정해야 합니다.</p>
+    </section>
   `;
 }
 
