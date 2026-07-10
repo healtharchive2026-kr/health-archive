@@ -44,7 +44,8 @@ body{
   backdrop-filter:blur(20px);
 }
 .header-inner{display:flex;align-items:center;justify-content:flex-start;height:62px;gap:14px;}
-.logo{display:flex;align-items:center;gap:6px;font-size:20px;letter-spacing:0;flex:0 0 auto;}
+.logo{display:flex;align-items:center;gap:6px;font-size:20px;letter-spacing:0;flex:0 0 auto;text-decoration:none;color:inherit;border-radius:8px;}
+.logo:focus-visible{outline:3px solid rgba(37,111,91,.18);outline-offset:4px;}
 .logo-text{font-weight:800;color:var(--green);}
 .logo-text b{color:var(--text);font-weight:400;}
 .logo-icon{height:28px;width:auto;display:block;}
