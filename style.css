@@ -1903,7 +1903,7 @@ td.name{font-weight:600;}
 }
 .endpoint-item{
   min-width:0;
-  padding:11px 0;
+  padding:8px 0;
   border-bottom:1px solid var(--border);
 }
 .endpoint-name{
@@ -1911,7 +1911,7 @@ td.name{font-weight:600;}
   color:var(--text);
   font-size:13px;
   line-height:1.45;
-  margin-bottom:7px;
+  margin-bottom:5px;
 }
 .endpoint-term-list{
   display:flex;
@@ -1942,24 +1942,6 @@ td.name{font-weight:600;}
   color:#39483f;
   font-style:normal;
   font-weight:800;
-}
-.endpoint-definition{margin:0;}
-.endpoint-definition div{
-  display:grid;
-  grid-template-columns:62px minmax(0,1fr);
-  gap:8px;
-}
-.endpoint-definition dt{
-  color:var(--accent-2);
-  font-size:11px;
-  font-weight:800;
-}
-.endpoint-definition dd{
-  margin:0;
-  color:#536259;
-  font-size:12px;
-  line-height:1.55;
-  overflow-wrap:anywhere;
 }
 .endpoint-empty{color:var(--muted);font-size:12px;}
 .irb-draft-endpoint-row .endpoint-list{border-top-color:rgba(47,109,87,.16);}
@@ -2630,7 +2612,6 @@ mark{background:#ffe082;border-radius:2px;padding:0 1px;}
   .biomarker-source-links{justify-content:flex-start;}
   .biomarker-protocol-grid{grid-template-columns:1fr;}
   .endpoint-term{grid-template-columns:1fr;gap:2px;}
-  .endpoint-definition div{grid-template-columns:1fr;gap:3px;}
   .irb-draft-head{flex-direction:column;}
   .section-title-row{flex-direction:column;}
   .trials-search-row{flex-direction:column;}

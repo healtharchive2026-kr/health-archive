@@ -3260,7 +3260,6 @@ function endpointItemHtml(item) {
   const text = String(item || '').trim();
   const separator = text.indexOf(':');
   const name = separator >= 0 ? text.slice(0, separator).trim() : text;
-  const evaluation = separator >= 0 ? text.slice(separator + 1).trim() : '세부 평가방법은 기능성 평가 가이드 및 시험계획서에 따라 설정';
   const terms = endpointGlossaryTerms(text);
   return `
     <article class="endpoint-item">
@@ -3276,9 +3275,6 @@ function endpointItemHtml(item) {
           `).join('')}
         </div>
       ` : ''}
-      <dl class="endpoint-definition">
-        <div><dt>평가 내용</dt><dd>${escapeHtml(evaluation || '-')}</dd></div>
-      </dl>
     </article>
   `;
 }
@@ -3423,7 +3419,7 @@ function renderBiomarkerDetail(item) {
         fieldHtml('기간', clinical.duration),
         endpointFieldHtml('1차 유효성 평가변수', clinical.primaryEndpointDetails || clinical.primaryBiomarkers),
         endpointFieldHtml('2차 유효성 평가변수', clinical.secondaryEndpointDetails || clinical.secondaryBiomarkers),
-        '<p class="biomarker-endpoint-note">기능성 평가 가이드의 후보 지표 중 원료의 작용기전, 선행시험 및 기능성 표현에 부합하는 1차 평가변수 1-2개를 시험계획서에 사전 특정합니다. 약어·영문명·국문명은 식품의약품안전평가원 「건강기능식품 기능성 평가를 위한 주요 용어집」(2024.9.)의 표기를 기준으로 합니다.</p>'
+        '<p class="biomarker-endpoint-note">용어 기준: 식품의약품안전평가원 주요 용어집(2024.9.)</p>'
       ])}
 
       ${protocolSectionHtml('전임상 프로토콜', [
