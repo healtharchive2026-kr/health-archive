@@ -47,7 +47,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="style.css?v=20260710-logohome1">
+<link rel="stylesheet" href="style.css?v=20260710-overseas1">
 </head>
 <body>
 <header class="site-header">
@@ -87,6 +87,7 @@
         <span class="nav-group-label">규제자료 <span class="nav-caret">▾</span></span>
         <div class="nav-dropdown">
           <a href="#laws" data-tab="laws" class="nav-link">법령·공전·가이드라인</a>
+          <a href="#laws" data-tab="laws" data-lawtab="overseas-approval" class="nav-link">해외 인허가·신고</a>
           <a href="#nifds" data-tab="nifds" class="nav-link">심의 관련</a>
           <a href="#minutes" data-tab="minutes" class="nav-link">건기식 심의 회의록</a>
           <a href="#gmo-minutes" data-tab="gmo-minutes" class="nav-link">유전자재조합식품 회의록</a>
@@ -266,6 +267,7 @@
           </div>
           <div class="hero-cat-cards">
             <a class="nav-card" data-goto="laws"><span class="nav-card-icon">법령</span><span class="nav-card-title">법령·공전·가이드라인</span><span class="nav-card-desc">작성 기준·공식 자료</span></a>
+            <a class="nav-card" data-goto="laws" data-lawtab="overseas-approval"><span class="nav-card-icon">수출</span><span class="nav-card-title">해외 인허가·신고</span><span class="nav-card-desc">국가별 진출 Gate 확인</span></a>
             <a class="nav-card" data-goto="nifds"><span class="nav-card-icon">심의</span><span class="nav-card-title">심의 관련</span><span class="nav-card-desc">위원 명단·담당부서</span></a>
             <a class="nav-card" data-goto="minutes"><span class="nav-card-icon">건기식</span><span class="nav-card-title">건기식 심의 회의록</span><span class="nav-card-desc">회차별 대상 원료</span></a>
             <a class="nav-card" data-goto="gmo-minutes"><span class="nav-card-icon">GMO</span><span class="nav-card-title">유전자재조합식품 회의록</span><span class="nav-card-desc">안전성심사 회의 안내·결과</span></a>
@@ -1009,6 +1011,7 @@
       <div class="law-subtab" data-lawtab="functional-guideline">기능성 가이드라인</div>
       <div class="law-subtab law-subtab-spacer" data-lawtab="code">공전</div>
       <div class="law-subtab" data-lawtab="general">법령</div>
+      <div class="law-subtab" data-lawtab="overseas-approval">해외 인허가·신고</div>
     </div>
 
     <div class="law-pane active" id="law-pane-general-guideline">
@@ -1062,6 +1065,123 @@
           <h3>어린이 식생활안전관리 특별법</h3>
           <p>어린이 대상 식품의 안전·영양 관리에 관한 특별법</p>
         </a>
+      </div>
+    </div>
+
+    <div class="law-pane" id="law-pane-overseas-approval">
+      <p class="compare-intro">국내 건강기능식품·기능성 원료 업체가 자주 검토하는 해외 진출 규제 Gate입니다. 완제품 수출인지, 원료 수출인지, 기능성 표시를 할 것인지에 따라 인허가·신고·라벨 검토 범위가 달라집니다.</p>
+
+      <div class="overseas-gate-grid">
+        <section class="overseas-gate-card overseas-gate-primary">
+          <span class="overseas-kicker">Quick Gate</span>
+          <h3>수출 전 먼저 가를 5가지</h3>
+          <ol class="overseas-check-list">
+            <li>제품 분류: 식품·식이보충제·기능성표시식품·보건식품·의약품성 제품 여부</li>
+            <li>원료 지위: 기존 식용 이력, Novel Food/NDI/신원료 여부, 사용 가능 원료목록 등재 여부</li>
+            <li>클레임 범위: 구조·기능 표시, 질병 예방·치료 표현, 허용 건강강조표시 여부</li>
+            <li>사업자 요건: 현지 수입자·책임판매자·스폰서, 제조소 등록, GMP/위생관리 자료</li>
+            <li>출시 후 관리: 이상사례 보고, 광고심의, 라벨 변경, 갱신·사후감시 요건</li>
+          </ol>
+        </section>
+        <section class="overseas-gate-card">
+          <span class="overseas-kicker">Common Dossier</span>
+          <h3>공통 준비자료</h3>
+          <ul class="overseas-bullet-list">
+            <li>원료 규격서, 제조공정도, COA, 시험성적서</li>
+            <li>안전성 자료, 섭취량 근거, 독성·알레르기·상호작용 검토</li>
+            <li>기능성 근거: 인체적용시험, 체계적 문헌고찰, 기전 자료</li>
+            <li>라벨·광고 문안, 영문/현지어 원료명, 섭취방법·주의문구</li>
+            <li>GMP, HACCP, ISO, 자유판매증명서, 수출증명서, 제조소 자료</li>
+          </ul>
+        </section>
+      </div>
+
+      <h3 class="overseas-section-title">국가별 Quick Gate</h3>
+      <div class="overseas-country-grid">
+        <article class="overseas-country-card">
+          <div class="overseas-country-head">
+            <strong>미국</strong>
+            <span>Dietary Supplement</span>
+          </div>
+          <ul>
+            <li>원료가 1994년 10월 15일 이전 식이보충제 사용 이력이 없으면 NDI 검토</li>
+            <li>제조·포장·보관 시설은 FDA Food Facility Registration 및 DS CGMP 확인</li>
+            <li>질병 치료·예방 표현은 금지, Structure/Function Claim 문구와 disclaimer 관리</li>
+          </ul>
+          <div class="overseas-link-row">
+            <a href="https://www.fda.gov/food/dietary-supplements/new-dietary-ingredient-ndi-notification-process" target="_blank" rel="noopener">FDA NDI</a>
+            <a href="https://www.fda.gov/food/guidance-regulation-food-and-dietary-supplements/registration-food-facilities-and-other-submissions" target="_blank" rel="noopener">시설등록</a>
+          </div>
+        </article>
+
+        <article class="overseas-country-card">
+          <div class="overseas-country-head">
+            <strong>일본</strong>
+            <span>FFC · FOSHU</span>
+          </div>
+          <ul>
+            <li>기능성표시식품(FFC)은 사업자 책임 신고형, FOSHU는 개별 허가형으로 구분</li>
+            <li>안전성·기능성 근거, 제조·품질관리, 일본어 표시사항 사전 점검 필요</li>
+            <li>제품 출시 전 CAA 신고 공개자료와 동일·유사 기능성 표현 확인</li>
+          </ul>
+          <div class="overseas-link-row">
+            <a href="https://www.caa.go.jp/policies/policy/food_labeling/foods_with_function_claims/" target="_blank" rel="noopener">CAA FFC</a>
+            <a href="https://www.caa.go.jp/en/policy/food_labeling/" target="_blank" rel="noopener">표시제도</a>
+          </div>
+        </article>
+
+        <article class="overseas-country-card">
+          <div class="overseas-country-head">
+            <strong>중국</strong>
+            <span>보건식품 등록·비안</span>
+          </div>
+          <ul>
+            <li>보건식품은 기능·원료·수입 여부에 따라 등록 또는 비안 경로 검토</li>
+            <li>최초 수입 제품, 비타민·미네랄 보충 제품, 기능성 원료 사용 제품의 경로가 다름</li>
+            <li>중국 내 책임주체, 시험자료, 안정성·기능성·품질관리 자료 준비 필요</li>
+          </ul>
+          <div class="overseas-link-row">
+            <a href="https://zwfw.samr.gov.cn/scjg/wyb/sp/2024072302581168998/" target="_blank" rel="noopener">보건식품 등록</a>
+            <a href="https://zwfw.samr.gov.cn/scjg/wyb/sp/2024072302510931295/" target="_blank" rel="noopener">수입 비안</a>
+          </div>
+        </article>
+
+        <article class="overseas-country-card">
+          <div class="overseas-country-head">
+            <strong>EU</strong>
+            <span>Novel Food · Health Claim</span>
+          </div>
+          <ul>
+            <li>1997년 5월 15일 이전 EU 내 식용 이력이 부족하면 Novel Food 여부 검토</li>
+            <li>식품보충제 사용 이력만 있는 원료는 다른 식품 사용 시 별도 허가가 필요할 수 있음</li>
+            <li>건강강조표시는 EU 승인 claim 범위와 문구 일치 여부를 확인</li>
+          </ul>
+          <div class="overseas-link-row">
+            <a href="https://food.ec.europa.eu/food-safety/novel-food_en" target="_blank" rel="noopener">Novel Food</a>
+            <a href="https://food.ec.europa.eu/food-safety/novel-food/novel-food-status-catalogue_en" target="_blank" rel="noopener">Status Catalogue</a>
+          </div>
+        </article>
+
+        <article class="overseas-country-card">
+          <div class="overseas-country-head">
+            <strong>호주</strong>
+            <span>TGA Complementary Medicine</span>
+          </div>
+          <ul>
+            <li>보완의약품은 Listed, Assessed Listed, Registered 경로로 위험도별 구분</li>
+            <li>ARTG 등재, 허용 원료, indication 수준, GMP 제조소 요건 확인</li>
+            <li>기능성 강도가 높은 claim은 근거자료 및 TGA 사전평가 범위가 커짐</li>
+          </ul>
+          <div class="overseas-link-row">
+            <a href="https://www.tga.gov.au/resources/guidance/understanding-listed-and-registered-complementary-medicine-regulation" target="_blank" rel="noopener">TGA 개요</a>
+            <a href="https://www.tga.gov.au/products/medicines/assessed-listed-medicines" target="_blank" rel="noopener">Assessed Listed</a>
+          </div>
+        </article>
+      </div>
+
+      <div class="overseas-note">
+        <strong>실무 메모</strong>
+        <span>해외 인허가 검토는 국가별 법률 자문·현지 대리인 확인이 필요한 영역입니다. 본 표는 사전 분류와 자료 준비 범위를 좁히기 위한 내부 검토용으로 사용하세요.</span>
       </div>
     </div>
   </section>

@@ -1792,6 +1792,34 @@ td.name{font-weight:600;}
 .law-link-card h3{font-size:15px;color:var(--green);margin-bottom:6px;}
 .law-link-card p{font-size:13px;color:var(--muted);margin:0;line-height:1.4;}
 
+.overseas-gate-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:14px;margin:18px 0 24px;}
+.overseas-gate-card,.overseas-country-card,.overseas-note{
+  background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-sm);
+}
+.overseas-gate-card{padding:20px 22px;}
+.overseas-gate-primary{border-color:rgba(37,111,91,.26);background:linear-gradient(135deg,#fff,#f3faf6);}
+.overseas-kicker{display:block;color:var(--accent-2);font-size:11px;font-weight:900;margin-bottom:8px;}
+.overseas-gate-card h3,.overseas-section-title{margin:0 0 12px;color:var(--text);font-size:17px;}
+.overseas-check-list,.overseas-bullet-list{margin:0;padding-left:19px;color:var(--muted);font-size:13px;line-height:1.68;}
+.overseas-check-list li,.overseas-bullet-list li{margin:4px 0;}
+.overseas-country-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin-bottom:18px;}
+.overseas-country-card{padding:18px;display:flex;flex-direction:column;gap:12px;}
+.overseas-country-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;border-bottom:1px solid var(--border);padding-bottom:10px;}
+.overseas-country-head strong{color:var(--green);font-size:17px;}
+.overseas-country-head span{color:var(--muted);font-size:11.5px;font-weight:800;text-align:right;line-height:1.35;}
+.overseas-country-card ul{margin:0;padding-left:18px;color:var(--text);font-size:12.8px;line-height:1.62;}
+.overseas-country-card li{margin:4px 0;}
+.overseas-link-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto;}
+.overseas-link-row a{
+  display:inline-flex;align-items:center;justify-content:center;text-decoration:none;
+  border:1px solid var(--border);border-radius:8px;background:var(--paper-soft,#f7faf7);
+  color:var(--green);font-size:12px;font-weight:800;padding:7px 10px;
+}
+.overseas-link-row a:hover{border-color:var(--green);background:var(--green-light);}
+.overseas-note{display:flex;gap:12px;align-items:flex-start;padding:15px 16px;background:#fffdf7;}
+.overseas-note strong{flex:0 0 auto;color:var(--accent-2);font-size:12px;font-weight:900;}
+.overseas-note span{color:var(--muted);font-size:12.5px;line-height:1.55;}
+
 /* ── 개발방향 매핑 ── */
 .devmap-block{margin-bottom:36px;}
 .devmap-block-title{font-size:17px;color:var(--green);font-weight:800;margin:0 0 6px;}
@@ -2376,6 +2404,9 @@ mark{background:#ffe082;border-radius:2px;padding:0 1px;}
   .precheck-summary{grid-template-columns:1fr;padding:16px;border-radius:18px;}
   .precheck-kpis{grid-template-columns:repeat(2,minmax(0,1fr));}
   .precheck-two-col{grid-template-columns:1fr;}
+  .overseas-gate-grid{grid-template-columns:1fr;}
+  .overseas-note{display:block;}
+  .overseas-note strong{display:block;margin-bottom:6px;}
   .precheck-section-head{align-items:flex-start;flex-direction:column;}
   .precheck-match-card{grid-template-columns:1fr;}
   .precheck-match-meta{flex-direction:row;flex-wrap:wrap;}
