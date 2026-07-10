@@ -6,6 +6,7 @@ let appDataReady = Promise.resolve();
 let ingredientMinuteUiReady = false;
 let compareTabReady = false;
 let precheckUiReady = false;
+let insightsUiReady = false;
 let precheckLastIngredientMatches = [];
 let precheckLastQuery = '';
 let precheckSafetyCache = null;
@@ -45,6 +46,7 @@ const RADAR_DATA_DEPS = ['data/radar_log.js?v=20260710-radar1'];
 
 const HOME_TAB_LABELS = {
   precheck: '원료 Pre-Check',
+  insights: '실무 인사이트',
   devmap: '개발방향 매핑',
   'material-dev': '원료 개발',
   whitespace: '화이트스페이스맵',
@@ -1035,6 +1037,195 @@ function renderHomeDashboard() {
       ).join('');
     }).catch(() => { prodEl.innerHTML = '<div class="hdc-loading">불러오지 못했습니다</div>'; });
   }
+}
+
+// ---------- 실무 인사이트 ----------
+
+function insightNorm(s) {
+  return String(s || '').toLowerCase().replace(/\s+/g, '').replace(/[()·ㆍ\-_]/g, '');
+}
+
+function insightCategoryCounts() {
+  const counts = new Map();
+  ingredients.forEach(r => {
+    const c = r.category || '미분류';
+    counts.set(c, (counts.get(c) || 0) + 1);
+  });
+  return counts;
+}
+
+function insightListHtml(items) {
+  return (items || []).filter(Boolean).slice(0, 4).map(x => '<li>' + escapeHtml(x) + '</li>').join('');
+}
+
+function renderInsightPackages() {
+  const el = document.getElementById('insight-package-grid');
+  if (!el) return;
+  const protocols = (typeof BIOMARKER_PROTOCOLS !== 'undefined') ? BIOMARKER_PROTOCOLS : {};
+  const counts = insightCategoryCounts();
+  const names = Object.keys(protocols)
+    .sort((a, b) => (counts.get(b) || 0) - (counts.get(a) || 0))
+    .slice(0, 8);
+
+  el.innerHTML = names.map(name => {
+    const p = protocols[name] || {};
+    const clinical = p.clinical || {};
+    const pre = p.preclinical || {};
+    return `<article class="insight-package-card">
+      <div class="insight-package-head">
+        <strong>${escapeHtml(name)}</strong>
+        <span>${counts.get(name) || 0}건</span>
+      </div>
+      <div class="insight-mini-grid">
+        <div><span>대상자</span><ul>${insightListHtml(clinical.subjects)}</ul></div>
+        <div><span>바이오마커</span><ul>${insightListHtml([...(clinical.primaryBiomarkers || []), ...(clinical.secondaryBiomarkers || [])])}</ul></div>
+        <div><span>전임상</span><ul>${insightListHtml(pre.animalModels)}</ul></div>
+        <div><span>작용기전</span><ul>${insightListHtml(p.mechanisms)}</ul></div>
+      </div>
+      <button type="button" class="insight-link-btn" data-insight-go="biomarkers" data-query="${escapeHtml(name)}">프로토콜 보기</button>
+    </article>`;
+  }).join('') || '<div class="insight-empty">기능성 프로토콜 데이터를 불러오지 못했습니다.</div>';
+}
+
+function renderInsightMinutes() {
+  const el = document.getElementById('insight-minutes');
+  if (!el) return;
+  const byIngredient = new Map();
+  minutes.forEach(m => (m.ingredients || []).forEach(name => {
+    if (!name) return;
+    byIngredient.set(name, (byIngredient.get(name) || 0) + 1);
+  }));
+  const top = Array.from(byIngredient.entries()).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const recent = minutes.slice(0, 3);
+  el.innerHTML = `
+    <div class="insight-kpi-row">
+      <div><strong>${minutes.length}</strong><span>총 회의록</span></div>
+      <div><strong>${top.length ? top[0][1] : 0}</strong><span>최다 반복 언급</span></div>
+    </div>
+    <div class="insight-rank-list">
+      ${top.map(([name, n]) => `<button type="button" data-insight-timeline="${escapeHtml(name)}"><strong>${escapeHtml(name)}</strong><span>${n}회</span></button>`).join('') || '<p class="insight-empty">원료 언급 데이터를 찾지 못했습니다.</p>'}
+    </div>
+    <div class="insight-note-list">
+      ${recent.map(m => `<a href="${m.pdf ? escapeHtml(pdfHref('minutes-pdfs/' + m.pdf)) : '#'}" target="_blank" rel="noopener">${escapeHtml(m.meetingName || '')}<span>${escapeHtml(m.year || '')}</span></a>`).join('')}
+    </div>`;
+}
+
+function insightRelatedMinutes(q) {
+  const nq = insightNorm(q);
+  if (!nq) return [];
+  return minutes.filter(m => (m.ingredients || []).some(name => {
+    const nn = insightNorm(name);
+    return nn.includes(nq) || nq.includes(nn);
+  })).slice(0, 5);
+}
+
+function insightRelatedProducts(q, products) {
+  const nq = insightNorm(q);
+  if (!nq) return [];
+  return (products || []).filter(p => {
+    const hay = insightNorm([p.name, p.efficacy, p.company].join(' '));
+    return hay.includes(nq);
+  }).slice(0, 5);
+}
+
+function renderInsightTimeline(q) {
+  const el = document.getElementById('insight-timeline');
+  if (!el) return;
+  const query = String(q || '').trim();
+  if (!query) {
+    el.innerHTML = '<div class="insight-empty">원료명을 입력하면 인정 이력, 회의록 언급, 신규 제품 매칭을 시간순으로 보여줍니다.</div>';
+    return;
+  }
+  const nq = insightNorm(query);
+  const ing = ingredients.filter(r => {
+    const hay = insightNorm([r.name, r.company, r.category, r.efficacy].join(' '));
+    return hay.includes(nq);
+  }).slice(0, 8);
+  const mins = insightRelatedMinutes(query);
+  loadScripts(TAB_SCRIPT_DEPS.products).then(() => {
+    const products = (typeof PRODUCTS_DATA !== 'undefined') ? PRODUCTS_DATA : [];
+    const prods = insightRelatedProducts(query, products);
+    const rows = [
+      ...ing.map(r => ({ type: '인정', date: r.approvalDate || r.year || '', title: r.name, meta: [r.noticeNo, r.category].filter(Boolean).join(' · ') })),
+      ...mins.map(m => ({ type: '회의', date: m.year || '', title: m.meetingName, meta: (m.ingredients || []).slice(0, 3).join(', '), pdf: m.pdf })),
+      ...prods.map(p => ({ type: '제품', date: p.reportDate || '', title: p.name, meta: [p.company, p.efficacy].filter(Boolean).join(' · ') }))
+    ].sort((a, b) => String(b.date).localeCompare(String(a.date))).slice(0, 14);
+    el.innerHTML = rows.length ? rows.map(r => `
+      <div class="insight-timeline-row">
+        <span class="insight-timeline-type">${escapeHtml(r.type)}</span>
+        <div><strong>${escapeHtml(r.title || '')}</strong><p>${escapeHtml(r.meta || '')}</p></div>
+        <span class="insight-timeline-date">${escapeHtml(String(r.date || ''))}</span>
+      </div>`).join('') : '<div class="insight-empty">매칭되는 규제 타임라인을 찾지 못했습니다.</div>';
+  });
+}
+
+function renderInsightMarket() {
+  const el = document.getElementById('insight-market');
+  if (!el) return;
+  const counts = Array.from(insightCategoryCounts().entries()).sort((a, b) => b[1] - a[1]).slice(0, 6);
+  loadScripts(TAB_SCRIPT_DEPS.products).then(() => {
+    const products = (typeof PRODUCTS_DATA !== 'undefined') ? PRODUCTS_DATA : [];
+    el.innerHTML = counts.map(([cat, n]) => {
+      const np = insightNorm(cat);
+      const productCount = products.filter(p => insightNorm(p.efficacy).includes(np)).length;
+      const pressure = n >= 40 || productCount >= 80 ? '경쟁 높음' : (n >= 15 || productCount >= 30 ? '검토 필요' : '진입 여지');
+      const tone = pressure === '경쟁 높음' ? 'danger' : (pressure === '검토 필요' ? 'watch' : 'ok');
+      return `<div class="insight-market-row ${tone}">
+        <div><strong>${escapeHtml(cat)}</strong><span>인정 ${n}건 · 제품 ${productCount}건</span></div>
+        <em>${pressure}</em>
+      </div>`;
+    }).join('');
+  });
+}
+
+function renderInsightTemplates() {
+  const el = document.getElementById('insight-templates');
+  if (!el) return;
+  const templates = [
+    ['원료 검토서', '원재료명 / 제조공정 / 규격 / 섭취량 / 기존 인정 이력 / 안전성 이슈 / 개발 판단'],
+    ['기능성 근거 요약서', '기능성 / 작용기전 / 인체시험 / 전임상 / 바이오마커 / 근거수준 / 보완자료'],
+    ['안전성 체크리스트', '식용 이력 / 독성 / 알레르기 / 상호작용 / 취약군 / 해외 차단·이상사례'],
+    ['인체시험 설계 검토표', '대상자 / 선정·제외기준 / 섭취량 / 기간 / 1차 평가지표 / 통계계획'],
+    ['회의록 보완 대응표', '보완 사유 / 관련 자료 / 추가 시험 / 문헌 보강 / 담당자 / 완료일'],
+    ['시장 진입성 검토표', '기능성 포화도 / 경쟁 제품 / 차별 포인트 / 가격·제형 / 표시문구 리스크']
+  ];
+  el.innerHTML = templates.map(([title, body]) => `
+    <article class="insight-template-card">
+      <strong>${escapeHtml(title)}</strong>
+      <p>${escapeHtml(body)}</p>
+    </article>`).join('');
+}
+
+function setupInsights() {
+  if (insightsUiReady) return;
+  insightsUiReady = true;
+  renderInsightPackages();
+  renderInsightMinutes();
+  renderInsightTimeline('');
+  renderInsightMarket();
+  renderInsightTemplates();
+
+  const form = document.getElementById('insight-timeline-form');
+  const input = document.getElementById('insight-timeline-input');
+  if (form && input) {
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      renderInsightTimeline(input.value);
+    });
+  }
+  document.querySelectorAll('[data-insight-timeline]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (input) input.value = btn.dataset.insightTimeline;
+      renderInsightTimeline(btn.dataset.insightTimeline);
+    });
+  });
+  document.querySelectorAll('[data-insight-go]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      routeHeroSearch(btn.dataset.insightGo, btn.dataset.query || '');
+      navigateTo(btn.dataset.insightGo);
+      history.replaceState(null, '', '#' + btn.dataset.insightGo);
+    });
+  });
 }
 
 // ---------- 인정 통계 ----------
@@ -2135,6 +2326,9 @@ function initTabContent(tab) {
           break;
         case 'precheck':
           setupPrecheck();
+          break;
+        case 'insights':
+          setupInsights();
           break;
         case 'nifds':
           setupNifdsTabs();

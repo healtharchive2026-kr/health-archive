@@ -47,7 +47,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="style.css?v=20260710-intel3">
+<link rel="stylesheet" href="style.css?v=20260711-insights1">
 </head>
 <body>
 <header class="site-header">
@@ -67,6 +67,7 @@
         <span class="nav-group-label">개발검토 <span class="nav-caret">▾</span></span>
         <div class="nav-dropdown">
           <a href="#precheck" data-tab="precheck" class="nav-link">원료 Pre-Check</a>
+          <a href="#insights" data-tab="insights" class="nav-link">실무 인사이트</a>
           <a href="#devmap" data-tab="devmap" class="nav-link">개발방향 매핑</a>
           <a href="#material-dev" data-tab="material-dev" class="nav-link">원료 개발</a>
           <a href="#whitespace" data-tab="whitespace" class="nav-link">화이트스페이스맵 🔒</a>
@@ -270,6 +271,7 @@
           </div>
           <div class="hero-cat-cards">
             <a class="nav-card" data-goto="precheck"><span class="nav-card-icon">점검</span><span class="nav-card-title">원료 Pre-Check</span><span class="nav-card-desc">개발 가능성 1차 점검</span></a>
+            <a class="nav-card" data-goto="insights"><span class="nav-card-icon">인사이트</span><span class="nav-card-title">실무 인사이트</span><span class="nav-card-desc">개발·시장·회의록 판단 보조</span></a>
             <a class="nav-card" data-goto="devmap"><span class="nav-card-icon">매핑</span><span class="nav-card-title">개발방향 매핑</span><span class="nav-card-desc">트랙·게이트 선별</span></a>
             <a class="nav-card" data-goto="material-dev" data-devtab="individual-dev"><span class="nav-card-icon">개별</span><span class="nav-card-title">개별인정원료 개발</span><span class="nav-card-desc">제출자료·첨부서류 체크</span></a>
             <a class="nav-card" data-goto="material-dev" data-devtab="temporary-dev"><span class="nav-card-icon">한시</span><span class="nav-card-title">한시적 인정 원료 개발</span><span class="nav-card-desc">식품원료 인정자료 정리</span></a>
@@ -1869,6 +1871,62 @@
     </div>
   </section>
 
+  <section id="insights" class="tab-section">
+    <div class="section-title-row">
+      <div>
+        <h2>실무 인사이트</h2>
+        <p class="compare-intro">기능성 개발 패키지, 원료별 규제 타임라인, 회의록 패턴, 시장 진입성, 실무 문서 템플릿을 한 화면에서 확인합니다.</p>
+      </div>
+      <span class="section-badge">Working Intelligence</span>
+    </div>
+
+    <div class="insight-grid insight-grid-top">
+      <section class="insight-card insight-card-wide">
+        <div class="insight-card-head">
+          <span>Functional Package</span>
+          <h3>기능성별 개발 패키지</h3>
+        </div>
+        <div class="insight-package-grid" id="insight-package-grid"></div>
+      </section>
+      <section class="insight-card">
+        <div class="insight-card-head">
+          <span>Minutes Pattern</span>
+          <h3>회의록 인사이트</h3>
+        </div>
+        <div id="insight-minutes"></div>
+      </section>
+    </div>
+
+    <div class="insight-grid">
+      <section class="insight-card">
+        <div class="insight-card-head">
+          <span>Ingredient Timeline</span>
+          <h3>원료별 규제 타임라인</h3>
+        </div>
+        <form class="insight-search" id="insight-timeline-form">
+          <input type="text" id="insight-timeline-input" autocomplete="off" placeholder="원료명 입력">
+          <button type="submit">조회</button>
+        </form>
+        <div class="insight-timeline" id="insight-timeline"></div>
+      </section>
+      <section class="insight-card">
+        <div class="insight-card-head">
+          <span>Market Entry</span>
+          <h3>시장 진입성 판단</h3>
+        </div>
+        <div id="insight-market"></div>
+      </section>
+    </div>
+
+    <section class="insight-card">
+      <div class="insight-card-head">
+        <span>Templates</span>
+        <h3>실무 문서 템플릿</h3>
+      </div>
+      <div class="insight-template-grid" id="insight-templates"></div>
+    </section>
+  </section>
+
   <section id="feedback" class="tab-section">
     <div class="section-head">
       <h2>피드백 및 문의</h2>
@@ -2009,7 +2067,7 @@
 <script src="data/status.js?v=20260630-news0930"></script>
 <script src="data/daily_quotes.js"></script>
 <script src="market.js"></script>
-<script src="app.js?v=20260710-ops1"></script>
+<script src="app.js?v=20260711-insights1"></script>
 <script src="feedback.js?v=20260704-email-fallback"></script>
 </body>
 </html>
