@@ -2692,6 +2692,7 @@ function setupTabs() {
   const links = document.querySelectorAll('.nav-link');
   const sections = document.querySelectorAll('.tab-section');
   const menuToggle = document.querySelector('.mobile-menu-toggle');
+  const mainNav = document.getElementById('main-nav');
 
   function activate(tab) {
     links.forEach(l => l.classList.toggle('active', l.dataset.tab === tab));
@@ -2715,6 +2716,7 @@ function setupTabs() {
   if (menuToggle) {
     menuToggle.addEventListener('click', () => {
       const open = document.body.classList.toggle('mobile-nav-open');
+      if (open && mainNav) mainNav.scrollTop = 0;
       menuToggle.setAttribute('aria-expanded', String(open));
       menuToggle.setAttribute('aria-label', open ? '메뉴 닫기' : '메뉴 열기');
     });

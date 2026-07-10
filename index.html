@@ -47,7 +47,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="style.css?v=20260710-demand1">
+<link rel="stylesheet" href="style.css?v=20260710-navclean1">
 </head>
 <body>
 <header class="site-header">
@@ -63,22 +63,27 @@
     </button>
     <nav class="main-nav" id="main-nav">
       <a href="#home" data-tab="home" class="nav-link active">홈</a>
-      <a href="#devmap" data-tab="devmap" class="nav-link">개발방향 매핑</a>
-      <a href="#material-dev" data-tab="material-dev" class="nav-link">원료 개발</a>
-      <a href="#precheck" data-tab="precheck" class="nav-link">원료 Pre-Check</a>
       <div class="nav-group">
-        <span class="nav-group-label">데이터베이스 <span class="nav-caret">▾</span></span>
+        <span class="nav-group-label">개발 <span class="nav-caret">▾</span></span>
+        <div class="nav-dropdown">
+          <a href="#precheck" data-tab="precheck" class="nav-link">원료 Pre-Check</a>
+          <a href="#material-dev" data-tab="material-dev" class="nav-link">원료 개발</a>
+          <a href="#devmap" data-tab="devmap" class="nav-link">개발방향 매핑</a>
+        </div>
+      </div>
+      <div class="nav-group">
+        <span class="nav-group-label">데이터 <span class="nav-caret">▾</span></span>
         <div class="nav-dropdown">
           <a href="#foodraw" data-tab="foodraw" class="nav-link">식품원료목록</a>
           <a href="#ingredients" data-tab="ingredients" class="nav-link">개별인정/고시형 원료</a>
           <a href="#temp-approval" data-tab="temp-approval" class="nav-link">한시적 인정 원료 현황</a>
           <a href="#gmo-ingredients" data-tab="gmo-ingredients" class="nav-link">유전자재조합식품 원료</a>
           <a href="#blocked" data-tab="blocked" class="nav-link">해외직구 차단 원료·성분</a>
+          <a href="#safety-db" data-tab="safety-db" class="nav-link">원료 안전성 DB</a>
         </div>
       </div>
-      <a href="#safety-db" data-tab="safety-db" class="nav-link">안전성</a>
       <div class="nav-group">
-        <span class="nav-group-label">심의·법령·가이드라인 <span class="nav-caret">▾</span></span>
+        <span class="nav-group-label">규제·인허가 <span class="nav-caret">▾</span></span>
         <div class="nav-dropdown">
           <a href="#nifds" data-tab="nifds" class="nav-link">심의 관련</a>
           <a href="#minutes" data-tab="minutes" class="nav-link">건기식 심의 회의록</a>
@@ -106,7 +111,7 @@
           <a href="#events" data-tab="events" class="nav-link">학회/박람회</a>
         </div>
       </div>
-      <a href="#feedback" data-tab="feedback" class="nav-link">피드백 및 문의</a>
+      <a href="#feedback" data-tab="feedback" class="nav-link">문의</a>
     </nav>
   </div>
 </header>
@@ -1789,7 +1794,7 @@
 <script src="data/status.js?v=20260630-news0930"></script>
 <script src="data/daily_quotes.js"></script>
 <script src="market.js"></script>
-<script src="app.js?v=20260710-demand1"></script>
+<script src="app.js?v=20260710-navclean1"></script>
 <script src="feedback.js?v=20260704-email-fallback"></script>
 </body>
 </html>
