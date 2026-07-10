@@ -1,9 +1,9 @@
-const CACHE_NAME = 'healtharchive-precheck-20260710-1';
+const CACHE_NAME = 'healtharchive-radarlock-20260710-1';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/style.css?v=20260710-precheck1',
-  '/app.js?v=20260710-precheck1',
+  '/style.css?v=20260710-radarlock1',
+  '/app.js?v=20260710-radarlock1',
   '/assets/logo-icon.png',
   '/assets/leaf-badge.png',
   '/data/ingredients.js?v=20260629-scheduler1225',

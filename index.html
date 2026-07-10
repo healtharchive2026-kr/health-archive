@@ -47,7 +47,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="style.css?v=20260710-precheck1">
+<link rel="stylesheet" href="style.css?v=20260710-radarlock1">
 </head>
 <body>
 <header class="site-header">
@@ -101,7 +101,7 @@
           <a href="#market" data-tab="market" class="nav-link">시장현황</a>
           <a href="#stats" data-tab="stats" class="nav-link">인정 통계</a>
           <a href="#whitespace" data-tab="whitespace" class="nav-link">화이트스페이스맵 🔒</a>
-          <a href="#radar" data-tab="radar" class="nav-link">레귤러토리 레이더</a>
+          <a href="#radar" data-tab="radar" class="nav-link">레귤러토리 레이더 🔒</a>
           <a href="#news" data-tab="news" class="nav-link">식품 뉴스</a>
           <a href="#events" data-tab="events" class="nav-link">학회/박람회</a>
         </div>
@@ -897,16 +897,34 @@
   </section>
 
   <section id="radar" class="tab-section">
-    <div class="section-title-row">
-      <div>
-        <h2>레귤러토리 레이더</h2>
-        <p class="compare-intro">매일 자동 수집되는 개별인정 원료·심의 회의록·신규 제품·한시적 인정 원료 중 새로 등재된 항목만 모은 변경 다이제스트입니다. RSS로 구독하면 사이트에 들어오지 않아도 알림을 받을 수 있습니다.</p>
+    <div class="ws-gate" id="radar-gate">
+      <div class="ws-gate-box">
+        <div class="ws-gate-icon">🔒</div>
+        <h3>비공개 페이지</h3>
+        <p>레귤러토리 데이터는 비밀번호로 보호되어 있습니다.</p>
+        <form id="radar-gate-form" class="ws-gate-form">
+          <input type="password" id="radar-gate-input" placeholder="비밀번호" autocomplete="off">
+          <button type="submit">열기</button>
+        </form>
+        <p class="ws-gate-err" id="radar-gate-err" hidden>비밀번호가 올바르지 않습니다.</p>
       </div>
-      <a class="section-badge radar-rss-link" href="rss.xml" target="_blank" rel="noopener">📡 RSS 구독</a>
     </div>
 
-    <div class="radar-filter-row" id="radar-filter-row"></div>
-    <div class="radar-feed" id="radar-feed"></div>
+    <div class="radar-content" id="radar-content" hidden>
+      <div class="section-title-row">
+        <div>
+          <h2>레귤러토리 레이더</h2>
+          <p class="compare-intro">매일 자동 수집되는 개별인정 원료·심의 회의록·신규 제품·한시적 인정 원료 중 새로 등재된 항목만 모은 변경 다이제스트입니다. RSS로 구독하면 사이트에 들어오지 않아도 알림을 받을 수 있습니다.</p>
+        </div>
+        <div class="section-actions">
+          <a class="section-badge radar-rss-link" href="rss.xml" target="_blank" rel="noopener">📡 RSS 구독</a>
+          <button type="button" class="ws-lock-btn" id="radar-lock-btn">🔒 다시 잠그기</button>
+        </div>
+      </div>
+
+      <div class="radar-filter-row" id="radar-filter-row"></div>
+      <div class="radar-feed" id="radar-feed"></div>
+    </div>
   </section>
 
   <section id="ingredients" class="tab-section">
@@ -1770,7 +1788,7 @@
 <script src="data/status.js?v=20260630-news0930"></script>
 <script src="data/daily_quotes.js"></script>
 <script src="market.js"></script>
-<script src="app.js?v=20260710-precheck1"></script>
+<script src="app.js?v=20260710-radarlock1"></script>
 <script src="feedback.js?v=20260704-email-fallback"></script>
 </body>
 </html>

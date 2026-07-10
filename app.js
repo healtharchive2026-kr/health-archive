@@ -22,7 +22,6 @@ const TAB_SCRIPT_DEPS = {
   'gmo-minutes': ['data/gmo_minutes.js?v=20260709-perf', 'data/gmo_ingredients.js?v=20260709-perf'],
   'gmo-ingredients': ['data/gmo_minutes.js?v=20260709-perf', 'data/gmo_ingredients.js?v=20260709-perf'],
   'safety-db': ['data/safety_db.js?v=20260709-perf', 'safety-db.js?v=20260709-perf'],
-  radar: ['data/radar_log.js?v=20260710-radar1']
 };
 
 const GLOBAL_SEARCH_SCRIPT_DEPS = [
@@ -37,6 +36,8 @@ const PRECHECK_DATA_DEPS = [
   'data/gmo_ingredients.js?v=20260709-perf',
   'data/safety_db.js?v=20260709-perf'
 ];
+
+const RADAR_DATA_DEPS = ['data/radar_log.js?v=20260710-radar1'];
 
 function loadScriptOnce(src) {
   if (scriptLoadPromises.has(src)) return scriptLoadPromises.get(src);
@@ -1166,6 +1167,10 @@ function setupWhitespaceGate() {
 
 // ---------- 레귤러토리 레이더 (변경 다이제스트) ----------
 
+const RADAR_PASSCODE = WS_PASSCODE;
+const RADAR_SESSION_KEY = 'ha_radar_unlocked';
+let radarGateReady = false;
+
 const RADAR_CATEGORY_LABEL = {
   ingredients: '신규 개별인정 원료',
   minutes: '신규 심의 회의록',
@@ -1179,6 +1184,68 @@ const RADAR_CATEGORY_ICON = {
   temp_approval: '한시',
 };
 let radarActiveFilter = 'all';
+
+function radarIsUnlocked() {
+  try { return sessionStorage.getItem(RADAR_SESSION_KEY) === '1'; } catch (e) { return false; }
+}
+
+function radarShowLocked() {
+  const gate = document.getElementById('radar-gate');
+  const content = document.getElementById('radar-content');
+  if (gate) gate.hidden = false;
+  if (content) content.hidden = true;
+}
+
+function radarShowUnlocked() {
+  const gate = document.getElementById('radar-gate');
+  const content = document.getElementById('radar-content');
+  if (gate) gate.hidden = true;
+  if (content) content.hidden = false;
+}
+
+function radarUnlock() {
+  try { sessionStorage.setItem(RADAR_SESSION_KEY, '1'); } catch (e) {}
+  radarShowUnlocked();
+  const feed = document.getElementById('radar-feed');
+  if (feed) feed.innerHTML = '<div class="ingx-empty">레귤러토리 데이터를 불러오는 중입니다.</div>';
+  loadScripts(RADAR_DATA_DEPS)
+    .then(radarRender)
+    .catch(err => {
+      console.error(err);
+      if (feed) feed.innerHTML = '<div class="ingx-empty">레귤러토리 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</div>';
+    });
+}
+
+function radarLock() {
+  try { sessionStorage.removeItem(RADAR_SESSION_KEY); } catch (e) {}
+  radarShowLocked();
+  const input = document.getElementById('radar-gate-input');
+  const err = document.getElementById('radar-gate-err');
+  if (input) input.value = '';
+  if (err) err.hidden = true;
+}
+
+function setupRadarGate() {
+  if (radarGateReady) return;
+  const form = document.getElementById('radar-gate-form');
+  const input = document.getElementById('radar-gate-input');
+  const err = document.getElementById('radar-gate-err');
+  const lockBtn = document.getElementById('radar-lock-btn');
+  if (!form && !lockBtn) return;
+  radarGateReady = true;
+  if (form) {
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      if (((input && input.value) || '') === RADAR_PASSCODE) {
+        if (err) err.hidden = true;
+        radarUnlock();
+      } else {
+        if (err) err.hidden = false;
+      }
+    });
+  }
+  if (lockBtn) lockBtn.addEventListener('click', radarLock);
+}
 
 function radarRelativeDate(dateStr) {
   const d = new Date((dateStr || '').replace(' ', 'T'));
@@ -1239,7 +1306,13 @@ function radarRender() {
 }
 
 function initRadarTab() {
-  radarRender();
+  setupRadarGate();
+  if (radarIsUnlocked()) {
+    radarShowUnlocked();
+    loadScripts(RADAR_DATA_DEPS).then(radarRender).catch(console.error);
+  } else {
+    radarShowLocked();
+  }
 }
 
 // ---------- 커맨드 팔레트 (⌘/Ctrl+K 통합검색) ----------
@@ -3529,6 +3602,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupIngredientDetail();
   setupCompareTray();
   setupWhitespaceGate();
+  setupRadarGate();
   registerServiceWorker();
   runStartupTask('renderHeroNews', renderHeroNews);
   runStartupTask('renderDailyQuote', renderDailyQuote);
