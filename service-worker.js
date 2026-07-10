@@ -1,8 +1,8 @@
-const CACHE_NAME = 'healtharchive-overseas-guide-20260710-1';
+const CACHE_NAME = 'healtharchive-intel-20260710-2';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/style.css?v=20260710-overseas2',
+  '/style.css?v=20260710-intel2',
   '/app.js?v=20260710-navflow1',
   '/assets/logo-icon.png',
   '/assets/leaf-badge.png',
