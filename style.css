@@ -1793,7 +1793,7 @@ td.name{font-weight:600;}
 .law-link-card p{font-size:13px;color:var(--muted);margin:0;line-height:1.4;}
 
 .overseas-gate-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:14px;margin:18px 0 24px;}
-.overseas-gate-card,.overseas-country-card,.overseas-note{
+.overseas-gate-card,.overseas-country-card,.overseas-note,.overseas-practice-panel,.overseas-ndi-box{
   background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-sm);
 }
 .overseas-gate-card{padding:20px 22px;}
@@ -1802,6 +1802,25 @@ td.name{font-weight:600;}
 .overseas-gate-card h3,.overseas-section-title{margin:0 0 12px;color:var(--text);font-size:17px;}
 .overseas-check-list,.overseas-bullet-list{margin:0;padding-left:19px;color:var(--muted);font-size:13px;line-height:1.68;}
 .overseas-check-list li,.overseas-bullet-list li{margin:4px 0;}
+.overseas-practice-panel{padding:22px;margin:0 0 24px;background:linear-gradient(135deg,#fff,#f7fbf8);}
+.overseas-practice-head{max-width:860px;margin-bottom:16px;}
+.overseas-practice-head h3{margin:0 0 8px;font-size:18px;color:var(--text);}
+.overseas-practice-head p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.62;}
+.overseas-step-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;}
+.overseas-step-grid article{background:rgba(255,255,255,.82);border:1px solid var(--border);border-radius:12px;padding:14px;}
+.overseas-step-grid strong{display:block;color:var(--green);font-size:13px;margin-bottom:6px;}
+.overseas-step-grid p{margin:0;color:var(--muted);font-size:12.5px;line-height:1.55;}
+.overseas-matrix-wrap{margin:0 0 24px;}
+.overseas-matrix{overflow:hidden;border:1px solid var(--border);border-radius:14px;background:#fff;box-shadow:var(--shadow-sm);}
+.overseas-matrix-row{display:grid;grid-template-columns:.7fr 1.1fr 1.7fr 1.4fr;border-top:1px solid var(--border);}
+.overseas-matrix-row:first-child{border-top:0;}
+.overseas-matrix-row span{padding:12px 14px;border-left:1px solid var(--border);font-size:12.5px;line-height:1.48;color:var(--muted);}
+.overseas-matrix-row span:first-child{border-left:0;color:var(--green);font-weight:900;}
+.overseas-matrix-head{background:#f4faf7;}
+.overseas-matrix-head span{color:var(--text)!important;font-weight:900;}
+.overseas-ndi-box{padding:20px 22px;margin:0 0 24px;border-color:rgba(232,160,32,.36);background:#fffdf7;}
+.overseas-ndi-box h3{margin:0 0 12px;color:var(--text);font-size:17px;}
+.overseas-ndi-box .overseas-link-row{margin-top:14px;}
 .overseas-country-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin-bottom:18px;}
 .overseas-country-card{padding:18px;display:flex;flex-direction:column;gap:12px;}
 .overseas-country-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;border-bottom:1px solid var(--border);padding-bottom:10px;}
@@ -2405,6 +2424,12 @@ mark{background:#ffe082;border-radius:2px;padding:0 1px;}
   .precheck-kpis{grid-template-columns:repeat(2,minmax(0,1fr));}
   .precheck-two-col{grid-template-columns:1fr;}
   .overseas-gate-grid{grid-template-columns:1fr;}
+  .overseas-step-grid{grid-template-columns:1fr;}
+  .overseas-practice-panel,.overseas-ndi-box{padding:16px;}
+  .overseas-matrix{border-radius:12px;}
+  .overseas-matrix-row{display:block;padding:10px 12px;}
+  .overseas-matrix-row span{display:block;border-left:0;padding:4px 0;}
+  .overseas-matrix-head{display:none;}
   .overseas-note{display:block;}
   .overseas-note strong{display:block;margin-bottom:6px;}
   .precheck-section-head{align-items:flex-start;flex-direction:column;}
