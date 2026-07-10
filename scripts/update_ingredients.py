@@ -15,6 +15,7 @@ import urllib.parse
 from datetime import datetime
 from _status import touch
 from _data_files import read_records, write_records
+from _radar import record_new
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_FILE = os.path.join(BASE_DIR, 'data', 'ingredients.json')
@@ -223,6 +224,7 @@ def main():
         sys.exit(1)
 
     new_count = 0
+    radar_entries = []
     for item in items:
         notice_no = normalize_notice(item.get('titl', ''))
         if not notice_no or notice_no in known_notices:
@@ -247,8 +249,15 @@ def main():
         ingredients.append(detail)
         known_notices.add(detail['noticeNo'])
         new_count += 1
+        radar_entries.append({
+            'title': detail['name'],
+            'meta': ' · '.join(filter(None, [detail.get('noticeNo'), detail.get('category')])),
+            'link': 'ingredients',
+        })
         log(f"added {detail['noticeNo']} - {detail['name']}")
         time.sleep(1)  # be polite to the server
+
+    record_new('ingredients', radar_entries)
 
     if new_count or filled_count:
         write_records(ingredients, DATA_FILE, JS_FILE, 'INGREDIENTS_DATA')

@@ -45,7 +45,7 @@
 <link rel="icon" href="data:,">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="style.css?v=20260710-ws">
+<link rel="stylesheet" href="style.css?v=20260710-radar">
 </head>
 <body>
 <header class="site-header">
@@ -98,6 +98,7 @@
           <a href="#market" data-tab="market" class="nav-link">시장현황</a>
           <a href="#stats" data-tab="stats" class="nav-link">인정 통계</a>
           <a href="#whitespace" data-tab="whitespace" class="nav-link">화이트스페이스맵 🔒</a>
+          <a href="#radar" data-tab="radar" class="nav-link">레귤러토리 레이더</a>
           <a href="#news" data-tab="news" class="nav-link">식품 뉴스</a>
           <a href="#events" data-tab="events" class="nav-link">학회/박람회</a>
         </div>
@@ -853,6 +854,19 @@
       <div class="ws-detail" id="ws-detail" hidden></div>
       <p class="devmap-footnote">유래 분류는 원료명(학명·균주명·부위 표현)에 기반한 자동 추정입니다 (분류 성공률 약 85%, 나머지는 "복합·기타"). 실무 판단의 참고용이며 정확한 유래는 개별 원료의 인정 공고를 확인하세요.</p>
     </div>
+  </section>
+
+  <section id="radar" class="tab-section">
+    <div class="section-title-row">
+      <div>
+        <h2>레귤러토리 레이더</h2>
+        <p class="compare-intro">매일 자동 수집되는 개별인정 원료·심의 회의록·신규 제품·한시적 인정 원료 중 새로 등재된 항목만 모은 변경 다이제스트입니다. RSS로 구독하면 사이트에 들어오지 않아도 알림을 받을 수 있습니다.</p>
+      </div>
+      <a class="section-badge radar-rss-link" href="rss.xml" target="_blank" rel="noopener">📡 RSS 구독</a>
+    </div>
+
+    <div class="radar-filter-row" id="radar-filter-row"></div>
+    <div class="radar-feed" id="radar-feed"></div>
   </section>
 
   <section id="ingredients" class="tab-section">
@@ -1716,7 +1730,7 @@
 <script src="data/status.js?v=20260630-news0930"></script>
 <script src="data/daily_quotes.js"></script>
 <script src="market.js"></script>
-<script src="app.js?v=20260710-ws"></script>
+<script src="app.js?v=20260710-radar"></script>
 <script src="feedback.js?v=20260704-email-fallback"></script>
 </body>
 </html>

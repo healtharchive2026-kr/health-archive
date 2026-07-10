@@ -14,6 +14,7 @@ import urllib.parse
 from datetime import datetime, timedelta
 from _status import touch
 from _data_files import read_records, write_records
+from _radar import record_new
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_FILE = os.path.join(BASE_DIR, 'data', 'products.json')
@@ -78,6 +79,7 @@ def main():
     known_ids = {p['id'] for p in products if p.get('id')}
 
     new_count = 0
+    radar_entries = []
     for page in range(1, FETCH_PAGES + 1):
         try:
             items = fetch_page(page)
@@ -97,11 +99,18 @@ def main():
             known_ids.add(rec['id'])
             new_count += 1
             page_new += 1
+            radar_entries.append({
+                'title': rec['name'],
+                'meta': ' · '.join(filter(None, [rec.get('company'), rec.get('reportDate')])),
+                'link': 'products',
+            })
             log(f"added product: {rec['name']} ({rec['company']}, {rec['reportDate']})")
 
         # 이 페이지에 신규 항목이 하나도 없으면(=이미 다 아는 데이터) 더 뒤져볼 필요 없음
         if page_new == 0:
             break
+
+    record_new('products', radar_entries)
 
     # 전체 이력은 30일 보관 기준과 무관하게 별도 파일에 누적한다 (추후 구글 시트/드라이브 연동용).
     if new_count:

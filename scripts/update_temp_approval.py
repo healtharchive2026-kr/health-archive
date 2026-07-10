@@ -10,6 +10,7 @@ import requests
 from datetime import datetime
 from _data_files import read_records, write_records
 from _status import touch
+from _radar import record_new
 
 BASE_DIR  = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_DIR  = os.path.join(BASE_DIR, 'data')
@@ -93,7 +94,13 @@ def main():
         previous = read_records(JSON_FILE, JS_FILE)
         known = {str(item.get('seq')) for item in previous}
         parsed = parse_items(raw)
-        new_count = sum(1 for item in parsed if str(item.get('seq')) not in known)
+        new_items = [item for item in parsed if str(item.get('seq')) not in known]
+        new_count = len(new_items)
+        record_new('temp_approval', [{
+            'title': item.get('name', ''),
+            'meta': ' · '.join(filter(None, [item.get('company'), item.get('certNo')])),
+            'link': 'temp-approval',
+        } for item in new_items])
         save(parsed)
         touch('temp_approval', count=len(parsed), new_count=new_count)
         log('=== 완료 ===')

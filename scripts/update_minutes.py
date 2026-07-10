@@ -13,6 +13,7 @@ import urllib.request
 from datetime import datetime
 from _status import touch
 from _data_files import read_records
+from _radar import record_new
 
 try:
     import pdfplumber
@@ -172,6 +173,7 @@ def main():
 
     items = parse_list(html)
     new_count = 0
+    radar_entries = []
 
     for item in items:
         if item['dept'] not in ALLOWED_DEPTS:
@@ -218,8 +220,15 @@ def main():
         known_seqs.add(item['seq'])
         known_meeting_nos.add(meeting_no)
         new_count += 1
+        radar_entries.append({
+            'title': record['meetingName'],
+            'meta': record.get('year', ''),
+            'link': 'minutes',
+        })
         log(f"added seq={item['seq']} dept={item['dept']} title={item['title']}")
         time.sleep(1)
+
+    record_new('minutes', radar_entries)
 
     json_changed, js_changed = write_minutes_outputs(minutes)
 

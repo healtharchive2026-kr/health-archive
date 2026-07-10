@@ -1,0 +1,1 @@
+var RADAR_LOG = [];

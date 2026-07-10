@@ -68,12 +68,15 @@ jobs:
             echo "::warning::One or more update scripts failed. Successful script outputs will still be committed."
           fi
 
+      - name: Build 레귤러토리 레이더 feed (radar_log.js + rss.xml)
+        run: python scripts/build_radar_feed.py
+
       - name: Commit updated data
         run: |
           git config user.name "healtharchive2026-kr"
           git config user.email "healtharchive2026@gmail.com"
 
-          git add -f data/*.js data/*.json minutes-pdfs/*.txt
+          git add -f data/*.js data/*.json minutes-pdfs/*.txt rss.xml
           git reset -- data/products_archive.json || true
           if git diff --cached --quiet; then
             echo "No data changes to commit."
