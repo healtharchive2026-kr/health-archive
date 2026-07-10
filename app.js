@@ -331,13 +331,84 @@ function scoreSearch(title, haystack, qNorm) {
   return 30;
 }
 
+// 동의어·이명·영문명·흔한 표현을 한 그룹으로 묶어, 검색어가 그룹의 어느 한
+// 표현과 일치/부분일치하면 그룹 내 모든 표현으로 검색을 확장한다.
+// 예: "다이어트"로 검색해도 "체지방 감소"로 분류된 원료가 나오게 된다.
+const SEARCH_SYNONYM_GROUPS_RAW = [
+  ['루테인', '지아잔틴', 'lutein', 'zeaxanthin', '마리골드'],
+  ['비타민c', '아스코르빈산', 'vitamin c', 'ascorbic acid'],
+  ['비타민d', '콜레칼시페롤', 'vitamin d', 'cholecalciferol'],
+  ['비타민e', '토코페롤', 'vitamin e', 'tocopherol'],
+  ['오메가3', '오메가-3', 'omega3', 'omega-3', 'epa', 'dha', '어유', '피쉬오일', '생선기름'],
+  ['프로바이오틱스', '유산균', 'probiotics', 'lactobacillus', '락토바실러스', '유익균'],
+  ['콜라겐', 'collagen'],
+  ['코엔자임q10', '유비퀴논', '유비퀴놀', 'coq10', 'ubiquinone', 'ubiquinol', '코큐텐'],
+  ['히알루론산', 'hyaluronic acid', '히알루론'],
+  ['글루코사민', 'glucosamine'],
+  ['콘드로이친', '콘드로이친황산염', 'chondroitin'],
+  ['가르시니아', 'garcinia', 'hca', '가르시니아캄보지아'],
+  ['키토산', 'chitosan'],
+  ['클로렐라', 'chlorella'],
+  ['스피룰리나', 'spirulina'],
+  ['홍삼', '인삼', 'ginseng', '진세노사이드', '고려인삼'],
+  ['은행잎', 'ginkgo', '깅코', '은행엽'],
+  ['밀크씨슬', '실리마린', 'milk thistle', 'silymarin', '엉겅퀴'],
+  ['타우린', 'taurine'],
+  ['카르니틴', 'carnitine', 'l-카르니틴', '엘카르니틴'],
+  ['아르기닌', 'arginine', 'l-아르기닌'],
+  ['셀레늄', 'selenium'],
+  ['아연', 'zinc'],
+  // 흔한 검색 표현 ↔ 공식 기능성 분류
+  ['다이어트', '살빼기', '체지방감소', '지방연소', '체중조절', '체중감량'],
+  ['눈영양제', '눈건강', '시력', '시력개선', '안구건조'],
+  ['관절영양제', '관절건강', '연골건강', '무릎건강'],
+  ['탈모', '모발영양', '모발건강', '헤어케어'],
+  ['장건강', '배변', '변비', '배변활동', '장운동'],
+  ['불면', '수면의질', '수면건강', '숙면'],
+  ['스트레스', '긴장완화', '이완', '스트레스관리'],
+  ['기억력', '치매예방', '인지기능', '두뇌건강', '집중력'],
+  ['피로회복', '피로해소', '피로개선', '활력', '기력회복'],
+  ['뼈영양제', '골다공증', '뼈건강', '골밀도'],
+  ['고혈압', '혈압조절', '혈압관리'],
+  ['콜레스테롤관리', '콜레스테롤', '고지혈증', '중성지방'],
+  ['면역력', '면역기능', '면역건강', '감기예방'],
+  ['노화방지', '안티에이징', '항산화', '노화지연'],
+  ['혈액순환', '혈행개선', '혈행'],
+  ['당뇨', '혈당조절', '혈당관리', '혈당'],
+  ['위건강', '위장', '속쓰림', '소화불량'],
+  ['간건강', '간영양제', '간기능', '숙취해소'],
+  ['갱년기여성', '여성갱년기', '갱년기'],
+  ['갱년기남성', '남성갱년기', '전립선건강'],
+];
+const SEARCH_SYNONYM_GROUPS = SEARCH_SYNONYM_GROUPS_RAW.map(group => group.map(normSearch));
+
+function expandSearchTerms(qNorm) {
+  const terms = new Set([qNorm]);
+  if (qNorm.length >= 2) {
+    SEARCH_SYNONYM_GROUPS.forEach(group => {
+      const hit = group.some(term => term === qNorm || term.includes(qNorm) || qNorm.includes(term));
+      if (hit) group.forEach(term => terms.add(term));
+    });
+  }
+  return Array.from(terms);
+}
+
+function scoreSearchMulti(title, haystack, qNormTerms) {
+  let best = 0;
+  qNormTerms.forEach(t => {
+    const s = scoreSearch(title, haystack, t);
+    if (s > best) best = s;
+  });
+  return best;
+}
+
 function collectGlobalSearchResults(q) {
-  const qNorm = normSearch(q);
+  const qTerms = expandSearchTerms(normSearch(q));
   const grouped = {};
   GLOBAL_SEARCH_GROUPS.forEach(([key]) => { grouped[key] = []; });
 
   function add(group, target, title, subtitle, meta, routeQuery, haystack, options = {}) {
-    const score = scoreSearch(title, haystack, qNorm);
+    const score = scoreSearchMulti(title, haystack, qTerms);
     if (!score) return;
     grouped[group].push({ group, target, title, subtitle, meta, routeQuery, score, ...options });
   }
