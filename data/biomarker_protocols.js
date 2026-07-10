@@ -78,6 +78,155 @@ Object.assign(BIOMARKER_PROTOCOL_DEFS, {
   '혈행 개선': { clinical: { model: '건강한 사람 중 collagen과 ADP 모두에서 혈소판 응집반응이 55-70% 이상인 자' }, preclinical: { animalModels: ['FeCl3 유도 혈전 모델', 'collagen/epinephrine 유도 폐혈전 모델', 'arteriovenous shunt 혈전 모델', 'ADP 또는 collagen 혈소판 응집 ex vivo 모델'] } }
 });
 
+// 기능성 평가 가이드와 최근 5년 공개 소비자리포트의 인체적용시험 평가 구조를 바탕으로 정리한 IRB 설계용 후보 지표.
+// 실제 시험에서는 기능성 표현, 원료 작용기전 및 선행시험에 맞춰 1차 변수를 1-2개로 사전 특정한다.
+var BIOMARKER_ENDPOINT_DETAILS = {
+  '간 건강': {
+    primary: ['ALT·AST·γ-GTP: 공복 혈청에서 기저치와 섭취 종료 시점의 변화량 및 군간 차이를 평가', '간 지방량: 초음파 등급 또는 MRI-PDFF로 동일 판독기준을 적용하여 기저치 대비 변화 평가'],
+    secondary: ['ALP·총빌리루빈·중성지방·간염증 지표를 보조 유효성 및 안전성 지표로 평가', '피로도·삶의 질 설문과 체중·허리둘레를 탐색적 지표로 평가']
+  },
+  '갱년기 남성건강': {
+    primary: ['AMS 총점 및 신체·심리·성기능 하위영역: 기저치 대비 변화량과 군간 차이 평가', '총·유리 테스토스테론: 오전 공복 채혈로 동일 시간대에 측정하고 기저치 대비 변화 평가'],
+    secondary: ['IIEF 또는 ADAM 설문, 피로도·활력·수면 지표를 보조 평가', 'LH·FSH·SHBG와 PSA 등 호르몬 및 전립선 안전성 지표 평가']
+  },
+  '갱년기 여성건강': {
+    primary: ['Kupperman Index 또는 MRS/MENQOL 총점: 기저치 대비 증상 개선 및 군간 차이 평가', '안면홍조 일지: 일일 빈도·강도와 중등도 이상 홍조 횟수의 변화 평가'],
+    secondary: ['FSH·estradiol과 질건조·수면·기분 하위척도를 보조 평가', '자궁내막·유방 관련 검사와 이상반응을 안전성 항목으로 확인']
+  },
+  '구취': {
+    primary: ['VSC(H2S·CH3SH·(CH3)2S): 휴대형 황화합물 측정기 또는 gas chromatography로 표준화 측정', '관능검사 점수: 훈련된 평가자가 섭취 전후 동일 조건에서 organoleptic score 변화 평가'],
+    secondary: ['설태지수·치태지수·타액분비량 및 타액 pH 평가', '구취 관련 구강미생물 정량과 대상자 자가평가 VAS를 탐색적으로 평가']
+  },
+  '근력 및 근기능': {
+    primary: ['악력: 보정된 dynamometer로 우세손 또는 양손 반복 측정 후 최대값·평균값 변화 평가', '등속성 무릎신전근력 또는 1-RM: 표준화된 장비와 자세로 최대근력 변화 평가', 'SPPB·보행속도·의자일어서기: 사전 정의한 근기능 복합지표 변화 평가'],
+    secondary: ['DXA/BIA 근육량·제지방량과 근육질 지표 평가', 'CK·LDH·근피로도·운동 후 회복시간 및 삶의 질 평가']
+  },
+  '기관·기관지 건강 (기침·가래)': {
+    primary: ['기침·가래 일지: 일일 빈도·중증도·야간증상과 무증상일수의 변화 평가', 'CAT·LCQ 또는 기능성에 적합한 호흡기 증상 총점의 기저치 대비 변화 평가'],
+    secondary: ['FEV1·FVC·PEF 등 폐기능과 필요 시 기관지반응성 평가', '혈청·객담 염증지표와 호흡기 삶의 질, 구제약 사용량 평가']
+  },
+  '긴장완화': {
+    primary: ['PSS·STAI 또는 SRI 총점: 사전 지정한 주척도의 기저치 대비 변화와 군간 차이 평가', '타액·혈청 cortisol: 채취 시각과 생활조건을 통제하여 일중 변화 또는 스트레스 반응 평가'],
+    secondary: ['HRV의 SDNN·RMSSD·LF/HF와 안정시 심박수 평가', '기분·불안·수면 설문과 α-amylase 등 스트레스 관련 탐색지표 평가']
+  },
+  '눈 건강': {
+    primary: ['건조한 눈: OSDI와 TBUT를 공동 또는 사전 지정 주평가변수로 설정하고 동일 검사자가 측정', '눈 피로: 표준화 시각작업 전후 눈 피로 VAS·설문 총점 변화 평가', '황반 건강: MPOD 또는 대비감도·광스트레스 회복시간을 기능성 표현에 맞춰 선택'],
+    secondary: ['Schirmer test·각결막 염색·눈물 삼투압·시력 평가', 'NEI-VFQ 등 시기능 삶의 질과 눈물 염증지표를 보조 평가']
+  },
+  '다리 불편감(부기) 관련': {
+    primary: ['하지 둘레 또는 체적: 사전 지정 해부학적 위치·시간대·자세에서 반복 측정하여 변화 평가', '다리 무거움·부기·통증 VAS 또는 validated symptom score의 변화 평가'],
+    secondary: ['정맥초음파·말초혈류·피부온도 및 모세혈관 투과성 지표 평가', '부종 발생시간·일상활동 불편감과 삶의 질 평가']
+  },
+  '면역과민반응': {
+    primary: ['비염·피부·호흡기 영역별 validated 증상 총점과 무증상일수의 변화 평가', '총·특이 IgE 및 호산구: 대상 질환과 알레르겐을 사전 지정하여 기저치 대비 변화 평가'],
+    secondary: ['IL-4·IL-5·IL-13·histamine 등 Th2/비만세포 관련 지표 평가', '구제약 사용량, 삶의 질 및 피부·비강 객관지표를 보조 평가']
+  },
+  '면역기능': {
+    primary: ['NK cell activity: 표준화된 effector-to-target ratio 또는 검증된 상용법으로 활성 변화 평가', '상기도감염 발생률·유병일수·증상중증도: 사전 정의한 감염사건과 일지로 평가'],
+    secondary: ['림프구 아형·IgA·IL-2·IFN-γ 등 세포성·점막면역 지표 평가', '결석일수·구제약 사용량·CRP와 안전성 혈액검사 평가']
+  },
+  '모발 건강': {
+    primary: ['Phototrichogram 모발 밀도·굵기: 동일 두피 표적부위를 표식하여 기저치 대비 변화 평가', '성장기/휴지기 모발 비율 또는 단위면적 성장모발 수의 변화 평가'],
+    secondary: ['표준화 세정 후 탈락모발 수·인장강도·두피 상태 평가', '전문가 전반평가와 대상자 만족도·삶의 질 설문 평가']
+  },
+  '배뇨 건강': {
+    primary: ['OABSS 또는 IPSS 총점·하위항목: 대상 기능성에 맞는 단일 주척도를 사전 지정하여 변화 평가', '3일 이상 배뇨일지의 24시간 배뇨횟수·요절박·야간뇨·요실금 횟수 변화 평가'],
+    secondary: ['최대요속(Qmax)·평균요속·배뇨량·잔뇨량 평가', '배뇨 관련 삶의 질과 수면방해, 구제치료 사용 여부 평가']
+  },
+  '뼈·관절 건강': {
+    primary: ['관절: WOMAC 총점 및 통증·강직·신체기능 하위점수와 활동 시 VAS 변화 평가', '뼈: DXA 요추·대퇴골 BMD 및 T-score를 동일 장비·분석조건으로 장기 추적 평가'],
+    secondary: ['관절 기능검사·구제진통제 사용량과 CTX-II·COMP·CRP 평가', 'CTX·P1NP·osteocalcin·비타민 D 등 골대사 표지자와 골절위험 보조지표 평가']
+  },
+  '수면건강': {
+    primary: ['PSQI 총점: 기저치와 섭취 종료 시점의 변화량 및 PSQI 개선 반응률 평가', '수면다원검사 또는 actigraphy의 수면효율·총수면시간·입면잠복기·WASO를 객관적 지표로 평가'],
+    secondary: ['ISI·ESS와 수면일지의 각성횟수·주관적 수면의 질 평가', 'N3/REM 수면시간·멜라토닌·주간기능과 기분척도를 보조 평가']
+  },
+  '요로 건강': {
+    primary: ['요로증상 점수와 배뇨통·빈뇨·절박뇨 발생일수의 변화 평가', '재발성 요로불편 사건 또는 의학적으로 확인된 요로감염 발생률·재발까지의 시간 평가'],
+    secondary: ['소변 백혈구·세균수·nitrite 및 uropathogenic E. coli 부착 관련 지표 평가', '소변 pH·항생제 사용량·요로 관련 삶의 질 평가']
+  },
+  '운동수행능력': {
+    primary: ['트레드밀·사이클의 탈진까지 운동시간 또는 사전 지정 거리 기록의 변화 평가', 'VO2max/VO2peak 또는 peak power를 표준화된 단계부하검사로 평가'],
+    secondary: ['혈중 lactate·RPE·심박회복과 운동효율 평가', 'CK·LDH·암모니아·근육통 및 회복시간을 보조 평가']
+  },
+  '월경전 불편감 개선': {
+    primary: ['DRSP 또는 MDQ 총점: 최소 2주기 전향적 일지로 황체기 증상 변화와 군간 차이 평가', '복부통증·유방압통·부종·기분증상 중 사전 지정 핵심증상의 VAS 변화 평가'],
+    secondary: ['증상 없는 일수·일상활동 장애·구제진통제 사용량 평가', '삶의 질·수면·기분과 prostaglandin 등 탐색적 지표 평가']
+  },
+  '위 건강': {
+    primary: ['위점막 보호: 내시경 erosion·발적·출혈 등 표준화 점수의 기저치 대비 변화 평가', '소화기능: GIS·Nepean Dyspepsia Index 또는 Rome IV 기반 증상 총점 변화 평가'],
+    secondary: ['상복부통증·포만감·속쓰림 VAS와 증상 없는 일수 평가', 'H. pylori 관련 지표·위장관 삶의 질·구제약 사용량 평가']
+  },
+  '인지기능·기억력 개선': {
+    primary: ['기억력: verbal/visual learning, delayed recall 및 recognition을 포함한 검증된 검사배터리 변화 평가', '인지기능: attention·executive function·processing speed 중 기능성 표현에 맞는 composite score를 사전 지정'],
+    secondary: ['MoCA·MMSE 등 전반인지와 주관적 기억감퇴 설문 평가', 'BDNF·뇌파·기분·수면 및 일상기능 지표를 탐색적으로 평가']
+  },
+  '잇몸 건강': {
+    primary: ['Gingival Index와 Bleeding on Probing 비율을 보정된 검사자가 기저치 대비 평가', '치주낭 깊이(PPD)·임상부착수준(CAL)을 사전 지정 치아부위에서 반복 측정'],
+    secondary: ['Plaque Index·치은열구액과 P. gingivalis 등 치주미생물 평가', 'IL-1β·TNF-α 등 국소 염증지표와 구강건강 삶의 질 평가']
+  },
+  '장 건강': {
+    primary: ['배변활동: 주당 자발적·완전 자발적 배변횟수(CSBM)와 반응자 비율 평가', 'Bristol Stool Form Scale 및 PAC-SYM/복부불편감 총점 변화 평가'],
+    secondary: ['장 통과시간·구제완하제 사용량·배변곤란 정도 평가', '장내미생물 다양성·표적균·SCFA와 장 관련 삶의 질 평가']
+  },
+  '전립선 건강': {
+    primary: ['IPSS 총점 및 배뇨·저장 하위점수의 기저치 대비 변화와 임상적 반응률 평가', '최대요속(Qmax)과 배뇨 후 잔뇨량을 표준화 요속검사·초음파로 평가'],
+    secondary: ['전립선 용적·PSA·야간뇨 횟수 평가', 'IPSS-QoL·성기능 및 구제치료 사용 여부 평가']
+  },
+  '청력 유지': {
+    primary: ['순음청력검사의 주파수별 및 순음평균 역치 변화를 동일 방음·장비 조건에서 평가', '어음인지도·어음청취역치 또는 소음하 말소리인지 변화를 평가'],
+    secondary: ['DPOAE·ABR threshold 등 객관적 청각반응 평가', '이명·청각피로·청력관련 삶의 질과 산화스트레스 지표 평가']
+  },
+  '체지방 감소': {
+    primary: ['DXA 또는 CT로 측정한 총 체지방량·체지방률·복부/내장지방 면적의 기저치 대비 변화 평가', '허리둘레를 표준 해부학적 위치에서 반복 측정하여 군간 변화 비교'],
+    secondary: ['체중·BMI·허리엉덩이둘레비와 제지방량 평가', '지질·인슐린저항성·adiponectin·leptin 및 식이·활동량 평가']
+  },
+  '치아 건강': {
+    primary: ['새 우식병소·초기우식 진행 또는 DMFS/DMFT 변화량을 표준 진단기준으로 평가', '치면세균막·산생성도와 타액 pH 회복곡선을 표준화 당부하 전후 평가'],
+    secondary: ['타액분비량·완충능·S. mutans 및 Lactobacillus 수 평가', '법랑질 탈회·재광화 지표와 구강건강 자가평가를 보조 평가']
+  },
+  '칼슘 흡수 촉진': {
+    primary: ['안정동위원소법의 fractional calcium absorption 또는 calcium retention을 사전 지정 주평가변수로 평가', '표준 칼슘부하 후 혈청·소변 칼슘 변화 또는 AUC를 동일 채취일정으로 평가'],
+    secondary: ['PTH·25(OH)D·인·마그네슘과 CTX·P1NP 등 골대사 지표 평가', '장기시험 시 DXA 골밀도와 칼슘 관련 이상반응 평가']
+  },
+  '콩팥에서 요독물질 관련': {
+    primary: ['혈청 total/free indoxyl sulfate와 p-cresyl sulfate 농도의 기저치 대비 변화 평가', '기능성 표현에 따라 요독물질 복합지수 또는 사전 지정 단일 물질의 군간 차이 평가'],
+    secondary: ['eGFR·creatinine·BUN·cystatin C 등 신기능 보조지표 평가', '장내미생물·염증·산화스트레스와 배변 관련 지표 평가']
+  },
+  '피로 개선': {
+    primary: ['FSS·CIS 또는 Chalder Fatigue Scale 중 검증된 주척도 총점의 변화 평가', '피로 VAS와 일상기능 저하 정도를 동일 시점에서 반복 평가'],
+    secondary: ['운동부하 후 lactate·암모니아·CK와 회복시간 평가', '수면·기분·삶의 질·cortisol 및 활동량을 보조 평가']
+  },
+  '피부 건강': {
+    primary: ['보습: corneometer 피부수분량과 TEWL을 온·습도 순응 후 동일 부위에서 평가', '탄력·주름: cutometer 지표와 3D 피부영상의 주름 깊이·면적 변화 평가', '자외선 손상: 최소홍반량·홍반지수 또는 광노화 지표를 기능성 표현에 맞춰 선택'],
+    secondary: ['melanin index·피부거칠기·피부장벽 회복과 전문가 평가', '대상자 만족도·피부 삶의 질 및 염증·산화스트레스 지표 평가']
+  },
+  '항산화': {
+    primary: ['MDA·F2-isoprostane 등 지질 산화지표 또는 8-OHdG 등 DNA 산화지표를 사전 지정하여 변화 평가', 'TAC·ORAC 등 총 항산화능을 동일 분석법으로 기저치 대비 평가'],
+    secondary: ['SOD·GPx·catalase·GSH/GSSG 등 내인성 항산화 방어지표 평가', 'CRP·염증성 cytokine과 산화 LDL 등 탐색지표 평가']
+  },
+  '혈당 조절': {
+    primary: ['공복혈당과 HbA1c의 기저치 대비 변화량 및 군간 차이 평가', '표준 식사부하 후 0-120분 혈당 iAUC·2시간 혈당을 사전 지정 일정으로 평가'],
+    secondary: ['공복·식후 insulin과 HOMA-IR·Matsuda index 평가', 'C-peptide·fructosamine·연속혈당 변동성 및 지질대사 지표 평가']
+  },
+  '혈압 조절': {
+    primary: ['진료실 수축기·이완기혈압: 표준 휴식 후 반복 측정 평균의 기저치 대비 변화 평가', '24시간 활동혈압의 주간·야간 평균 또는 사전 지정 시간대 혈압 변화 평가'],
+    secondary: ['맥압·중심혈압·PWV·혈관탄성 평가', 'ACE activity·renin·aldosterone·NO와 심박수 평가']
+  },
+  '혈중 중성지방 개선': {
+    primary: ['공복 혈청 triglyceride의 기저치 대비 절대·백분율 변화와 군간 차이 평가', '지방부하 시험 후 triglyceride 0-6시간 iAUC 또는 peak response 평가'],
+    secondary: ['총콜레스테롤·LDL-C·HDL-C·non-HDL-C·ApoB 평가', 'VLDL·유리지방산·간지방 및 인슐린저항성 지표 평가']
+  },
+  '혈중 콜레스테롤 개선': {
+    primary: ['LDL-C의 기저치 대비 절대·백분율 변화와 군간 차이 평가', '총콜레스테롤 또는 non-HDL-C를 사전 지정 공동·보조 유효성 지표로 평가'],
+    secondary: ['HDL-C·triglyceride·ApoB·ApoA1 및 LDL particle 지표 평가', '산화 LDL·담즙산 배설과 염증지표를 탐색적으로 평가']
+  },
+  '혈행 개선': {
+    primary: ['Collagen·ADP 유도 혈소판 응집률과 최대응집률을 동일 agonist 농도·분석법으로 평가', '전혈·혈장 점도 또는 적혈구 변형능의 기저치 대비 변화 평가'],
+    secondary: ['말초혈류·FMD·laser Doppler 및 NO 관련 지표 평가', 'fibrinogen·D-dimer·PT/aPTT와 출혈 관련 안전성 항목 평가']
+  }
+};
+
 var BIOMARKER_MECHANISM_DEFS = {
   '간 건강': ['간세포 손상 억제와 ALT/AST 등 간 효소 개선', '지방산 합성·산화 및 간 내 지질축적 조절', '산화스트레스와 염증성 사이토카인 완화를 통한 간조직 보호'],
   '갱년기 남성건강': ['남성호르몬 생성·대사 및 androgen 신호 조절', '피로, 활력, 성기능 관련 신경내분비 균형 개선', '전립선 및 대사 안전성 지표를 동반한 남성 갱년기 증상 완화'],
@@ -155,9 +304,13 @@ var BIOMARKER_DEFAULT_PROTOCOL = {
 
 function mergeBiomarkerProtocol(name, guideFile) {
   var specific = BIOMARKER_PROTOCOL_DEFS[name] || {};
+  var endpointDetails = BIOMARKER_ENDPOINT_DETAILS[name] || {};
+  var clinical = Object.assign({}, BIOMARKER_DEFAULT_PROTOCOL.clinical, specific.clinical || {});
+  clinical.primaryEndpointDetails = endpointDetails.primary || clinical.primaryBiomarkers;
+  clinical.secondaryEndpointDetails = endpointDetails.secondary || clinical.secondaryBiomarkers;
   return {
     guideFile: guideFile,
-    clinical: Object.assign({}, BIOMARKER_DEFAULT_PROTOCOL.clinical, specific.clinical || {}),
+    clinical: clinical,
     preclinical: Object.assign({}, BIOMARKER_DEFAULT_PROTOCOL.preclinical, specific.preclinical || {}),
     mechanisms: specific.mechanisms || BIOMARKER_MECHANISM_DEFS[name] || BIOMARKER_DEFAULT_PROTOCOL.mechanisms,
     extractionMethod: BIOMARKER_OCR_BACKFILL.has(name) ? 'ocr_backfill' : 'guide_seed'

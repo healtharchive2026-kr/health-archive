@@ -3299,8 +3299,8 @@ function irbDraftListRowHtml(label, items) {
 
 function biomarkerIrbDraftHtml(item) {
   const clinical = item.clinical || {};
-  const primary = clinical.primaryBiomarkers || [];
-  const secondary = clinical.secondaryBiomarkers || [];
+  const primary = clinical.primaryEndpointDetails || clinical.primaryBiomarkers || [];
+  const secondary = clinical.secondaryEndpointDetails || clinical.secondaryBiomarkers || [];
   const title = `${item.name} 인체적용시험 IRB 사전작성 초안`;
   return `
     <section class="irb-draft-card" data-irb-panel data-irb-title="${escapeHtml(title)}">
@@ -3317,8 +3317,8 @@ function biomarkerIrbDraftHtml(item) {
         ${irbDraftRowHtml('권장 시험설계', '무작위배정 · 이중눈가림 · 위약대조 · 평행군')}
         ${irbDraftRowHtml('예상 섭취기간', clinical.duration || '8-12주 범위에서 기능성 가이드와 선행연구를 검토하여 설정')}
         ${irbDraftRowHtml('시험군·대조군', '시험원료 섭취군과 동일 제형 위약 대조군')}
-        ${irbDraftListRowHtml('1차 평가변수', primary)}
-        ${irbDraftListRowHtml('2차 평가변수', secondary)}
+        ${irbDraftListRowHtml('1차 유효성 평가변수', primary)}
+        ${irbDraftListRowHtml('2차 유효성 평가변수', secondary)}
         ${irbDraftListRowHtml('안전성 평가', ['이상반응 및 병용약물 기록', '활력징후 및 일반 혈액·생화학 검사', '시험 중단 기준과 중대한 이상반응 보고 절차'])}
         ${irbDraftRowHtml('통계분석 개요', '분석집단(ITT/PP) 정의, 군간 변화량 비교, 결측치 처리와 유의수준을 통계분석계획서에서 사전 확정')}
       </div>
@@ -3326,7 +3326,7 @@ function biomarkerIrbDraftHtml(item) {
         <button type="button" class="irb-draft-copy" data-irb-copy>IRB 항목 복사</button>
         <button type="button" class="irb-draft-search" data-irb-trials="${escapeHtml(item.name)}">임상 DB에서 근거 찾기</button>
       </div>
-      <p class="irb-draft-note">기능성 평가 가이드와 등록 연구에서 확인할 항목을 정리한 사전작성용 초안입니다. 실제 제출 전 한국 임상 DB의 원문 프로토콜·결과보고서, 시험기관 양식, 통계분석계획서를 확인하세요.</p>
+      <p class="irb-draft-note">식약처 기능성 평가 가이드와 2021-2025년 공개 개별인정 기능성 원료 소비자리포트의 평가 구조를 반영한 사전작성용 초안입니다. 실제 제출 전 한국 임상 DB의 원문 프로토콜·결과보고서, 시험기관 양식, 통계분석계획서를 확인하세요.</p>
     </section>
   `;
 }
@@ -3357,7 +3357,9 @@ function renderBiomarkerDetail(item) {
       ${protocolSectionHtml('임상 프로토콜', [
         fieldHtml('대상자 모델', clinical.model),
         fieldHtml('기간', clinical.duration),
-        `<div class="biomarker-field"><span>측정 바이오마커</span><ul>${listHtml([...(clinical.primaryBiomarkers || []), ...(clinical.secondaryBiomarkers || [])])}</ul></div>`
+        `<div class="biomarker-field"><span>1차 유효성 평가변수</span><ul>${listHtml(clinical.primaryEndpointDetails || clinical.primaryBiomarkers)}</ul></div>`,
+        `<div class="biomarker-field"><span>2차 유효성 평가변수</span><ul>${listHtml(clinical.secondaryEndpointDetails || clinical.secondaryBiomarkers)}</ul></div>`,
+        '<p class="biomarker-endpoint-note">가이드의 후보 지표 전체를 사용하는 것이 아니라 원료의 작용기전·선행시험·기능성 표현에 맞춰 1차 변수를 1-2개로 사전 특정합니다.</p>'
       ])}
 
       ${protocolSectionHtml('전임상 프로토콜', [

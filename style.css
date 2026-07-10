@@ -1895,6 +1895,15 @@ td.name{font-weight:600;}
   line-height:1.6;
 }
 .biomarker-field ul{padding-left:18px;}
+.biomarker-endpoint-note{
+  margin:14px 0 0;
+  padding:10px 11px;
+  border-left:3px solid rgba(47,109,87,.42);
+  background:#f6faf7;
+  color:#647269;
+  font-size:11px;
+  line-height:1.55;
+}
 .biomarker-empty{
   padding:18px;
   color:var(--muted);
