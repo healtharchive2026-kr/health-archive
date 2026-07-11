@@ -22,8 +22,7 @@ BOARD_URL  = 'https://www.foodsafetykorea.go.kr/portal/board/boardList.do'
 REFER_URL  = 'https://www.foodsafetykorea.go.kr/portal/board/boardDetail.do?menu_no=2966&bbs_no=bbs018&ntctxt_no=21226&menu_grp=MENU_NEW04'
 DETAIL_BASE = 'https://www.foodsafetykorea.go.kr/portal/board/boardDetail.do?menu_no=2966&bbs_no=bbs1235&menu_grp=MENU_NEW04&ntctxt_no='
 
-SUFFIX_RE = re.compile(r'\(((?:[^()]+|\([^()]*\))+)[,\.]\s*(제\d{4}-\d+호)\)\s*$')
-NAME_CLEAN = re.compile(r'\s*\((?:[^()]+|\([^()]*\))+[,\.]\s*제\d{4}-\d+호\)\s*$')
+CERT_RE = re.compile(r'제\d{4}-\d+호')
 
 
 def log(msg):
@@ -54,6 +53,39 @@ def fetch_items():
     return r.json().get('list', [])
 
 
+def split_title_suffix(title):
+    """중첩 괄호가 포함된 업체명 접미부를 정규식 역추적 없이 분리한다."""
+    text = str(title or '').strip()
+    end = text.rfind(')')
+    if end < 0 or text[end + 1:].strip():
+        cert = CERT_RE.search(text)
+        return text, '', cert.group(0) if cert else ''
+
+    depth = 0
+    start = -1
+    for index in range(end, -1, -1):
+        if text[index] == ')':
+            depth += 1
+        elif text[index] == '(':
+            depth -= 1
+            if depth == 0:
+                start = index
+                break
+
+    if start < 0:
+        cert = CERT_RE.search(text)
+        return text, '', cert.group(0) if cert else ''
+
+    suffix = text[start + 1:end].strip()
+    cert_match = CERT_RE.search(suffix)
+    if not cert_match:
+        cert = CERT_RE.search(text)
+        return text, '', cert.group(0) if cert else ''
+
+    company = suffix[:cert_match.start()].rstrip(' ,.')
+    return text[:start].strip(), company, cert_match.group(0)
+
+
 def parse_items(raw_items):
     parsed = []
     for item in raw_items:
@@ -61,14 +93,8 @@ def parse_items(raw_items):
         ntctxt_no = item.get('ntctxt_no', '')
         date = item.get('cret_dtm', '')
 
-        m = SUFFIX_RE.search(titl)
-        company = m.group(1).strip() if m else ''
-
-        m_no = re.search(r'제\d{4}-\d+호', titl)
-        cert_no = m_no.group(0) if m_no else ''
+        name, company, cert_no = split_title_suffix(titl)
         year = int(cert_no[1:5]) if cert_no and len(cert_no) >= 5 else 0
-
-        name = NAME_CLEAN.sub('', titl).strip()
 
         parsed.append({
             'seq': int(ntctxt_no) if ntctxt_no else 0,

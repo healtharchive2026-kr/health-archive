@@ -9,7 +9,7 @@ import re
 import sys
 import time
 import urllib.request
-from datetime import datetime
+from datetime import datetime, timedelta
 from email.utils import parsedate_to_datetime
 from bs4 import BeautifulSoup
 from deep_translator import GoogleTranslator
@@ -60,6 +60,10 @@ def main():
     with open(DATA_FILE, encoding='utf-8') as f:
         news = json.load(f)
 
+    future_cutoff = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')
+    before_prune = len(news)
+    news = [item for item in news if (item.get('pubDate') or '') <= future_cutoff]
+    pruned_count = before_prune - len(news)
     known_links = {n['link'] for n in news}
 
     try:
@@ -79,6 +83,11 @@ def main():
         if not link or not title_en or link in known_links:
             continue
 
+        pub_date = parse_pub_date(item.pubDate.get_text(strip=True) if item.pubDate else '')
+        if pub_date > future_cutoff:
+            log(f'skipped future-dated article (supplysidesj): {title_en} ({pub_date})')
+            continue
+
         title = title_en
         if translated < MAX_TRANSLATE:
             try:
@@ -92,14 +101,14 @@ def main():
             'title': title,
             'titleEn': title_en,
             'link': link,
-            'pubDate': parse_pub_date(item.pubDate.get_text(strip=True) if item.pubDate else ''),
+            'pubDate': pub_date,
             'source': 'supplysidesj',
         })
         known_links.add(link)
         new_count += 1
         log(f'added (supplysidesj): {title_en}')
 
-    if new_count:
+    if new_count or pruned_count:
         news.sort(key=lambda n: n.get('pubDate', ''), reverse=True)
         news = news[:MAX_KEEP]
         with open(DATA_FILE, 'w', encoding='utf-8') as f:
@@ -108,7 +117,7 @@ def main():
             f.write('var NEWS_SUPPLYSIDESJ_DATA = ')
             json.dump(news, f, ensure_ascii=False)
             f.write(';\n')
-        log(f'DONE (supplysidesj): {new_count} new article(s) added. total={len(news)}')
+        log(f'DONE (supplysidesj): {new_count} new article(s) added, {pruned_count} future article(s) removed. total={len(news)}')
     else:
         log('DONE (supplysidesj): no new articles found.')
 
