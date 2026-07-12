@@ -47,7 +47,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="style.css?v=20260712-ia2">
+<link rel="stylesheet" href="style.css?v=20260712-dbnav1">
 </head>
 <body>
 <a class="skip-link" href="#main-content">본문 바로가기</a>
@@ -77,8 +77,9 @@
       <div class="nav-group" data-tabs="ingredients foodraw temp-approval safety-db blocked gmo-ingredients">
         <button type="button" class="nav-group-label" aria-expanded="false">원료 DB <span class="nav-caret" aria-hidden="true">▾</span></button>
         <div class="nav-dropdown">
-          <a href="#ingredients" data-tab="ingredients" class="nav-link">원료 인정·사용 현황</a>
-          <a href="#safety-db" data-tab="safety-db" class="nav-link">안전성·제한 원료</a>
+          <a href="#ingredients" data-tab="ingredients" class="nav-link">인정 원료 현황</a>
+          <a href="#foodraw" data-tab="foodraw" class="nav-link">식품·GMO·반입차단</a>
+          <a href="#safety-db" data-tab="safety-db" class="nav-link">안전성 DB 검색기</a>
         </div>
       </div>
       <div class="nav-group" data-tabs="laws nifds minutes gmo-minutes">
@@ -966,10 +967,10 @@
   </section>
 
   <section id="ingredients" class="tab-section">
-    <nav class="context-switcher" aria-label="원료 인정·사용 관련 화면">
-      <a href="#ingredients" data-goto="ingredients" class="context-switch active">개별·고시형</a>
-      <a href="#foodraw" data-goto="foodraw" class="context-switch">식품원료목록</a>
-      <a href="#temp-approval" data-goto="temp-approval" class="context-switch">한시적 인정</a>
+    <nav class="db-hub-nav" aria-label="원료 데이터베이스 세부 화면">
+      <div class="db-hub-group is-current"><span class="db-hub-label">인정 원료</span><div class="db-hub-links"><a href="#ingredients" data-goto="ingredients" class="db-hub-link active">개별·고시형</a><a href="#temp-approval" data-goto="temp-approval" class="db-hub-link">한시적 인정</a></div></div>
+      <div class="db-hub-group"><span class="db-hub-label">원료 목록</span><div class="db-hub-links"><a href="#foodraw" data-goto="foodraw" class="db-hub-link">식품원료</a><a href="#gmo-ingredients" data-goto="gmo-ingredients" class="db-hub-link">GMO 심사</a><a href="#blocked" data-goto="blocked" class="db-hub-link">반입차단</a></div></div>
+      <div class="db-hub-group"><span class="db-hub-label">안전성</span><div class="db-hub-links"><a href="#safety-db" data-goto="safety-db" class="db-hub-link">안전성 DB 검색기</a></div></div>
     </nav>
     <h2>개별인정/고시형 원료</h2>
     <div class="year-layout">
@@ -1546,10 +1547,10 @@
   </section>
 
   <section id="foodraw" class="tab-section">
-    <nav class="context-switcher" aria-label="원료 인정·사용 관련 화면">
-      <a href="#ingredients" data-goto="ingredients" class="context-switch">개별·고시형</a>
-      <a href="#foodraw" data-goto="foodraw" class="context-switch active">식품원료목록</a>
-      <a href="#temp-approval" data-goto="temp-approval" class="context-switch">한시적 인정</a>
+    <nav class="db-hub-nav" aria-label="원료 데이터베이스 세부 화면">
+      <div class="db-hub-group"><span class="db-hub-label">인정 원료</span><div class="db-hub-links"><a href="#ingredients" data-goto="ingredients" class="db-hub-link">개별·고시형</a><a href="#temp-approval" data-goto="temp-approval" class="db-hub-link">한시적 인정</a></div></div>
+      <div class="db-hub-group is-current"><span class="db-hub-label">원료 목록</span><div class="db-hub-links"><a href="#foodraw" data-goto="foodraw" class="db-hub-link active">식품원료</a><a href="#gmo-ingredients" data-goto="gmo-ingredients" class="db-hub-link">GMO 심사</a><a href="#blocked" data-goto="blocked" class="db-hub-link">반입차단</a></div></div>
+      <div class="db-hub-group"><span class="db-hub-label">안전성</span><div class="db-hub-links"><a href="#safety-db" data-goto="safety-db" class="db-hub-link">안전성 DB 검색기</a></div></div>
     </nav>
     <h2>식품원료목록 <small style="font-weight:400;font-size:14px;color:#888;">(별표 1·2·3)</small></h2>
     <p style="color:#aaa;margin:-8px 0 16px;font-size:13px;">식품의 기준 및 규격 고시전문 (제2026-40호, 2026.5.19.) 기준 총 5,384건</p>
@@ -1583,10 +1584,10 @@
   </section>
 
   <section id="temp-approval" class="tab-section">
-    <nav class="context-switcher" aria-label="원료 인정·사용 관련 화면">
-      <a href="#ingredients" data-goto="ingredients" class="context-switch">개별·고시형</a>
-      <a href="#foodraw" data-goto="foodraw" class="context-switch">식품원료목록</a>
-      <a href="#temp-approval" data-goto="temp-approval" class="context-switch active">한시적 인정</a>
+    <nav class="db-hub-nav" aria-label="원료 데이터베이스 세부 화면">
+      <div class="db-hub-group is-current"><span class="db-hub-label">인정 원료</span><div class="db-hub-links"><a href="#ingredients" data-goto="ingredients" class="db-hub-link">개별·고시형</a><a href="#temp-approval" data-goto="temp-approval" class="db-hub-link active">한시적 인정</a></div></div>
+      <div class="db-hub-group"><span class="db-hub-label">원료 목록</span><div class="db-hub-links"><a href="#foodraw" data-goto="foodraw" class="db-hub-link">식품원료</a><a href="#gmo-ingredients" data-goto="gmo-ingredients" class="db-hub-link">GMO 심사</a><a href="#blocked" data-goto="blocked" class="db-hub-link">반입차단</a></div></div>
+      <div class="db-hub-group"><span class="db-hub-label">안전성</span><div class="db-hub-links"><a href="#safety-db" data-goto="safety-db" class="db-hub-link">안전성 DB 검색기</a></div></div>
     </nav>
     <h2>한시적 인정 원료 <small style="font-weight:400;font-size:14px;color:#888;">(식품원료 한시적 인정 현황)</small></h2>
     <p style="color:#aaa;margin:-8px 0 16px;font-size:13px;">식품안전나라에 등재된 식품원료 한시적 인정 목록입니다. (총 <span id="temp-approval-count-total"></span>건) <a href="https://www.foodsafetykorea.go.kr/portal/board/boardDetail.do?menu_no=2966&bbs_no=bbs018&ntctxt_no=21226&menu_grp=MENU_NEW04" target="_blank" rel="noopener" style="color:#4f8ef7;font-size:12px;">식품안전나라 원문 ↗</a></p>
@@ -1609,10 +1610,10 @@
   </section>
 
   <section id="blocked" class="tab-section">
-    <nav class="context-switcher" aria-label="안전성·제한 원료 관련 화면">
-      <a href="#safety-db" data-goto="safety-db" class="context-switch">안전성 DB</a>
-      <a href="#blocked" data-goto="blocked" class="context-switch active">반입차단 원료</a>
-      <a href="#gmo-ingredients" data-goto="gmo-ingredients" class="context-switch">GMO 심사 원료</a>
+    <nav class="db-hub-nav" aria-label="원료 데이터베이스 세부 화면">
+      <div class="db-hub-group"><span class="db-hub-label">인정 원료</span><div class="db-hub-links"><a href="#ingredients" data-goto="ingredients" class="db-hub-link">개별·고시형</a><a href="#temp-approval" data-goto="temp-approval" class="db-hub-link">한시적 인정</a></div></div>
+      <div class="db-hub-group is-current"><span class="db-hub-label">원료 목록</span><div class="db-hub-links"><a href="#foodraw" data-goto="foodraw" class="db-hub-link">식품원료</a><a href="#gmo-ingredients" data-goto="gmo-ingredients" class="db-hub-link">GMO 심사</a><a href="#blocked" data-goto="blocked" class="db-hub-link active">반입차단</a></div></div>
+      <div class="db-hub-group"><span class="db-hub-label">안전성</span><div class="db-hub-links"><a href="#safety-db" data-goto="safety-db" class="db-hub-link">안전성 DB 검색기</a></div></div>
     </nav>
     <h2>해외직구식품 국내 반입차단 원료·성분</h2>
     <p class="compare-intro">식약처가 지정한 해외직구 식품 반입차단 목록입니다. 수입식품안전관리 특별법 제25조의3에 따라 국내 반입이 금지된 원료·성분 <b id="blocked-total"></b>건입니다.</p>
@@ -1645,10 +1646,10 @@
   </section>
 
   <section id="gmo-ingredients" class="tab-section">
-    <nav class="context-switcher" aria-label="안전성·제한 원료 관련 화면">
-      <a href="#safety-db" data-goto="safety-db" class="context-switch">안전성 DB</a>
-      <a href="#blocked" data-goto="blocked" class="context-switch">반입차단 원료</a>
-      <a href="#gmo-ingredients" data-goto="gmo-ingredients" class="context-switch active">GMO 심사 원료</a>
+    <nav class="db-hub-nav" aria-label="원료 데이터베이스 세부 화면">
+      <div class="db-hub-group"><span class="db-hub-label">인정 원료</span><div class="db-hub-links"><a href="#ingredients" data-goto="ingredients" class="db-hub-link">개별·고시형</a><a href="#temp-approval" data-goto="temp-approval" class="db-hub-link">한시적 인정</a></div></div>
+      <div class="db-hub-group is-current"><span class="db-hub-label">원료 목록</span><div class="db-hub-links"><a href="#foodraw" data-goto="foodraw" class="db-hub-link">식품원료</a><a href="#gmo-ingredients" data-goto="gmo-ingredients" class="db-hub-link active">GMO 심사</a><a href="#blocked" data-goto="blocked" class="db-hub-link">반입차단</a></div></div>
+      <div class="db-hub-group"><span class="db-hub-label">안전성</span><div class="db-hub-links"><a href="#safety-db" data-goto="safety-db" class="db-hub-link">안전성 DB 검색기</a></div></div>
     </nav>
     <h2>유전자재조합식품 심사 원료·성분</h2>
     <p class="compare-intro">국립식품과학원 유전자변형식품등 안전성심사위원회 심사 대상 원료·성분 목록입니다. (<span id="gmo-ingr-total"></span>건)</p>
@@ -2001,10 +2002,10 @@
   </section>
 
   <section id="safety-db" class="tab-section">
-    <nav class="context-switcher" aria-label="안전성·제한 원료 관련 화면">
-      <a href="#safety-db" data-goto="safety-db" class="context-switch active">안전성 DB</a>
-      <a href="#blocked" data-goto="blocked" class="context-switch">반입차단 원료</a>
-      <a href="#gmo-ingredients" data-goto="gmo-ingredients" class="context-switch">GMO 심사 원료</a>
+    <nav class="db-hub-nav" aria-label="원료 데이터베이스 세부 화면">
+      <div class="db-hub-group"><span class="db-hub-label">인정 원료</span><div class="db-hub-links"><a href="#ingredients" data-goto="ingredients" class="db-hub-link">개별·고시형</a><a href="#temp-approval" data-goto="temp-approval" class="db-hub-link">한시적 인정</a></div></div>
+      <div class="db-hub-group"><span class="db-hub-label">원료 목록</span><div class="db-hub-links"><a href="#foodraw" data-goto="foodraw" class="db-hub-link">식품원료</a><a href="#gmo-ingredients" data-goto="gmo-ingredients" class="db-hub-link">GMO 심사</a><a href="#blocked" data-goto="blocked" class="db-hub-link">반입차단</a></div></div>
+      <div class="db-hub-group is-current"><span class="db-hub-label">안전성</span><div class="db-hub-links"><a href="#safety-db" data-goto="safety-db" class="db-hub-link active">안전성 DB 검색기</a></div></div>
     </nav>
     <div class="section-title-row">
       <div>
@@ -2123,7 +2124,7 @@
 <script src="data/status.js?v=20260630-news0930"></script>
 <script src="data/daily_quotes.js"></script>
 <script src="market.js"></script>
-<script src="app.js?v=20260712-ia2"></script>
+<script src="app.js?v=20260712-dbnav1"></script>
 <script src="feedback.js?v=20260704-email-fallback"></script>
 </body>
 </html>
