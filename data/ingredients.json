@@ -53,7 +53,8 @@
     "report": null,
     "id": 4,
     "dailyIntake": "960mg/일",
-    "noticeConverted": false
+    "noticeConverted": false,
+    "reportUrl": "https://www.foodsafetykorea.go.kr/portal/board/boardDetail.do?menu_grp=MENU_NEW01&menu_no=2660&bbs_no=bbs987&nticmatr_yn=N&bbs_type_cd=01&ans_yn=N&ntctxt_no=1110820"
   },
   {
     "noticeNo": "제2026-16호",
@@ -67,7 +68,8 @@
     "report": null,
     "id": 5,
     "dailyIntake": "1,200mg/일",
-    "noticeConverted": false
+    "noticeConverted": false,
+    "reportUrl": "https://www.foodsafetykorea.go.kr/portal/board/boardDetail.do?menu_grp=MENU_NEW01&menu_no=2660&bbs_no=bbs987&nticmatr_yn=N&bbs_type_cd=01&ans_yn=N&ntctxt_no=1110582"
   },
   {
     "noticeNo": "제2026-15호",
@@ -81,7 +83,8 @@
     "report": null,
     "id": 6,
     "dailyIntake": "500mg/일",
-    "noticeConverted": false
+    "noticeConverted": false,
+    "reportUrl": "https://www.foodsafetykorea.go.kr/portal/board/boardDetail.do?menu_grp=MENU_NEW01&menu_no=2660&bbs_no=bbs987&nticmatr_yn=N&bbs_type_cd=01&ans_yn=N&ntctxt_no=1110581"
   },
   {
     "noticeNo": "제2026-14호",
@@ -123,7 +126,8 @@
     "report": null,
     "id": 9,
     "dailyIntake": "1g/일",
-    "noticeConverted": false
+    "noticeConverted": false,
+    "reportUrl": "https://www.foodsafetykorea.go.kr/portal/board/boardDetail.do?menu_grp=MENU_NEW01&menu_no=2660&bbs_no=bbs987&nticmatr_yn=N&bbs_type_cd=01&ans_yn=N&ntctxt_no=1110578"
   },
   {
     "noticeNo": "제2026-11호",
@@ -137,7 +141,8 @@
     "report": null,
     "id": 10,
     "dailyIntake": "750mg/일",
-    "noticeConverted": false
+    "noticeConverted": false,
+    "reportUrl": "https://www.foodsafetykorea.go.kr/portal/board/boardDetail.do?menu_grp=MENU_NEW01&menu_no=2660&bbs_no=bbs987&nticmatr_yn=N&bbs_type_cd=01&ans_yn=N&ntctxt_no=1110577"
   },
   {
     "noticeNo": "제2026-10호",
@@ -151,7 +156,8 @@
     "report": null,
     "id": 11,
     "dailyIntake": "10 mg/일(5.0×109 cells/일",
-    "noticeConverted": false
+    "noticeConverted": false,
+    "reportUrl": "https://www.foodsafetykorea.go.kr/portal/board/boardDetail.do?menu_grp=MENU_NEW01&menu_no=2660&bbs_no=bbs987&nticmatr_yn=N&bbs_type_cd=01&ans_yn=N&ntctxt_no=1110576"
   },
   {
     "noticeNo": "제2026-9호",
@@ -165,7 +171,8 @@
     "report": null,
     "id": 12,
     "dailyIntake": "10~20mg/일",
-    "noticeConverted": false
+    "noticeConverted": false,
+    "reportUrl": "https://www.foodsafetykorea.go.kr/portal/board/boardDetail.do?menu_grp=MENU_NEW01&menu_no=2660&bbs_no=bbs987&nticmatr_yn=N&bbs_type_cd=01&ans_yn=N&ntctxt_no=1110575"
   },
   {
     "noticeNo": "제2026-8호",
@@ -179,7 +186,8 @@
     "report": null,
     "id": 13,
     "dailyIntake": "1g/일",
-    "noticeConverted": false
+    "noticeConverted": false,
+    "reportUrl": "https://www.foodsafetykorea.go.kr/portal/board/boardDetail.do?menu_grp=MENU_NEW01&menu_no=2660&bbs_no=bbs987&nticmatr_yn=N&bbs_type_cd=01&ans_yn=N&ntctxt_no=1110574"
   },
   {
     "noticeNo": "제2026-7호",

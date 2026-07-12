@@ -1,12 +1,12 @@
-const CACHE_NAME = 'healtharchive-list-20260712-1';
+const CACHE_NAME = 'healtharchive-reports-20260712-1';
 const CORE_ASSETS = [
   '/',
   '/index.html',
   '/style.css?v=20260712-list1',
-  '/app.js?v=20260712-list1',
+  '/app.js?v=20260712-reports1',
   '/assets/logo-icon.png',
   '/assets/leaf-badge.png',
-  '/data/ingredients.js?v=20260629-scheduler1225',
+  '/data/ingredients.js?v=20260712-reports1',
   '/data/minutes.js?v=20260629-scheduler1225',
   '/data/status.js?v=20260630-news0930'
 ];

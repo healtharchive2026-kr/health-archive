@@ -816,8 +816,8 @@ function openCompareModal() {
     ['기능성', r => escapeHtml(r.efficacy || '-')],
     ['고시형 전환', r => r.noticeConverted ? '예' : '아니오'],
     ['소비자 리포트', r => {
-      const rep = mergedRows(r).find(x => x.report);
-      return rep ? '<a class="report-link" href="' + escapeHtml(pdfHref('reports/' + rep.report)) + '" target="_blank" rel="noopener">PDF ↗</a>' : '-';
+      const rep = mergedRows(r).find(x => ingredientReportHref(x));
+      return rep ? ingredientReportLinkHtml(rep, rep.report ? 'PDF ↗' : '공식 원문 ↗') : '-';
     }],
   ];
 
@@ -2497,26 +2497,37 @@ function companyCellHtml(r) {
   return `<div class="company-stack">${companies.map(c => `<span class="company-chip">${escapeHtml(c)}</span>`).join('')}</div>`;
 }
 
+function ingredientReportHref(row) {
+  if (row.report) return pdfHref('reports/' + row.report);
+  return row.reportUrl || '';
+}
+
+function ingredientReportLinkHtml(row, label, className = 'report-link') {
+  const href = ingredientReportHref(row);
+  if (!href) return '';
+  return `<a class="${className}" href="${escapeHtml(href)}" target="_blank" rel="noopener">${escapeHtml(label)}</a>`;
+}
+
 function reportCellHtml(r) {
   if (isMergedIngredientRow(r)) {
-    const rowsWithReports = mergedRows(r).filter(row => row.report);
+    const rowsWithReports = mergedRows(r).filter(row => ingredientReportHref(row));
     const seen = new Set();
     const links = rowsWithReports
       .filter(row => {
-        const key = row.report;
+        const key = ingredientReportHref(row);
         if (seen.has(key)) return false;
         seen.add(key);
         return true;
       })
-      .map(row => `<a class="report-link" href="${escapeHtml(pdfHref('reports/' + row.report))}" target="_blank" rel="noopener">${escapeHtml(row.noticeNo || 'PDF')}</a>`);
+      .map(row => ingredientReportLinkHtml(row, row.noticeNo || '리포트'));
 
     return links.length
       ? `<div class="report-link-list">${links.join('')}</div>`
       : '<span class="report-none">리포트 미발행</span>';
   }
 
-  return r.report
-    ? `<a class="report-link" href="${escapeHtml(pdfHref('reports/' + r.report))}" target="_blank" rel="noopener">PDF 보기</a>`
+  return ingredientReportHref(r)
+    ? ingredientReportLinkHtml(r, r.report ? 'PDF 보기' : '공식 원문')
     : '<span class="report-none">리포트 미발행</span>';
 }
 
@@ -2632,10 +2643,10 @@ function openIngredientDetail(r) {
     : '<span class="ingx-cat-badge ingx-cat-none">분류 확인필요</span>';
   const convBadge = r.noticeConverted ? '<span class="ingx-conv-badge">고시형 전환</span>' : '';
 
-  const reportRows = mergedRows(r).filter(row => row.report);
+  const reportRows = mergedRows(r).filter(row => ingredientReportHref(row));
   const reportHtml = reportRows.length
     ? `<div class="ingx-section"><h4>소비자 리포트</h4><div class="ingx-report-links">${
-        reportRows.map(row => `<a class="ingx-report-link" href="${escapeHtml(pdfHref('reports/' + row.report))}" target="_blank" rel="noopener">${escapeHtml(row.noticeNo || 'PDF')} 리포트 ↗</a>`).join('')
+        reportRows.map(row => ingredientReportLinkHtml(row, `${row.noticeNo || '소비자'} 리포트 ↗`, 'ingx-report-link')).join('')
       }</div></div>`
     : '';
 
