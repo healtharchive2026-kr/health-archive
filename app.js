@@ -3078,7 +3078,8 @@ function setupTabs() {
     links.forEach(l => l.classList.toggle('active', l.dataset.tab === tab));
     sections.forEach(s => s.classList.toggle('active', s.id === tab));
     document.querySelectorAll('.nav-group').forEach(g => {
-      const has = g.querySelector('.nav-link.active');
+      const groupedTabs = (g.dataset.tabs || '').split(/\s+/).filter(Boolean);
+      const has = g.querySelector('.nav-link.active') || groupedTabs.includes(tab);
       g.classList.toggle('nav-active', !!has);
     });
     window.scrollTo({top:0, behavior:'auto'});
