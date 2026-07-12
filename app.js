@@ -3081,7 +3081,7 @@ function setupTabs() {
       const has = g.querySelector('.nav-link.active');
       g.classList.toggle('nav-active', !!has);
     });
-    window.scrollTo({top:0, behavior:'instant'});
+    window.scrollTo({top:0, behavior:'auto'});
     // 시장현황 차트는 탭이 보일 때(레이아웃 확정 후) 처음 한 번만 그린다.
     // (display:none 상태에서 그리면 Chart.js가 크기를 0으로 계산함)
     initTabContent(tab);
@@ -3159,7 +3159,12 @@ function setupTabs() {
   window.addEventListener('popstate', activateFromLocation);
 
   const initial = location.hash.replace('#', '') || 'home';
-  if (document.getElementById(initial)) activate(initial);
+  if (document.getElementById(initial)) {
+    activate(initial);
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => window.scrollTo({top: 0, behavior: 'auto'}));
+    });
+  }
 }
 
 // ---------- 법령/자료 ----------
