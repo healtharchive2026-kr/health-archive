@@ -2528,11 +2528,11 @@ function renderIngredients(list) {
     return `
     <tr>
       <td class="notice">${noticeCellHtml(r)}</td>
-      <td class="name"><button type="button" class="ing-name-btn" data-idx="${i}">${escapeHtml(r.name)}</button><button type="button" class="ing-cmp-btn" data-idx="${i}" data-name="${escapeHtml(r.name)}" title="비교함에 추가">＋</button>${nameTagsHtml(r)}</td>
-      <td>${companyCellHtml(r)}</td>
-      <td>${lines}</td>
-      <td>${escapeHtml(r.dailyIntake || '-')}</td>
-      <td>${reportCellHtml(r)}</td>
+      <td class="name"><div class="ingredient-name-line"><button type="button" class="ing-name-btn" data-idx="${i}">${escapeHtml(r.name)}</button><button type="button" class="ing-cmp-btn" data-idx="${i}" data-name="${escapeHtml(r.name)}" title="비교함에 추가">＋</button></div>${nameTagsHtml(r)}</td>
+      <td class="ingredient-company">${companyCellHtml(r)}</td>
+      <td class="ingredient-efficacy">${lines}</td>
+      <td class="ingredient-intake">${escapeHtml(r.dailyIntake || '-')}</td>
+      <td class="ingredient-report">${reportCellHtml(r)}</td>
     </tr>
   `;
   }).join('');

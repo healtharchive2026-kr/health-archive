@@ -1,9 +1,9 @@
-const CACHE_NAME = 'healtharchive-dbnav-20260712-1';
+const CACHE_NAME = 'healtharchive-list-20260712-1';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/style.css?v=20260712-dbnav1',
-  '/app.js?v=20260712-dbnav1',
+  '/style.css?v=20260712-list1',
+  '/app.js?v=20260712-list1',
   '/assets/logo-icon.png',
   '/assets/leaf-badge.png',
   '/data/ingredients.js?v=20260629-scheduler1225',
