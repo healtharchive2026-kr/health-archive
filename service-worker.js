@@ -1,4 +1,4 @@
-const CACHE_NAME = 'healtharchive-reports-20260712-1';
+const CACHE_NAME = 'healtharchive-board-20260713-1';
 const CORE_ASSETS = [
   '/',
   '/index.html',
