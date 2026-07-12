@@ -7,7 +7,7 @@
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#256f5b">
 <meta name="description" content="HealthArchive는 건강기능식품 원료 개발, 개별인정원료, 한시적 인정 원료, 식품원료, 안전성, 기능성 평가 가이드라인, 심의 회의록, 임상·시장 자료를 모은 개발자용 정보 아카이브입니다.">
-<meta name="keywords" content="HealthArchive, 건강기능식품, 건강기능식품 원료, 개별인정원료, 한시적 인정 원료, 식품원료, 기능성 원료, 기능성 평가 가이드라인, 인체적용시험, 전임상, 바이오마커, 식약처, 건강기능식품심의위원회, 식품공전, 건강기능식품공전, 안전성 데이터베이스, 원료 개발, 임상정보 DB, ClinicalTrials.gov, 식품 뉴스, 건강기능식품 시장">
+<meta name="keywords" content="HealthArchive, 건강기능식품, 건강기능식품 원료, 개별인정원료, 한시적 인정 원료, 식품원료, 기능성 원료, 기능성 평가 가이드라인, 인체적용시험, 전임상, 바이오마커, 식약처, 건강기능식품심의위원회, 식품공전, 건강기능식품공전, 안전성 데이터베이스, 원료 개발, 임상정보 데이터베이스, ClinicalTrials.gov, 식품 뉴스, 건강기능식품 시장">
 <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large">
 <meta name="googlebot" content="index,follow,max-snippet:-1,max-image-preview:large">
 <link rel="canonical" href="https://www.healtharchive.kr/">
@@ -39,7 +39,7 @@
     "식약처 심의 회의록",
     "안전성 데이터베이스",
     "인체적용시험",
-    "임상정보 DB"
+    "임상정보 데이터베이스"
   ]
 }
 </script>
@@ -47,9 +47,10 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="style.css?v=20260711-keywords1">
+<link rel="stylesheet" href="style.css?v=20260712-upgrade2">
 </head>
 <body>
+<a class="skip-link" href="#main-content">본문 바로가기</a>
 <header class="site-header">
   <div class="container header-inner">
     <a class="logo" href="#home" data-goto="home" aria-label="HealthArchive 홈으로 이동"><img src="assets/logo-icon.png" alt="" class="logo-icon"><span class="logo-text">Health<b>Archive</b></span><img src="assets/leaf-badge.png" alt="" class="logo-leaf"></a>
@@ -64,7 +65,7 @@
     <nav class="main-nav" id="main-nav">
       <a href="#home" data-tab="home" class="nav-link active">홈</a>
       <div class="nav-group">
-        <span class="nav-group-label">개발검토 <span class="nav-caret">▾</span></span>
+        <button type="button" class="nav-group-label" aria-expanded="false">개발검토 <span class="nav-caret" aria-hidden="true">▾</span></button>
         <div class="nav-dropdown">
           <a href="#precheck" data-tab="precheck" class="nav-link">원료 Pre-Check</a>
           <a href="#insights" data-tab="insights" class="nav-link">실무 인사이트</a>
@@ -74,18 +75,18 @@
         </div>
       </div>
       <div class="nav-group">
-        <span class="nav-group-label">원료 DB <span class="nav-caret">▾</span></span>
+        <button type="button" class="nav-group-label" aria-expanded="false">원료 DB <span class="nav-caret" aria-hidden="true">▾</span></button>
         <div class="nav-dropdown">
           <a href="#ingredients" data-tab="ingredients" class="nav-link">개별인정/고시형 원료</a>
           <a href="#foodraw" data-tab="foodraw" class="nav-link">식품원료목록</a>
           <a href="#temp-approval" data-tab="temp-approval" class="nav-link">한시적 인정 원료 현황</a>
-          <a href="#safety-db" data-tab="safety-db" class="nav-link">원료 안전성 DB</a>
+          <a href="#safety-db" data-tab="safety-db" class="nav-link">안전성 DB 검색기</a>
           <a href="#blocked" data-tab="blocked" class="nav-link">해외직구 차단 원료·성분</a>
           <a href="#gmo-ingredients" data-tab="gmo-ingredients" class="nav-link">유전자재조합식품 원료</a>
         </div>
       </div>
       <div class="nav-group">
-        <span class="nav-group-label">규제자료 <span class="nav-caret">▾</span></span>
+        <button type="button" class="nav-group-label" aria-expanded="false">규제자료 <span class="nav-caret" aria-hidden="true">▾</span></button>
         <div class="nav-dropdown">
           <a href="#laws" data-tab="laws" class="nav-link">법령·공전·가이드라인</a>
           <a href="#laws" data-tab="laws" data-lawtab="overseas-approval" class="nav-link">해외 인허가·신고</a>
@@ -95,7 +96,7 @@
         </div>
       </div>
       <div class="nav-group">
-        <span class="nav-group-label">연구설계 <span class="nav-caret">▾</span></span>
+        <button type="button" class="nav-group-label" aria-expanded="false">연구설계 <span class="nav-caret" aria-hidden="true">▾</span></button>
         <div class="nav-dropdown">
           <a href="#compare" data-tab="compare" class="nav-link">기능성별 비교</a>
           <a href="#biomarkers" data-tab="biomarkers" class="nav-link">기능성별 프로토콜</a>
@@ -103,7 +104,7 @@
         </div>
       </div>
       <div class="nav-group">
-        <span class="nav-group-label">시장동향 <span class="nav-caret">▾</span></span>
+        <button type="button" class="nav-group-label" aria-expanded="false">시장동향 <span class="nav-caret" aria-hidden="true">▾</span></button>
         <div class="nav-dropdown">
           <a href="#products" data-tab="products" class="nav-link">신규 등록 제품</a>
           <a href="#market" data-tab="market" class="nav-link">시장현황</a>
@@ -118,7 +119,7 @@
   </div>
 </header>
 
-<main class="container">
+<main class="container" id="main-content">
 
   <section id="home" class="tab-section active">
     <div class="hero hero-dark">
@@ -151,6 +152,11 @@
             </a>
           </div>
         </div>
+      </div>
+
+      <div class="hero-freshness" id="hero-freshness" role="status" aria-live="polite">
+        <span class="freshness-state"><span class="freshness-dot" aria-hidden="true"></span><strong>데이터 동기화 확인 중</strong></span>
+        <span class="freshness-summary" id="freshness-summary">최신 자료 상태를 불러오고 있습니다.</span>
       </div>
 
       <div class="hero-search-board">
@@ -288,7 +294,7 @@
             <a class="nav-card" data-goto="ingredients"><span class="nav-card-icon">원료</span><span class="nav-card-title">개별·고시형 원료</span><span class="nav-card-desc">인정 현황·전환 이력</span></a>
             <a class="nav-card" data-goto="foodraw"><span class="nav-card-icon">식품</span><span class="nav-card-title">식품원료목록</span><span class="nav-card-desc">별표 원료 검색</span></a>
             <a class="nav-card" data-goto="temp-approval"><span class="nav-card-icon">한시</span><span class="nav-card-title">한시적 인정 원료 현황</span><span class="nav-card-desc">인정·사용 조건 확인</span></a>
-            <a class="nav-card" data-goto="safety-db"><span class="nav-card-icon">안전</span><span class="nav-card-title">원료 안전성 DB</span><span class="nav-card-desc">내장 9종·외부 49종</span></a>
+            <a class="nav-card" data-goto="safety-db"><span class="nav-card-icon">안전</span><span class="nav-card-title">안전성 DB 검색기</span><span class="nav-card-desc">내장 9종·외부 49종</span></a>
             <a class="nav-card" data-goto="blocked"><span class="nav-card-icon">차단</span><span class="nav-card-title">해외직구 차단 원료</span><span class="nav-card-desc">반입차단 원료·성분 목록</span></a>
             <a class="nav-card" data-goto="gmo-ingredients"><span class="nav-card-icon">GMO</span><span class="nav-card-title">유전자재조합식품 원료</span><span class="nav-card-desc">심사 대상 원료·성분</span></a>
           </div>
@@ -1986,15 +1992,13 @@
 <div class="intro-modal-overlay" id="intro-modal-overlay">
   <div class="intro-modal" role="dialog" aria-modal="true" aria-labelledby="intro-modal-title">
     <button type="button" class="intro-modal-close" id="intro-modal-close" aria-label="닫기">×</button>
-    <h3 id="intro-modal-title">안내드립니다</h3>
+    <h3 id="intro-modal-title">HealthArchive 안내</h3>
     <p class="intro-modal-body">
-      해당 사이트는 오로지 제 편의를 위해 만들어 봤습니다. 다만 같은 업계 종사자 분들이 편하게 같이 이용하면 좋을 것 같아 시험삼아 오픈합니다.<br><br>
-      현재 지속적으로 구축중이기에 많이 부족합니다. 일부 자료와 링크는 순차적으로 보완하고 있습니다.<br><br>
-      다만 소중한 의견 주시면 잘 반영해보도록 하겠습니다.<br>
-      소중한 의견은 <strong>피드백 및 문의</strong> 란 또는 <a href="mailto:healtharchive2026@gmail.com">Healtharchive2026@gmail.com</a> 으로 부탁드립니다.
+      건강기능식품 개발 실무에서 흩어진 자료를 더 빠르게 확인할 수 있도록 만든 개인 운영 아카이브입니다.<br><br>
+      자료와 기능은 계속 보완하고 있습니다. 오류나 개선 의견은 <strong>문의</strong> 탭 또는 <a href="mailto:healtharchive2026@gmail.com">Healtharchive2026@gmail.com</a>으로 알려주세요.
     </p>
     <div class="intro-modal-actions">
-      <button type="button" class="intro-modal-btn intro-modal-btn-ghost" id="intro-modal-hide-today">오늘 그만보기</button>
+      <button type="button" class="intro-modal-btn intro-modal-btn-ghost" id="intro-modal-hide-today">7일간 보지 않기</button>
       <button type="button" class="intro-modal-btn intro-modal-btn-primary" id="intro-modal-confirm">닫기</button>
     </div>
   </div>
@@ -2067,7 +2071,7 @@
 <script src="data/status.js?v=20260630-news0930"></script>
 <script src="data/daily_quotes.js"></script>
 <script src="market.js"></script>
-<script src="app.js?v=20260711-keywords1"></script>
+<script src="app.js?v=20260712-upgrade2"></script>
 <script src="feedback.js?v=20260704-email-fallback"></script>
 </body>
 </html>

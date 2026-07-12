@@ -1,9 +1,9 @@
-const CACHE_NAME = 'healtharchive-keywords-20260711-1';
+const CACHE_NAME = 'healtharchive-upgrade-20260712-2';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/style.css?v=20260711-keywords1',
-  '/app.js?v=20260711-keywords1',
+  '/style.css?v=20260712-upgrade2',
+  '/app.js?v=20260712-upgrade2',
   '/assets/logo-icon.png',
   '/assets/leaf-badge.png',
   '/data/ingredients.js?v=20260629-scheduler1225',

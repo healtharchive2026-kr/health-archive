@@ -53,7 +53,7 @@ const HOME_TAB_LABELS = {
   ingredients: '개별·고시형 원료',
   foodraw: '식품원료목록',
   'temp-approval': '한시적 인정 원료',
-  'safety-db': '원료 안전성 DB',
+  'safety-db': '안전성 DB 검색기',
   blocked: '해외직구 차단 원료',
   'gmo-ingredients': '유전자재조합식품 원료',
   laws: '법령·공전·가이드라인',
@@ -62,7 +62,7 @@ const HOME_TAB_LABELS = {
   'gmo-minutes': '유전자재조합식품 회의록',
   compare: '기능성별 비교',
   biomarkers: '기능성별 프로토콜',
-  trials: '임상정보 DB',
+  trials: '임상정보 데이터베이스',
   products: '신규 등록 제품',
   market: '시장현황',
   stats: '인정 통계',
@@ -178,12 +178,6 @@ function renderHeroNews() {
 
 // ---------- 첫 방문 안내 팝업 ----------
 
-function todayDateStr() {
-  const d = new Date();
-  const pad = n => String(n).padStart(2, '0');
-  return `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`;
-}
-
 function setupIntroModal() {
   const overlay = document.getElementById('intro-modal-overlay');
   if (!overlay) return;
@@ -193,32 +187,61 @@ function setupIntroModal() {
   const confirmBtn = document.getElementById('intro-modal-confirm');
   const hideTodayBtn = document.getElementById('intro-modal-hide-today');
   const STORAGE_KEY = 'ha-intro-hide-until';
+  const SESSION_KEY = 'ha-intro-seen';
+  const previousFocus = document.activeElement;
 
   if (title) title.textContent = 'HealthArchive 안내';
   if (body) {
     body.innerHTML = `
-      본 사이트는 제 업무 편의를 위해 취미로 만들었다가, 같은 업계 종사자 분들과 함께 이용하면 좋을 것 같아 오픈하였습니다.<br><br>
-      많은 부분이 아직 어색해 보일 수 있지만, 소중한 의견 및 피드백을 주시면 적극 반영해보도록 하겠습니다.<br><br>
-      핸드폰으로 편하게 보실 수 있게끔 하였으나 일부 렌더링이 맞지 않을 수 있습니다.<br>
-      (모바일 어플도 만들어볼 계획입니다)<br><br>
-      <strong>소중한 의견 및 피드백 주실 곳</strong><br>
-      우측 상단 <strong>피드백 및 문의</strong> 또는 <a href="mailto:healtharchive2026@gmail.com">Healtharchive2026@gmail.com</a>
+      건강기능식품 개발 실무에서 흩어진 자료를 더 빠르게 확인할 수 있도록 만든 개인 운영 아카이브입니다.<br><br>
+      자료와 기능은 계속 보완하고 있습니다. 오류나 개선 의견은 <strong>문의</strong> 탭 또는 <a href="mailto:healtharchive2026@gmail.com">Healtharchive2026@gmail.com</a>으로 알려주세요.
     `;
   }
 
-  function close() { overlay.classList.remove('active'); }
+  function close() {
+    overlay.classList.remove('active');
+    document.body.classList.remove('intro-modal-open');
+    sessionStorage.setItem(SESSION_KEY, '1');
+    if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus();
+  }
 
   closeBtn.addEventListener('click', close);
   confirmBtn.addEventListener('click', close);
   hideTodayBtn.addEventListener('click', () => {
-    localStorage.setItem(STORAGE_KEY, todayDateStr());
+    localStorage.setItem(STORAGE_KEY, String(Date.now() + (7 * 24 * 60 * 60 * 1000)));
     close();
   });
   overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && overlay.classList.contains('active')) close();
+  });
 
-  if (localStorage.getItem(STORAGE_KEY) !== todayDateStr()) {
+  const hiddenUntil = Number(localStorage.getItem(STORAGE_KEY) || 0);
+  if (hiddenUntil <= Date.now() && sessionStorage.getItem(SESSION_KEY) !== '1') {
     overlay.classList.add('active');
+    document.body.classList.add('intro-modal-open');
+    window.setTimeout(() => confirmBtn.focus(), 0);
   }
+}
+
+function renderDataFreshness() {
+  const container = document.getElementById('hero-freshness');
+  const summary = document.getElementById('freshness-summary');
+  if (!container || !summary || typeof STATUS_DATA === 'undefined') return;
+
+  const core = ['ingredients', 'minutes', 'products', 'news_mfds']
+    .map(key => STATUS_DATA[key])
+    .filter(Boolean);
+  const timestamps = core.map(item => item.lastRun).filter(Boolean).sort();
+  const latest = timestamps[timestamps.length - 1] || '';
+  const latestLabel = latest ? latest.replace(/-/g, '.').slice(0, 16) : '확인 불가';
+  const ingredientCount = Number(STATUS_DATA.ingredients?.count || 0).toLocaleString();
+  const productCount = Number(STATUS_DATA.products?.count || 0).toLocaleString();
+  const minuteCount = Number(STATUS_DATA.minutes?.count || 0).toLocaleString();
+
+  container.querySelector('strong').textContent = '자동 업데이트 정상';
+  summary.textContent = `최근 확인 ${latestLabel} · 원료 ${ingredientCount} · 제품 ${productCount} · 회의록 ${minuteCount}`;
+  container.classList.add('is-ready');
 }
 
 // ---------- 방문자 카운터 (CounterAPI v1, 키 없이 사용 가능) ----------
@@ -3036,6 +3059,20 @@ function setupTabs() {
   const sections = document.querySelectorAll('.tab-section');
   const menuToggle = document.querySelector('.mobile-menu-toggle');
   const mainNav = document.getElementById('main-nav');
+  const navGroups = Array.from(document.querySelectorAll('.nav-group'));
+
+  document.querySelectorAll('a[data-goto]:not([href])').forEach(link => {
+    link.setAttribute('href', '#' + link.dataset.goto);
+  });
+
+  function closeNavGroups(except) {
+    navGroups.forEach(group => {
+      if (group === except) return;
+      group.classList.remove('nav-group-open');
+      const label = group.querySelector('.nav-group-label');
+      if (label) label.setAttribute('aria-expanded', 'false');
+    });
+  }
 
   function activate(tab) {
     links.forEach(l => l.classList.toggle('active', l.dataset.tab === tab));
@@ -3050,6 +3087,7 @@ function setupTabs() {
     initTabContent(tab);
     recordHomeRecent(tab);
     document.body.classList.remove('mobile-nav-open');
+    closeNavGroups();
     if (menuToggle) {
       menuToggle.setAttribute('aria-expanded', 'false');
       menuToggle.setAttribute('aria-label', '메뉴 열기');
@@ -3066,13 +3104,34 @@ function setupTabs() {
     });
   }
 
+  navGroups.forEach(group => {
+    const label = group.querySelector('.nav-group-label');
+    if (!label) return;
+    label.addEventListener('click', e => {
+      e.stopPropagation();
+      const willOpen = !group.classList.contains('nav-group-open');
+      closeNavGroups(group);
+      group.classList.toggle('nav-group-open', willOpen);
+      label.setAttribute('aria-expanded', String(willOpen));
+    });
+  });
+
+  document.addEventListener('click', e => {
+    if (!mainNav || !mainNav.contains(e.target)) closeNavGroups();
+  });
+
+  function updateHistory(tab) {
+    const nextHash = '#' + tab;
+    if (location.hash !== nextHash) history.pushState(null, '', nextHash);
+  }
+
   links.forEach(link => {
     link.addEventListener('click', e => {
       e.preventDefault();
       activate(link.dataset.tab);
       if (link.dataset.lawtab) selectLawTab(link.dataset.lawtab);
       if (link.dataset.devtab) selectMaterialDevTab(link.dataset.devtab);
-      history.replaceState(null, '', '#' + link.dataset.tab);
+      updateHistory(link.dataset.tab);
     });
   });
 
@@ -3087,9 +3146,17 @@ function setupTabs() {
       if (target === 'material-dev' && el.dataset.devtab) {
         selectMaterialDevTab(el.dataset.devtab);
       }
-      history.replaceState(null, '', '#' + target);
+      updateHistory(target);
     });
   });
+
+  function activateFromLocation() {
+    const tab = location.hash.replace('#', '') || 'home';
+    if (document.getElementById(tab)) activate(tab);
+  }
+
+  window.addEventListener('hashchange', activateFromLocation);
+  window.addEventListener('popstate', activateFromLocation);
 
   const initial = location.hash.replace('#', '') || 'home';
   if (document.getElementById(initial)) activate(initial);
@@ -4269,6 +4336,7 @@ document.addEventListener('DOMContentLoaded', () => {
   registerServiceWorker();
   runStartupTask('renderHeroNews', renderHeroNews);
   runStartupTask('renderDailyQuote', renderDailyQuote);
+  runStartupTask('renderDataFreshness', renderDataFreshness);
   runStartupTask('setupVisitorCounter', setupVisitorCounter);
   runStartupTask('setupIntroModal', setupIntroModal);
   appDataReady.then(() => { setupGlobalSearch(); renderHomeDashboard(); });
