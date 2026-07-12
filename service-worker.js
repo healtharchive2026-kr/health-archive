@@ -1,9 +1,9 @@
-const CACHE_NAME = 'healtharchive-dbui-20260713-1';
+const CACHE_NAME = 'healtharchive-whitespace-20260713-1';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/style.css?v=20260713-dbui1',
-  '/app.js?v=20260712-reports1',
+  '/style.css?v=20260713-ws1',
+  '/app.js?v=20260713-ws1',
   '/assets/logo-icon.png',
   '/assets/leaf-badge.png',
   '/data/ingredients.js?v=20260712-reports1',

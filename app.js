@@ -6,7 +6,6 @@ let appDataReady = Promise.resolve();
 let ingredientMinuteUiReady = false;
 let compareTabReady = false;
 let precheckUiReady = false;
-let insightsUiReady = false;
 let precheckLastIngredientMatches = [];
 let precheckLastQuery = '';
 let precheckSafetyCache = null;
@@ -46,7 +45,6 @@ const RADAR_DATA_DEPS = ['data/radar_log.js?v=20260710-radar1'];
 
 const HOME_TAB_LABELS = {
   precheck: '원료 Pre-Check',
-  insights: '실무 인사이트',
   devmap: '개발방향 매핑',
   'material-dev': '원료 개발',
   whitespace: '화이트스페이스맵',
@@ -1062,7 +1060,7 @@ function renderHomeDashboard() {
   }
 }
 
-// ---------- 실무 인사이트 ----------
+// ---------- Legacy analysis helpers ----------
 
 function insightNorm(s) {
   return String(s || '').toLowerCase().replace(/\s+/g, '').replace(/[()·ㆍ\-_]/g, '');
@@ -1217,38 +1215,6 @@ function renderInsightTemplates() {
       <strong>${escapeHtml(title)}</strong>
       <p>${escapeHtml(body)}</p>
     </article>`).join('');
-}
-
-function setupInsights() {
-  if (insightsUiReady) return;
-  insightsUiReady = true;
-  renderInsightPackages();
-  renderInsightMinutes();
-  renderInsightTimeline('');
-  renderInsightMarket();
-  renderInsightTemplates();
-
-  const form = document.getElementById('insight-timeline-form');
-  const input = document.getElementById('insight-timeline-input');
-  if (form && input) {
-    form.addEventListener('submit', e => {
-      e.preventDefault();
-      renderInsightTimeline(input.value);
-    });
-  }
-  document.querySelectorAll('[data-insight-timeline]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      if (input) input.value = btn.dataset.insightTimeline;
-      renderInsightTimeline(btn.dataset.insightTimeline);
-    });
-  });
-  document.querySelectorAll('[data-insight-go]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      routeHeroSearch(btn.dataset.insightGo, btn.dataset.query || '');
-      navigateTo(btn.dataset.insightGo);
-      history.replaceState(null, '', '#' + btn.dataset.insightGo);
-    });
-  });
 }
 
 // ---------- 인정 통계 ----------
@@ -1462,6 +1428,67 @@ function wsRenderMatrix() {
     return d && d.level !== null && d.level !== undefined ? d.level : null;
   };
 
+  const currentYear = new Date().getFullYear();
+  const opportunities = [];
+  WS_ORIGIN_ORDER.forEach(origin => {
+    topCats.forEach(cat => {
+      const items = grid[origin][cat] || [];
+      const d = demand[cat];
+      if (!d || d.score === null || d.score === undefined) return;
+      const scarcity = Math.max(0, 100 - Math.min(items.length, 12) / 12 * 100);
+      const score = Math.round(d.score * .6 + scarcity * .4);
+      const recent = items.filter(r => Number(r.year) >= currentYear - 2).length;
+      const companies = new Set(items.flatMap(r => String(r.company || '').split(/[,/·]/).map(v => v.trim()).filter(Boolean))).size;
+      opportunities.push({ origin, cat, items, demand: d.score, demandLevel: d.level, scarcity, score, recent, companies });
+    });
+  });
+
+  const combinationCount = WS_ORIGIN_ORDER.length * topCats.length;
+  const emptyCount = WS_ORIGIN_ORDER.reduce((sum, origin) => sum + topCats.filter(cat => (grid[origin][cat] || []).length === 0).length, 0);
+  const priorityCount = opportunities.filter(o => o.items.length <= 2 && o.demandLevel >= 3).length;
+  const setKpi = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+  setKpi('ws-kpi-combinations', combinationCount);
+  setKpi('ws-kpi-empty', emptyCount);
+  setKpi('ws-kpi-priority', priorityCount);
+  setKpi('ws-kpi-demand', Object.values(demand).filter(d => d && d.score !== null && d.score !== undefined).length);
+
+  const originFilter = document.getElementById('ws-origin-filter');
+  const sortSelect = document.getElementById('ws-sort');
+  const opportunityList = document.getElementById('ws-opportunity-list');
+  if (originFilter && originFilter.options.length === 1) {
+    originFilter.insertAdjacentHTML('beforeend', WS_ORIGIN_ORDER.map(origin => `<option value="${escapeHtml(origin)}">${escapeHtml(origin)}</option>`).join(''));
+  }
+
+  const opportunityGrade = score => score >= 70 ? 'A' : (score >= 55 ? 'B' : 'C');
+  const renderOpportunities = () => {
+    if (!opportunityList) return;
+    const origin = originFilter ? originFilter.value : 'all';
+    const sort = sortSelect ? sortSelect.value : 'score';
+    const rows = opportunities
+      .filter(o => origin === 'all' || o.origin === origin)
+      .sort((a, b) => sort === 'demand'
+        ? b.demand - a.demand || a.items.length - b.items.length
+        : sort === 'scarcity'
+          ? a.items.length - b.items.length || b.demand - a.demand
+          : b.score - a.score || b.demand - a.demand)
+      .slice(0, 8);
+    opportunityList.innerHTML = rows.map((o, index) => {
+      const grade = opportunityGrade(o.score);
+      const examples = o.items.slice(0, 2).map(r => r.name).join(' · ') || '기존 인정 사례 없음';
+      return `<button type="button" class="ws-opportunity-row ws-grade-${grade.toLowerCase()}" data-origin="${escapeHtml(o.origin)}" data-cat="${escapeHtml(o.cat)}">
+        <span class="ws-op-rank">${String(index + 1).padStart(2, '0')}</span>
+        <span class="ws-op-main"><strong>${escapeHtml(o.cat)} × ${escapeHtml(o.origin)}</strong><small>${escapeHtml(examples)}</small></span>
+        <span class="ws-op-metric"><small>수요</small><strong>${o.demand.toFixed(1)}</strong></span>
+        <span class="ws-op-metric"><small>인정</small><strong>${o.items.length}건</strong></span>
+        <span class="ws-op-metric"><small>최근 3년</small><strong>${o.recent}건</strong></span>
+        <span class="ws-op-score"><small>기회 점수</small><strong>${o.score}</strong><em>${grade}</em></span>
+      </button>`;
+    }).join('') || '<p class="ws-empty">선택한 조건에 맞는 후보가 없습니다.</p>';
+  };
+  if (originFilter) originFilter.addEventListener('change', renderOpportunities);
+  if (sortSelect) sortSelect.addEventListener('change', renderOpportunities);
+  renderOpportunities();
+
   let html = '<div class="ws-row ws-row-head"><div class="ws-cell ws-cell-corner"></div>' +
     topCats.map(c => `<div class="ws-cell ws-col-head">${escapeHtml(c)}</div>`).join('') + '</div>';
 
@@ -1485,31 +1512,50 @@ function wsRenderMatrix() {
       const dLvl = demandLevel(cat);
       const isOpportunity = items.length <= 2 && dLvl !== null && dLvl >= 3;
       const oppMark = isOpportunity ? ' ws-opportunity' : '';
-      const oppStar = isOpportunity ? '<span class="ws-opp-star">★</span>' : '';
+      const oppStar = isOpportunity ? '<span class="ws-opp-star">A</span>' : '';
       html += `<button type="button" class="ws-cell ws-data-cell ws-lvl${lvl}${oppMark}" data-origin="${escapeHtml(origin)}" data-cat="${escapeHtml(cat)}" title="${isOpportunity ? '공급 적음 + 수요 높음 (기회 후보)' : ''}">${oppStar}${items.length || ''}</button>`;
     });
     html += '</div>';
   });
 
   matrixEl.innerHTML = html;
-  matrixEl.querySelectorAll('.ws-data-cell').forEach(cell => {
-    cell.addEventListener('click', () => {
-      const origin = cell.dataset.origin, cat = cell.dataset.cat;
-      const items = grid[origin][cat] || [];
+
+  const showCombinationDetail = (origin, cat) => {
+      const items = grid[origin]?.[cat] || [];
       const detail = document.getElementById('ws-detail');
       if (!detail) return;
+      const d = demand[cat];
+      const demandText = d && d.score !== null && d.score !== undefined ? d.score.toFixed(1) : '미측정';
+      const recent = items.filter(r => Number(r.year) >= currentYear - 2).length;
+      const companies = new Set(items.flatMap(r => String(r.company || '').split(/[,/·]/).map(v => v.trim()).filter(Boolean))).size;
       detail.hidden = false;
       detail.innerHTML = `
-        <div class="ws-detail-head"><h4>${escapeHtml(origin)} × ${escapeHtml(cat)} <span class="ws-detail-cnt">${items.length}건</span></h4></div>
+        <div class="ws-detail-head"><div><span class="ws-eyebrow">Combination review</span><h4>${escapeHtml(cat)} × ${escapeHtml(origin)}</h4></div><button type="button" class="ws-detail-db" data-ws-db="${escapeHtml(cat)}">원료 DB에서 검증</button></div>
+        <div class="ws-detail-metrics"><div><span>검색 수요</span><strong>${demandText}</strong></div><div><span>기존 인정</span><strong>${items.length}건</strong></div><div><span>최근 3년</span><strong>${recent}건</strong></div><div><span>참여 업체</span><strong>${companies}곳</strong></div></div>
         ${items.length
           ? '<div class="ws-detail-list">' + items.slice(0, 30).map((r, i) =>
-              `<button type="button" class="ws-detail-item" data-i="${i}">${escapeHtml(r.name)}</button>`).join('') + '</div>'
-          : '<p class="ingx-empty">해당 조합의 기존 인정 사례가 없습니다 — 화이트스페이스입니다.</p>'}
+              `<button type="button" class="ws-detail-item" data-i="${i}"><strong>${escapeHtml(r.name)}</strong><span>${escapeHtml([r.company, r.year ? r.year + '년' : ''].filter(Boolean).join(' · '))}</span></button>`).join('') + '</div>'
+          : '<div class="ws-validation"><strong>기존 인정 사례가 없는 조합입니다.</strong><span>1. 국내외 식용 이력과 원료 정의 확인</span><span>2. 제조공정·지표성분·규격 표준화 가능성 검토</span><span>3. 안전성 자료와 예상 일일섭취량의 간극 확인</span><span>4. 기능성 작용기전·바이오마커·인체시험 실행성 검토</span><span>5. 국내외 특허와 독점 가능한 IP 범위 조사</span></div>'}
       `;
       detail.querySelectorAll('.ws-detail-item').forEach(btn =>
         btn.addEventListener('click', () => openIngredientDetail(items[+btn.dataset.i])));
+      const dbBtn = detail.querySelector('[data-ws-db]');
+      if (dbBtn) dbBtn.addEventListener('click', () => {
+        routeHeroSearch('ingredients', dbBtn.dataset.wsDb || '');
+        navigateTo('ingredients');
+        history.replaceState(null, '', '#ingredients');
+      });
       detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  };
+
+  matrixEl.querySelectorAll('.ws-data-cell').forEach(cell => {
+    cell.addEventListener('click', () => {
+      showCombinationDetail(cell.dataset.origin, cell.dataset.cat);
     });
+  });
+  if (opportunityList) opportunityList.addEventListener('click', e => {
+    const row = e.target.closest('.ws-opportunity-row');
+    if (row) showCombinationDetail(row.dataset.origin, row.dataset.cat);
   });
 }
 
@@ -2349,9 +2395,6 @@ function initTabContent(tab) {
           break;
         case 'precheck':
           setupPrecheck();
-          break;
-        case 'insights':
-          setupInsights();
           break;
         case 'nifds':
           setupNifdsTabs();

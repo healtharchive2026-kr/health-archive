@@ -47,7 +47,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="style.css?v=20260713-dbui1">
+<link rel="stylesheet" href="style.css?v=20260713-ws1">
 </head>
 <body>
 <a class="skip-link" href="#main-content">본문 바로가기</a>
@@ -64,13 +64,12 @@
     </button>
     <nav class="main-nav" id="main-nav">
       <a href="#home" data-tab="home" class="nav-link active">홈</a>
-      <div class="nav-group" data-tabs="precheck insights devmap material-dev whitespace">
+      <div class="nav-group" data-tabs="precheck devmap material-dev whitespace">
         <button type="button" class="nav-group-label" aria-expanded="false">개발검토 <span class="nav-caret" aria-hidden="true">▾</span></button>
         <div class="nav-dropdown">
           <a href="#precheck" data-tab="precheck" class="nav-link">원료 Pre-Check</a>
           <a href="#devmap" data-tab="devmap" class="nav-link">개발방향 매핑</a>
           <a href="#material-dev" data-tab="material-dev" class="nav-link">원료 개발</a>
-          <a href="#insights" data-tab="insights" class="nav-link">실무 인사이트</a>
           <a href="#whitespace" data-tab="whitespace" class="nav-link">화이트스페이스맵 🔒</a>
         </div>
       </div>
@@ -269,7 +268,6 @@
           </div>
           <div class="hero-cat-cards">
             <a class="nav-card" data-goto="precheck"><span class="nav-card-icon">점검</span><span class="nav-card-title">원료 Pre-Check</span><span class="nav-card-desc">개발 가능성 1차 점검</span></a>
-            <a class="nav-card" data-goto="insights"><span class="nav-card-icon">인사이트</span><span class="nav-card-title">실무 인사이트</span><span class="nav-card-desc">개발·시장·회의록 판단 보조</span></a>
             <a class="nav-card" data-goto="devmap"><span class="nav-card-icon">매핑</span><span class="nav-card-title">개발방향 매핑</span><span class="nav-card-desc">트랙·게이트 선별</span></a>
             <a class="nav-card" data-goto="material-dev" data-devtab="individual-dev"><span class="nav-card-icon">개별</span><span class="nav-card-title">개별인정원료 개발</span><span class="nav-card-desc">제출자료·첨부서류 체크</span></a>
             <a class="nav-card" data-goto="material-dev" data-devtab="temporary-dev"><span class="nav-card-icon">한시</span><span class="nav-card-title">한시적 인정 원료 개발</span><span class="nav-card-desc">식품원료 인정자료 정리</span></a>
@@ -907,12 +905,35 @@
     </div>
 
     <div class="ws-content" id="ws-content" hidden>
-      <div class="section-title-row">
+      <div class="section-title-row ws-page-head">
         <div>
           <h2>화이트스페이스맵</h2>
-          <p class="compare-intro">기능성(가로) × 원료 유래(세로)로 인정 원료를 교차 집계한 매트릭스입니다. 원료명 기반 추정 분류이며, 칸이 비어있거나 옅을수록 해당 조합의 기존 인정 사례가 적은 영역입니다. 상단 "🔍 수요" 행은 네이버 검색 트렌드 기반 소비자 관심도이며, <strong>★ 표시는 공급(인정 사례)은 적은데 수요는 높은 "진짜 기회 후보"</strong>입니다.</p>
+          <p class="compare-intro">기능성 수요와 기존 인정 사례를 교차해 개발 후보를 좁히는 탐색 도구입니다. 점수가 높은 조합부터 검토하되 식용 이력, 원료 표준화, 안전성 및 인체적용시험 가능성을 추가로 검증해야 합니다.</p>
         </div>
-        <span class="section-badge">비공개 · 나만 보기</span>
+        <span class="section-badge">Private intelligence</span>
+      </div>
+
+      <div class="ws-kpi-grid" aria-label="화이트스페이스 요약">
+        <div class="ws-kpi"><span>분석 조합</span><strong id="ws-kpi-combinations">-</strong><small>기능성 × 원료 유래</small></div>
+        <div class="ws-kpi"><span>인정 공백</span><strong id="ws-kpi-empty">-</strong><small>기존 인정 0건</small></div>
+        <div class="ws-kpi ws-kpi-priority"><span>우선 후보</span><strong id="ws-kpi-priority">-</strong><small>고수요 · 인정 2건 이하</small></div>
+        <div class="ws-kpi"><span>수요 측정</span><strong id="ws-kpi-demand">-</strong><small>검색 지수 보유 기능성</small></div>
+      </div>
+
+      <section class="ws-opportunity-board" aria-labelledby="ws-opportunity-title">
+        <div class="ws-board-head">
+          <div><span class="ws-eyebrow">Opportunity shortlist</span><h3 id="ws-opportunity-title">우선 검토 후보</h3><p>탐색 점수 = 검색 수요 60% + 인정 사례 희소성 40%. 시장규모나 성공확률을 의미하지 않습니다.</p></div>
+          <div class="ws-controls">
+            <label>원료 유래<select id="ws-origin-filter"><option value="all">전체</option></select></label>
+            <label>정렬<select id="ws-sort"><option value="score">기회 점수순</option><option value="demand">수요순</option><option value="scarcity">인정 희소순</option></select></label>
+          </div>
+        </div>
+        <div class="ws-opportunity-list" id="ws-opportunity-list"></div>
+      </section>
+
+      <div class="ws-matrix-head">
+        <div><span class="ws-eyebrow">Supply map</span><h3>기능성 × 원료 유래 매트릭스</h3></div>
+        <p>숫자는 기존 인정 건수입니다. 셀을 선택하면 원료, 업체, 최근 인정 움직임을 확인할 수 있습니다.</p>
       </div>
       <div class="ws-legend">
         <span class="ws-legend-item"><span class="ws-legend-swatch ws-l0"></span>0건</span>
@@ -920,14 +941,14 @@
         <span class="ws-legend-item"><span class="ws-legend-swatch ws-l2"></span>3~5건</span>
         <span class="ws-legend-item"><span class="ws-legend-swatch ws-l3"></span>6~10건</span>
         <span class="ws-legend-item"><span class="ws-legend-swatch ws-l4"></span>11건+</span>
-        <span class="ws-legend-item"><span class="ws-opp-star">★</span>기회 후보</span>
+        <span class="ws-legend-item"><span class="ws-opp-star">A</span>우선 검토 후보</span>
         <button type="button" class="ws-lock-btn" id="ws-lock-btn">🔒 다시 잠그기</button>
       </div>
       <div class="ws-matrix-wrap">
         <div class="ws-matrix" id="ws-matrix"></div>
       </div>
       <div class="ws-detail" id="ws-detail" hidden></div>
-      <p class="devmap-footnote">유래 분류는 원료명(학명·균주명·부위 표현)에 기반한 자동 추정입니다 (분류 성공률 약 85%, 나머지는 "복합·기타"). 수요 지수는 네이버 데이터랩 검색어 트렌드(대표 키워드 1~2개, 종합비타민 대비 상대값, 2026-07-10 기준)로 근사 산출한 참고 지표이며 실제 시장수요와 다를 수 있습니다. 실무 판단의 참고용이며 정확한 유래·수요는 별도 조사로 재확인하세요.</p>
+      <p class="devmap-footnote">유래 분류는 원료명과 학명·균주명·부위 표현을 기반으로 자동 추정합니다. 수요 지수는 네이버 데이터랩 검색 트렌드(종합비타민=100, 2026-07-10 기준)이며 실제 구매 수요·시장규모와 다를 수 있습니다. 후보 선정 후 식약처 원문, 경쟁 특허, 원료 독점성, 안전성 및 임상 실행 가능성을 별도로 검증해야 합니다.</p>
     </div>
   </section>
 
@@ -1944,62 +1965,6 @@
     </div>
   </section>
 
-  <section id="insights" class="tab-section">
-    <div class="section-title-row">
-      <div>
-        <h2>실무 인사이트</h2>
-        <p class="compare-intro">기능성 개발 패키지, 원료별 규제 타임라인, 회의록 패턴, 시장 진입성, 실무 문서 템플릿을 한 화면에서 확인합니다.</p>
-      </div>
-      <span class="section-badge">Working Intelligence</span>
-    </div>
-
-    <div class="insight-grid insight-grid-top">
-      <section class="insight-card insight-card-wide">
-        <div class="insight-card-head">
-          <span>Functional Package</span>
-          <h3>기능성별 개발 패키지</h3>
-        </div>
-        <div class="insight-package-grid" id="insight-package-grid"></div>
-      </section>
-      <section class="insight-card">
-        <div class="insight-card-head">
-          <span>Minutes Pattern</span>
-          <h3>회의록 인사이트</h3>
-        </div>
-        <div id="insight-minutes"></div>
-      </section>
-    </div>
-
-    <div class="insight-grid">
-      <section class="insight-card">
-        <div class="insight-card-head">
-          <span>Ingredient Timeline</span>
-          <h3>원료별 규제 타임라인</h3>
-        </div>
-        <form class="insight-search" id="insight-timeline-form">
-          <input type="text" id="insight-timeline-input" autocomplete="off" placeholder="원료명 입력">
-          <button type="submit">조회</button>
-        </form>
-        <div class="insight-timeline" id="insight-timeline"></div>
-      </section>
-      <section class="insight-card">
-        <div class="insight-card-head">
-          <span>Market Entry</span>
-          <h3>시장 진입성 판단</h3>
-        </div>
-        <div id="insight-market"></div>
-      </section>
-    </div>
-
-    <section class="insight-card">
-      <div class="insight-card-head">
-        <span>Templates</span>
-        <h3>실무 문서 템플릿</h3>
-      </div>
-      <div class="insight-template-grid" id="insight-templates"></div>
-    </section>
-  </section>
-
   <section id="feedback" class="tab-section">
     <div class="section-head">
       <h2>피드백 및 문의</h2>
@@ -2140,7 +2105,7 @@
 <script src="data/status.js?v=20260630-news0930"></script>
 <script src="data/daily_quotes.js"></script>
 <script src="market.js"></script>
-<script src="app.js?v=20260712-reports1"></script>
+<script src="app.js?v=20260713-ws1"></script>
 <script src="feedback.js?v=20260713-board1"></script>
 </body>
 </html>
