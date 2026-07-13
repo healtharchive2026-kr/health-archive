@@ -1,4 +1,4 @@
-const CACHE_NAME = 'healtharchive-visitor-daily-20260713-1';
+const CACHE_NAME = 'healtharchive-db-nav-theme-20260713-1';
 const CORE_ASSETS = [
   '/',
   '/index.html',
