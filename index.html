@@ -84,10 +84,11 @@
       <div class="nav-group" data-tabs="laws nifds minutes gmo-minutes">
         <button type="button" class="nav-group-label" aria-expanded="false">규제자료 <span class="nav-caret" aria-hidden="true">▾</span></button>
         <div class="nav-dropdown">
-          <a href="#laws" data-tab="laws" class="nav-link">법령·가이드라인·해외 인허가</a>
+          <a href="#laws" data-tab="laws" class="nav-link">법령·가이드라인</a>
           <a href="#nifds" data-tab="nifds" class="nav-link">심의 정보·회의록</a>
         </div>
       </div>
+      <a href="#overseas-approval" data-tab="overseas-approval" class="nav-link">해외 인허가</a>
       <div class="nav-group" data-tabs="compare biomarkers trials">
         <button type="button" class="nav-group-label" aria-expanded="false">연구설계 <span class="nav-caret" aria-hidden="true">▾</span></button>
         <div class="nav-dropdown">
@@ -297,7 +298,7 @@
           </div>
           <div class="hero-cat-cards">
             <a class="nav-card" data-goto="laws"><span class="nav-card-icon">법령</span><span class="nav-card-title">법령·공전·가이드라인</span><span class="nav-card-desc">작성 기준·공식 자료</span></a>
-            <a class="nav-card" data-goto="laws" data-lawtab="overseas-approval"><span class="nav-card-icon">수출</span><span class="nav-card-title">해외 인허가·신고</span><span class="nav-card-desc">국가별 진출 Gate 확인</span></a>
+            <a class="nav-card" data-goto="overseas-approval"><span class="nav-card-icon">수출</span><span class="nav-card-title">해외 인허가·신고</span><span class="nav-card-desc">국가별 진출 Gate 확인</span></a>
             <a class="nav-card" data-goto="nifds"><span class="nav-card-icon">심의</span><span class="nav-card-title">심의 관련</span><span class="nav-card-desc">위원 명단·담당부서</span></a>
             <a class="nav-card" data-goto="minutes"><span class="nav-card-icon">건기식</span><span class="nav-card-title">건기식 심의 회의록</span><span class="nav-card-desc">회차별 대상 원료</span></a>
             <a class="nav-card" data-goto="gmo-minutes"><span class="nav-card-icon">GMO</span><span class="nav-card-title">유전자재조합식품 회의록</span><span class="nav-card-desc">안전성심사 회의 안내·결과</span></a>
@@ -1102,7 +1103,6 @@
       <div class="law-subtab" data-lawtab="functional-guideline">기능성 가이드라인</div>
       <div class="law-subtab law-subtab-spacer" data-lawtab="code">공전</div>
       <div class="law-subtab" data-lawtab="general">법령</div>
-      <div class="law-subtab" data-lawtab="overseas-approval">해외 인허가·신고</div>
     </div>
 
     <div class="law-pane active" id="law-pane-general-guideline">
@@ -1159,7 +1159,10 @@
       </div>
     </div>
 
-    <div class="law-pane" id="law-pane-overseas-approval">
+  </section>
+
+  <section id="overseas-approval" class="tab-section">
+      <h2>해외 인허가·신고</h2>
       <p class="compare-intro">국내 건강기능식품·기능성 원료 업체가 자주 검토하는 해외 진출 규제 Gate입니다. 완제품 수출인지, 원료 수출인지, 기능성 표시를 할 것인지에 따라 인허가·신고·라벨 검토 범위가 달라집니다.</p>
 
       <div class="overseas-gate-grid">
@@ -1350,7 +1353,6 @@
         <strong>실무 메모</strong>
         <span>해외 인허가 검토는 국가별 법률 자문·현지 대리인 확인이 필요한 영역입니다. 본 표는 사전 분류와 자료 준비 범위를 좁히기 위한 내부 검토용으로 사용하세요.</span>
       </div>
-    </div>
   </section>
 
   <section id="biomarkers" class="tab-section">

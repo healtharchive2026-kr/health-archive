@@ -1,4 +1,4 @@
-const CACHE_NAME = 'healtharchive-whitespace-20260713-1';
+const CACHE_NAME = 'healtharchive-overseas-main-20260713-1';
 const CORE_ASSETS = [
   '/',
   '/index.html',
