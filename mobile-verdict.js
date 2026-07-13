@@ -204,12 +204,6 @@
       render(output, judge(input.value));
       input.blur();
     });
-    document.querySelectorAll('[data-verdict-sample]').forEach(button => {
-      button.addEventListener('click', () => {
-        input.value = button.dataset.verdictSample;
-        render(output, judge(input.value));
-      });
-    });
   }
 
   window.HealthArchiveVerdict = {judge};

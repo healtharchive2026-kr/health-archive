@@ -114,30 +114,6 @@
   font-weight: 800;
 }
 
-.lite-verdict-samples {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 7px;
-  margin-top: 11px;
-}
-
-.lite-verdict-samples span {
-  color: #7e8589;
-  font-family: var(--v-mono);
-  font-size: 10.5px;
-}
-
-.lite-verdict-samples button {
-  padding: 6px 10px;
-  border: 1px solid #d9ddda;
-  border-radius: 4px;
-  background: #fff;
-  color: #555d61;
-  font-size: 13px;
-  font-weight: 650;
-}
-
 .lite-verdict {
   display: flex;
   margin-top: 18px;

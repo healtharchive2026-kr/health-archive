@@ -1,4 +1,4 @@
-const CACHE_NAME = 'healtharchive-mobile-verdict-20260714-8';
+const CACHE_NAME = 'healtharchive-mobile-verdict-public-20260714-9';
 const CORE_ASSETS = [
   '/',
   '/index.html',
@@ -7,10 +7,10 @@ const CORE_ASSETS = [
   '/pc-cinema.js?v=20260714-cinema1',
   '/device-routing.js?v=20260713-2',
   '/mobile-lite.html',
-  '/mobile-lite.css?v=20260714-verdict2',
-  '/mobile-verdict.css?v=20260714-verdict2',
-  '/mobile-verdict.js?v=20260714-verdict2',
-  '/mobile-lite.js?v=20260714-verdict2',
+  '/mobile-lite.css?v=20260714-verdict3',
+  '/mobile-verdict.css?v=20260714-verdict3',
+  '/mobile-verdict.js?v=20260714-verdict3',
+  '/mobile-lite.js?v=20260714-verdict3',
   '/assets/logo-icon.png',
   '/assets/leaf-badge.png',
   '/assets/mobile-health-hero.jpg',
