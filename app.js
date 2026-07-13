@@ -3114,7 +3114,7 @@ function renderCompareTable() {
 }
 
 // PDF는 GitHub Pages 대신 Cloudflare R2 공개 버킷에서 제공한다.
-const R2_BASE = 'https://pub-8de20e0282d641669c335beedd7cfedd.r2.dev';
+const R2_BASE = 'https://assets.healtharchive.kr';
 function pdfHref(relPath) {
   return R2_BASE + '/' + relPath;
 }

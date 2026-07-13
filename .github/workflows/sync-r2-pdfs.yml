@@ -1,0 +1,31 @@
+name: Sync PDFs to R2
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+    paths:
+      - "**/*.pdf"
+      - "scripts/sync_r2_pdfs.py"
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Upload PDFs
+        env:
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET: healtharchive-assets
+        run: python scripts/sync_r2_pdfs.py

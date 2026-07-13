@@ -7,6 +7,7 @@ scripts/*
 !scripts/_status.py
 !scripts/_data_files.py
 !scripts/update_*.py
+!scripts/sync_r2_pdfs.py
 !scripts/register_tasks.ps1
 SETUP.md
 data/*.json
