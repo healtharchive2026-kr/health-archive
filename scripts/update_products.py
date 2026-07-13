@@ -25,7 +25,7 @@ LOG_FILE = os.path.join(BASE_DIR, 'scripts', 'update_log.txt')
 
 LIST_URL = "https://data.mfds.go.kr/hid/opbaa01/prdtSrchLstSelect.do"
 KEEP_DAYS = 30           # 사이트에는 등록일자 기준 최근 30일치만 표시 (전체 이력은 ARCHIVE_FILE에 별도 보관)
-FETCH_PAGES = 3          # 한 번에 최대 3페이지(기본 30개씩=90건)까지만 새 항목 탐색
+FETCH_PAGES = 40         # 최근 30일 경계까지 충분히 역순 탐색
 C003_URL = "https://openapi.foodsafetykorea.go.kr/api/{key}/C003/json/1/5/PRDLST_REPORT_NO={report_no}"
 MAX_COMPOSITION_FETCH = 200
 
@@ -179,6 +179,8 @@ def main():
     products = read_records(DATA_FILE, JS_FILE)
 
     known_ids = {p['id'] for p in products if p.get('id')}
+    cutoff = (datetime.now() - timedelta(days=KEEP_DAYS)).strftime('%Y-%m-%d')
+    radar_cutoff = (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
 
     new_count = 0
     radar_entries = []
@@ -195,21 +197,25 @@ def main():
         page_new = 0
         for item in items:
             rec = to_record(item)
+            if (rec.get('reportDate') or '') < cutoff:
+                continue
             if not rec['id'] or rec['id'] in known_ids:
                 continue
             products.append(rec)
             known_ids.add(rec['id'])
             new_count += 1
             page_new += 1
-            radar_entries.append({
-                'title': rec['name'],
-                'meta': ' · '.join(filter(None, [rec.get('company'), rec.get('reportDate')])),
-                'link': 'products',
-            })
+            if (rec.get('reportDate') or '') >= radar_cutoff:
+                radar_entries.append({
+                    'title': rec['name'],
+                    'meta': ' · '.join(filter(None, [rec.get('company'), rec.get('reportDate')])),
+                    'link': 'products',
+                })
             log(f"added product: {rec['name']} ({rec['company']}, {rec['reportDate']})")
 
         # 이 페이지에 신규 항목이 하나도 없으면(=이미 다 아는 데이터) 더 뒤져볼 필요 없음
-        if page_new == 0:
+        page_dates = [item.get('rptYmd') or '' for item in items]
+        if page_dates and min(page_dates) < cutoff:
             break
 
     record_new('products', radar_entries)
@@ -232,7 +238,6 @@ def main():
             json.dump(archive, f, ensure_ascii=False, indent=2)
 
     before_prune = len(products)
-    cutoff = (datetime.now() - timedelta(days=KEEP_DAYS)).strftime('%Y-%m-%d')
     products = [p for p in products if (p.get('reportDate') or '') >= cutoff]
     pruned_count = before_prune - len(products)
 
