@@ -1,66 +1,66 @@
 {
   "ingredients": {
-    "lastRun": "2026-07-13 08:38:26",
+    "lastRun": "2026-07-14 07:30:45",
     "count": 844,
     "newCount": 0
   },
   "minutes": {
-    "lastRun": "2026-07-13 08:38:28",
+    "lastRun": "2026-07-14 07:30:48",
     "count": 36,
     "newCount": 0
   },
   "products": {
-    "lastRun": "2026-07-13 17:01:38",
-    "count": 543,
-    "newCount": 0
+    "lastRun": "2026-07-14 07:31:15",
+    "count": 547,
+    "newCount": 4
   },
   "news": {
-    "lastRun": "2026-07-13 17:02:00",
+    "lastRun": "2026-07-14 07:31:19",
     "count": 11,
     "newCount": 0
   },
   "news_thinkfood": {
-    "lastRun": "2026-07-13 17:02:02",
+    "lastRun": "2026-07-14 07:31:20",
     "count": 130,
     "newCount": 0
   },
   "news_mfds": {
-    "lastRun": "2026-07-13 08:38:37",
+    "lastRun": "2026-07-14 07:31:22",
     "count": 6,
-    "newCount": 1
-  },
-  "news_nutraingredients": {
-    "lastRun": "2026-07-13 17:02:31",
-    "count": 63,
-    "newCount": 2
-  },
-  "news_supplysidesj": {
-    "lastRun": "2026-07-13 17:02:32",
-    "count": 59,
     "newCount": 0
   },
+  "news_nutraingredients": {
+    "lastRun": "2026-07-14 07:31:25",
+    "count": 63,
+    "newCount": 0
+  },
+  "news_supplysidesj": {
+    "lastRun": "2026-07-14 07:31:28",
+    "count": 60,
+    "newCount": 1
+  },
   "news_nutritioninsight": {
-    "lastRun": "2026-07-13 17:02:40",
+    "lastRun": "2026-07-14 07:31:31",
     "count": 53,
     "newCount": 0
   },
   "temp_approval": {
-    "lastRun": "2026-07-13 08:38:34",
+    "lastRun": "2026-07-14 07:31:18",
     "count": 36,
     "newCount": 0
   },
   "news_sciencedaily": {
-    "lastRun": "2026-07-13 17:02:42",
+    "lastRun": "2026-07-14 07:31:33",
     "count": 15,
-    "newCount": 2
+    "newCount": 0
   },
   "news_yakup": {
-    "lastRun": "2026-07-13 11:44:15",
+    "lastRun": "2026-07-14 07:31:34",
     "count": 19,
-    "newCount": 2
+    "newCount": 0
   },
   "papers": {
-    "lastRun": "2026-07-13 17:03:10",
+    "lastRun": "2026-07-14 07:31:42",
     "count": 0,
     "newCount": 0
   }
