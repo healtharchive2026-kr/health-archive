@@ -1,8 +1,8 @@
-const CACHE_NAME = 'healtharchive-atmosphere-20260713-5';
+const CACHE_NAME = 'healtharchive-pc-imagery-20260713-6';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/style.css?v=20260713-atmosphere1',
+  '/style.css?v=20260713-imagery1',
   '/app.js?v=20260713-r2',
   '/device-routing.js?v=20260713-2',
   '/mobile-lite.html',
@@ -11,7 +11,13 @@ const CORE_ASSETS = [
   '/assets/logo-icon.png',
   '/assets/leaf-badge.png',
   '/assets/mobile-health-hero.jpg',
-  '/assets/site-atmosphere.jpg',
+  '/assets/pc-landscape-bg.jpg',
+  '/assets/pc-nature-hero.jpg',
+  '/assets/pc-origin.jpg',
+  '/assets/pc-lab.jpg',
+  '/assets/pc-clinical.jpg',
+  '/assets/pc-data.jpg',
+  '/assets/pc-regulatory.jpg',
   '/data/ingredients.js?v=20260712-reports1',
   '/data/temp_approval.js?v=20260713-mobile1',
   '/data/food_ingredients.js?v=20260713-mobile1',
