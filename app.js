@@ -4383,6 +4383,179 @@ function setupTempApproval() {
   render();
 }
 
+// ---------- 해외 인허가: Regulatory Dossier Bridge ----------
+const DOSSIER_EVIDENCE = [
+  { id:'identity', group:'정체성', label:'원료 정체성·기원', detail:'학명·사용부위·원산지·동정자료', weight:3, next:'원료 정체성 및 기원 서술서' },
+  { id:'history', group:'정체성', label:'식용·사용 이력', detail:'국가·식품유형·기간·섭취실적', weight:3, next:'국가별 식용·사용 이력 평가서' },
+  { id:'manufacturing', group:'품질', label:'제조공정·변경점', detail:'공정도·용매·농축·발효·핵심관리점', weight:3, next:'제조공정 및 원료 변환 비교표' },
+  { id:'specs', group:'품질', label:'규격·지표성분', detail:'동정·함량·오염물질·미생물 기준', weight:3, next:'글로벌 공통 원료 규격서' },
+  { id:'methods', group:'품질', label:'시험법·밸리데이션', detail:'특이성·정확성·정밀성·정량한계', weight:3, next:'시험법 및 분석법 검증 보고서' },
+  { id:'batches', group:'품질', label:'대표 배치 분석', detail:'시험물질 동등성·배치 간 일관성', weight:2, next:'대표 배치 CoA 비교표' },
+  { id:'stability', group:'품질', label:'안정성·보관조건', detail:'지표성분·유해성분·포장·유효기간', weight:2, next:'안정성 시험계획 및 결과 요약서' },
+  { id:'intake', group:'안전성', label:'섭취량·노출평가', detail:'1일량·기간·대상군·총 노출량', weight:3, next:'국가별 섭취·노출 시나리오' },
+  { id:'toxicology', group:'안전성', label:'독성시험 패키지', detail:'유전독성·반복투여·필요 시 생식독성', weight:3, next:'독성자료 통합평가서' },
+  { id:'human_safety', group:'안전성', label:'인체 안전성 자료', detail:'이상사례·임상검사·중도탈락', weight:3, next:'인체 안전성 통합표' },
+  { id:'allergen', group:'안전성', label:'알레르기·상호작용', detail:'취약군·약물·영양성 불이익 검토', weight:2, next:'알레르기·상호작용 위험평가서' },
+  { id:'efficacy', group:'기능성', label:'인체적용시험', detail:'시험물질 일치·주평가지표·통계분석', weight:3, next:'기능성 근거 및 시험물질 브리지' },
+  { id:'mechanism', group:'기능성', label:'작용기전·전임상', detail:'기능성 개연성·용량 연계', weight:1, next:'작용기전 근거맵' },
+  { id:'quality', group:'운영', label:'품질시스템·추적성', detail:'GMP·HACCP·공급망·변경관리', weight:2, next:'품질시스템 및 변경관리 패키지' },
+  { id:'label', group:'운영', label:'표시·클레임·행정', detail:'기능성 문구·주의사항·책임주체', weight:2, next:'국가별 표시·클레임 매트릭스' }
+];
+
+const DOSSIER_PATHS = {
+  kr: {
+    label:'한국', path:'개별인정형 기능성 원료',
+    requirements:['identity','history','manufacturing','specs','methods','batches','stability','intake','toxicology','human_safety','allergen','efficacy','mechanism','quality'],
+    focus:'안전성·기능성·기준 및 규격의 원료 동일성',
+    url:'https://www.mfds.go.kr/brd/m_1060/view.do?seq=15701'
+  },
+  us: {
+    label:'미국', path:'New Dietary Ingredient Notification',
+    requirements:['identity','history','manufacturing','specs','methods','intake','toxicology','human_safety','allergen','quality'],
+    focus:'정체성 및 표시조건에서 합리적으로 안전할 근거·75일 전 통지',
+    url:'https://www.fda.gov/food/dietary-supplements/new-dietary-ingredient-ndi-notification-process'
+  },
+  eu: {
+    label:'EU', path:'Novel Food Authorisation',
+    requirements:['identity','history','manufacturing','specs','methods','batches','stability','intake','toxicology','human_safety','allergen'],
+    focus:'생산·조성·예상섭취·ADME·독성·알레르기 통합 안전성',
+    url:'https://www.efsa.europa.eu/en/applications/novel-food'
+  },
+  jp: {
+    label:'일본', path:'Foods with Function Claims',
+    requirements:['identity','history','manufacturing','specs','stability','intake','human_safety','efficacy','quality','label'],
+    focus:'최종제품 또는 기능성 관여성분의 안전성·기능성 근거와 신고 표시',
+    url:'https://www.caa.go.jp/policies/policy/food_labeling/foods_with_function_claims/'
+  },
+  cn: {
+    label:'중국', path:'보건식품 등록',
+    requirements:['identity','manufacturing','specs','methods','batches','stability','intake','toxicology','human_safety','efficacy','quality','label'],
+    focus:'연구개발보고·배합·공정·안전성·보건기능·품질관리',
+    url:'https://zwfw.samr.gov.cn/guideDetail?id=22d18e7b4dc749fa9d1a52d172c2b3f8'
+  },
+  au: {
+    label:'호주', path:'Listed / Assessed Listed Medicine',
+    requirements:['identity','manufacturing','specs','intake','human_safety','efficacy','quality','label'],
+    focus:'허용 원료·GMP·indication 수준에 맞는 과학적 또는 전통적 근거',
+    url:'https://www.tga.gov.au/resources/guidance/supporting-claims-and-indications-listed-medicines'
+  }
+};
+
+const DOSSIER_CROSSWALK = [
+  { module:'정체성·기원', key:'identity', cells:{ kr:['core','원재료·기원'], us:['core','NDI identity'], eu:['core','Identity'], jp:['core','관여성분'], cn:['core','원료·배합'], au:['core','Permitted ingredient'] } },
+  { module:'제조공정', key:'manufacturing', cells:{ kr:['core','제조방법'], us:['core','Identity 변화'], eu:['core','Production'], jp:['core','생산·품질'], cn:['core','공정·관리점'], au:['core','GMP'] } },
+  { module:'규격·분석', key:'specs', cells:{ kr:['core','기준·규격'], us:['core','Specifications'], eu:['core','Composition'], jp:['core','제품정보'], cn:['core','기술요구'], au:['core','Quality'] } },
+  { module:'안정성', key:'stability', cells:{ kr:['core','보존·유통'], us:['conditional','안전성 연계'], eu:['core','Stability'], jp:['support','품질관리'], cn:['core','안정성'], au:['support','품질근거'] } },
+  { module:'섭취·노출', key:'intake', cells:{ kr:['core','일일섭취량'], us:['core','Conditions of use'], eu:['core','Exposure'], jp:['core','섭취방법'], cn:['core','용량·대상'], au:['conditional','Dose'] } },
+  { module:'안전성', key:'toxicology', cells:{ kr:['core','독성·인체'], us:['core','Safety basis'], eu:['core','Toxicology'], jp:['core','안전성'], cn:['core','안전성평가'], au:['conditional','Risk profile'] } },
+  { module:'기능성', key:'efficacy', cells:{ kr:['core','인체적용'], us:['support','NDI 범위 외'], eu:['conditional','Claim 별도'], jp:['core','RCT 또는 SR'], cn:['core','보건기능'], au:['core','Indication 근거'] } },
+  { module:'표시·행정', key:'label', cells:{ kr:['support','신청·표시'], us:['conditional','Label 조건'], eu:['conditional','사용조건'], jp:['core','신고·공개'], cn:['core','라벨·설명서'], au:['core','ARTG·Label'] } }
+];
+
+function setupDossierBridge() {
+  const list = document.getElementById('dossier-evidence-list');
+  if (!list) return;
+  const targetInputs = Array.from(document.querySelectorAll('.dossier-target-bar input'));
+  const modeButtons = Array.from(document.querySelectorAll('[data-dossier-mode]'));
+  let mode = 'kr';
+
+  const groups = [...new Set(DOSSIER_EVIDENCE.map(item => item.group))];
+  list.innerHTML = groups.map(group => `
+    <fieldset class="dossier-evidence-group">
+      <legend>${escapeHtml(group)}</legend>
+      ${DOSSIER_EVIDENCE.filter(item => item.group === group).map(item => `
+        <label class="dossier-evidence-item">
+          <input type="checkbox" value="${item.id}">
+          <span><strong>${escapeHtml(item.label)}</strong><small>${escapeHtml(item.detail)}</small></span>
+        </label>`).join('')}
+    </fieldset>`).join('');
+
+  const evidenceInputs = Array.from(list.querySelectorAll('input'));
+  const selectedEvidence = () => new Set(evidenceInputs.filter(input => input.checked).map(input => input.value));
+  const selectedPaths = () => {
+    const overseas = targetInputs.filter(input => input.checked).map(input => input.value);
+    return mode === 'global' ? ['kr', ...overseas] : ['kr', ...overseas];
+  };
+
+  function pathScore(path, selected) {
+    const weights = path.requirements.map(id => DOSSIER_EVIDENCE.find(item => item.id === id)).filter(Boolean);
+    const total = weights.reduce((sum, item) => sum + item.weight, 0);
+    const secured = weights.filter(item => selected.has(item.id)).reduce((sum, item) => sum + item.weight, 0);
+    return total ? Math.round(secured / total * 100) : 0;
+  }
+
+  function renderCrosswalk() {
+    const countries = ['kr','us','eu','jp','cn','au'];
+    document.getElementById('dossier-crosswalk-table').innerHTML = `
+      <div class="dossier-xrow dossier-xhead"><span>자료 모듈</span>${countries.map(id => `<span>${DOSSIER_PATHS[id].label}</span>`).join('')}</div>
+      ${DOSSIER_CROSSWALK.map(row => `<div class="dossier-xrow"><strong>${row.module}</strong>${countries.map(id => {
+        const cell = row.cells[id];
+        return `<span><i class="${cell[0]}"></i>${cell[1]}</span>`;
+      }).join('')}</div>`).join('')}`;
+  }
+
+  function render() {
+    const selected = selectedEvidence();
+    const pathIds = selectedPaths();
+    const scores = pathIds.map(id => pathScore(DOSSIER_PATHS[id], selected));
+    const overall = scores.length ? Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length) : 0;
+    const status = overall >= 85 ? '제출자료 구조화 단계' : overall >= 65 ? '국가별 전환설계 단계' : overall >= 40 ? '핵심 Gap 보완 단계' : '기초자료 구축 단계';
+
+    document.querySelector('#dossier-score strong').textContent = overall;
+    document.getElementById('dossier-status').textContent = status;
+    document.getElementById('dossier-score').style.setProperty('--score', overall);
+    document.getElementById('dossier-readout-copy').textContent = mode === 'kr'
+      ? '국내 개별인정 개발자료를 기준으로 선택 시장에 전환 가능한 자료 구조를 평가한 결과입니다.'
+      : '해외 원료사의 보유자료를 한국 개별인정 신청자료로 전환할 때의 구조적 준비도를 포함한 결과입니다.';
+    document.getElementById('dossier-mode-note').textContent = mode === 'kr'
+      ? '국내 개별인정 개발자료의 현재 확보 수준'
+      : '해외 원료사가 제공 가능한 원본·영문 자료 수준';
+
+    const gapFrequency = new Map();
+    pathIds.forEach(id => DOSSIER_PATHS[id].requirements.forEach(req => {
+      if (!selected.has(req)) gapFrequency.set(req, (gapFrequency.get(req) || 0) + 1);
+    }));
+    const gaps = [...gapFrequency].sort((a,b) => {
+      const ea = DOSSIER_EVIDENCE.find(item => item.id === a[0]);
+      const eb = DOSSIER_EVIDENCE.find(item => item.id === b[0]);
+      return (b[1] * eb.weight) - (a[1] * ea.weight);
+    }).slice(0,4).map(([id]) => DOSSIER_EVIDENCE.find(item => item.id === id));
+    document.getElementById('dossier-gap-list').innerHTML = gaps.length
+      ? gaps.map(item => `<li><strong>${escapeHtml(item.label)}</strong><span>${escapeHtml(item.detail)}</span></li>`).join('')
+      : '<li><strong>공통 필수모듈 확보</strong><span>국가별 형식·시험 적합성 검토 필요</span></li>';
+    document.getElementById('dossier-next-list').innerHTML = gaps.slice(0,3).map(item => `<li>${escapeHtml(item.next)}</li>`).join('') || '<li>국가별 제출 형식 변환표</li>';
+
+    document.getElementById('dossier-country-results').innerHTML = pathIds.map(id => {
+      const path = DOSSIER_PATHS[id];
+      const score = pathScore(path, selected);
+      const missing = path.requirements.filter(req => !selected.has(req)).slice(0,3).map(req => DOSSIER_EVIDENCE.find(item => item.id === req).label);
+      return `<article class="dossier-country-result${id === 'kr' ? ' baseline' : ''}">
+        <div class="dossier-country-score"><strong>${score}</strong><span>%</span></div>
+        <div class="dossier-country-copy"><span>${escapeHtml(path.label)} · ${escapeHtml(path.path)}</span><strong>${escapeHtml(path.focus)}</strong><small>${missing.length ? `우선 보완: ${escapeHtml(missing.join(' · '))}` : '공통자료 확보 · 경로 적합성 세부검토 필요'}</small></div>
+        <a href="${path.url}" target="_blank" rel="noopener" aria-label="${escapeHtml(path.label)} 공식 기준 열기">공식 기준</a>
+      </article>`;
+    }).join('');
+  }
+
+  evidenceInputs.forEach(input => input.addEventListener('change', render));
+  targetInputs.forEach(input => input.addEventListener('change', render));
+  modeButtons.forEach(button => button.addEventListener('click', () => {
+    mode = button.dataset.dossierMode;
+    modeButtons.forEach(item => {
+      const active = item === button;
+      item.classList.toggle('active', active);
+      item.setAttribute('aria-pressed', String(active));
+    });
+    render();
+  }));
+  document.getElementById('dossier-clear').addEventListener('click', () => {
+    evidenceInputs.forEach(input => { input.checked = false; });
+    render();
+  });
+  renderCrosswalk();
+  render();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   appDataReady = loadData().catch(err => console.error('loadData failed', err));
   setupTabs();
@@ -4393,6 +4566,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupCompareTray();
   setupWhitespaceGate();
   setupRadarGate();
+  setupDossierBridge();
   registerServiceWorker();
   runStartupTask('renderHeroNews', renderHeroNews);
   runStartupTask('renderDailyQuote', renderDailyQuote);
