@@ -4452,6 +4452,56 @@ const DOSSIER_CROSSWALK = [
   { module:'표시·행정', key:'label', cells:{ kr:['support','신청·표시'], us:['conditional','Label 조건'], eu:['conditional','사용조건'], jp:['core','신고·공개'], cn:['core','라벨·설명서'], au:['core','ARTG·Label'] } }
 ];
 
+const OVERSEAS_SESSION_KEY = 'ha_overseas_unlocked';
+
+function overseasIsUnlocked() {
+  try { return sessionStorage.getItem(OVERSEAS_SESSION_KEY) === '1'; } catch (e) { return false; }
+}
+
+function overseasShowLocked() {
+  const gate = document.getElementById('overseas-gate');
+  const content = document.getElementById('overseas-content');
+  if (gate) gate.hidden = false;
+  if (content) content.hidden = true;
+}
+
+function overseasShowUnlocked() {
+  const gate = document.getElementById('overseas-gate');
+  const content = document.getElementById('overseas-content');
+  if (gate) gate.hidden = true;
+  if (content) content.hidden = false;
+}
+
+function setupOverseasGate() {
+  const form = document.getElementById('overseas-gate-form');
+  const input = document.getElementById('overseas-gate-input');
+  const err = document.getElementById('overseas-gate-err');
+  const lockBtn = document.getElementById('overseas-lock-btn');
+  if (!form) return;
+
+  if (overseasIsUnlocked()) overseasShowUnlocked();
+  else overseasShowLocked();
+
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    if (((input && input.value) || '') === WS_PASSCODE) {
+      try { sessionStorage.setItem(OVERSEAS_SESSION_KEY, '1'); } catch (e) {}
+      if (err) err.hidden = true;
+      if (input) input.value = '';
+      overseasShowUnlocked();
+    } else if (err) {
+      err.hidden = false;
+    }
+  });
+
+  if (lockBtn) lockBtn.addEventListener('click', () => {
+    try { sessionStorage.removeItem(OVERSEAS_SESSION_KEY); } catch (e) {}
+    if (err) err.hidden = true;
+    if (input) input.value = '';
+    overseasShowLocked();
+  });
+}
+
 function setupDossierBridge() {
   const list = document.getElementById('dossier-evidence-list');
   if (!list) return;
@@ -4566,6 +4616,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupCompareTray();
   setupWhitespaceGate();
   setupRadarGate();
+  setupOverseasGate();
   setupDossierBridge();
   registerServiceWorker();
   runStartupTask('renderHeroNews', renderHeroNews);

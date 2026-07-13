@@ -88,7 +88,7 @@
           <a href="#nifds" data-tab="nifds" class="nav-link">심의 정보·회의록</a>
         </div>
       </div>
-      <a href="#overseas-approval" data-tab="overseas-approval" class="nav-link">해외 인허가</a>
+      <a href="#overseas-approval" data-tab="overseas-approval" class="nav-link">해외 인허가 🔒</a>
       <div class="nav-group" data-tabs="compare biomarkers trials">
         <button type="button" class="nav-group-label" aria-expanded="false">연구설계 <span class="nav-caret" aria-hidden="true">▾</span></button>
         <div class="nav-dropdown">
@@ -1162,8 +1162,27 @@
   </section>
 
   <section id="overseas-approval" class="tab-section">
-      <h2>해외 인허가·신고</h2>
-      <p class="compare-intro">국내 건강기능식품·기능성 원료 업체가 자주 검토하는 해외 진출 규제 Gate입니다. 완제품 수출인지, 원료 수출인지, 기능성 표시를 할 것인지에 따라 인허가·신고·라벨 검토 범위가 달라집니다.</p>
+    <div class="ws-gate" id="overseas-gate">
+      <div class="ws-gate-box">
+        <div class="ws-gate-icon">🔒</div>
+        <h3>비공개 페이지</h3>
+        <p>해외 인허가·신고 자료는 비밀번호로 보호되어 있습니다.</p>
+        <form id="overseas-gate-form" class="ws-gate-form">
+          <input type="password" id="overseas-gate-input" placeholder="비밀번호" autocomplete="off">
+          <button type="submit">열기</button>
+        </form>
+        <p class="ws-gate-err" id="overseas-gate-err" hidden>비밀번호가 올바르지 않습니다.</p>
+      </div>
+    </div>
+
+    <div id="overseas-content" hidden>
+      <div class="section-title-row">
+        <div>
+          <h2>해외 인허가·신고</h2>
+          <p class="compare-intro">국내 건강기능식품·기능성 원료 업체가 자주 검토하는 해외 진출 규제 Gate입니다. 완제품 수출인지, 원료 수출인지, 기능성 표시를 할 것인지에 따라 인허가·신고·라벨 검토 범위가 달라집니다.</p>
+        </div>
+        <button type="button" class="ws-lock-btn" id="overseas-lock-btn">🔒 다시 잠그기</button>
+      </div>
 
       <section class="dossier-bridge" aria-labelledby="dossier-bridge-title">
         <div class="dossier-bridge-head">
@@ -1416,6 +1435,7 @@
         <strong>실무 메모</strong>
         <span>해외 인허가 검토는 국가별 법률 자문·현지 대리인 확인이 필요한 영역입니다. 본 표는 사전 분류와 자료 준비 범위를 좁히기 위한 내부 검토용으로 사용하세요.</span>
       </div>
+    </div>
   </section>
 
   <section id="biomarkers" class="tab-section">
