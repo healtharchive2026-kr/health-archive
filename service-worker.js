@@ -1,9 +1,12 @@
-const CACHE_NAME = 'healtharchive-db-nav-theme-20260713-1';
+const CACHE_NAME = 'healtharchive-mobile-lite-20260713-1';
 const CORE_ASSETS = [
   '/',
   '/index.html',
   '/style.css?v=20260713-ws1',
   '/app.js?v=20260713-ws1',
+  '/mobile-lite.html',
+  '/mobile-lite.css',
+  '/mobile-lite.js',
   '/assets/logo-icon.png',
   '/assets/leaf-badge.png',
   '/data/ingredients.js?v=20260712-reports1',

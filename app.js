@@ -301,6 +301,23 @@ function renderDailyQuote() {
   el.innerHTML = `<span><span class="daily-quote-label">오늘의 한마디 : </span><span class="daily-quote-text">${escapeHtml(quote.text)}</span></span>`;
 }
 
+function setupHomeUtilityActions() {
+  const button = document.getElementById('home-bookmark-btn');
+  const status = document.getElementById('home-bookmark-status');
+  if (!button || !status) return;
+
+  button.addEventListener('click', async () => {
+    const isMac = /Mac|iPhone|iPad/i.test(navigator.platform || navigator.userAgent || '');
+    const shortcut = isMac ? '⌘D' : 'Ctrl+D';
+    status.textContent = `${shortcut}를 눌러 이 페이지를 즐겨찾기에 추가하세요.`;
+    try {
+      await navigator.clipboard.writeText('https://www.healtharchive.kr/');
+      status.textContent = `주소를 복사했습니다. ${shortcut}를 눌러 즐겨찾기에 추가하세요.`;
+    } catch (e) {}
+    window.setTimeout(() => { status.textContent = ''; }, 6000);
+  });
+}
+
 function setupHeroSearch() {
   document.querySelectorAll('.hero-search-row').forEach(form => {
     form.addEventListener('submit', e => {
@@ -4621,6 +4638,7 @@ document.addEventListener('DOMContentLoaded', () => {
   registerServiceWorker();
   runStartupTask('renderHeroNews', renderHeroNews);
   runStartupTask('renderDailyQuote', renderDailyQuote);
+  runStartupTask('setupHomeUtilityActions', setupHomeUtilityActions);
   runStartupTask('renderDataFreshness', renderDataFreshness);
   runStartupTask('setupVisitorCounter', setupVisitorCounter);
   runStartupTask('setupIntroModal', setupIntroModal);

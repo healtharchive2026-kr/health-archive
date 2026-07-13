@@ -603,6 +603,22 @@ main{padding:40px 24px 80px;}
   gap:12px;
   min-width:0;
 }
+.hero-utility-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+.hero-utility-action{
+  display:flex;align-items:center;gap:9px;min-width:0;min-height:50px;padding:9px 11px;
+  border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,.88);
+  color:var(--text);font-family:inherit;text-align:left;text-decoration:none;cursor:pointer;box-shadow:var(--shadow-sm);
+  transition:border-color .12s,background .12s,transform .12s;
+}
+.hero-utility-action:hover{border-color:rgba(37,111,91,.42);background:#fff;transform:translateY(-1px);}
+.hua-icon{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;width:28px;height:28px;border-radius:7px;background:var(--green-light);color:var(--green);font-size:17px;font-weight:850;}
+.hua-mobile{background:var(--signal-light);color:var(--signal);font-family:var(--mono);font-size:13px;}
+.hero-utility-action>span:last-child{min-width:0;}
+.hero-utility-action strong,.hero-utility-action small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.hero-utility-action strong{font-size:12px;}
+.hero-utility-action small{margin-top:3px;color:var(--muted);font-size:10.5px;}
+.hero-utility-status{min-height:0;margin:-5px 2px -6px;color:var(--green);font-size:10.5px;font-weight:700;line-height:1.4;}
+.hero-utility-status:empty{display:none;}
 .hero-freshness{
   display:flex;align-items:center;gap:14px;min-height:38px;margin:0 0 14px;
   padding:9px 14px;border:1px solid var(--border);border-radius:10px;
@@ -2786,6 +2802,7 @@ body.intro-modal-open{overflow:hidden;}
   .hero-dark h1{font-size:27px;line-height:1.28;word-break:keep-all;}
   .hero-lede{font-size:15px;line-height:1.65;}
   .hero-stats-row{grid-template-columns:repeat(3,minmax(0,1fr));}
+  .hero-utility-actions{grid-template-columns:1fr 1fr;}
   .hero-stat-chip{min-height:76px;padding:13px 11px;}
   .hsc-num{font-size:24px;}
   .hero-freshness{align-items:flex-start;flex-direction:column;gap:5px;padding:10px 12px;}
