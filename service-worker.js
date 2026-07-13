@@ -1,16 +1,17 @@
-const CACHE_NAME = 'healtharchive-mobile-cinema-20260713-4';
+const CACHE_NAME = 'healtharchive-atmosphere-20260713-5';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/style.css?v=20260713-products1',
+  '/style.css?v=20260713-atmosphere1',
   '/app.js?v=20260713-r2',
   '/device-routing.js?v=20260713-2',
   '/mobile-lite.html',
-  '/mobile-lite.css?v=20260713-4',
+  '/mobile-lite.css?v=20260713-5',
   '/mobile-lite.js?v=20260713-4',
   '/assets/logo-icon.png',
   '/assets/leaf-badge.png',
   '/assets/mobile-health-hero.jpg',
+  '/assets/site-atmosphere.jpg',
   '/data/ingredients.js?v=20260712-reports1',
   '/data/temp_approval.js?v=20260713-mobile1',
   '/data/food_ingredients.js?v=20260713-mobile1',

@@ -48,7 +48,8 @@ body{
     radial-gradient(circle at 50% -180px, rgba(124,38,53,.10), transparent 360px),
     linear-gradient(90deg, var(--grid-line) 1px, transparent 1px) 0 0/48px 48px,
     linear-gradient(180deg, var(--grid-line) 1px, transparent 1px) 0 0/48px 48px,
-    linear-gradient(180deg,#ffffff 0,#f7f8f7 460px,#ffffff 100%);
+    linear-gradient(180deg,rgba(248,251,248,.72) 0,rgba(247,249,247,.86) 760px,rgba(255,255,255,.94) 100%),
+    url("assets/site-atmosphere.jpg") center top/cover no-repeat;
   background-attachment:fixed;
   color:var(--text);
   -webkit-font-smoothing:antialiased;
@@ -544,9 +545,7 @@ main{padding:40px 24px 80px;}
   z-index:-1;
   border:1px solid var(--border);
   border-radius:26px;
-  background:
-    linear-gradient(180deg,rgba(255,255,255,.96),rgba(247,249,248,.88)),
-    radial-gradient(circle at top right, rgba(37,111,91,.10), transparent 300px);
+  background:rgba(255,255,255,.62);
   box-shadow:0 22px 58px rgba(18,32,26,.06);
   backdrop-filter:blur(16px);
 }
