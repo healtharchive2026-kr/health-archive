@@ -3666,15 +3666,39 @@ function fmtProductDate(s) {
 
 function renderProducts(list) {
   const tbody = document.querySelector('#products-table tbody');
-  tbody.innerHTML = list.map(p => `
-    <tr>
+  tbody.innerHTML = list.map((p, index) => {
+    const materials = Array.isArray(p.materials) ? p.materials : [];
+    const recognized = Array.isArray(p.recognizedIngredients) ? p.recognizedIngredients : [];
+    const matchedSources = new Set(recognized.map(item => item.sourceText));
+    const otherMaterials = materials.filter(item => !matchedSources.has(item));
+    const detailId = `product-detail-${index}`;
+    const hasDetail = materials.length || p.primaryFunction || p.intakeMethod;
+    return `
+    <tr class="product-summary-row">
       <td>${fmtProductDate(p.reportDate)}</td>
       <td class="name">${escapeHtml(p.name)}</td>
       <td>${escapeHtml(p.company || '-')}</td>
       <td>${escapeHtml(p.efficacy || '-')}</td>
       <td class="notice">${escapeHtml(p.reportNo || '-')}</td>
+      <td>${hasDetail ? `<button type="button" class="product-detail-toggle" data-product-detail="${detailId}" aria-expanded="false">구성성분</button>` : '<span class="product-detail-pending">수집 대기</span>'}</td>
     </tr>
-  `).join('');
+    ${hasDetail ? `<tr class="product-detail-row" id="${detailId}" hidden><td colspan="6">
+      <div class="product-detail-grid">
+        <section><strong>개별인정 원료 일치</strong>${recognized.length ? `<ul>${recognized.map(item => `<li>${escapeHtml(item.name)}${item.noticeNo ? ` <small>${escapeHtml(item.noticeNo)}</small>` : ''}</li>`).join('')}</ul>` : '<p>일치 원료 없음</p>'}</section>
+        <section><strong>기타 구성성분</strong>${otherMaterials.length ? `<ul>${otherMaterials.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul>` : '<p>-</p>'}</section>
+        <section><strong>제품 정보</strong><dl><dt>주된 기능성</dt><dd>${escapeHtml(p.primaryFunction || p.efficacy || '-')}</dd><dt>섭취방법</dt><dd>${escapeHtml(p.intakeMethod || '-')}</dd><dt>제품형태</dt><dd>${escapeHtml(p.productForm || '-')}</dd></dl></section>
+      </div>
+      <details class="product-raw-source"><summary>신고 원재료 원문</summary><p>${escapeHtml(p.rawMaterialsText || '-')}</p></details>
+      <p class="product-match-note">원료 일치는 공개 신고명과 개별인정 원료명의 자동 대조 결과이며, 최종 확인은 원문을 기준으로 합니다.</p>
+    </td></tr>` : ''}`;
+  }).join('');
+  tbody.querySelectorAll('[data-product-detail]').forEach(button => button.addEventListener('click', () => {
+    const row = document.getElementById(button.dataset.productDetail);
+    const expanded = button.getAttribute('aria-expanded') === 'true';
+    button.setAttribute('aria-expanded', String(!expanded));
+    button.textContent = expanded ? '구성성분' : '닫기';
+    row.hidden = expanded;
+  }));
   document.getElementById('products-count').textContent = `${list.length}건`;
 }
 
@@ -3685,7 +3709,7 @@ function setupProducts() {
   document.getElementById('products-search').addEventListener('input', e => {
     const q = e.target.value.trim().toLowerCase();
     const filtered = q
-      ? all.filter(p => `${p.name} ${p.company} ${p.efficacy}`.toLowerCase().includes(q))
+      ? all.filter(p => `${p.name} ${p.company} ${p.efficacy} ${p.rawMaterialsText || ''}`.toLowerCase().includes(q))
       : all;
     renderProducts(filtered);
   });

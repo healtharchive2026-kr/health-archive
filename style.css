@@ -292,6 +292,29 @@ main{padding:40px 24px 80px;}
   margin:0 0 26px;padding:0 0 15px;width:100%;overflow:visible;
   border:0;border-bottom:1px solid var(--border);background:transparent;box-shadow:none;
 }
+
+/* Product composition details */
+.product-detail-toggle{min-width:68px;padding:6px 9px;border:1px solid var(--border);border-radius:6px;background:#fff;color:var(--green);font-size:11px;font-weight:800;cursor:pointer;}
+.product-detail-toggle[aria-expanded="true"]{border-color:var(--green);background:var(--green-light);}
+.product-detail-pending{color:var(--muted);font-size:10.5px;white-space:nowrap;}
+.product-detail-row td{padding:0!important;background:#f7faf8!important;}
+.product-detail-grid{display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:0;border-bottom:1px solid var(--border);}
+.product-detail-grid section{min-width:0;padding:16px;border-right:1px solid var(--border);}
+.product-detail-grid section:last-child{border-right:0;}
+.product-detail-grid section>strong{display:block;margin-bottom:9px;color:var(--green);font-size:11px;}
+.product-detail-grid ul{margin:0;padding-left:17px;}
+.product-detail-grid li,.product-detail-grid p,.product-detail-grid dt,.product-detail-grid dd{font-size:11px;line-height:1.55;}
+.product-detail-grid li+li{margin-top:4px;}
+.product-detail-grid small{color:var(--muted);}
+.product-detail-grid p{margin:0;color:var(--muted);}
+.product-detail-grid dl{display:grid;grid-template-columns:70px 1fr;gap:5px 8px;margin:0;}
+.product-detail-grid dt{color:var(--muted);}
+.product-detail-grid dd{margin:0;}
+.product-raw-source{margin:12px 16px;color:var(--muted);font-size:11px;}
+.product-raw-source summary{color:var(--text);font-weight:750;cursor:pointer;}
+.product-raw-source p{line-height:1.6;}
+.product-match-note{margin:10px 16px 14px;color:var(--muted);font-size:10px;}
+@media(max-width:760px){.product-detail-grid{grid-template-columns:1fr}.product-detail-grid section{border-right:0;border-bottom:1px solid var(--border)}.product-detail-grid section:last-child{border-bottom:0}}
 .db-hub-group{
   position:relative;display:flex;align-items:center;gap:8px;min-width:0;padding:0 10px 0 0;
   background:transparent;border:0;border-right:1px solid var(--border);
