@@ -1,4 +1,4 @@
-const CACHE_NAME = 'healtharchive-overseas-lock-20260713-1';
+const CACHE_NAME = 'healtharchive-visitor-daily-20260713-1';
 const CORE_ASSETS = [
   '/',
   '/index.html',

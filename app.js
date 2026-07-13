@@ -264,9 +264,9 @@ async function setupVisitorCounter() {
   const todayEl = document.getElementById('vc-today');
   if (!totalEl || !todayEl) return;
 
-  // 같은 브라우저에서 하루에 한 번만 카운트 (새로고침 시 중복 집계 방지)
-  const sessionKey = 'ha-visited-' + visitorCounterTodayKey();
-  const alreadyCounted = sessionStorage.getItem(sessionKey);
+  // 같은 브라우저에서 하루에 한 번만 카운트 (창 종료·새로고침 중복 집계 방지)
+  const dailyVisitKey = 'ha-visited-' + visitorCounterTodayKey();
+  const alreadyCounted = localStorage.getItem(dailyVisitKey);
 
   try {
     if (alreadyCounted) {
@@ -281,7 +281,7 @@ async function setupVisitorCounter() {
       const today = await bumpVisitorCounter(visitorCounterTodayKey());
       totalEl.textContent = total.toLocaleString('ko-KR');
       todayEl.textContent = today.toLocaleString('ko-KR');
-      sessionStorage.setItem(sessionKey, '1');
+      localStorage.setItem(dailyVisitKey, '1');
     }
   } catch (e) {
     totalEl.textContent = '-';
