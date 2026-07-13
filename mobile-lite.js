@@ -1,7 +1,13 @@
 (function () {
   'use strict';
 
-  const ingredients = Array.isArray(window.INGREDIENTS_DATA) ? window.INGREDIENTS_DATA : [];
+  const noticeRank = item => {
+    const match = String(item.noticeNo || '').match(/제(\d{4})-(\d+)호/);
+    return match ? Number(match[1]) * 1000 + Number(match[2]) : Number(item.year || 0) * 1000;
+  };
+  const ingredients = (Array.isArray(window.INGREDIENTS_DATA) ? window.INGREDIENTS_DATA : [])
+    .slice()
+    .sort((a, b) => noticeRank(b) - noticeRank(a));
   const protocols = window.BIOMARKER_PROTOCOLS || {};
   const esc = value => String(value == null ? '' : value).replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
   const norm = value => String(value || '').trim().toLowerCase();

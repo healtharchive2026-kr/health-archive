@@ -1,12 +1,13 @@
-const CACHE_NAME = 'healtharchive-mobile-lite-20260713-1';
+const CACHE_NAME = 'healtharchive-mobile-hotfix-20260713-2';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/style.css?v=20260713-ws1',
-  '/app.js?v=20260713-ws1',
+  '/style.css?v=20260713-products1',
+  '/app.js?v=20260713-r2',
+  '/device-routing.js?v=20260713-2',
   '/mobile-lite.html',
-  '/mobile-lite.css',
-  '/mobile-lite.js',
+  '/mobile-lite.css?v=20260713-1',
+  '/mobile-lite.js?v=20260713-2',
   '/assets/logo-icon.png',
   '/assets/leaf-badge.png',
   '/data/ingredients.js?v=20260712-reports1',

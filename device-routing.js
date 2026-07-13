@@ -2,6 +2,7 @@
   'use strict';
 
   const preferenceKey = 'healtharchive-view-preference';
+  const mobileUrl = 'https://www.healtharchive.kr/mobile-lite.html';
   const params = new URLSearchParams(window.location.search);
   const requestedView = params.get('view');
 
@@ -12,7 +13,7 @@
 
   if (requestedView === 'mobile') {
     localStorage.removeItem(preferenceKey);
-    window.location.replace('https://m.healtharchive.kr/');
+    window.location.replace(mobileUrl);
     return;
   }
 
@@ -22,6 +23,6 @@
     (navigator.maxTouchPoints > 0 || /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent));
 
   if (isMainSite && mobileDevice && !prefersDesktop) {
-    window.location.replace('https://m.healtharchive.kr/');
+    window.location.replace(mobileUrl);
   }
 })();
