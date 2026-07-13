@@ -1,4 +1,4 @@
-const CACHE_NAME = 'healtharchive-mobile-hotfix-20260713-2';
+const CACHE_NAME = 'healtharchive-mobile-suite-20260713-3';
 const CORE_ASSETS = [
   '/',
   '/index.html',
@@ -6,11 +6,16 @@ const CORE_ASSETS = [
   '/app.js?v=20260713-r2',
   '/device-routing.js?v=20260713-2',
   '/mobile-lite.html',
-  '/mobile-lite.css?v=20260713-1',
-  '/mobile-lite.js?v=20260713-2',
+  '/mobile-lite.css?v=20260713-3',
+  '/mobile-lite.js?v=20260713-3',
   '/assets/logo-icon.png',
   '/assets/leaf-badge.png',
   '/data/ingredients.js?v=20260712-reports1',
+  '/data/temp_approval.js?v=20260713-mobile1',
+  '/data/food_ingredients.js?v=20260713-mobile1',
+  '/data/blocked_ingredients.js?v=20260713-mobile1',
+  '/data/guidelines.js?v=20260629-glossary',
+  '/data/biomarker_protocols.js?v=20260711-terms1',
   '/data/minutes.js?v=20260629-scheduler1225',
   '/data/status.js?v=20260630-news0930'
 ];

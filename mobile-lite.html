@@ -6,30 +6,89 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="theme-color" content="#256f5b">
 <meta name="robots" content="index,follow">
-<meta name="description" content="HealthArchive 모바일 Lite - 건강기능식품 원료 DB, 기능성별 프로토콜 및 기능성별 원료 비교">
+<meta name="description" content="HealthArchive 모바일 실무 도구 - 인정원료 검색, 식품원료 안전성 DB, 기능성별 프로토콜과 원료 비교">
 <link rel="canonical" href="https://www.healtharchive.kr/mobile-lite.html">
-<title>HealthArchive Mobile Lite</title>
+<title>HealthArchive Mobile</title>
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="mobile-lite.css?v=20260713-1">
+<link rel="stylesheet" href="mobile-lite.css?v=20260713-3">
 </head>
 <body>
 <header class="lite-header">
-  <a class="lite-brand" href="./" aria-label="HealthArchive 모바일 홈으로 이동">
-    <img src="assets/logo-icon.png" alt=""><span>Health<b>Archive</b></span><em>Lite</em>
-  </a>
+  <button type="button" class="lite-brand" data-lite-tab="home" aria-label="모바일 홈으로 이동">
+    <img src="assets/logo-icon.png" alt=""><span>Health<b>Archive</b></span><em>Mobile</em>
+  </button>
   <a class="lite-full-link" href="https://www.healtharchive.kr/?view=desktop">PC 버전</a>
 </header>
 
 <main class="lite-main">
-  <section class="lite-view active" id="lite-db" data-lite-view="db">
-    <div class="lite-title"><span>Ingredient DB</span><h1>원료 검색</h1><p>개별인정·고시형 원료의 인정정보와 기능성을 조회합니다.</p></div>
-    <div class="lite-filter">
-      <input type="search" id="lite-db-search" placeholder="원료명, 업체, 기능성 검색" autocomplete="off">
-      <select id="lite-db-category" aria-label="기능성 분류"><option value="all">전체 기능성</option></select>
+  <section class="lite-view active" id="lite-home" data-lite-view="home">
+    <div class="lite-home-head">
+      <span>HealthArchive Mobile</span>
+      <h1>개발 실무 도구</h1>
+      <p>필요한 근거를 찾고, 검토하고, 비교하는 네 가지 작업.</p>
     </div>
-    <div class="lite-result-head"><strong id="lite-db-count">0건</strong><span>최근 인정순</span></div>
-    <div class="lite-card-list" id="lite-db-list"></div>
-    <button type="button" class="lite-more" id="lite-db-more" hidden>더 보기</button>
+    <div class="lite-home-grid">
+      <button type="button" class="lite-module-card module-ingredient" data-home-target="ingredient">
+        <span class="lite-module-index">01</span>
+        <strong>원료검색</strong>
+        <small><b id="home-individual-count">-</b> 개별인정</small>
+        <small><b id="home-temp-count">-</b> 한시적 인정</small>
+        <i aria-hidden="true">→</i>
+      </button>
+      <button type="button" class="lite-module-card module-safety" data-home-target="safety">
+        <span class="lite-module-index">02</span>
+        <strong>안전성 DB</strong>
+        <small><b id="home-food-count">-</b> 식품원료</small>
+        <small><b id="home-blocked-count">-</b> 반입차단</small>
+        <i aria-hidden="true">→</i>
+      </button>
+      <button type="button" class="lite-module-card module-protocol" data-home-target="protocol">
+        <span class="lite-module-index">03</span>
+        <strong>기능성별<br>프로토콜</strong>
+        <small><b id="home-protocol-count">-</b> 기능성 기준</small>
+        <i aria-hidden="true">→</i>
+      </button>
+      <button type="button" class="lite-module-card module-compare" data-home-target="compare">
+        <span class="lite-module-index">04</span>
+        <strong>기능성별<br>원료 비교</strong>
+        <small>최대 <b>3개</b> 나란히 비교</small>
+        <i aria-hidden="true">→</i>
+      </button>
+    </div>
+  </section>
+
+  <section class="lite-view" id="lite-ingredient" data-lite-view="ingredient" hidden>
+    <div class="lite-title"><span>Ingredient Search</span><h1>원료검색</h1><p>인정 유형별 원료와 신청업체 정보를 조회합니다.</p></div>
+    <div class="lite-segments" role="tablist" aria-label="원료 인정 유형">
+      <button type="button" class="active" data-ingredient-mode="individual">개별인정 원료</button>
+      <button type="button" data-ingredient-mode="temporary">한시적 인정 원료</button>
+    </div>
+    <div class="lite-filter" id="lite-ingredient-filter">
+      <input type="search" id="lite-ingredient-search" placeholder="원료명, 업체, 기능성 검색" autocomplete="off">
+      <select id="lite-ingredient-category" aria-label="기능성 분류"><option value="all">전체 기능성</option></select>
+    </div>
+    <div class="lite-result-head"><strong id="lite-ingredient-count">0건</strong><span id="lite-ingredient-sort">최근 인정순</span></div>
+    <div class="lite-card-list" id="lite-ingredient-list"></div>
+    <button type="button" class="lite-more" id="lite-ingredient-more" hidden>더 보기</button>
+  </section>
+
+  <section class="lite-view" id="lite-safety" data-lite-view="safety" hidden>
+    <div class="lite-title"><span>Safety Database</span><h1>안전성 DB</h1><p>식품에 사용할 수 있는 원료와 국내 반입차단 원료를 교차 확인합니다.</p></div>
+    <div class="lite-segments" role="tablist" aria-label="안전성 데이터 유형">
+      <button type="button" class="active" data-safety-mode="food">식품원료목록</button>
+      <button type="button" data-safety-mode="blocked">수입불가 원료</button>
+    </div>
+    <div class="lite-filter" id="lite-safety-filter">
+      <input type="search" id="lite-safety-search" placeholder="원료명, 이명, 학명 검색" autocomplete="off">
+      <select id="lite-safety-category" aria-label="목록 분류">
+        <option value="all">전체 분류</option>
+        <option value="별표1">식품 원료</option>
+        <option value="별표2">제한적 원료</option>
+      </select>
+    </div>
+    <div class="lite-result-head"><strong id="lite-safety-count">0건</strong><span id="lite-safety-caption">식품원료 기준</span></div>
+    <div class="lite-card-list" id="lite-safety-list"></div>
+    <button type="button" class="lite-more" id="lite-safety-more" hidden>더 보기</button>
   </section>
 
   <section class="lite-view" id="lite-protocol" data-lite-view="protocol" hidden>
@@ -52,15 +111,20 @@
   </section>
 </main>
 
-<nav class="lite-bottom-nav" aria-label="Mobile Lite 메뉴">
-  <button type="button" class="active" data-lite-tab="db"><span aria-hidden="true">⌕</span>원료 검색</button>
+<nav class="lite-bottom-nav" aria-label="모바일 메뉴">
+  <button type="button" class="active" data-lite-tab="home"><span aria-hidden="true">⌂</span>홈</button>
+  <button type="button" data-lite-tab="ingredient"><span aria-hidden="true">⌕</span>원료</button>
+  <button type="button" data-lite-tab="safety"><span aria-hidden="true">S</span>안전성</button>
   <button type="button" data-lite-tab="protocol"><span aria-hidden="true">P</span>프로토콜</button>
-  <button type="button" data-lite-tab="compare"><span aria-hidden="true">≍</span>원료 비교</button>
+  <button type="button" data-lite-tab="compare"><span aria-hidden="true">≍</span>비교</button>
 </nav>
 
 <script src="data/ingredients.js?v=20260712-reports1"></script>
+<script src="data/temp_approval.js?v=20260713-mobile1"></script>
+<script src="data/food_ingredients.js?v=20260713-mobile1"></script>
+<script src="data/blocked_ingredients.js?v=20260713-mobile1"></script>
 <script src="data/guidelines.js?v=20260629-glossary"></script>
 <script src="data/biomarker_protocols.js?v=20260711-terms1"></script>
-<script src="mobile-lite.js?v=20260713-2"></script>
+<script src="mobile-lite.js?v=20260713-3"></script>
 </body>
 </html>
