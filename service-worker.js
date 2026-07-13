@@ -1,9 +1,10 @@
-const CACHE_NAME = 'healtharchive-pc-imagery-20260713-6';
+const CACHE_NAME = 'healtharchive-pc-cinema-20260714-7';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/style.css?v=20260713-imagery1',
+  '/style.css?v=20260714-cinema1',
   '/app.js?v=20260713-r2',
+  '/pc-cinema.js?v=20260714-cinema1',
   '/device-routing.js?v=20260713-2',
   '/mobile-lite.html',
   '/mobile-lite.css?v=20260713-5',

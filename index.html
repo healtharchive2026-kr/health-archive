@@ -48,7 +48,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="style.css?v=20260713-imagery1">
+<link rel="stylesheet" href="style.css?v=20260714-cinema1">
 </head>
 <body>
 <a class="skip-link" href="#main-content">본문 바로가기</a>
@@ -115,7 +115,62 @@
 <main class="container" id="main-content">
 
   <section id="home" class="tab-section active">
-    <div class="hero hero-dark">
+    <div class="pc-cinema" aria-label="HealthArchive 소개">
+      <section class="pc-cinema-opening">
+        <img src="assets/pc-landscape-bg.jpg" alt="푸른 산과 자연 풍경" class="pc-cinema-opening-media">
+        <div class="pc-cinema-opening-shade" aria-hidden="true"></div>
+        <div class="pc-cinema-opening-copy">
+          <span>Nature · Food · Evidence</span>
+          <h1>자연의 가능성을<br><b>근거의 언어로.</b></h1>
+          <p>HealthArchive는 원료의 시작부터 규제 판단까지, 흩어진 정보를 하나의 개발 흐름으로 연결합니다.</p>
+        </div>
+        <div class="pc-cinema-scroll" aria-hidden="true"><span>Scroll to discover</span><i>↓</i></div>
+      </section>
+
+      <section class="pc-cinema-scene cinema-origin" data-cinema-scene>
+        <div class="pc-cinema-scene-copy">
+          <span>01 / Origin</span>
+          <h2>원료의 시작은<br>자연을 읽는 일.</h2>
+          <p>식용 근거와 유래, 제조 공정과 기능성 가능성을 함께 살펴 개발할 수 있는 원료인지 첫 질문을 세웁니다.</p>
+        </div>
+        <div class="pc-cinema-scene-media cinema-media-origin">
+          <img src="assets/pc-nature-hero.jpg" alt="식물과 과일에서 얻은 자연 유래 추출물">
+          <img src="assets/pc-origin.jpg" alt="양치식물과 자연석으로 표현한 원료의 기원">
+        </div>
+      </section>
+
+      <section class="pc-cinema-scene cinema-validation" data-cinema-scene>
+        <div class="pc-cinema-scene-media cinema-media-validation">
+          <img src="assets/pc-lab.jpg" alt="시험관을 분석하는 실험 장면">
+          <img src="assets/pc-clinical.jpg" alt="검체를 확인하는 연구자">
+        </div>
+        <div class="pc-cinema-scene-copy">
+          <span>02 / Validation</span>
+          <h2>가능성은 실험을 거쳐<br>근거가 됩니다.</h2>
+          <p>안전성, 작용기전, 전임상과 인체적용시험의 평가변수를 연결해 제출 가능한 증거의 구조를 설계합니다.</p>
+        </div>
+      </section>
+
+      <section class="pc-cinema-scene cinema-intelligence" data-cinema-scene>
+        <div class="pc-cinema-scene-copy">
+          <span>03 / Intelligence</span>
+          <h2>데이터를 연결하고,<br>판단을 준비합니다.</h2>
+          <p>원료 DB, 회의록, 법령과 가이드라인을 하나의 흐름으로 묶어 다음 개발 결정을 더 빠르고 명확하게 만듭니다.</p>
+        </div>
+        <div class="pc-cinema-scene-media cinema-media-intelligence">
+          <img src="assets/pc-data.jpg" alt="구조화된 데이터베이스 이미지">
+          <img src="assets/pc-regulatory.jpg" alt="규제와 개발 방향을 논의하는 회의 장면">
+        </div>
+      </section>
+
+      <section class="pc-cinema-enter" data-cinema-scene>
+        <span>From evidence to action</span>
+        <h2>이제, 개발자의 작업 공간으로.</h2>
+        <button type="button" data-cinema-enter>HealthArchive 시작하기 <i aria-hidden="true">↓</i></button>
+      </section>
+    </div>
+
+    <div class="hero hero-dark" id="workspace-start">
       <img src="assets/logo-icon.png" alt="" class="hero-watermark">
       <div class="hero-intro">
         <div class="hero-copy">
@@ -208,32 +263,6 @@
           </div>
           <div class="ops-recent-list" id="home-recent-list"></div>
         </section>
-      </div>
-
-      <div class="hero-section-head hero-menu-head">
-        <span>개발 여정</span>
-      </div>
-      <div class="home-visual-journey" aria-label="건강기능식품 개발 단계 바로가기">
-        <a class="home-visual-card" data-goto="material-dev" data-devtab="individual-dev">
-          <img src="assets/pc-origin.jpg" alt="" loading="lazy">
-          <span><em>Origin</em><strong>자연 원료 탐색</strong></span>
-        </a>
-        <a class="home-visual-card" data-goto="safety-db">
-          <img src="assets/pc-lab.jpg" alt="" loading="lazy">
-          <span><em>Validation</em><strong>실험·안전성 검증</strong></span>
-        </a>
-        <a class="home-visual-card" data-goto="biomarkers">
-          <img src="assets/pc-clinical.jpg" alt="" loading="lazy">
-          <span><em>Protocol</em><strong>임상 프로토콜</strong></span>
-        </a>
-        <a class="home-visual-card" data-goto="ingredients">
-          <img src="assets/pc-data.jpg" alt="" loading="lazy">
-          <span><em>Intelligence</em><strong>데이터 구조화</strong></span>
-        </a>
-        <a class="home-visual-card" data-goto="minutes">
-          <img src="assets/pc-regulatory.jpg" alt="" loading="lazy">
-          <span><em>Decision</em><strong>심의·규제 판단</strong></span>
-        </a>
       </div>
 
       <div class="hero-section-head hero-menu-head">
@@ -2229,6 +2258,7 @@
 <script src="data/daily_quotes.js"></script>
 <script src="market.js"></script>
 <script src="app.js?v=20260713-r2"></script>
+<script src="pc-cinema.js?v=20260714-cinema1"></script>
 <script src="feedback.js?v=20260713-board1"></script>
 </body>
 </html>
