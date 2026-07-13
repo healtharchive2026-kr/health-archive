@@ -22,6 +22,7 @@
   const categoryNames = [...new Set(individualIngredients.map(item => item.category).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ko'));
 
   function activateView(target) {
+    document.body.classList.toggle('is-home', target === 'home');
     document.querySelectorAll('[data-lite-tab]').forEach(button => {
       button.classList.toggle('active', button.dataset.liteTab === target);
     });
@@ -53,6 +54,29 @@
     document.getElementById('home-food-count').textContent = foodIngredients.length.toLocaleString('ko-KR');
     document.getElementById('home-blocked-count').textContent = assignedBlocked.length.toLocaleString('ko-KR');
     document.getElementById('home-protocol-count').textContent = Object.keys(protocols).length.toLocaleString('ko-KR');
+    document.getElementById('hero-ingredient-count').textContent = (individualIngredients.length + temporaryIngredients.length).toLocaleString('ko-KR');
+    document.getElementById('hero-food-count').textContent = foodIngredients.length.toLocaleString('ko-KR');
+    document.getElementById('hero-protocol-count').textContent = Object.keys(protocols).length.toLocaleString('ko-KR');
+  }
+
+  function setupCinemaHome() {
+    const scrollButton = document.querySelector('[data-scroll-tools]');
+    const tools = document.getElementById('mobile-tools');
+    scrollButton.addEventListener('click', () => tools.scrollIntoView({behavior: 'smooth', block: 'start'}));
+
+    const sections = [...document.querySelectorAll('.reveal-on-scroll')];
+    if (!('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      sections.forEach(section => section.classList.add('is-revealed'));
+      return;
+    }
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('is-revealed');
+        observer.unobserve(entry.target);
+      });
+    }, {threshold: 0.18});
+    sections.forEach(section => observer.observe(section));
   }
 
   function addCategoryOptions(select, includePlaceholder) {
@@ -287,6 +311,7 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     setupHome();
+    setupCinemaHome();
     setupNavigation();
     setupIngredientSearch();
     setupSafetySearch();

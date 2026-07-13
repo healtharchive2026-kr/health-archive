@@ -10,9 +10,9 @@
 <link rel="canonical" href="https://www.healtharchive.kr/mobile-lite.html">
 <title>HealthArchive Mobile</title>
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="mobile-lite.css?v=20260713-3">
+<link rel="stylesheet" href="mobile-lite.css?v=20260713-4">
 </head>
-<body>
+<body class="is-home">
 <header class="lite-header">
   <button type="button" class="lite-brand" data-lite-tab="home" aria-label="모바일 홈으로 이동">
     <img src="assets/logo-icon.png" alt=""><span>Health<b>Archive</b></span><em>Mobile</em>
@@ -22,39 +22,68 @@
 
 <main class="lite-main">
   <section class="lite-view active" id="lite-home" data-lite-view="home">
-    <div class="lite-home-head">
-      <span>HealthArchive Mobile</span>
-      <h1>개발 실무 도구</h1>
-      <p>필요한 근거를 찾고, 검토하고, 비교하는 네 가지 작업.</p>
+    <div class="cinema-hero">
+      <img class="cinema-hero-media" src="assets/mobile-health-hero.jpg" alt="건강한 식생활을 함께하는 가족">
+      <div class="cinema-hero-shade" aria-hidden="true"></div>
+      <div class="cinema-hero-copy">
+        <span>Nature · Food · Science</span>
+        <h1>자연에서 찾고,<br><b>근거로 증명하다.</b></h1>
+        <p>원료 탐색부터 안전성 검토와 임상 설계까지.</p>
+        <button type="button" class="cinema-scroll" data-scroll-tools>실무 도구 보기 <i aria-hidden="true">↓</i></button>
+      </div>
+      <div class="cinema-data-line" aria-label="모바일 데이터 현황">
+        <div><strong id="hero-ingredient-count">-</strong><span>인정원료</span></div>
+        <div><strong id="hero-food-count">-</strong><span>식품원료</span></div>
+        <div><strong id="hero-protocol-count">-</strong><span>프로토콜</span></div>
+      </div>
     </div>
-    <div class="lite-home-grid">
-      <button type="button" class="lite-module-card module-ingredient" data-home-target="ingredient">
-        <span class="lite-module-index">01</span>
-        <strong>원료검색</strong>
-        <small><b id="home-individual-count">-</b> 개별인정</small>
-        <small><b id="home-temp-count">-</b> 한시적 인정</small>
-        <i aria-hidden="true">→</i>
-      </button>
-      <button type="button" class="lite-module-card module-safety" data-home-target="safety">
-        <span class="lite-module-index">02</span>
-        <strong>안전성 DB</strong>
-        <small><b id="home-food-count">-</b> 식품원료</small>
-        <small><b id="home-blocked-count">-</b> 반입차단</small>
-        <i aria-hidden="true">→</i>
-      </button>
-      <button type="button" class="lite-module-card module-protocol" data-home-target="protocol">
-        <span class="lite-module-index">03</span>
-        <strong>기능성별<br>프로토콜</strong>
-        <small><b id="home-protocol-count">-</b> 기능성 기준</small>
-        <i aria-hidden="true">→</i>
-      </button>
-      <button type="button" class="lite-module-card module-compare" data-home-target="compare">
-        <span class="lite-module-index">04</span>
-        <strong>기능성별<br>원료 비교</strong>
-        <small>최대 <b>3개</b> 나란히 비교</small>
-        <i aria-hidden="true">→</i>
-      </button>
-    </div>
+
+    <section class="cinema-journey reveal-on-scroll" aria-labelledby="journey-title">
+      <div class="cinema-section-intro">
+        <span>From origin to evidence</span>
+        <h2 id="journey-title">하나의 원료가<br>건강의 근거가 되기까지.</h2>
+      </div>
+      <div class="cinema-journey-list">
+        <div><em>01</em><strong>탐색</strong><span>식품과 기능성 원료의 가능성</span></div>
+        <div><em>02</em><strong>검증</strong><span>안전성과 규제 적합성 확인</span></div>
+        <div><em>03</em><strong>설계</strong><span>기능성별 임상 근거의 구조화</span></div>
+      </div>
+    </section>
+
+    <section class="cinema-tools reveal-on-scroll" id="mobile-tools" aria-labelledby="tools-title">
+      <div class="cinema-tools-head">
+        <span>Research toolkit</span>
+        <h2 id="tools-title">지금 필요한<br>실무 도구로.</h2>
+      </div>
+      <div class="lite-home-grid">
+        <button type="button" class="lite-module-card module-ingredient" data-home-target="ingredient">
+          <span class="lite-module-index">01 · Search</span>
+          <strong>원료검색</strong>
+          <small><b id="home-individual-count">-</b> 개별인정</small>
+          <small><b id="home-temp-count">-</b> 한시적 인정</small>
+          <i aria-hidden="true">→</i>
+        </button>
+        <button type="button" class="lite-module-card module-safety" data-home-target="safety">
+          <span class="lite-module-index">02 · Safety</span>
+          <strong>안전성 DB</strong>
+          <small><b id="home-food-count">-</b> 식품원료</small>
+          <small><b id="home-blocked-count">-</b> 반입차단</small>
+          <i aria-hidden="true">→</i>
+        </button>
+        <button type="button" class="lite-module-card module-protocol" data-home-target="protocol">
+          <span class="lite-module-index">03 · Protocol</span>
+          <strong>기능성별<br>프로토콜</strong>
+          <small><b id="home-protocol-count">-</b> 기능성 기준</small>
+          <i aria-hidden="true">→</i>
+        </button>
+        <button type="button" class="lite-module-card module-compare" data-home-target="compare">
+          <span class="lite-module-index">04 · Compare</span>
+          <strong>기능성별<br>원료 비교</strong>
+          <small>최대 <b>3개</b> 나란히 비교</small>
+          <i aria-hidden="true">→</i>
+        </button>
+      </div>
+    </section>
   </section>
 
   <section class="lite-view" id="lite-ingredient" data-lite-view="ingredient" hidden>
@@ -125,6 +154,6 @@
 <script src="data/blocked_ingredients.js?v=20260713-mobile1"></script>
 <script src="data/guidelines.js?v=20260629-glossary"></script>
 <script src="data/biomarker_protocols.js?v=20260711-terms1"></script>
-<script src="mobile-lite.js?v=20260713-3"></script>
+<script src="mobile-lite.js?v=20260713-4"></script>
 </body>
 </html>
