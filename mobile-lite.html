@@ -6,11 +6,12 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self'">
 <meta name="theme-color" content="#256f5b">
 <meta name="robots" content="index,follow">
-<meta name="description" content="HealthArchive 모바일 실무 도구 - 인정원료 검색, 식품원료 안전성 DB, 기능성별 프로토콜과 원료 비교">
+<meta name="description" content="HealthArchive 모바일 실무 도구 - 원료 규제 사전판정, 인정원료 검색, 안전성 DB, 기능성별 프로토콜과 원료 비교">
 <link rel="canonical" href="https://www.healtharchive.kr/mobile-lite.html">
 <title>HealthArchive Mobile</title>
 <link rel="icon" href="data:,">
-<link rel="stylesheet" href="mobile-lite.css?v=20260713-5">
+<link rel="stylesheet" href="mobile-lite.css?v=20260714-verdict2">
+<link rel="stylesheet" href="mobile-verdict.css?v=20260714-verdict2">
 </head>
 <body class="is-home">
 <header class="lite-header">
@@ -55,6 +56,12 @@
         <span>Research toolkit</span>
         <h2 id="tools-title">지금 필요한<br>실무 도구로.</h2>
       </div>
+      <button type="button" class="lite-verdict-entry" data-home-target="verdict">
+        <span class="lite-verdict-entry-index">00 · Regulatory pre-check</span>
+        <strong>원료 규제 사전판정</strong>
+        <small>한 번의 검색으로 4개 데이터베이스를 교차 대조</small>
+        <i aria-hidden="true">→</i>
+      </button>
       <div class="lite-home-grid">
         <button type="button" class="lite-module-card module-ingredient" data-home-target="ingredient">
           <span class="lite-module-index">01 · Search</span>
@@ -84,6 +91,29 @@
         </button>
       </div>
     </section>
+  </section>
+
+  <section class="lite-view" id="lite-verdict" data-lite-view="verdict" hidden>
+    <div class="lite-title">
+      <span>Regulatory Pre-check</span>
+      <h1>원료 규제 사전판정</h1>
+      <p>원료명 하나로 반입차단, 식품원료, 개별인정 및 한시적 인정 이력을 교차 대조합니다.</p>
+    </div>
+
+    <form class="lite-verdict-form" id="lite-verdict-form" autocomplete="off">
+      <label class="sr-only" for="lite-verdict-input">판정할 원료명</label>
+      <input type="search" id="lite-verdict-input" placeholder="원료명 · 성분명 · 영문명" enterkeyhint="search" autocapitalize="off" spellcheck="false">
+      <button type="submit">판정</button>
+    </form>
+
+    <div class="lite-verdict-samples" aria-label="판정 예시">
+      <span>예시</span>
+      <button type="button" data-verdict-sample="난각막">난각막</button>
+      <button type="button" data-verdict-sample="요힘빈">요힘빈</button>
+      <button type="button" data-verdict-sample="석류씨">석류씨</button>
+    </div>
+
+    <div id="lite-verdict-output" role="status" aria-live="polite" hidden></div>
   </section>
 
   <section class="lite-view" id="lite-ingredient" data-lite-view="ingredient" hidden>
@@ -142,9 +172,10 @@
 
 <nav class="lite-bottom-nav" aria-label="모바일 메뉴">
   <button type="button" class="active" data-lite-tab="home"><span aria-hidden="true">⌂</span>홈</button>
+  <button type="button" data-lite-tab="verdict"><span aria-hidden="true">✓</span>판정</button>
   <button type="button" data-lite-tab="ingredient"><span aria-hidden="true">⌕</span>원료</button>
-  <button type="button" data-lite-tab="safety"><span aria-hidden="true">S</span>안전성</button>
-  <button type="button" data-lite-tab="protocol"><span aria-hidden="true">P</span>프로토콜</button>
+  <button type="button" data-lite-tab="safety"><span aria-hidden="true">◇</span>안전성</button>
+  <button type="button" data-lite-tab="protocol"><span aria-hidden="true">▤</span>프로토콜</button>
   <button type="button" data-lite-tab="compare"><span aria-hidden="true">≍</span>비교</button>
 </nav>
 
@@ -154,6 +185,7 @@
 <script src="data/blocked_ingredients.js?v=20260713-mobile1"></script>
 <script src="data/guidelines.js?v=20260629-glossary"></script>
 <script src="data/biomarker_protocols.js?v=20260711-terms1"></script>
-<script src="mobile-lite.js?v=20260713-4"></script>
+<script src="mobile-verdict.js?v=20260714-verdict2"></script>
+<script src="mobile-lite.js?v=20260714-verdict2"></script>
 </body>
 </html>
