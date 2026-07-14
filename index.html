@@ -48,7 +48,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="style.css?v=20260714-admin1">
+<link rel="stylesheet" href="style.css?v=20260714-email1">
 </head>
 <body>
 <a class="skip-link" href="#main-content">본문 바로가기</a>
@@ -2245,7 +2245,7 @@
     <div id="account-logged-out">
       <span class="account-eyebrow">Protected Access</span>
       <h2 id="account-modal-title">보호 자료 로그인</h2>
-      <p>운영자가 승인한 이메일로 일회용 인증번호를 받아 로그인합니다. 비밀번호는 저장하지 않습니다.</p>
+      <p>운영자가 승인한 이메일로 일회용 인증번호를 받아 로그인합니다. 회사 이메일은 보안 정책에 따라 인증번호가 차단될 수 있어 개인 이메일 사용을 권장합니다.</p>
       <button type="button" class="account-primary" data-protected-login>이메일로 로그인</button>
       <button type="button" class="account-secondary" id="account-request-open">접근 신청</button>
       <p class="account-help">신규 이용자는 접근 신청 후 승인 이메일로 로그인할 수 있습니다.</p>
@@ -2257,7 +2257,7 @@
       <form class="account-request-form" id="account-request-form">
         <label>회사명<input type="text" name="company" maxlength="80" autocomplete="organization" required></label>
         <label>부서명<input type="text" name="department" maxlength="80" autocomplete="organization-title" required></label>
-        <label>인증 이메일<input type="email" name="email" maxlength="160" autocomplete="email" required></label>
+        <label>인증 이메일 (개인 이메일 권장)<input type="email" name="email" maxlength="160" autocomplete="email" required><span class="account-field-help">회사 이메일은 스팸·보안 정책으로 인증번호가 차단될 수 있습니다. 가능하면 Gmail·네이버 등 개인 이메일을 사용해 주세요.</span></label>
         <label>이용 목적<textarea name="purpose" maxlength="500" rows="3" required></textarea></label>
         <label class="account-consent"><input type="checkbox" name="privacyConsent" required><span><a href="privacy.html" target="_blank" rel="noopener">개인정보 수집·이용 내용</a>을 확인했으며 접근 신청 정보의 처리에 동의합니다. <b>(필수)</b></span></label>
         <label class="account-consent"><input type="checkbox" name="analyticsConsent"><span>메뉴 이용 기록을 서비스 배치와 기능 개선에 활용하는 데 동의합니다. 검색어·입력 원문은 수집하지 않습니다. <b>(선택)</b></span></label>

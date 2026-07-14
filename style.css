@@ -2941,6 +2941,7 @@ body.account-modal-open{overflow:hidden;}
   padding:10px 11px;font:500 14px/1.4 inherit;resize:vertical;
 }
 .account-request-form input:focus,.account-request-form textarea:focus{outline:3px solid rgba(37,111,91,.13);border-color:var(--green);}
+.account-field-help{color:var(--muted);font-size:11px;font-weight:500;line-height:1.55;}
 .account-consent{display:grid;grid-template-columns:18px minmax(0,1fr);gap:8px;align-items:start;color:var(--muted);font-size:11px;line-height:1.55;cursor:pointer;}
 .account-consent input{width:16px;height:16px;margin:1px 0 0;accent-color:var(--green);}
 .account-consent a{color:var(--green);font-weight:800;}
