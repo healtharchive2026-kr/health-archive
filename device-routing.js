@@ -2,7 +2,7 @@
   'use strict';
 
   const preferenceKey = 'healtharchive-view-preference';
-  const mobileUrl = 'https://www.healtharchive.kr/mobile-lite.html';
+  const mobileUrl = 'https://m.healtharchive.kr/';
   const params = new URLSearchParams(window.location.search);
   const requestedView = params.get('view');
 

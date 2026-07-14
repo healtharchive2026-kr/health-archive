@@ -1,5 +1,5 @@
 (function () {
-  var API = 'https://healtharchive-api.kimsingun.workers.dev';
+  var API = 'https://api.healtharchive.kr';
   var CONTACT_EMAIL = 'healtharchive2026@gmail.com';
   var TOKENS_KEY = 'ha_board_tokens';
 

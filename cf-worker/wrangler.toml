@@ -2,6 +2,11 @@ name = "healtharchive-feedback"
 main = "src/index.js"
 compatibility_date = "2026-07-01"
 
+routes = [
+  { pattern = "api.healtharchive.kr", custom_domain = true },
+  { pattern = "m.healtharchive.kr", custom_domain = true },
+]
+
 [[d1_databases]]
 binding = "DB"
 database_name = "healtharchive-feedback"

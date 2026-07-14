@@ -1,6 +1,7 @@
 const ALLOWED_ORIGINS = new Set([
   'https://www.healtharchive.kr',
   'https://healtharchive.kr',
+  'https://m.healtharchive.kr',
   'https://healtharchive2026-kr.github.io',
 ]);
 
@@ -29,10 +30,39 @@ function randomToken() {
 const MAX_LEN = 200;
 const RETENTION_SECONDS = 30 * 24 * 60 * 60;
 
+async function serveMobileSite(request, url) {
+  if (request.method !== 'GET' && request.method !== 'HEAD') {
+    return new Response('Method not allowed', {
+      status: 405,
+      headers: { Allow: 'GET, HEAD' },
+    });
+  }
+
+  const target = new URL(url.toString());
+  target.protocol = 'https:';
+  target.hostname = 'www.healtharchive.kr';
+  if (target.pathname === '/' || target.pathname === '/index.html') {
+    target.pathname = '/mobile-lite.html';
+  }
+
+  const upstream = await fetch(new Request(target.toString(), request));
+  const headers = new Headers(upstream.headers);
+  headers.set('X-Content-Type-Options', 'nosniff');
+  return new Response(upstream.body, {
+    status: upstream.status,
+    statusText: upstream.statusText,
+    headers,
+  });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     const origin = request.headers.get('Origin') || '';
+
+    if (url.hostname === 'm.healtharchive.kr') {
+      return serveMobileSite(request, url);
+    }
 
     if (request.method === 'OPTIONS') {
       return new Response(null, { headers: corsHeaders(origin) });
