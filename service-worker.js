@@ -1,15 +1,15 @@
-const CACHE_NAME = 'healtharchive-scroll-auth-20260714-28';
+const CACHE_NAME = 'healtharchive-cinema-restore-20260714-29';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/style.css?v=20260714-scroll-auth1',
+  '/style.css?v=20260714-cinema-restore1',
   '/app.js?v=20260714-scroll-auth1',
-  '/pc-cinema.js?v=20260714-scroll-auth1',
+  '/pc-cinema.js?v=20260714-cinema-restore1',
   '/device-routing.js?v=20260714-mobile1',
   '/mobile-lite.html',
   '/privacy.html',
   '/terms.html',
-  '/mobile-lite.css?v=20260714-scroll-auth1',
+  '/mobile-lite.css?v=20260714-cinema-restore1',
   '/mobile-verdict.css?v=20260714-verdict3',
   '/mobile-verdict.js?v=20260714-verdict3',
   '/mobile-lite.js?v=20260714-scroll-auth1',

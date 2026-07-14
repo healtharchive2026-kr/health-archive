@@ -5,7 +5,7 @@
     const root = document.querySelector('.pc-cinema');
     if (!root) return;
 
-    const frames = [...root.querySelectorAll('[data-cinema-frame]')];
+    const frames = [...root.querySelectorAll('[data-cinema-scene]')];
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const syncWidth = () => {
       root.style.setProperty('--pc-cinema-width', document.documentElement.clientWidth + 'px');
@@ -13,10 +13,15 @@
     syncWidth();
     window.addEventListener('resize', syncWidth, {passive: true});
 
+    if (!reducedMotion) document.body.classList.add('cinema-motion');
     if ('IntersectionObserver' in window && !reducedMotion) {
       const observer = new IntersectionObserver(entries => {
-        entries.forEach(entry => entry.target.classList.toggle('is-visible', entry.isIntersecting));
-      }, {threshold: 0.42});
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        });
+      }, {threshold: 0.18, rootMargin: '0px 0px -8%'});
       frames.forEach(frame => observer.observe(frame));
     } else {
       frames.forEach(frame => frame.classList.add('is-visible'));
