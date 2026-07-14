@@ -48,7 +48,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="style.css?v=20260714-searchhome1">
+<link rel="stylesheet" href="style.css?v=20260714-homefeeds1">
 </head>
 <body>
 <a class="skip-link" href="#main-content">본문 바로가기</a>
@@ -248,6 +248,17 @@
         </div>
       </section>
 
+      <details class="home-service-directory">
+        <summary><span>전체 서비스</span><small>모든 데이터베이스와 실무 도구 보기</small></summary>
+        <div class="home-service-groups">
+          <section><h3>개발검토</h3><a data-goto="precheck">원료 Pre-Check</a><a data-goto="devmap">개발방향 매핑</a><a data-goto="material-dev">원료 개발 가이드</a><a data-goto="whitespace">화이트스페이스맵 🔒</a></section>
+          <section><h3>원료 DB</h3><a data-goto="ingredients">개별·고시형 원료</a><a data-goto="foodraw">식품원료목록</a><a data-goto="temp-approval">한시적 인정 원료</a><a data-goto="blocked">반입차단 원료</a><a data-goto="gmo-ingredients">GMO 심사 원료</a></section>
+          <section><h3>규제자료</h3><a data-goto="laws">법령·공전·가이드라인</a><a data-goto="overseas-approval">해외 인허가 🔒</a><a data-goto="nifds">심의 관련</a><a data-goto="minutes">건기식 심의 회의록</a><a data-goto="gmo-minutes">GMO 회의록</a></section>
+          <section><h3>연구설계</h3><a data-goto="compare">기능성별 원료 비교</a><a data-goto="biomarkers">기능성별 프로토콜</a><a data-goto="trials">임상정보 DB</a></section>
+          <section><h3>시장동향</h3><a data-goto="products">신규 등록 제품</a><a data-goto="market">시장현황</a><a data-goto="stats">인정 통계</a><a data-goto="radar">레귤러토리 레이더 🔒</a><a data-goto="news">식품 뉴스</a><a data-goto="events">학회·박람회</a></section>
+        </div>
+      </details>
+
       <div class="home-counts" aria-label="주요 데이터 현황">
         <a data-goto="ingredients"><strong id="stat-ingredients">0</strong><span>개별인정</span></a>
         <a data-goto="ingredients"><strong id="stat-converted">0</strong><span>고시형</span></a>
@@ -292,7 +303,7 @@
       </div>
       <div class="home-dash">
         <div class="home-dash-card">
-          <div class="hdc-head"><h3>최근 인정 원료</h3><a class="hdc-more" data-goto="ingredients">더보기 →</a></div>
+          <div class="hdc-head"><h3>당해 연도 인정 원료</h3><a class="hdc-more" data-goto="ingredients">전체 DB →</a></div>
           <div class="hdc-body" id="dash-recent-ingredients"><div class="hdc-loading">불러오는 중…</div></div>
         </div>
         <div class="home-dash-card">
@@ -304,20 +315,15 @@
           <div class="hdc-body" id="dash-recent-minutes"><div class="hdc-loading">불러오는 중…</div></div>
         </div>
         <div class="home-dash-card">
-          <div class="hdc-head"><h3>최근 신규 제품</h3><a class="hdc-more" data-goto="products">더보기 →</a></div>
+          <div class="hdc-head"><h3>오늘·어제 신규 제품</h3><a class="hdc-more" data-goto="products">전체 DB →</a></div>
           <div class="hdc-body" id="dash-recent-products"><div class="hdc-loading">불러오는 중…</div></div>
         </div>
       </div>
 
-      <details class="home-service-directory">
-        <summary><span>전체 서비스</span><small>모든 데이터베이스와 실무 도구 보기</small></summary>
-        <div class="home-service-groups">
-          <section><h3>개발검토</h3><a data-goto="precheck">원료 Pre-Check</a><a data-goto="devmap">개발방향 매핑</a><a data-goto="material-dev">원료 개발 가이드</a><a data-goto="whitespace">화이트스페이스맵 🔒</a></section>
-          <section><h3>원료 DB</h3><a data-goto="ingredients">개별·고시형 원료</a><a data-goto="foodraw">식품원료목록</a><a data-goto="temp-approval">한시적 인정 원료</a><a data-goto="blocked">반입차단 원료</a><a data-goto="gmo-ingredients">GMO 심사 원료</a></section>
-          <section><h3>규제자료</h3><a data-goto="laws">법령·공전·가이드라인</a><a data-goto="overseas-approval">해외 인허가 🔒</a><a data-goto="nifds">심의 관련</a><a data-goto="minutes">건기식 심의 회의록</a><a data-goto="gmo-minutes">GMO 회의록</a></section>
-          <section><h3>연구설계</h3><a data-goto="compare">기능성별 원료 비교</a><a data-goto="biomarkers">기능성별 프로토콜</a><a data-goto="trials">임상정보 DB</a></section>
-          <section><h3>시장동향</h3><a data-goto="products">신규 등록 제품</a><a data-goto="market">시장현황</a><a data-goto="stats">인정 통계</a><a data-goto="radar">레귤러토리 레이더 🔒</a><a data-goto="news">식품 뉴스</a><a data-goto="events">학회·박람회</a></section>
-        </div>
+      <details class="home-news-directory" open>
+        <summary><span>최근 3일 뉴스</span><small>국내·해외 6개 출처 통합</small></summary>
+        <div class="home-news-list" id="hero-news-list"></div>
+        <div class="home-news-foot"><a data-goto="news">전체 뉴스 보기 →</a></div>
       </details>
 
       <div class="home-flow home-legacy">
@@ -439,7 +445,7 @@
             <h3>최신 뉴스 (Recent News)</h3>
             <a class="hero-news-more" data-goto="news">더보기 →</a>
           </div>
-          <div class="hero-news-list" id="hero-news-list"></div>
+          <div class="hero-news-list"></div>
         </div>
         <div class="hero-law-card">
           <h3>법령/공전 바로가기</h3>
@@ -2289,7 +2295,7 @@
 <script src="data/status.js?v=20260630-news0930"></script>
 <script src="data/daily_quotes.js"></script>
 <script src="market.js"></script>
-<script src="app.js?v=20260714-private1"></script>
+<script src="app.js?v=20260714-homefeeds1"></script>
 <script src="pc-cinema.js?v=20260714-cinema2"></script>
 <script src="feedback.js?v=20260714-api1"></script>
 </body>

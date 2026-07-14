@@ -78,11 +78,12 @@ body:has(#home.active){background:#fff;}
 
 #workspace-start>.hero-section-head{max-width:1040px;margin:0 auto 10px;}
 #workspace-start .home-dash{max-width:1040px;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;margin:0 auto 24px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
-#workspace-start .home-dash-card{min-height:220px;padding:18px 20px;border:0;border-right:1px solid var(--border);border-radius:0;box-shadow:none;}
+#workspace-start .home-dash-card{min-height:320px;padding:18px 20px;border:0;border-right:1px solid var(--border);border-radius:0;box-shadow:none;}
 #workspace-start .home-dash-card:nth-child(2),#workspace-start .home-dash-card:nth-child(3){display:none;}
 #workspace-start .home-dash-card:last-child{border-right:0;}
+#workspace-start .home-dash-card>.hdc-body{max-height:330px;overflow-y:auto;padding-right:6px;scrollbar-gutter:stable;}
 
-.home-service-directory{max-width:1040px;margin:0 auto;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.home-service-directory{max-width:1040px;margin:0 auto 24px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
 .home-service-directory summary{display:flex;align-items:center;justify-content:space-between;padding:16px 2px;color:var(--text);cursor:pointer;list-style:none;}
 .home-service-directory summary::-webkit-details-marker{display:none;}
 .home-service-directory summary span{font-size:14px;font-weight:800;}
@@ -94,6 +95,22 @@ body:has(#home.active){background:#fff;}
 .home-service-groups h3{margin:0 0 10px;color:var(--green);font-size:11px;text-transform:uppercase;}
 .home-service-groups a{display:block;padding:6px 0;color:var(--text);font-size:11.5px;line-height:1.35;text-decoration:none;cursor:pointer;}
 .home-service-groups a:hover{color:var(--green);text-decoration:underline;}
+
+.home-news-directory{max-width:1040px;margin:0 auto;border-top:1px solid var(--border);border-bottom:1px solid var(--border);}
+.home-news-directory summary{display:flex;align-items:center;justify-content:space-between;padding:16px 2px;color:var(--text);cursor:pointer;list-style:none;}
+.home-news-directory summary::-webkit-details-marker{display:none;}
+.home-news-directory summary span{font-size:14px;font-weight:800;}
+.home-news-directory summary span::after{content:" −";color:var(--green);font-family:var(--mono);}
+.home-news-directory:not([open]) summary span::after{content:" +";}
+.home-news-directory summary small{color:var(--muted);font-size:11px;}
+.home-news-list{display:flex;max-height:350px;flex-direction:column;overflow-y:auto;border-top:1px solid var(--border);scrollbar-gutter:stable;}
+.home-news-row{display:grid;grid-template-columns:112px minmax(0,1fr) 88px;align-items:center;gap:14px;padding:11px 4px;border-bottom:1px solid #edf1ef;color:var(--text);text-decoration:none;}
+.home-news-row:hover{background:#f6f9f7;}
+.home-news-source{overflow:hidden;color:var(--green);font-size:10.5px;font-weight:800;text-overflow:ellipsis;white-space:nowrap;}
+.home-news-title{overflow:hidden;font-size:12px;font-weight:650;text-overflow:ellipsis;white-space:nowrap;}
+.home-news-foot{display:flex;justify-content:flex-end;padding:11px 2px;border-top:1px solid var(--border);}
+.home-news-foot a{color:var(--green);font-size:11.5px;font-weight:800;text-decoration:none;cursor:pointer;}
+.home-news-foot a:hover{text-decoration:underline;}
 
 @media(max-width:1100px){
   .home-command-grid{grid-template-columns:repeat(3,minmax(0,1fr));}
@@ -117,7 +134,9 @@ body:has(#home.active){background:#fff;}
   #workspace-start .home-dash-card{border-right:0;border-bottom:1px solid var(--border);}
   #workspace-start .home-dash-card:last-child{border-bottom:0;}
   .home-service-groups{grid-template-columns:repeat(2,minmax(0,1fr));}
-  .home-service-directory summary small{display:none;}
+  .home-service-directory summary small,.home-news-directory summary small{display:none;}
+  .home-news-row{grid-template-columns:82px minmax(0,1fr);gap:10px;}
+  .home-news-row .hero-news-date{display:none;}
 }
 *{box-sizing:border-box;}
 .skip-link{

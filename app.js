@@ -147,28 +147,39 @@ async function loadData() {
 
 function allNews() {
   return NEWS_SOURCES
-    .flatMap(src => src.data())
+    .flatMap(src => src.data().map(item => ({ ...item, sourceLabel: src.label })))
     .sort((x, y) => (y.pubDate || '').localeCompare(x.pubDate || ''));
+}
+
+function seoulDateKey(offsetDays = 0) {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit'
+  }).format(new Date(Date.now() + offsetDays * 86400000));
 }
 
 function renderHeroNews() {
   const el = document.getElementById('hero-news-list');
-  const pad = n => String(n).padStart(2, '0');
+  if (!el) return;
 
-  // 오늘 기준 최근 7일치만 표시 (뉴스 출처 전체 포함)
-  const cutoff = new Date();
-  cutoff.setDate(cutoff.getDate() - 7);
-  const cutoffKey = `${cutoff.getFullYear()}-${pad(cutoff.getMonth()+1)}-${pad(cutoff.getDate())}`;
+  // 오늘을 포함한 최근 3일치만 표시 (뉴스 출처 전체 통합)
+  const cutoffKey = seoulDateKey(-2);
 
-  const list = allNews().filter(n => (n.pubDate || '').slice(0, 10) >= cutoffKey);
+  const seen = new Set();
+  const list = allNews().filter(n => {
+    const key = n.link || n.title;
+    if ((n.pubDate || '').slice(0, 10) < cutoffKey || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 
   if (!list.length) {
-    el.innerHTML = '<div class="hero-news-empty">최근 7일간 수집된 뉴스가 없습니다.</div>';
+    el.innerHTML = '<div class="hero-news-empty">최근 3일간 수집된 뉴스가 없습니다.</div>';
     return;
   }
   el.innerHTML = list.map(n => `
-    <a class="hero-news-row" href="${escapeHtml(n.link)}" target="_blank" rel="noopener">
-      <span class="hero-news-title">${escapeHtml(n.title)}</span>
+    <a class="home-news-row" href="${escapeHtml(n.link)}" target="_blank" rel="noopener">
+      <span class="home-news-source">${escapeHtml(n.sourceLabel || n.source || '')}</span>
+      <span class="home-news-title">${escapeHtml(n.title)}</span>
       <span class="hero-news-date">${fmtNewsDate(n.pubDate)}</span>
     </a>
   `).join('');
@@ -1009,18 +1020,23 @@ function setupHomeOpsPanel() {
 }
 
 function renderHomeDashboard() {
-  // 최근 인정 원료 (loadData에서 연도·번호 내림차순 정렬됨)
+  // 당해 연도 인정 원료 (loadData에서 연도·번호 내림차순 정렬됨)
   const ingEl = document.getElementById('dash-recent-ingredients');
   if (ingEl && typeof ingredients !== 'undefined' && ingredients.length) {
-    const top = ingredients.slice(0, 5);
-    ingEl.innerHTML = top.map((r, i) =>
+    const currentYear = Number(seoulDateKey(0).slice(0, 4));
+    const current = ingredients.filter(r => r.year === currentYear);
+    if (!current.length) {
+      ingEl.innerHTML = '<div class="hdc-loading">당해 연도 인정 원료가 없습니다.</div>';
+    } else {
+      ingEl.innerHTML = current.map((r, i) =>
       '<button type="button" class="dash-ing-row" data-i="' + i + '">' +
         '<span class="dash-ing-name">' + escapeHtml(r.name) + '</span>' +
         '<span class="dash-ing-meta">' + escapeHtml(r.noticeNo || '') + (r.category ? ' · ' + escapeHtml(r.category) : '') + '</span>' +
       '</button>'
-    ).join('');
-    ingEl.querySelectorAll('.dash-ing-row').forEach(btn =>
-      btn.addEventListener('click', () => openIngredientDetail(top[+btn.dataset.i])));
+      ).join('');
+      ingEl.querySelectorAll('.dash-ing-row').forEach(btn =>
+        btn.addEventListener('click', () => openIngredientDetail(current[+btn.dataset.i])));
+    }
   }
 
   // 기능성 분포 Top
@@ -1059,15 +1075,16 @@ function renderHomeDashboard() {
     ).join('');
   }
 
-  // 최근 신규 제품 (products.js 지연 로드)
+  // 한국 시간 기준 오늘·어제 신규 제품 (products.js 지연 로드)
   const prodEl = document.getElementById('dash-recent-products');
   if (prodEl) {
     loadScripts(TAB_SCRIPT_DEPS.products).then(() => {
       const products = (typeof PRODUCTS_DATA !== 'undefined') ? PRODUCTS_DATA.slice() : [];
       products.sort((a, b) => (b.reportDate || '').localeCompare(a.reportDate || ''));
-      const top = products.slice(0, 4);
-      if (!top.length) { prodEl.innerHTML = '<div class="hdc-loading">데이터 없음</div>'; return; }
-      prodEl.innerHTML = top.map(p =>
+      const visibleDates = new Set([seoulDateKey(0), seoulDateKey(-1)]);
+      const recent = products.filter(p => visibleDates.has(p.reportDate));
+      if (!recent.length) { prodEl.innerHTML = '<div class="hdc-loading">오늘·어제 등록된 제품이 없습니다.</div>'; return; }
+      prodEl.innerHTML = recent.map(p =>
         '<div class="dash-prod-row">' +
           '<span class="dash-prod-name">' + escapeHtml(p.name) + '</span>' +
           '<span class="dash-prod-meta">' + escapeHtml((p.company || '').slice(0, 14)) + ' · ' + escapeHtml(fmtProductDate(p.reportDate)) + '</span>' +

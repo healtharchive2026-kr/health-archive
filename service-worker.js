@@ -1,9 +1,9 @@
-const CACHE_NAME = 'healtharchive-cinema-home-20260714-14';
+const CACHE_NAME = 'healtharchive-home-feeds-20260714-15';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/style.css?v=20260714-searchhome1',
-  '/app.js?v=20260714-private1',
+  '/style.css?v=20260714-homefeeds1',
+  '/app.js?v=20260714-homefeeds1',
   '/pc-cinema.js?v=20260714-cinema2',
   '/device-routing.js?v=20260714-mobile1',
   '/mobile-lite.html',
