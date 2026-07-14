@@ -11,6 +11,7 @@ function corsHeaders(origin) {
     'Access-Control-Allow-Origin': allow,
     'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Credentials': 'true',
     'Vary': 'Origin',
   };
 }
@@ -29,6 +30,148 @@ function randomToken() {
 
 const MAX_LEN = 200;
 const RETENTION_SECONDS = 30 * 24 * 60 * 60;
+const AUTH_MAX_AGE = 8 * 60 * 60;
+const AUTH_MAX_FAILURES = 5;
+const AUTH_BLOCK_SECONDS = 15 * 60;
+const AUTH_COOKIE = 'ha_protected_session';
+
+function bytesToBase64Url(bytes) {
+  let binary = '';
+  bytes.forEach(byte => { binary += String.fromCharCode(byte); });
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
+
+async function hmac(secret, value) {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(value));
+  return bytesToBase64Url(new Uint8Array(signature));
+}
+
+async function secureEqual(left, right) {
+  const encoder = new TextEncoder();
+  const [leftHash, rightHash] = await Promise.all([
+    crypto.subtle.digest('SHA-256', encoder.encode(String(left))),
+    crypto.subtle.digest('SHA-256', encoder.encode(String(right))),
+  ]);
+  const a = new Uint8Array(leftHash);
+  const b = new Uint8Array(rightHash);
+  let mismatch = a.length ^ b.length;
+  for (let i = 0; i < Math.max(a.length, b.length); i += 1) {
+    mismatch |= (a[i] || 0) ^ (b[i] || 0);
+  }
+  return mismatch === 0;
+}
+
+function readCookie(request, name) {
+  const cookie = request.headers.get('Cookie') || '';
+  const prefix = `${name}=`;
+  const part = cookie.split(';').map(value => value.trim()).find(value => value.startsWith(prefix));
+  return part ? part.slice(prefix.length) : '';
+}
+
+async function createSession(secret) {
+  const expires = Math.floor(Date.now() / 1000) + AUTH_MAX_AGE;
+  const nonce = randomToken();
+  const payload = `${expires}.${nonce}`;
+  return `${payload}.${await hmac(secret, payload)}`;
+}
+
+async function hasValidSession(request, secret) {
+  if (!secret) return false;
+  const token = readCookie(request, AUTH_COOKIE);
+  const parts = token.split('.');
+  if (parts.length !== 3) return false;
+  const payload = `${parts[0]}.${parts[1]}`;
+  const expires = Number(parts[0]);
+  if (!Number.isFinite(expires) || expires <= Math.floor(Date.now() / 1000)) return false;
+  return secureEqual(parts[2], await hmac(secret, payload));
+}
+
+function authJson(data, status, origin, cookie) {
+  const headers = new Headers({
+    'Content-Type': 'application/json',
+    'Cache-Control': 'no-store',
+    ...corsHeaders(origin),
+  });
+  if (cookie) headers.set('Set-Cookie', cookie);
+  return new Response(JSON.stringify(data), { status, headers });
+}
+
+async function authClientKey(request, secret) {
+  const address = request.headers.get('CF-Connecting-IP') || 'unknown';
+  return hmac(secret, `auth:${address}`);
+}
+
+async function handleAuth(request, env, url, origin) {
+  if (!env.ACCESS_PASSCODE || !env.AUTH_SECRET) {
+    return authJson({ error: '인증 서비스가 준비되지 않았습니다.' }, 503, origin);
+  }
+
+  if (url.pathname === '/auth/status' && request.method === 'GET') {
+    return authJson({ authenticated: await hasValidSession(request, env.AUTH_SECRET) }, 200, origin);
+  }
+
+  if (url.pathname === '/auth/logout' && request.method === 'POST') {
+    return authJson(
+      { ok: true },
+      200,
+      origin,
+      `${AUTH_COOKIE}=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0`
+    );
+  }
+
+  if (url.pathname !== '/auth/login' || request.method !== 'POST') return null;
+
+  let body;
+  try {
+    body = await request.json();
+  } catch (error) {
+    return authJson({ error: '잘못된 요청입니다.' }, 400, origin);
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  const clientKey = await authClientKey(request, env.AUTH_SECRET);
+  await env.DB.prepare('DELETE FROM auth_attempts WHERE updated_at < ?').bind(now - 86400).run();
+  const attempt = await env.DB.prepare(
+    'SELECT fail_count, blocked_until FROM auth_attempts WHERE client_key = ?'
+  ).bind(clientKey).first();
+
+  if (attempt && Number(attempt.blocked_until) > now) {
+    return authJson({ error: '입력 횟수를 초과했습니다. 15분 후 다시 시도해 주세요.' }, 429, origin);
+  }
+
+  const valid = await secureEqual(String(body.passcode || ''), env.ACCESS_PASSCODE);
+  if (!valid) {
+    const failures = (attempt && Number(attempt.blocked_until) <= now ? Number(attempt.fail_count) : 0) + 1;
+    const blockedUntil = failures >= AUTH_MAX_FAILURES ? now + AUTH_BLOCK_SECONDS : 0;
+    await env.DB.prepare(
+      `INSERT INTO auth_attempts (client_key, fail_count, blocked_until, updated_at)
+       VALUES (?, ?, ?, ?)
+       ON CONFLICT(client_key) DO UPDATE SET fail_count = excluded.fail_count,
+         blocked_until = excluded.blocked_until, updated_at = excluded.updated_at`
+    ).bind(clientKey, failures, blockedUntil, now).run();
+    const message = blockedUntil
+      ? '입력 횟수를 초과했습니다. 15분 후 다시 시도해 주세요.'
+      : '비밀번호가 올바르지 않습니다.';
+    return authJson({ error: message }, blockedUntil ? 429 : 401, origin);
+  }
+
+  await env.DB.prepare('DELETE FROM auth_attempts WHERE client_key = ?').bind(clientKey).run();
+  const token = await createSession(env.AUTH_SECRET);
+  return authJson(
+    { authenticated: true },
+    200,
+    origin,
+    `${AUTH_COOKIE}=${token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=${AUTH_MAX_AGE}`
+  );
+}
 
 async function serveMobileSite(request, url) {
   if (request.method !== 'GET' && request.method !== 'HEAD') {
@@ -66,6 +209,11 @@ export default {
 
     if (request.method === 'OPTIONS') {
       return new Response(null, { headers: corsHeaders(origin) });
+    }
+
+    if (url.pathname.startsWith('/auth/')) {
+      const authResponse = await handleAuth(request, env, url, origin);
+      if (authResponse) return authResponse;
     }
 
     const cutoff = Math.floor(Date.now() / 1000) - RETENTION_SECONDS;

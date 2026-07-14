@@ -1,9 +1,9 @@
-const CACHE_NAME = 'healtharchive-mobile-domain-20260714-10';
+const CACHE_NAME = 'healtharchive-server-auth-20260714-11';
 const CORE_ASSETS = [
   '/',
   '/index.html',
   '/style.css?v=20260714-cinema1',
-  '/app.js?v=20260713-r2',
+  '/app.js?v=20260714-auth1',
   '/pc-cinema.js?v=20260714-cinema1',
   '/device-routing.js?v=20260714-mobile1',
   '/mobile-lite.html',

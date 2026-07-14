@@ -1370,8 +1370,77 @@ function initStatsTab() {
 
 // ---------- 화이트스페이스맵 (기능성×유래 매트릭스, 비공개) ----------
 
-const WS_PASSCODE = '7835';
-const WS_SESSION_KEY = 'ha_ws_unlocked';
+const PROTECTED_AUTH_API = 'https://api.healtharchive.kr';
+let protectedAuthState = null;
+let protectedAuthCheck = null;
+
+async function protectedAuthStatus(force = false) {
+  if (!force && protectedAuthState !== null) return protectedAuthState;
+  if (!force && protectedAuthCheck) return protectedAuthCheck;
+  protectedAuthCheck = fetch(`${PROTECTED_AUTH_API}/auth/status`, {
+    credentials: 'include',
+    cache: 'no-store',
+  })
+    .then(response => response.ok ? response.json() : { authenticated: false })
+    .then(result => {
+      protectedAuthState = result.authenticated === true;
+      return protectedAuthState;
+    })
+    .catch(() => {
+      protectedAuthState = false;
+      return false;
+    })
+    .finally(() => { protectedAuthCheck = null; });
+  return protectedAuthCheck;
+}
+
+async function protectedAuthLogin(passcode) {
+  const response = await fetch(`${PROTECTED_AUTH_API}/auth/login`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ passcode }),
+  });
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok || result.authenticated !== true) {
+    throw new Error(result.error || '인증에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+  }
+  protectedAuthState = true;
+  return true;
+}
+
+async function protectedAuthLogout() {
+  try {
+    await fetch(`${PROTECTED_AUTH_API}/auth/logout`, {
+      method: 'POST',
+      credentials: 'include',
+    });
+  } finally {
+    protectedAuthState = false;
+    protectedAuthCheck = null;
+  }
+}
+
+function protectedGateBusy(form, busy) {
+  const button = form && form.querySelector('button[type="submit"]');
+  if (button) {
+    button.disabled = busy;
+    button.textContent = busy ? '확인 중' : '열기';
+  }
+}
+
+function protectedGateError(element, message) {
+  if (!element) return;
+  element.textContent = message || '비밀번호가 올바르지 않습니다.';
+  element.hidden = !message;
+}
+
+async function protectedLockAll() {
+  await protectedAuthLogout();
+  wsShowLocked();
+  radarShowLocked();
+  overseasShowLocked();
+}
 
 const WS_ORIGIN_ORDER = ['식물성', '동물성', '미생물(발효)', '정제·합성물', '복합·기타'];
 const WS_MICROBE_KW = ['lactobacillus','lactiplantibacillus','bifidobacterium','bacillus','weissella','leuconostoc',
@@ -1404,8 +1473,18 @@ function wsClassifyOrigin(name) {
   return '복합·기타';
 }
 
-function wsIsUnlocked() {
-  try { return sessionStorage.getItem(WS_SESSION_KEY) === '1'; } catch (e) { return false; }
+function wsShowLocked() {
+  const gate = document.getElementById('ws-gate');
+  const content = document.getElementById('ws-content');
+  if (gate) gate.hidden = false;
+  if (content) content.hidden = true;
+}
+
+function wsShowUnlocked() {
+  const gate = document.getElementById('ws-gate');
+  const content = document.getElementById('ws-content');
+  if (gate) gate.hidden = true;
+  if (content) content.hidden = false;
 }
 
 function wsLevel(n) {
@@ -1577,29 +1656,19 @@ function wsRenderMatrix() {
 }
 
 function wsUnlock() {
-  try { sessionStorage.setItem(WS_SESSION_KEY, '1'); } catch (e) {}
-  document.getElementById('ws-gate').hidden = true;
-  document.getElementById('ws-content').hidden = false;
+  wsShowUnlocked();
   loadScripts(WS_DATA_DEPS).then(wsRenderMatrix).catch(() => wsRenderMatrix());
 }
 
-function wsLock() {
-  try { sessionStorage.removeItem(WS_SESSION_KEY); } catch (e) {}
-  document.getElementById('ws-gate').hidden = false;
-  document.getElementById('ws-content').hidden = true;
+async function wsLock() {
+  await protectedLockAll();
   const input = document.getElementById('ws-gate-input');
   if (input) input.value = '';
 }
 
-function initWhitespaceTab() {
-  if (wsIsUnlocked()) {
-    document.getElementById('ws-gate').hidden = true;
-    document.getElementById('ws-content').hidden = false;
-    loadScripts(WS_DATA_DEPS).then(wsRenderMatrix).catch(() => wsRenderMatrix());
-  } else {
-    document.getElementById('ws-gate').hidden = false;
-    document.getElementById('ws-content').hidden = true;
-  }
+async function initWhitespaceTab() {
+  if (await protectedAuthStatus()) wsUnlock();
+  else wsShowLocked();
 }
 
 function setupWhitespaceGate() {
@@ -1608,13 +1677,18 @@ function setupWhitespaceGate() {
   const err = document.getElementById('ws-gate-err');
   const lockBtn = document.getElementById('ws-lock-btn');
   if (form) {
-    form.addEventListener('submit', e => {
+    form.addEventListener('submit', async e => {
       e.preventDefault();
-      if ((input.value || '') === WS_PASSCODE) {
-        if (err) err.hidden = true;
+      protectedGateBusy(form, true);
+      protectedGateError(err, '');
+      try {
+        await protectedAuthLogin((input && input.value) || '');
+        if (input) input.value = '';
         wsUnlock();
-      } else {
-        if (err) err.hidden = false;
+      } catch (error) {
+        protectedGateError(err, error.message);
+      } finally {
+        protectedGateBusy(form, false);
       }
     });
   }
@@ -1623,8 +1697,6 @@ function setupWhitespaceGate() {
 
 // ---------- 레귤러토리 레이더 (변경 다이제스트) ----------
 
-const RADAR_PASSCODE = WS_PASSCODE;
-const RADAR_SESSION_KEY = 'ha_radar_unlocked';
 let radarGateReady = false;
 
 const RADAR_CATEGORY_LABEL = {
@@ -1641,10 +1713,6 @@ const RADAR_CATEGORY_ICON = {
 };
 let radarActiveFilter = 'all';
 
-function radarIsUnlocked() {
-  try { return sessionStorage.getItem(RADAR_SESSION_KEY) === '1'; } catch (e) { return false; }
-}
-
 function radarShowLocked() {
   const gate = document.getElementById('radar-gate');
   const content = document.getElementById('radar-content');
@@ -1660,7 +1728,6 @@ function radarShowUnlocked() {
 }
 
 function radarUnlock() {
-  try { sessionStorage.setItem(RADAR_SESSION_KEY, '1'); } catch (e) {}
   radarShowUnlocked();
   const feed = document.getElementById('radar-feed');
   if (feed) feed.innerHTML = '<div class="ingx-empty">레귤러토리 데이터를 불러오는 중입니다.</div>';
@@ -1672,13 +1739,12 @@ function radarUnlock() {
     });
 }
 
-function radarLock() {
-  try { sessionStorage.removeItem(RADAR_SESSION_KEY); } catch (e) {}
-  radarShowLocked();
+async function radarLock() {
+  await protectedLockAll();
   const input = document.getElementById('radar-gate-input');
   const err = document.getElementById('radar-gate-err');
   if (input) input.value = '';
-  if (err) err.hidden = true;
+  protectedGateError(err, '');
 }
 
 function setupRadarGate() {
@@ -1690,13 +1756,18 @@ function setupRadarGate() {
   if (!form && !lockBtn) return;
   radarGateReady = true;
   if (form) {
-    form.addEventListener('submit', e => {
+    form.addEventListener('submit', async e => {
       e.preventDefault();
-      if (((input && input.value) || '') === RADAR_PASSCODE) {
-        if (err) err.hidden = true;
+      protectedGateBusy(form, true);
+      protectedGateError(err, '');
+      try {
+        await protectedAuthLogin((input && input.value) || '');
+        if (input) input.value = '';
         radarUnlock();
-      } else {
-        if (err) err.hidden = false;
+      } catch (error) {
+        protectedGateError(err, error.message);
+      } finally {
+        protectedGateBusy(form, false);
       }
     });
   }
@@ -1761,9 +1832,9 @@ function radarRender() {
   });
 }
 
-function initRadarTab() {
+async function initRadarTab() {
   setupRadarGate();
-  if (radarIsUnlocked()) {
+  if (await protectedAuthStatus()) {
     radarShowUnlocked();
     loadScripts(RADAR_DATA_DEPS).then(radarRender).catch(console.error);
   } else {
@@ -4493,12 +4564,6 @@ const DOSSIER_CROSSWALK = [
   { module:'표시·행정', key:'label', cells:{ kr:['support','신청·표시'], us:['conditional','Label 조건'], eu:['conditional','사용조건'], jp:['core','신고·공개'], cn:['core','라벨·설명서'], au:['core','ARTG·Label'] } }
 ];
 
-const OVERSEAS_SESSION_KEY = 'ha_overseas_unlocked';
-
-function overseasIsUnlocked() {
-  try { return sessionStorage.getItem(OVERSEAS_SESSION_KEY) === '1'; } catch (e) { return false; }
-}
-
 function overseasShowLocked() {
   const gate = document.getElementById('overseas-gate');
   const content = document.getElementById('overseas-content');
@@ -4513,33 +4578,35 @@ function overseasShowUnlocked() {
   if (content) content.hidden = false;
 }
 
-function setupOverseasGate() {
+async function setupOverseasGate() {
   const form = document.getElementById('overseas-gate-form');
   const input = document.getElementById('overseas-gate-input');
   const err = document.getElementById('overseas-gate-err');
   const lockBtn = document.getElementById('overseas-lock-btn');
   if (!form) return;
 
-  if (overseasIsUnlocked()) overseasShowUnlocked();
+  if (await protectedAuthStatus()) overseasShowUnlocked();
   else overseasShowLocked();
 
-  form.addEventListener('submit', event => {
+  form.addEventListener('submit', async event => {
     event.preventDefault();
-    if (((input && input.value) || '') === WS_PASSCODE) {
-      try { sessionStorage.setItem(OVERSEAS_SESSION_KEY, '1'); } catch (e) {}
-      if (err) err.hidden = true;
+    protectedGateBusy(form, true);
+    protectedGateError(err, '');
+    try {
+      await protectedAuthLogin((input && input.value) || '');
       if (input) input.value = '';
       overseasShowUnlocked();
-    } else if (err) {
-      err.hidden = false;
+    } catch (error) {
+      protectedGateError(err, error.message);
+    } finally {
+      protectedGateBusy(form, false);
     }
   });
 
-  if (lockBtn) lockBtn.addEventListener('click', () => {
-    try { sessionStorage.removeItem(OVERSEAS_SESSION_KEY); } catch (e) {}
-    if (err) err.hidden = true;
+  if (lockBtn) lockBtn.addEventListener('click', async () => {
+    await protectedLockAll();
+    protectedGateError(err, '');
     if (input) input.value = '';
-    overseasShowLocked();
   });
 }
 
