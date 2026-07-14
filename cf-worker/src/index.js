@@ -31,8 +31,6 @@ function randomToken() {
 const MAX_LEN = 200;
 const RETENTION_SECONDS = 30 * 24 * 60 * 60;
 const AUTH_MAX_AGE = 6 * 60 * 60;
-const AUTH_MAX_FAILURES = 5;
-const AUTH_BLOCK_SECONDS = 15 * 60;
 const AUTH_COOKIE = 'ha_protected_session';
 const PROTECTED_DATA_KEYS = new Set(['radar-log', 'demand-trends', 'overseas-regulatory']);
 const ACCESS_LOGIN_PATH = '/auth/access/exchange';
@@ -155,11 +153,6 @@ async function verifyAccessIdentity(request, env) {
 
   const email = String(payload.email || '').trim().toLowerCase();
   if (!email) throw new Error('인증 이메일을 확인하지 못했습니다.');
-  const allowedEmails = String(env.ACCESS_ALLOWED_EMAILS || '')
-    .split(',')
-    .map(value => value.trim().toLowerCase())
-    .filter(Boolean);
-  if (!allowedEmails.length || !allowedEmails.includes(email)) throw new Error('승인되지 않은 이메일입니다.');
   return { email };
 }
 
@@ -204,11 +197,6 @@ function authJson(data, status, origin, cookie) {
   return new Response(JSON.stringify(data), { status, headers });
 }
 
-async function authClientKey(request, secret) {
-  const address = request.headers.get('CF-Connecting-IP') || 'unknown';
-  return hmac(secret, `auth:${address}`);
-}
-
 async function handleAuth(request, env, url, origin) {
   if (url.pathname === '/auth/access/start' && request.method === 'GET') {
     const exchange = new URL(ACCESS_LOGIN_PATH, url.origin);
@@ -220,7 +208,7 @@ async function handleAuth(request, env, url, origin) {
     return handleAccessExchange(request, env, url);
   }
 
-  if (!env.ACCESS_PASSCODE || !env.AUTH_SECRET) {
+  if (!env.AUTH_SECRET) {
     return authJson({ error: '인증 서비스가 준비되지 않았습니다.' }, 503, origin);
   }
 
@@ -237,50 +225,10 @@ async function handleAuth(request, env, url, origin) {
     );
   }
 
-  if (url.pathname !== '/auth/login' || request.method !== 'POST') return null;
-
-  let body;
-  try {
-    body = await request.json();
-  } catch (error) {
-    return authJson({ error: '잘못된 요청입니다.' }, 400, origin);
+  if (url.pathname === '/auth/login') {
+    return authJson({ error: '공용 비밀번호 로그인은 지원하지 않습니다.' }, 410, origin);
   }
-
-  const now = Math.floor(Date.now() / 1000);
-  const clientKey = await authClientKey(request, env.AUTH_SECRET);
-  await env.DB.prepare('DELETE FROM auth_attempts WHERE updated_at < ?').bind(now - 86400).run();
-  const attempt = await env.DB.prepare(
-    'SELECT fail_count, blocked_until FROM auth_attempts WHERE client_key = ?'
-  ).bind(clientKey).first();
-
-  if (attempt && Number(attempt.blocked_until) > now) {
-    return authJson({ error: '입력 횟수를 초과했습니다. 15분 후 다시 시도해 주세요.' }, 429, origin);
-  }
-
-  const valid = await secureEqual(String(body.passcode || ''), env.ACCESS_PASSCODE);
-  if (!valid) {
-    const failures = (attempt && Number(attempt.blocked_until) <= now ? Number(attempt.fail_count) : 0) + 1;
-    const blockedUntil = failures >= AUTH_MAX_FAILURES ? now + AUTH_BLOCK_SECONDS : 0;
-    await env.DB.prepare(
-      `INSERT INTO auth_attempts (client_key, fail_count, blocked_until, updated_at)
-       VALUES (?, ?, ?, ?)
-       ON CONFLICT(client_key) DO UPDATE SET fail_count = excluded.fail_count,
-         blocked_until = excluded.blocked_until, updated_at = excluded.updated_at`
-    ).bind(clientKey, failures, blockedUntil, now).run();
-    const message = blockedUntil
-      ? '입력 횟수를 초과했습니다. 15분 후 다시 시도해 주세요.'
-      : '비밀번호가 올바르지 않습니다.';
-    return authJson({ error: message }, blockedUntil ? 429 : 401, origin);
-  }
-
-  await env.DB.prepare('DELETE FROM auth_attempts WHERE client_key = ?').bind(clientKey).run();
-  const token = await createSession(env.AUTH_SECRET);
-  return authJson(
-    { authenticated: true },
-    200,
-    origin,
-    `${AUTH_COOKIE}=${token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=${AUTH_MAX_AGE}`
-  );
+  return null;
 }
 
 async function handleProtectedData(request, env, url, origin) {
