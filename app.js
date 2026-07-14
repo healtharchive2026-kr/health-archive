@@ -3570,7 +3570,7 @@ function setupTabs() {
   const menuToggle = document.querySelector('.mobile-menu-toggle');
   const mainNav = document.getElementById('main-nav');
   const navGroups = Array.from(document.querySelectorAll('.nav-group'));
-  const publicTabs = new Set(['precheck']);
+  const publicTabs = new Set(['home', 'precheck']);
   const adminOnlyTabs = new Set(['whitespace', 'overseas-approval']);
 
   document.querySelectorAll('a[data-goto]:not([href])').forEach(link => {
@@ -3613,8 +3613,8 @@ function setupTabs() {
       const authenticated = await protectedAuthStatus();
       if (!authenticated) {
         sessionStorage.setItem('ha-login-target', tab);
-        activateView('precheck');
-        if (options.initial) history.replaceState(null, '', '#precheck');
+        activateView('home');
+        if (options.initial) history.replaceState(null, '', '#home');
         else openProtectedAccountModal();
         return false;
       }

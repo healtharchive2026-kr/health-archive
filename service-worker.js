@@ -1,10 +1,10 @@
-const CACHE_NAME = 'healtharchive-header-mobile-20260714-25';
+const CACHE_NAME = 'healtharchive-cinema-public-20260714-27';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/style.css?v=20260714-header-mobile2',
-  '/app.js?v=20260714-access-insights1',
-  '/pc-cinema.js?v=20260714-cinema2',
+  '/style.css?v=20260714-cinema-public2',
+  '/app.js?v=20260714-cinema-public1',
+  '/pc-cinema.js?v=20260714-cinema-public1',
   '/device-routing.js?v=20260714-mobile1',
   '/mobile-lite.html',
   '/privacy.html',
@@ -16,6 +16,10 @@ const CORE_ASSETS = [
   '/assets/logo-icon.png',
   '/assets/leaf-badge.png',
   '/assets/mobile-health-hero.jpg',
+  '/assets/cinema-overview.jpg',
+  '/assets/cinema-discovery.jpg',
+  '/assets/cinema-intelligence.jpg',
+  '/assets/cinema-workspace.jpg',
   '/assets/pc-landscape-bg.jpg',
   '/assets/pc-nature-hero.jpg',
   '/assets/pc-origin.jpg',

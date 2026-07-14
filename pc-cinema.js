@@ -11,29 +11,80 @@
     syncWidth();
     window.addEventListener('resize', syncWidth, {passive: true});
 
-    const scenes = [...root.querySelectorAll('[data-cinema-scene]')];
+    const stage = root.querySelector('.pc-cinema-stage');
+    const slides = [...root.querySelectorAll('[data-cinema-slide]')];
+    const dots = [...root.querySelectorAll('[data-cinema-dot]')];
+    const current = root.querySelector('[data-cinema-current]');
+    const previousButton = root.querySelector('[data-cinema-prev]');
+    const nextButton = root.querySelector('[data-cinema-next]');
+    const toggleButton = root.querySelector('[data-cinema-toggle]');
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let activeIndex = 0;
+    let paused = reducedMotion;
+    let timer = null;
 
-    if (!reducedMotion) document.body.classList.add('cinema-motion');
-
-    if (reducedMotion || !('IntersectionObserver' in window)) {
-      scenes.forEach(scene => scene.classList.add('is-visible'));
-    } else {
-      const observer = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-          if (!entry.isIntersecting) return;
-          entry.target.classList.add('is-visible');
-          observer.unobserve(entry.target);
-        });
-      }, {threshold: 0.18, rootMargin: '0px 0px -8%'});
-      scenes.forEach(scene => observer.observe(scene));
+    function render() {
+      slides.forEach((slide, index) => {
+        const active = index === activeIndex;
+        slide.classList.toggle('is-active', active);
+        slide.setAttribute('aria-hidden', String(!active));
+      });
+      dots.forEach((dot, index) => {
+        const active = index === activeIndex;
+        dot.classList.toggle('is-active', active);
+        dot.setAttribute('aria-selected', String(active));
+      });
+      if (current) current.textContent = String(activeIndex + 1).padStart(2, '0');
     }
 
-    const enterButton = root.querySelector('[data-cinema-enter]');
-    const workspace = document.getElementById('workspace-start');
-    enterButton.addEventListener('click', () => {
-      workspace.scrollIntoView({behavior: reducedMotion ? 'auto' : 'smooth', block: 'start'});
+    function schedule() {
+      window.clearTimeout(timer);
+      if (paused || document.hidden || slides.length < 2) return;
+      timer = window.setTimeout(() => {
+        activeIndex = (activeIndex + 1) % slides.length;
+        render();
+        schedule();
+      }, 7000);
+    }
+
+    function goTo(index) {
+      activeIndex = (index + slides.length) % slides.length;
+      render();
+      schedule();
+    }
+
+    function setPaused(nextPaused) {
+      paused = nextPaused;
+      root.classList.toggle('is-paused', paused);
+      if (toggleButton) {
+        toggleButton.textContent = paused ? '▶' : 'Ⅱ';
+        toggleButton.setAttribute('aria-label', paused ? '자동 재생 시작' : '자동 재생 일시정지');
+      }
+      schedule();
+    }
+
+    dots.forEach((dot, index) => dot.addEventListener('click', () => goTo(index)));
+    previousButton?.addEventListener('click', () => goTo(activeIndex - 1));
+    nextButton?.addEventListener('click', () => goTo(activeIndex + 1));
+    toggleButton?.addEventListener('click', () => setPaused(!paused));
+    stage?.addEventListener('keydown', event => {
+      if (event.key === 'ArrowLeft') goTo(activeIndex - 1);
+      if (event.key === 'ArrowRight') goTo(activeIndex + 1);
     });
+    document.addEventListener('visibilitychange', schedule);
+
+    root.querySelector('[data-cinema-enter]')?.addEventListener('click', () => {
+      document.getElementById('workspace-start')?.scrollIntoView({
+        behavior: reducedMotion ? 'auto' : 'smooth', block: 'start',
+      });
+    });
+    root.querySelector('[data-cinema-account]')?.addEventListener('click', () => {
+      if (typeof window.openProtectedAccountModal === 'function') window.openProtectedAccountModal();
+      else document.getElementById('account-trigger')?.click();
+    });
+
+    render();
+    setPaused(paused);
   }
 
   if (document.readyState === 'loading') {
