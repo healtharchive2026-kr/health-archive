@@ -2530,6 +2530,9 @@ function initTabContent(tab) {
         case 'radar':
           setTimeout(initRadarTab, 0);
           break;
+        case 'overseas-approval':
+          setTimeout(initOverseasTab, 0);
+          break;
         case 'safety-db':
           if (typeof initSafetyDbTab === 'function') requestAnimationFrame(initSafetyDbTab);
           break;
@@ -4576,6 +4579,11 @@ function overseasShowUnlocked() {
   const content = document.getElementById('overseas-content');
   if (gate) gate.hidden = true;
   if (content) content.hidden = false;
+}
+
+async function initOverseasTab() {
+  if (await protectedAuthStatus()) overseasShowUnlocked();
+  else overseasShowLocked();
 }
 
 async function setupOverseasGate() {
