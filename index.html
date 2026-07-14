@@ -48,7 +48,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="style.css?v=20260714-cinema-horizontal1">
+<link rel="stylesheet" href="style.css?v=20260714-account1">
 </head>
 <body>
 <a class="skip-link" href="#main-content">본문 바로가기</a>
@@ -59,6 +59,10 @@
       <span class="cmdk-trigger-icon">⌕</span>
       <span class="cmdk-trigger-label">통합검색</span>
       <span class="cmdk-trigger-kbd"><kbd>Ctrl</kbd><kbd>K</kbd></span>
+    </button>
+    <button class="account-trigger" type="button" id="account-trigger" aria-haspopup="dialog" aria-controls="account-modal">
+      <span class="account-trigger-icon" aria-hidden="true">◉</span>
+      <span id="account-trigger-label">로그인</span>
     </button>
     <button class="mobile-menu-toggle" type="button" aria-label="메뉴 열기" aria-expanded="false" aria-controls="main-nav">
       <span></span><span></span><span></span>
@@ -1004,12 +1008,9 @@
       <div class="ws-gate-box">
         <div class="ws-gate-icon">🔒</div>
         <h3>비공개 페이지</h3>
-        <p>화이트스페이스맵은 비밀번호로 보호되어 있습니다.</p>
-        <form id="ws-gate-form" class="ws-gate-form">
-          <input type="password" id="ws-gate-input" placeholder="비밀번호" autocomplete="off">
-          <button type="submit">열기</button>
-        </form>
-        <p class="ws-gate-err" id="ws-gate-err" hidden>비밀번호가 올바르지 않습니다.</p>
+        <p>승인된 이메일로 로그인하면 보호 자료를 열람할 수 있습니다.</p>
+        <button type="button" class="protected-login-btn" data-protected-login>이메일로 로그인</button>
+        <p class="ws-gate-err" id="ws-gate-err" hidden></p>
       </div>
     </div>
 
@@ -1070,12 +1071,9 @@
       <div class="ws-gate-box">
         <div class="ws-gate-icon">🔒</div>
         <h3>비공개 페이지</h3>
-        <p>레귤러토리 데이터는 비밀번호로 보호되어 있습니다.</p>
-        <form id="radar-gate-form" class="ws-gate-form">
-          <input type="password" id="radar-gate-input" placeholder="비밀번호" autocomplete="off">
-          <button type="submit">열기</button>
-        </form>
-        <p class="ws-gate-err" id="radar-gate-err" hidden>비밀번호가 올바르지 않습니다.</p>
+        <p>승인된 이메일로 로그인하면 레귤러토리 데이터를 열람할 수 있습니다.</p>
+        <button type="button" class="protected-login-btn" data-protected-login>이메일로 로그인</button>
+        <p class="ws-gate-err" id="radar-gate-err" hidden></p>
       </div>
     </div>
 
@@ -1273,12 +1271,9 @@
       <div class="ws-gate-box">
         <div class="ws-gate-icon">🔒</div>
         <h3>비공개 페이지</h3>
-        <p>해외 인허가·신고 자료는 비밀번호로 보호되어 있습니다.</p>
-        <form id="overseas-gate-form" class="ws-gate-form">
-          <input type="password" id="overseas-gate-input" placeholder="비밀번호" autocomplete="off">
-          <button type="submit">열기</button>
-        </form>
-        <p class="ws-gate-err" id="overseas-gate-err" hidden>비밀번호가 올바르지 않습니다.</p>
+        <p>승인된 이메일로 로그인하면 해외 인허가·신고 자료를 열람할 수 있습니다.</p>
+        <button type="button" class="protected-login-btn" data-protected-login>이메일로 로그인</button>
+        <p class="ws-gate-err" id="overseas-gate-err" hidden></p>
       </div>
     </div>
 
@@ -2233,10 +2228,40 @@
 <footer class="site-footer">
   <div class="container">
     <div class="footer-notice">현재 테스트 중이오니 편하게 이용하시고 소중한 의견은 <strong>피드백 및 문의</strong> 란 또는 <a href="mailto:healtharchive2026@gmail.com">Healtharchive2026@gmail.com</a> 으로 부탁드립니다. 감사합니다</div>
+    <nav class="footer-legal" aria-label="운영 정책">
+      <a href="privacy.html">개인정보처리방침</a>
+      <a href="terms.html">이용약관</a>
+      <a href="mailto:healtharchive2026@gmail.com">권리·보안 문의</a>
+    </nav>
     <div class="footer-logo"><img src="assets/logo-icon.png" alt="" class="logo-icon"><span class="logo-text">Health<b>Archive</b></span><img src="assets/leaf-badge.png" alt="" class="logo-leaf"></div>
     <div>© Health Archive — 개인 운영 정보 아카이브</div>
   </div>
 </footer>
+
+<div class="account-overlay" id="account-modal" hidden>
+  <section class="account-dialog" role="dialog" aria-modal="true" aria-labelledby="account-modal-title">
+    <button type="button" class="account-dialog-close" id="account-modal-close" aria-label="닫기">×</button>
+    <div class="account-dialog-mark" aria-hidden="true">HA</div>
+    <div id="account-logged-out">
+      <span class="account-eyebrow">Protected Access</span>
+      <h2 id="account-modal-title">보호 자료 로그인</h2>
+      <p>운영자가 승인한 이메일로 일회용 인증번호를 받아 로그인합니다. 비밀번호는 저장하지 않습니다.</p>
+      <button type="button" class="account-primary" data-protected-login>이메일로 로그인</button>
+      <a class="account-secondary" href="mailto:healtharchive2026@gmail.com?subject=HealthArchive%20접근%20신청&amp;body=승인받을%20이메일%3A%0A소속%28선택%29%3A%0A이용%20목적%3A%0A">접근 신청</a>
+      <p class="account-help">신규 이용자는 접근 신청 후 승인 이메일로 로그인할 수 있습니다.</p>
+    </div>
+    <div id="account-logged-in" hidden>
+      <span class="account-eyebrow">Access granted</span>
+      <h2>로그인되어 있습니다</h2>
+      <p>보호 자료 열람 권한은 마지막 인증 후 최대 6시간 유지됩니다.</p>
+      <button type="button" class="account-secondary account-logout" id="account-logout">로그아웃</button>
+    </div>
+    <div class="account-policy-links">
+      <a href="privacy.html">개인정보처리방침</a>
+      <a href="terms.html">이용약관</a>
+    </div>
+  </section>
+</div>
 
 <div class="ingx-overlay" id="ingx-overlay" hidden>
   <div class="ingx-panel" role="dialog" aria-modal="true" aria-label="원료 상세">
@@ -2297,7 +2322,7 @@
 <script src="data/status.js?v=20260630-news0930"></script>
 <script src="data/daily_quotes.js"></script>
 <script src="market.js"></script>
-<script src="app.js?v=20260714-homefeeds1"></script>
+<script src="app.js?v=20260714-account1"></script>
 <script src="pc-cinema.js?v=20260714-cinema2"></script>
 <script src="feedback.js?v=20260714-api1"></script>
 </body>

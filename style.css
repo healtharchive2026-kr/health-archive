@@ -203,6 +203,17 @@ body{
   border-radius:5px;padding:1px 5px;line-height:1.4;
 }
 
+.account-trigger{
+  order:4;flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  padding:8px 12px;border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--text);
+  font-family:inherit;font-size:12.5px;font-weight:750;box-shadow:var(--shadow-sm);cursor:pointer;
+  transition:border-color .14s,color .14s,background .14s;
+}
+.account-trigger:hover{border-color:var(--green);color:var(--green);}
+.account-trigger.is-authenticated{border-color:#a7cbbb;background:#f1f8f4;color:var(--green);}
+.account-trigger-icon{font-size:10px;color:#9ba7a2;}
+.account-trigger.is-authenticated .account-trigger-icon{color:#3b9b70;}
+
 /* ── 커맨드 팔레트 ── */
 .cmdk-overlay{
   position:fixed;inset:0;z-index:1000;
@@ -375,6 +386,8 @@ body.ingx-open{overflow:hidden;}
   .cmdk-trigger{padding:7px 9px;}
   .cmdk-trigger-label,.cmdk-trigger-kbd{display:none;}
   .cmdk-trigger-icon{font-size:16px;}
+  .account-trigger{padding:8px 10px;}
+  .account-trigger span:last-child{display:none;}
 }
 
 main{padding:40px 24px 80px;}
@@ -1061,6 +1074,11 @@ body.cmp-open{overflow:hidden;}
 .ws-gate-form input:focus{outline:none;border-color:var(--green);}
 .ws-gate-form button{border:1px solid var(--green);background:var(--green);color:#fff;border-radius:9px;padding:10px 16px;font-size:13px;font-weight:800;cursor:pointer;}
 .ws-gate-form button:hover{background:#245a47;}
+.protected-login-btn{
+  width:100%;border:1px solid var(--green);background:var(--green);color:#fff;border-radius:9px;
+  padding:11px 16px;font:800 13px/1.2 inherit;cursor:pointer;
+}
+.protected-login-btn:hover{background:#245a47;}
 .ws-gate-err{margin:12px 0 0;color:var(--crimson,#a75c4b);font-size:12px;font-weight:700;}
 .ws-page-head{margin-bottom:16px;}
 .ws-kpi-grid{
@@ -2878,9 +2896,48 @@ body.intro-modal-open{overflow:hidden;}
   margin-bottom:18px;
 }
 .footer-notice a{color:#5b8def;font-weight:800;text-decoration:underline;}
+.footer-legal{display:flex;align-items:center;justify-content:center;gap:18px;margin:0 0 16px;}
+.footer-legal a{color:var(--muted);font-size:12px;font-weight:700;text-decoration:none;}
+.footer-legal a:hover{color:var(--green);text-decoration:underline;}
 .footer-logo{display:flex;align-items:center;justify-content:center;gap:6px;font-size:18px;letter-spacing:0;margin-bottom:10px;}
 .footer-logo .logo-icon{height:24px;}
 .footer-logo .logo-leaf{height:14px;}
+
+body.account-modal-open{overflow:hidden;}
+.account-overlay{
+  position:fixed;inset:0;z-index:1200;display:flex;align-items:center;justify-content:center;
+  padding:18px;background:rgba(20,32,26,.48);backdrop-filter:blur(4px);
+}
+.account-overlay[hidden]{display:none;}
+.account-dialog{
+  position:relative;width:min(420px,100%);padding:32px;border:1px solid var(--border);border-radius:8px;
+  background:#fff;box-shadow:0 24px 80px rgba(21,41,33,.2);text-align:left;
+}
+.account-dialog-close{
+  position:absolute;top:12px;right:12px;width:34px;height:34px;border:0;border-radius:50%;
+  background:transparent;color:var(--muted);font-size:25px;line-height:1;cursor:pointer;
+}
+.account-dialog-close:hover{background:var(--paper-soft,#f4f7f4);color:var(--text);}
+.account-dialog-mark{
+  display:flex;align-items:center;justify-content:center;width:42px;height:42px;margin-bottom:20px;
+  border-radius:8px;background:var(--green);color:#fff;font-size:12px;font-weight:900;
+}
+.account-eyebrow{display:block;margin-bottom:7px;color:var(--green);font-size:11px;font-weight:850;text-transform:uppercase;}
+.account-dialog h2{margin:0 0 10px;font-size:23px;letter-spacing:0;}
+.account-dialog p{margin:0 0 22px;color:var(--muted);font-size:14px;line-height:1.65;}
+.account-primary,.account-secondary{
+  display:flex;align-items:center;justify-content:center;width:100%;min-height:44px;border-radius:8px;
+  font:800 14px/1 inherit;text-decoration:none;cursor:pointer;
+}
+.account-primary{border:1px solid var(--green);background:var(--green);color:#fff;margin-bottom:9px;}
+.account-primary:hover{background:#245a47;}
+.account-secondary{border:1px solid var(--border);background:#fff;color:var(--text);}
+.account-secondary:hover{border-color:var(--green);color:var(--green);}
+.account-dialog .account-help{margin:14px 0 0;font-size:12px;text-align:center;}
+.account-policy-links{display:flex;justify-content:center;gap:16px;margin-top:22px;padding-top:18px;border-top:1px solid var(--border);}
+.account-policy-links a{color:var(--muted);font-size:11px;text-decoration:none;}
+.account-policy-links a:hover{color:var(--green);text-decoration:underline;}
+.account-logout:disabled{opacity:.55;cursor:wait;}
 
 @media (max-width:1100px){
   .hero-intro{grid-template-columns:1fr;gap:24px;}
@@ -2905,12 +2962,15 @@ body.intro-modal-open{overflow:hidden;}
 @media (max-width:640px){
   .site-header{overflow:visible;}
   .container{padding:0 18px;}
+  .footer-legal{flex-wrap:wrap;gap:8px 14px;}
   main{padding:26px 0 64px;}
-  .header-inner{height:auto;min-height:58px;gap:0;padding:9px 0;display:grid;grid-template-columns:1fr auto;align-items:center;}
+  .header-inner{height:auto;min-height:58px;gap:0;padding:9px 0;display:grid;grid-template-columns:1fr auto auto auto;align-items:center;}
   .logo{order:1;flex:0 0 auto;font-size:18px;}
   .cmdk-trigger{order:2;}
-  .mobile-menu-toggle{order:3;}
-  .main-nav{order:4;}
+  .account-trigger{order:3;margin-left:8px;width:40px;height:40px;padding:0;}
+  .account-trigger span:last-child{display:none;}
+  .mobile-menu-toggle{order:4;}
+  .main-nav{order:5;}
   .mobile-menu-toggle{
     display:inline-flex;align-items:center;justify-content:center;
     position:relative;
@@ -3235,7 +3295,7 @@ body.intro-modal-open{overflow:hidden;}
   .precheck-match-meta{flex-direction:row;flex-wrap:wrap;}
   .precheck-match-actions{justify-content:flex-start;}
   .section-actions{justify-content:flex-start;}
-  .header-inner{grid-template-columns:1fr auto auto;column-gap:8px;}
+  .header-inner{grid-template-columns:1fr auto auto auto;column-gap:8px;}
   .cmdk-trigger{margin:0;padding:0;width:40px;height:40px;justify-content:center;border-radius:8px;}
   .cmdk-trigger-label,.cmdk-trigger-kbd{display:none;}
   .cmdk-trigger-icon{font-size:18px;}

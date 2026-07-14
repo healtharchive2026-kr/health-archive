@@ -1402,6 +1402,7 @@ async function protectedAuthStatus(force = false) {
     .then(response => response.ok ? response.json() : { authenticated: false })
     .then(result => {
       protectedAuthState = result.authenticated === true;
+      renderProtectedAccountState(protectedAuthState);
       return protectedAuthState;
     })
     .catch(() => {
@@ -1412,19 +1413,9 @@ async function protectedAuthStatus(force = false) {
   return protectedAuthCheck;
 }
 
-async function protectedAuthLogin(passcode) {
-  const response = await fetch(`${PROTECTED_AUTH_API}/auth/login`, {
-    method: 'POST',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ passcode }),
-  });
-  const result = await response.json().catch(() => ({}));
-  if (!response.ok || result.authenticated !== true) {
-    throw new Error(result.error || '인증에 실패했습니다. 잠시 후 다시 시도해 주세요.');
-  }
-  protectedAuthState = true;
-  return true;
+function protectedAuthStart() {
+  const returnUrl = encodeURIComponent(window.location.href);
+  window.location.assign(`${PROTECTED_AUTH_API}/auth/access/start?return=${returnUrl}`);
 }
 
 async function protectedAuthLogout() {
@@ -1437,6 +1428,7 @@ async function protectedAuthLogout() {
     protectedAuthState = false;
     protectedAuthCheck = null;
     protectedDataCache.clear();
+    renderProtectedAccountState(false);
   }
 }
 
@@ -1456,18 +1448,62 @@ async function loadProtectedData(key, force = false) {
   return data;
 }
 
-function protectedGateBusy(form, busy) {
-  const button = form && form.querySelector('button[type="submit"]');
-  if (button) {
-    button.disabled = busy;
-    button.textContent = busy ? '확인 중' : '열기';
-  }
-}
-
 function protectedGateError(element, message) {
   if (!element) return;
-  element.textContent = message || '비밀번호가 올바르지 않습니다.';
+  element.textContent = message || '';
   element.hidden = !message;
+}
+
+function renderProtectedAccountState(authenticated) {
+  const trigger = document.getElementById('account-trigger');
+  const label = document.getElementById('account-trigger-label');
+  const loggedOut = document.getElementById('account-logged-out');
+  const loggedIn = document.getElementById('account-logged-in');
+  if (trigger) trigger.classList.toggle('is-authenticated', authenticated === true);
+  if (label) label.textContent = authenticated ? '로그인됨' : '로그인';
+  if (loggedOut) loggedOut.hidden = authenticated === true;
+  if (loggedIn) loggedIn.hidden = authenticated !== true;
+}
+
+function setupProtectedAccountUi() {
+  const trigger = document.getElementById('account-trigger');
+  const modal = document.getElementById('account-modal');
+  const close = document.getElementById('account-modal-close');
+  const logout = document.getElementById('account-logout');
+  const openModal = () => {
+    if (!modal) return;
+    modal.hidden = false;
+    document.body.classList.add('account-modal-open');
+    close?.focus();
+  };
+  const closeModal = () => {
+    if (!modal) return;
+    modal.hidden = true;
+    document.body.classList.remove('account-modal-open');
+    trigger?.focus();
+  };
+
+  trigger?.addEventListener('click', openModal);
+  close?.addEventListener('click', closeModal);
+  modal?.addEventListener('click', event => {
+    if (event.target === modal) closeModal();
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && modal && !modal.hidden) closeModal();
+  });
+  document.querySelectorAll('[data-protected-login]').forEach(button => {
+    button.addEventListener('click', protectedAuthStart);
+  });
+  logout?.addEventListener('click', async () => {
+    logout.disabled = true;
+    try {
+      await protectedLockAll();
+      closeModal();
+    } finally {
+      logout.disabled = false;
+    }
+  });
+  protectedAuthStatus(true);
 }
 
 async function protectedLockAll() {
@@ -1705,8 +1741,6 @@ function wsUnlock() {
 
 async function wsLock() {
   await protectedLockAll();
-  const input = document.getElementById('ws-gate-input');
-  if (input) input.value = '';
 }
 
 async function initWhitespaceTab() {
@@ -1715,26 +1749,7 @@ async function initWhitespaceTab() {
 }
 
 function setupWhitespaceGate() {
-  const form = document.getElementById('ws-gate-form');
-  const input = document.getElementById('ws-gate-input');
-  const err = document.getElementById('ws-gate-err');
   const lockBtn = document.getElementById('ws-lock-btn');
-  if (form) {
-    form.addEventListener('submit', async e => {
-      e.preventDefault();
-      protectedGateBusy(form, true);
-      protectedGateError(err, '');
-      try {
-        await protectedAuthLogin((input && input.value) || '');
-        if (input) input.value = '';
-        wsUnlock();
-      } catch (error) {
-        protectedGateError(err, error.message);
-      } finally {
-        protectedGateBusy(form, false);
-      }
-    });
-  }
   if (lockBtn) lockBtn.addEventListener('click', wsLock);
 }
 
@@ -1788,36 +1803,14 @@ function radarUnlock() {
 
 async function radarLock() {
   await protectedLockAll();
-  const input = document.getElementById('radar-gate-input');
   const err = document.getElementById('radar-gate-err');
-  if (input) input.value = '';
   protectedGateError(err, '');
 }
 
 function setupRadarGate() {
   if (radarGateReady) return;
-  const form = document.getElementById('radar-gate-form');
-  const input = document.getElementById('radar-gate-input');
-  const err = document.getElementById('radar-gate-err');
   const lockBtn = document.getElementById('radar-lock-btn');
-  if (!form && !lockBtn) return;
   radarGateReady = true;
-  if (form) {
-    form.addEventListener('submit', async e => {
-      e.preventDefault();
-      protectedGateBusy(form, true);
-      protectedGateError(err, '');
-      try {
-        await protectedAuthLogin((input && input.value) || '');
-        if (input) input.value = '';
-        radarUnlock();
-      } catch (error) {
-        protectedGateError(err, error.message);
-      } finally {
-        protectedGateBusy(form, false);
-      }
-    });
-  }
   if (lockBtn) lockBtn.addEventListener('click', radarLock);
 }
 
@@ -4590,34 +4583,14 @@ async function initOverseasTab() {
 }
 
 async function setupOverseasGate() {
-  const form = document.getElementById('overseas-gate-form');
-  const input = document.getElementById('overseas-gate-input');
   const err = document.getElementById('overseas-gate-err');
   const lockBtn = document.getElementById('overseas-lock-btn');
-  if (!form) return;
 
   await initOverseasTab();
-
-  form.addEventListener('submit', async event => {
-    event.preventDefault();
-    protectedGateBusy(form, true);
-    protectedGateError(err, '');
-    try {
-      await protectedAuthLogin((input && input.value) || '');
-      await loadOverseasProtectedData();
-      if (input) input.value = '';
-      overseasShowUnlocked();
-    } catch (error) {
-      protectedGateError(err, error.message);
-    } finally {
-      protectedGateBusy(form, false);
-    }
-  });
 
   if (lockBtn) lockBtn.addEventListener('click', async () => {
     await protectedLockAll();
     protectedGateError(err, '');
-    if (input) input.value = '';
   });
 }
 
@@ -4732,6 +4705,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupTabs();
   setupHeroSearch();
   setupCommandPalette();
+  setupProtectedAccountUi();
   setupHomeOpsPanel();
   setupIngredientDetail();
   setupCompareTray();

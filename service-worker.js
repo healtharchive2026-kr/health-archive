@@ -1,12 +1,14 @@
-const CACHE_NAME = 'healtharchive-cinema-horizontal-20260714-16';
+const CACHE_NAME = 'healtharchive-account-access-20260714-17';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/style.css?v=20260714-cinema-horizontal1',
-  '/app.js?v=20260714-homefeeds1',
+  '/style.css?v=20260714-account1',
+  '/app.js?v=20260714-account1',
   '/pc-cinema.js?v=20260714-cinema2',
   '/device-routing.js?v=20260714-mobile1',
   '/mobile-lite.html',
+  '/privacy.html',
+  '/terms.html',
   '/mobile-lite.css?v=20260714-verdict3',
   '/mobile-verdict.css?v=20260714-verdict3',
   '/mobile-verdict.js?v=20260714-verdict3',

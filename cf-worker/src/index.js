@@ -30,11 +30,12 @@ function randomToken() {
 
 const MAX_LEN = 200;
 const RETENTION_SECONDS = 30 * 24 * 60 * 60;
-const AUTH_MAX_AGE = 8 * 60 * 60;
+const AUTH_MAX_AGE = 6 * 60 * 60;
 const AUTH_MAX_FAILURES = 5;
 const AUTH_BLOCK_SECONDS = 15 * 60;
 const AUTH_COOKIE = 'ha_protected_session';
 const PROTECTED_DATA_KEYS = new Set(['radar-log', 'demand-trends', 'overseas-regulatory']);
+const ACCESS_LOGIN_PATH = '/auth/access/exchange';
 
 function bytesToBase64Url(bytes) {
   let binary = '';
@@ -95,6 +96,104 @@ async function hasValidSession(request, secret) {
   return secureEqual(parts[2], await hmac(secret, payload));
 }
 
+function base64UrlToBytes(value) {
+  const padded = value.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(value.length / 4) * 4, '=');
+  const binary = atob(padded);
+  return Uint8Array.from(binary, char => char.charCodeAt(0));
+}
+
+function decodeJwtPart(value) {
+  return JSON.parse(new TextDecoder().decode(base64UrlToBytes(value)));
+}
+
+function accessTeamDomain(env) {
+  return String(env.CF_ACCESS_TEAM_DOMAIN || '').replace(/^https?:\/\//, '').replace(/\/$/, '');
+}
+
+async function verifyAccessIdentity(request, env) {
+  const token = request.headers.get('Cf-Access-Jwt-Assertion') || '';
+  const teamDomain = accessTeamDomain(env);
+  const expectedAud = String(env.CF_ACCESS_AUD || '').trim();
+  if (!token || !teamDomain || !expectedAud) throw new Error('Cloudflare Access 설정이 완료되지 않았습니다.');
+
+  const parts = token.split('.');
+  if (parts.length !== 3) throw new Error('유효하지 않은 Access 토큰입니다.');
+  const header = decodeJwtPart(parts[0]);
+  const payload = decodeJwtPart(parts[1]);
+  if (header.alg !== 'RS256' || !header.kid) throw new Error('지원하지 않는 Access 토큰입니다.');
+
+  const certResponse = await fetch(`https://${teamDomain}/cdn-cgi/access/certs`, {
+    cf: { cacheTtl: 3600, cacheEverything: true },
+  });
+  if (!certResponse.ok) throw new Error('Access 인증서를 확인하지 못했습니다.');
+  const certs = await certResponse.json();
+  const jwk = (certs.keys || []).find(key => key.kid === header.kid);
+  if (!jwk) throw new Error('Access 서명 키를 찾지 못했습니다.');
+
+  const publicKey = await crypto.subtle.importKey(
+    'jwk',
+    jwk,
+    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+    false,
+    ['verify']
+  );
+  const validSignature = await crypto.subtle.verify(
+    'RSASSA-PKCS1-v1_5',
+    publicKey,
+    base64UrlToBytes(parts[2]),
+    new TextEncoder().encode(`${parts[0]}.${parts[1]}`)
+  );
+  if (!validSignature) throw new Error('Access 토큰 서명이 올바르지 않습니다.');
+
+  const now = Math.floor(Date.now() / 1000);
+  const audiences = Array.isArray(payload.aud) ? payload.aud : [payload.aud];
+  const expectedIssuer = `https://${teamDomain}`;
+  if (!audiences.includes(expectedAud)) throw new Error('Access 애플리케이션이 일치하지 않습니다.');
+  if (String(payload.iss || '').replace(/\/$/, '') !== expectedIssuer) throw new Error('Access 발급자가 일치하지 않습니다.');
+  if (!Number.isFinite(payload.exp) || payload.exp <= now) throw new Error('Access 인증 시간이 만료되었습니다.');
+  if (payload.nbf && payload.nbf > now + 60) throw new Error('Access 토큰이 아직 유효하지 않습니다.');
+
+  const email = String(payload.email || '').trim().toLowerCase();
+  if (!email) throw new Error('인증 이메일을 확인하지 못했습니다.');
+  const allowedEmails = String(env.ACCESS_ALLOWED_EMAILS || '')
+    .split(',')
+    .map(value => value.trim().toLowerCase())
+    .filter(Boolean);
+  if (!allowedEmails.length || !allowedEmails.includes(email)) throw new Error('승인되지 않은 이메일입니다.');
+  return { email };
+}
+
+function safeAuthReturn(url) {
+  const fallback = 'https://www.healtharchive.kr/';
+  const requested = url.searchParams.get('return') || fallback;
+  try {
+    const target = new URL(requested);
+    return ALLOWED_ORIGINS.has(target.origin) ? target.toString() : fallback;
+  } catch (error) {
+    return fallback;
+  }
+}
+
+async function handleAccessExchange(request, env, url) {
+  if (request.method !== 'GET') return new Response('Method not allowed', { status: 405 });
+  if (!env.AUTH_SECRET) return new Response('인증 서비스가 준비되지 않았습니다.', { status: 503 });
+  try {
+    await verifyAccessIdentity(request, env);
+    const token = await createSession(env.AUTH_SECRET);
+    const headers = new Headers({
+      'Location': safeAuthReturn(url),
+      'Cache-Control': 'no-store',
+      'Set-Cookie': `${AUTH_COOKIE}=${token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=${AUTH_MAX_AGE}`,
+    });
+    return new Response(null, { status: 302, headers });
+  } catch (error) {
+    return new Response(error.message || '인증에 실패했습니다.', {
+      status: 403,
+      headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' },
+    });
+  }
+}
+
 function authJson(data, status, origin, cookie) {
   const headers = new Headers({
     'Content-Type': 'application/json',
@@ -111,6 +210,16 @@ async function authClientKey(request, secret) {
 }
 
 async function handleAuth(request, env, url, origin) {
+  if (url.pathname === '/auth/access/start' && request.method === 'GET') {
+    const exchange = new URL(ACCESS_LOGIN_PATH, url.origin);
+    exchange.searchParams.set('return', safeAuthReturn(url));
+    return Response.redirect(exchange.toString(), 302);
+  }
+
+  if (url.pathname === ACCESS_LOGIN_PATH) {
+    return handleAccessExchange(request, env, url);
+  }
+
   if (!env.ACCESS_PASSCODE || !env.AUTH_SECRET) {
     return authJson({ error: '인증 서비스가 준비되지 않았습니다.' }, 503, origin);
   }
