@@ -36,7 +36,6 @@
 
 /* 2026-07-14: 검색 중심 PC 홈 */
 .home-legacy{display:none!important;}
-.pc-cinema{display:none!important;}
 body:has(#home.active){background:#fff;}
 #workspace-start.hero-dark{padding:64px 0 38px;margin-bottom:0;}
 #workspace-start.hero-dark::before,#workspace-start.hero-dark::after{display:none;}
