@@ -2952,6 +2952,24 @@ body.account-modal-open{overflow:hidden;}
 .account-policy-links a{color:var(--muted);font-size:11px;text-decoration:none;}
 .account-policy-links a:hover{color:var(--green);text-decoration:underline;}
 .account-logout:disabled{opacity:.55;cursor:wait;}
+.account-admin-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px;}
+.account-admin-heading h2{margin:0;}
+.account-admin-refresh{border:0;background:transparent;color:var(--green);font:800 12px/1 inherit;cursor:pointer;}
+.account-admin-list{display:grid;gap:10px;margin:4px 0 16px;max-height:48vh;overflow-y:auto;}
+.account-admin-empty{padding:24px 10px;border:1px dashed var(--border);border-radius:8px;color:var(--muted);font-size:13px;text-align:center;}
+.account-admin-item{padding:14px;border:1px solid var(--border);border-radius:8px;background:var(--paper-soft,#f7f9f7);}
+.account-admin-item-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:7px;}
+.account-admin-item strong{font-size:14px;line-height:1.35;}
+.account-admin-badge{flex:0 0 auto;padding:4px 7px;border-radius:6px;background:#fff;border:1px solid var(--border);color:var(--muted);font-size:10px;font-weight:850;}
+.account-admin-badge[data-status="pending"]{border-color:#d4a85c;color:#7c5615;background:#fff9ec;}
+.account-admin-badge[data-status="approved"]{border-color:#8fc5b2;color:var(--green);background:#eff9f5;}
+.account-admin-meta{margin:0 0 7px!important;color:var(--text)!important;font-size:12px!important;line-height:1.55!important;word-break:break-word;}
+.account-admin-purpose{margin:0 0 10px!important;font-size:12px!important;line-height:1.55!important;}
+.account-admin-actions{display:flex;gap:7px;}
+.account-admin-actions button{min-height:34px;padding:0 12px;border-radius:7px;font:800 11px/1 inherit;cursor:pointer;}
+.account-admin-approve{border:1px solid var(--green);background:var(--green);color:#fff;}
+.account-admin-reject,.account-admin-revoke{border:1px solid var(--border);background:#fff;color:var(--text);}
+.account-admin-actions button:disabled{opacity:.5;cursor:wait;}
 
 @media (max-width:1100px){
   .hero-intro{grid-template-columns:1fr;gap:24px;}

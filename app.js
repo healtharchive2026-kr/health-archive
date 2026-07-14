@@ -1389,6 +1389,7 @@ function initStatsTab() {
 
 const PROTECTED_AUTH_API = 'https://api.healtharchive.kr';
 let protectedAuthState = null;
+let protectedAdminState = false;
 let protectedAuthCheck = null;
 const protectedDataCache = new Map();
 
@@ -1402,11 +1403,13 @@ async function protectedAuthStatus(force = false) {
     .then(response => response.ok ? response.json() : { authenticated: false })
     .then(result => {
       protectedAuthState = result.authenticated === true;
+      protectedAdminState = protectedAuthState && result.admin === true;
       renderProtectedAccountState(protectedAuthState);
       return protectedAuthState;
     })
     .catch(() => {
       protectedAuthState = false;
+      protectedAdminState = false;
       return false;
     })
     .finally(() => { protectedAuthCheck = null; });
@@ -1426,6 +1429,7 @@ async function protectedAuthLogout() {
     });
   } finally {
     protectedAuthState = false;
+    protectedAdminState = false;
     protectedAuthCheck = null;
     protectedDataCache.clear();
     renderProtectedAccountState(false);
@@ -1460,11 +1464,72 @@ function renderProtectedAccountState(authenticated) {
   const loggedOut = document.getElementById('account-logged-out');
   const loggedIn = document.getElementById('account-logged-in');
   const requestPanel = document.getElementById('account-request-panel');
+  const adminOpen = document.getElementById('account-admin-open');
+  const adminPanel = document.getElementById('account-admin-panel');
   if (trigger) trigger.classList.toggle('is-authenticated', authenticated === true);
   if (label) label.textContent = authenticated ? '로그인됨' : '로그인';
   if (loggedOut) loggedOut.hidden = authenticated === true;
   if (loggedIn) loggedIn.hidden = authenticated !== true;
   if (requestPanel && authenticated) requestPanel.hidden = true;
+  if (adminOpen) adminOpen.hidden = !(authenticated && protectedAdminState);
+  if (adminPanel && (!authenticated || !protectedAdminState)) adminPanel.hidden = true;
+}
+
+function adminStatusLabel(status) {
+  return ({ pending: '대기', approved: '승인', rejected: '거절', revoked: '회수' })[status] || status;
+}
+
+function renderAdminAccessRequests(rows) {
+  const list = document.getElementById('account-admin-list');
+  if (!list) return;
+  if (!rows.length) {
+    list.innerHTML = '<div class="account-admin-empty">접근 신청 내역이 없습니다.</div>';
+    return;
+  }
+  list.innerHTML = rows.map(row => {
+    const date = new Date(Number(row.created_at) * 1000).toLocaleString('ko-KR', {
+      year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
+    });
+    const actions = row.status === 'pending'
+      ? `<button type="button" class="account-admin-approve" data-admin-action="approve" data-request-id="${row.id}">승인</button>
+         <button type="button" class="account-admin-reject" data-admin-action="reject" data-request-id="${row.id}">거절</button>`
+      : row.status === 'approved'
+        ? `<button type="button" class="account-admin-revoke" data-admin-action="revoke" data-request-id="${row.id}">권한 회수</button>`
+        : '';
+    return `<article class="account-admin-item">
+      <div class="account-admin-item-head">
+        <strong>${escapeHtml(row.company)} · ${escapeHtml(row.department)}</strong>
+        <span class="account-admin-badge" data-status="${escapeHtml(row.status)}">${escapeHtml(adminStatusLabel(row.status))}</span>
+      </div>
+      <p class="account-admin-meta">${escapeHtml(row.email)}<br>${escapeHtml(date)}</p>
+      <p class="account-admin-purpose">${escapeHtml(row.purpose)}</p>
+      <div class="account-admin-actions">${actions}</div>
+    </article>`;
+  }).join('');
+}
+
+async function loadAdminAccessRequests() {
+  const status = document.getElementById('account-admin-status');
+  const list = document.getElementById('account-admin-list');
+  if (status) {
+    status.textContent = '신청 내역을 불러오는 중입니다.';
+    status.classList.remove('is-error');
+  }
+  if (list) list.innerHTML = '';
+  try {
+    const response = await fetch(`${PROTECTED_AUTH_API}/admin/access-requests`, {
+      credentials: 'include', cache: 'no-store',
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.error || '신청 내역을 불러오지 못했습니다.');
+    renderAdminAccessRequests(result.requests || []);
+    if (status) status.textContent = `총 ${(result.requests || []).length}건`;
+  } catch (error) {
+    if (status) {
+      status.textContent = error.message;
+      status.classList.add('is-error');
+    }
+  }
 }
 
 function setupProtectedAccountUi() {
@@ -1478,6 +1543,12 @@ function setupProtectedAccountUi() {
   const requestBack = document.getElementById('account-request-back');
   const requestForm = document.getElementById('account-request-form');
   const requestStatus = document.getElementById('account-request-status');
+  const adminOpen = document.getElementById('account-admin-open');
+  const adminPanel = document.getElementById('account-admin-panel');
+  const adminBack = document.getElementById('account-admin-back');
+  const adminRefresh = document.getElementById('account-admin-refresh');
+  const adminList = document.getElementById('account-admin-list');
+  const adminStatus = document.getElementById('account-admin-status');
   const openModal = () => {
     if (!modal) return;
     modal.hidden = false;
@@ -1511,6 +1582,45 @@ function setupProtectedAccountUi() {
     if (requestPanel) requestPanel.hidden = true;
     if (loggedOut) loggedOut.hidden = false;
     requestOpen?.focus();
+  });
+  adminOpen?.addEventListener('click', () => {
+    if (!protectedAdminState) return;
+    if (loggedIn) loggedIn.hidden = true;
+    if (adminPanel) adminPanel.hidden = false;
+    loadAdminAccessRequests();
+  });
+  adminBack?.addEventListener('click', () => {
+    if (adminPanel) adminPanel.hidden = true;
+    if (loggedIn) loggedIn.hidden = false;
+    adminOpen?.focus();
+  });
+  adminRefresh?.addEventListener('click', loadAdminAccessRequests);
+  adminList?.addEventListener('click', async event => {
+    const button = event.target.closest('[data-admin-action][data-request-id]');
+    if (!button) return;
+    const action = button.dataset.adminAction;
+    const id = button.dataset.requestId;
+    const labels = { approve: '승인', reject: '거절', revoke: '권한 회수' };
+    if (!window.confirm(`이 접근 신청을 ${labels[action]}하시겠습니까?`)) return;
+    adminList.querySelectorAll('button').forEach(item => { item.disabled = true; });
+    if (adminStatus) {
+      adminStatus.textContent = `${labels[action]} 처리 중입니다.`;
+      adminStatus.classList.remove('is-error');
+    }
+    try {
+      const response = await fetch(`${PROTECTED_AUTH_API}/admin/access-requests/${id}/${action}`, {
+        method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: '{}',
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || `${labels[action]} 처리에 실패했습니다.`);
+      await loadAdminAccessRequests();
+    } catch (error) {
+      if (adminStatus) {
+        adminStatus.textContent = error.message;
+        adminStatus.classList.add('is-error');
+      }
+      adminList.querySelectorAll('button').forEach(item => { item.disabled = false; });
+    }
   });
   requestForm?.addEventListener('submit', async event => {
     event.preventDefault();

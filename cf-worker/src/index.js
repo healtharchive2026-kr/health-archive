@@ -37,6 +37,10 @@ const AUTH_COOKIE = 'ha_protected_session';
 const PROTECTED_DATA_KEYS = new Set(['radar-log', 'demand-trends', 'overseas-regulatory']);
 const ACCESS_LOGIN_PATH = '/auth/access/exchange';
 const USAGE_EVENTS = new Set(['tab_view', 'protected_login']);
+const ADMIN_EMAIL = 'healtharchive2026@gmail.com';
+const CF_ACCOUNT_ID = '6eafc305969447bdde35bd8ecf4522c9';
+const CF_ACCESS_APP_NAME = 'HealthArchive Protected Access';
+const CF_ACCESS_POLICY_NAME = 'Approved HealthArchive Users';
 
 function bytesToBase64Url(bytes) {
   let binary = '';
@@ -115,6 +119,13 @@ async function readSession(request, secret) {
 
 async function hasValidSession(request, secret) {
   return Boolean(await readSession(request, secret));
+}
+
+async function isAdminSession(request, env) {
+  const session = await readSession(request, env.AUTH_SECRET);
+  if (!session?.userKey) return false;
+  const adminKey = await hmac(env.AUTH_SECRET, `user:${ADMIN_EMAIL}`);
+  return secureEqual(session.userKey, adminKey);
 }
 
 function base64UrlToBytes(value) {
@@ -237,7 +248,9 @@ async function handleAuth(request, env, url, origin) {
   }
 
   if (url.pathname === '/auth/status' && request.method === 'GET') {
-    return authJson({ authenticated: await hasValidSession(request, env.AUTH_SECRET) }, 200, origin);
+    const authenticated = await hasValidSession(request, env.AUTH_SECRET);
+    const admin = authenticated ? await isAdminSession(request, env) : false;
+    return authJson({ authenticated, admin }, 200, origin);
   }
 
   if (url.pathname === '/auth/logout' && request.method === 'POST') {
@@ -274,6 +287,8 @@ async function notifyAccessRequest(env, requestData) {
     `이용 목적: ${requestData.purpose}`,
     `사용성 분석 동의: ${requestData.analyticsConsent ? '동의' : '미동의'}`,
     `신청 시각: ${new Date(requestData.createdAt * 1000).toISOString()}`,
+    '',
+    '처리 방법: HealthArchive 로그인 > 가입관리',
   ].join('\n');
   try {
     await env.ACCESS_NOTIFY.send({
@@ -367,6 +382,127 @@ async function handleUsageEvent(request, env, origin) {
     'INSERT INTO usage_events (user_key, event_name, target, created_at) VALUES (?, ?, ?, ?)'
   ).bind(session.userKey, eventName, target, now).run();
   return new Response(null, { status: 204, headers: corsHeaders(origin) });
+}
+
+async function requireAdmin(request, env, origin) {
+  if (!(await isAdminSession(request, env))) {
+    return authJson({ error: '관리자 권한이 필요합니다.' }, 403, origin);
+  }
+  return null;
+}
+
+function cloudflarePolicyBody(policy, include) {
+  const body = {
+    name: policy.name,
+    decision: policy.decision,
+    include,
+    exclude: Array.isArray(policy.exclude) ? policy.exclude : [],
+    require: Array.isArray(policy.require) ? policy.require : [],
+  };
+  const optional = [
+    'session_duration',
+    'purpose_justification_required',
+    'purpose_justification_prompt',
+    'approval_required',
+    'approval_groups',
+  ];
+  optional.forEach(key => {
+    if (policy[key] !== undefined && policy[key] !== null) body[key] = policy[key];
+  });
+  return body;
+}
+
+async function cloudflareApi(env, path, options = {}) {
+  if (!env.CF_ACCESS_API_TOKEN) throw new Error('Cloudflare 승인 토큰이 아직 연결되지 않았습니다.');
+  const response = await fetch(`https://api.cloudflare.com/client/v4${path}`, {
+    ...options,
+    headers: {
+      Authorization: `Bearer ${env.CF_ACCESS_API_TOKEN}`,
+      'Content-Type': 'application/json',
+      ...(options.headers || {}),
+    },
+  });
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok || payload.success === false) {
+    const detail = (payload.errors || []).map(error => error.message).filter(Boolean).join(', ');
+    throw new Error(detail || `Cloudflare API 요청이 실패했습니다. (${response.status})`);
+  }
+  return payload.result;
+}
+
+async function findAccessPolicy(env) {
+  const apps = await cloudflareApi(env, `/accounts/${CF_ACCOUNT_ID}/access/apps`);
+  const app = (apps || []).find(item => item.name === CF_ACCESS_APP_NAME)
+    || (apps || []).find(item => String(item.domain || '').includes('api.healtharchive.kr/auth/access/exchange'));
+  if (!app) throw new Error('HealthArchive Access 애플리케이션을 찾지 못했습니다.');
+  const policies = await cloudflareApi(env, `/accounts/${CF_ACCOUNT_ID}/access/apps/${app.id}/policies`);
+  const policy = (policies || []).find(item => item.name === CF_ACCESS_POLICY_NAME);
+  if (!policy) throw new Error('승인 사용자 정책을 찾지 못했습니다.');
+  return { app, policy };
+}
+
+async function updateApprovedEmail(env, email, action) {
+  const { app, policy } = await findAccessPolicy(env);
+  const policyPath = policy.reusable
+    ? `/accounts/${CF_ACCOUNT_ID}/access/policies/${policy.id}`
+    : `/accounts/${CF_ACCOUNT_ID}/access/apps/${app.id}/policies/${policy.id}`;
+  const fullPolicy = await cloudflareApi(env, policyPath);
+  const normalized = email.toLowerCase();
+  // This dedicated policy is an explicit email allowlist. Remove broad rules such as "everyone".
+  const include = (Array.isArray(fullPolicy.include) ? fullPolicy.include : []).filter(rule => {
+    const value = String(rule?.email?.email || '').toLowerCase();
+    return value && (action === 'add' || value !== normalized);
+  });
+  const addEmail = value => {
+    const exists = include.some(rule => String(rule?.email?.email || '').toLowerCase() === value);
+    if (!exists) include.push({ email: { email: value } });
+  };
+  addEmail(ADMIN_EMAIL);
+  if (action === 'add') addEmail(normalized);
+  await cloudflareApi(env, policyPath, {
+    method: 'PUT',
+    body: JSON.stringify(cloudflarePolicyBody(fullPolicy, include)),
+  });
+}
+
+async function handleAdminAccessRequests(request, env, url, origin) {
+  if (!url.pathname.startsWith('/admin/access-requests')) return null;
+  const denied = await requireAdmin(request, env, origin);
+  if (denied) return denied;
+
+  if (url.pathname === '/admin/access-requests' && request.method === 'GET') {
+    const { results } = await env.DB.prepare(
+      `SELECT id, company, department, purpose, email, analytics_consent, status,
+              created_at, reviewed_at, review_note
+       FROM access_requests
+       ORDER BY CASE status WHEN 'pending' THEN 0 ELSE 1 END, created_at DESC
+       LIMIT 200`
+    ).all();
+    return authJson({ requests: results || [] }, 200, origin);
+  }
+
+  const match = url.pathname.match(/^\/admin\/access-requests\/(\d+)\/(approve|reject|revoke)$/);
+  if (!match || request.method !== 'POST') return null;
+  const id = Number(match[1]);
+  const action = match[2];
+  const row = await env.DB.prepare(
+    'SELECT id, email, status FROM access_requests WHERE id = ?'
+  ).bind(id).first();
+  if (!row) return authJson({ error: '접근 신청을 찾을 수 없습니다.' }, 404, origin);
+
+  try {
+    if (action === 'approve') await updateApprovedEmail(env, row.email, 'add');
+    if (action === 'revoke') await updateApprovedEmail(env, row.email, 'remove');
+    const status = action === 'approve' ? 'approved' : action === 'reject' ? 'rejected' : 'revoked';
+    const note = action === 'approve' ? 'Cloudflare Access 승인' : action === 'reject' ? '관리자 거절' : 'Cloudflare Access 권한 회수';
+    await env.DB.prepare(
+      'UPDATE access_requests SET status = ?, reviewed_at = ?, review_note = ? WHERE id = ?'
+    ).bind(status, Math.floor(Date.now() / 1000), note, id).run();
+    return authJson({ ok: true, status }, 200, origin);
+  } catch (error) {
+    console.error('access approval failed', error);
+    return authJson({ error: error.message || '승인 처리에 실패했습니다.' }, 502, origin);
+  }
 }
 
 async function handleProtectedData(request, env, url, origin) {
@@ -472,6 +608,11 @@ export default {
     if (url.pathname === '/usage-events') {
       const usageResponse = await handleUsageEvent(request, env, origin);
       if (usageResponse) return usageResponse;
+    }
+
+    if (url.pathname.startsWith('/admin/access-requests')) {
+      const adminAccessResponse = await handleAdminAccessRequests(request, env, url, origin);
+      if (adminAccessResponse) return adminAccessResponse;
     }
 
     if (url.pathname.startsWith('/protected/data/')) {

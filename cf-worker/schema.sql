@@ -26,7 +26,9 @@ CREATE TABLE IF NOT EXISTS access_requests (
   client_key TEXT NOT NULL,
   analytics_consent INTEGER NOT NULL DEFAULT 0,
   status TEXT NOT NULL DEFAULT 'pending',
-  created_at INTEGER NOT NULL
+  created_at INTEGER NOT NULL,
+  reviewed_at INTEGER,
+  review_note TEXT
 );
 
 CREATE INDEX IF NOT EXISTS idx_access_requests_email ON access_requests (email, created_at DESC);

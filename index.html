@@ -48,7 +48,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="style.css?v=20260714-access-request1">
+<link rel="stylesheet" href="style.css?v=20260714-admin1">
 </head>
 <body>
 <a class="skip-link" href="#main-content">본문 바로가기</a>
@@ -2270,7 +2270,19 @@
       <span class="account-eyebrow">Access granted</span>
       <h2>로그인되어 있습니다</h2>
       <p>보호 자료 열람 권한은 마지막 인증 후 최대 6시간 유지됩니다.</p>
+      <button type="button" class="account-primary" id="account-admin-open" hidden>가입관리</button>
       <button type="button" class="account-secondary account-logout" id="account-logout">로그아웃</button>
+    </div>
+    <div id="account-admin-panel" hidden>
+      <span class="account-eyebrow">Access administration</span>
+      <div class="account-admin-heading">
+        <h2>가입관리</h2>
+        <button type="button" class="account-admin-refresh" id="account-admin-refresh">새로고침</button>
+      </div>
+      <p>접근 신청을 검토하고 승인 이메일을 관리합니다.</p>
+      <p class="account-request-status" id="account-admin-status" role="status" aria-live="polite"></p>
+      <div class="account-admin-list" id="account-admin-list"></div>
+      <button type="button" class="account-secondary" id="account-admin-back">계정으로 돌아가기</button>
     </div>
     <div class="account-policy-links">
       <a href="privacy.html">개인정보처리방침</a>
@@ -2338,7 +2350,7 @@
 <script src="data/status.js?v=20260630-news0930"></script>
 <script src="data/daily_quotes.js"></script>
 <script src="market.js"></script>
-<script src="app.js?v=20260714-access-request1"></script>
+<script src="app.js?v=20260714-admin1"></script>
 <script src="pc-cinema.js?v=20260714-cinema2"></script>
 <script src="feedback.js?v=20260714-api1"></script>
 </body>
