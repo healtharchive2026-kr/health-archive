@@ -1466,6 +1466,7 @@ function renderProtectedAccountState(authenticated) {
   const requestPanel = document.getElementById('account-request-panel');
   const adminOpen = document.getElementById('account-admin-open');
   const adminPanel = document.getElementById('account-admin-panel');
+  document.body.classList.toggle('site-authenticated', authenticated === true);
   if (trigger) trigger.classList.toggle('is-authenticated', authenticated === true);
   if (label) label.textContent = authenticated ? '로그인됨' : '로그인';
   if (loggedOut) loggedOut.hidden = authenticated === true;
@@ -1473,6 +1474,22 @@ function renderProtectedAccountState(authenticated) {
   if (requestPanel && authenticated) requestPanel.hidden = true;
   if (adminOpen) adminOpen.hidden = !(authenticated && protectedAdminState);
   if (adminPanel && (!authenticated || !protectedAdminState)) adminPanel.hidden = true;
+}
+
+function openProtectedAccountModal() {
+  const modal = document.getElementById('account-modal');
+  const loggedOut = document.getElementById('account-logged-out');
+  const loggedIn = document.getElementById('account-logged-in');
+  const requestPanel = document.getElementById('account-request-panel');
+  const adminPanel = document.getElementById('account-admin-panel');
+  if (!modal) return;
+  if (loggedOut) loggedOut.hidden = false;
+  if (loggedIn) loggedIn.hidden = true;
+  if (requestPanel) requestPanel.hidden = true;
+  if (adminPanel) adminPanel.hidden = true;
+  modal.hidden = false;
+  document.body.classList.add('account-modal-open');
+  document.getElementById('account-modal-close')?.focus();
 }
 
 function adminStatusLabel(status) {
@@ -1551,10 +1568,13 @@ function setupProtectedAccountUi() {
   const adminList = document.getElementById('account-admin-list');
   const adminStatus = document.getElementById('account-admin-status');
   const openModal = () => {
-    if (!modal) return;
-    modal.hidden = false;
-    document.body.classList.add('account-modal-open');
-    close?.focus();
+    if (protectedAuthState === true) {
+      modal.hidden = false;
+      document.body.classList.add('account-modal-open');
+      close?.focus();
+      return;
+    }
+    openProtectedAccountModal();
   };
   const closeModal = () => {
     if (!modal) return;
@@ -1676,7 +1696,15 @@ function setupProtectedAccountUi() {
       logout.disabled = false;
     }
   });
-  protectedAuthStatus(true);
+  protectedAuthStatus(true).then(authenticated => {
+    if (!authenticated) return;
+    const pendingTab = sessionStorage.getItem('ha-login-target');
+    if (!pendingTab || !document.getElementById(pendingTab)) return;
+    sessionStorage.removeItem('ha-login-target');
+    Promise.resolve(window.navigateTo?.(pendingTab)).then(opened => {
+      if (opened !== false) history.replaceState(null, '', `#${pendingTab}`);
+    });
+  });
 }
 
 const usageEventTimes = new Map();
@@ -1933,8 +1961,11 @@ async function wsLock() {
 }
 
 async function initWhitespaceTab() {
-  if (await protectedAuthStatus()) wsUnlock();
-  else wsShowLocked();
+  if (!(await protectedAuthStatus()) || !protectedAdminState) {
+    wsShowLocked();
+    return;
+  }
+  wsUnlock();
 }
 
 function setupWhitespaceGate() {
@@ -3433,6 +3464,8 @@ function setupTabs() {
   const menuToggle = document.querySelector('.mobile-menu-toggle');
   const mainNav = document.getElementById('main-nav');
   const navGroups = Array.from(document.querySelectorAll('.nav-group'));
+  const publicTabs = new Set(['precheck']);
+  const adminOnlyTabs = new Set(['whitespace', 'overseas-approval']);
 
   document.querySelectorAll('a[data-goto]:not([href])').forEach(link => {
     link.setAttribute('href', '#' + link.dataset.goto);
@@ -3447,7 +3480,7 @@ function setupTabs() {
     });
   }
 
-  function activate(tab) {
+  function activateView(tab) {
     links.forEach(l => l.classList.toggle('active', l.dataset.tab === tab));
     sections.forEach(s => s.classList.toggle('active', s.id === tab));
     document.querySelectorAll('.nav-group').forEach(g => {
@@ -3467,6 +3500,24 @@ function setupTabs() {
       menuToggle.setAttribute('aria-expanded', 'false');
       menuToggle.setAttribute('aria-label', '메뉴 열기');
     }
+  }
+
+  async function activate(tab, options = {}) {
+    if (!publicTabs.has(tab)) {
+      const authenticated = await protectedAuthStatus();
+      if (!authenticated) {
+        sessionStorage.setItem('ha-login-target', tab);
+        activateView('precheck');
+        if (options.initial) history.replaceState(null, '', '#precheck');
+        else openProtectedAccountModal();
+        return false;
+      }
+    }
+    activateView(tab);
+    if (adminOnlyTabs.has(tab) && !protectedAdminState) {
+      document.body.classList.remove('mobile-nav-open');
+    }
+    return true;
   }
   window.navigateTo = activate;
 
@@ -3501,9 +3552,9 @@ function setupTabs() {
   }
 
   links.forEach(link => {
-    link.addEventListener('click', e => {
+    link.addEventListener('click', async e => {
       e.preventDefault();
-      activate(link.dataset.tab);
+      if (!(await activate(link.dataset.tab))) return;
       if (link.dataset.lawtab) selectLawTab(link.dataset.lawtab);
       if (link.dataset.devtab) selectMaterialDevTab(link.dataset.devtab);
       updateHistory(link.dataset.tab);
@@ -3511,10 +3562,10 @@ function setupTabs() {
   });
 
   document.querySelectorAll('[data-goto]').forEach(el => {
-    el.addEventListener('click', e => {
+    el.addEventListener('click', async e => {
       e.preventDefault();
       const target = el.dataset.goto;
-      activate(target);
+      if (!(await activate(target))) return;
       if (target === 'laws' && el.dataset.lawtab) {
         selectLawTab(el.dataset.lawtab);
       }
@@ -3525,9 +3576,9 @@ function setupTabs() {
     });
   });
 
-  function activateFromLocation() {
+  async function activateFromLocation() {
     const tab = location.hash.replace('#', '') || 'home';
-    if (document.getElementById(tab)) activate(tab);
+    if (document.getElementById(tab)) await activate(tab, { initial: true });
   }
 
   window.addEventListener('hashchange', activateFromLocation);
@@ -3535,7 +3586,7 @@ function setupTabs() {
 
   const initial = location.hash.replace('#', '') || 'home';
   if (document.getElementById(initial)) {
-    activate(initial);
+    activate(initial, { initial: true });
     window.requestAnimationFrame(() => {
       window.requestAnimationFrame(() => window.scrollTo({top: 0, behavior: 'auto'}));
     });
@@ -4759,7 +4810,7 @@ function overseasShowUnlocked() {
 }
 
 async function initOverseasTab() {
-  if (!(await protectedAuthStatus())) {
+  if (!(await protectedAuthStatus()) || !protectedAdminState) {
     overseasShowLocked();
     return;
   }

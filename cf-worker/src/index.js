@@ -35,6 +35,7 @@ const ACCESS_REQUEST_RETENTION = 365 * 24 * 60 * 60;
 const USAGE_EVENT_RETENTION = 90 * 24 * 60 * 60;
 const AUTH_COOKIE = 'ha_protected_session';
 const PROTECTED_DATA_KEYS = new Set(['radar-log', 'demand-trends', 'overseas-regulatory']);
+const ADMIN_PROTECTED_DATA_KEYS = new Set(['demand-trends', 'overseas-regulatory']);
 const ACCESS_LOGIN_PATH = '/auth/access/exchange';
 const USAGE_EVENTS = new Set(['tab_view', 'protected_login']);
 const ADMIN_EMAIL = 'healtharchive2026@gmail.com';
@@ -334,6 +335,7 @@ async function handleAccessRequest(request, env, origin) {
     return json({ error: '회사명, 부서명, 이용 목적과 인증 이메일을 정확히 입력해 주세요.' }, 400, origin);
   }
   if (!privacyConsent) return json({ error: '개인정보 수집·이용 동의가 필요합니다.' }, 400, origin);
+  if (!analyticsConsent) return json({ error: '로그인 서비스 이용을 위해 메뉴 이용 기록 동의가 필요합니다.' }, 400, origin);
 
   const now = Math.floor(Date.now() / 1000);
   const address = request.headers.get('CF-Connecting-IP') || 'unknown';
@@ -443,8 +445,12 @@ async function handleProtectedData(request, env, url, origin) {
   if (!match || request.method !== 'GET') return null;
   const key = match[1];
   if (!PROTECTED_DATA_KEYS.has(key)) return authJson({ error: 'Not found' }, 404, origin);
-  if (!(await readAuthorizedSession(request, env))) {
+  const session = await readAuthorizedSession(request, env);
+  if (!session) {
     return authJson({ error: '인증이 필요합니다.' }, 401, origin);
+  }
+  if (ADMIN_PROTECTED_DATA_KEYS.has(key) && !session.admin) {
+    return authJson({ error: '관리자 전용 작업 중 자료입니다.' }, 403, origin);
   }
   const object = await env.PRIVATE_DATA.get(`protected/${key}.json`);
   if (!object) return authJson({ error: '보호 자료를 찾을 수 없습니다.' }, 404, origin);

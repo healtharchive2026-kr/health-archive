@@ -2953,6 +2953,8 @@ body.account-modal-open{overflow:hidden;}
 .account-policy-links a{color:var(--muted);font-size:11px;text-decoration:none;}
 .account-policy-links a:hover{color:var(--green);text-decoration:underline;}
 .account-logout:disabled{opacity:.55;cursor:wait;}
+body:not(.site-authenticated) .nav-link:not([data-tab="precheck"]){opacity:.5;}
+body:not(.site-authenticated) .nav-link:not([data-tab="precheck"]):hover{opacity:.85;}
 .account-admin-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px;}
 .account-admin-heading h2{margin:0;}
 .account-admin-refresh{border:0;background:transparent;color:var(--green);font:800 12px/1 inherit;cursor:pointer;}

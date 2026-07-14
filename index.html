@@ -48,7 +48,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="style.css?v=20260714-email1">
+<link rel="stylesheet" href="style.css?v=20260714-access-gate1">
 </head>
 <body>
 <a class="skip-link" href="#main-content">본문 바로가기</a>
@@ -75,7 +75,7 @@
           <a href="#precheck" data-tab="precheck" class="nav-link">원료 Pre-Check</a>
           <a href="#devmap" data-tab="devmap" class="nav-link">개발방향 매핑</a>
           <a href="#material-dev" data-tab="material-dev" class="nav-link">원료 개발</a>
-          <a href="#whitespace" data-tab="whitespace" class="nav-link">화이트스페이스맵 🔒</a>
+          <a href="#whitespace" data-tab="whitespace" class="nav-link">화이트스페이스맵 (작업중) 🚧</a>
         </div>
       </div>
       <div class="nav-group" data-tabs="ingredients foodraw temp-approval safety-db blocked gmo-ingredients">
@@ -93,7 +93,7 @@
           <a href="#nifds" data-tab="nifds" class="nav-link">심의 정보·회의록</a>
         </div>
       </div>
-      <a href="#overseas-approval" data-tab="overseas-approval" class="nav-link">해외 인허가 🔒</a>
+      <a href="#overseas-approval" data-tab="overseas-approval" class="nav-link">해외 인허가 (작업중) 🚧</a>
       <div class="nav-group" data-tabs="compare biomarkers trials">
         <button type="button" class="nav-group-label" aria-expanded="false">연구설계 <span class="nav-caret" aria-hidden="true">▾</span></button>
         <div class="nav-dropdown">
@@ -250,16 +250,16 @@
           <a class="home-command-item" data-goto="safety-db"><span>03</span><strong>안전성 DB</strong><small>식품원료·차단성분 대조</small></a>
           <a class="home-command-item" data-goto="biomarkers"><span>04</span><strong>기능성별 프로토콜</strong><small>대상자·평가변수·시험모델</small></a>
           <a class="home-command-item" data-goto="laws"><span>05</span><strong>법령·가이드라인</strong><small>공전·심의·공식 기준</small></a>
-          <a class="home-command-item is-protected" data-goto="overseas-approval"><span>06</span><strong>해외 인허가</strong><small>국가별 자료 Gap 분석</small></a>
+          <a class="home-command-item is-protected" data-goto="overseas-approval"><span>06</span><strong>해외 인허가 🚧</strong><small>작업 중 · 관리자 전용</small></a>
         </div>
       </section>
 
       <details class="home-service-directory">
         <summary><span>전체 서비스</span><small>모든 데이터베이스와 실무 도구 보기</small></summary>
         <div class="home-service-groups">
-          <section><h3>개발검토</h3><a data-goto="precheck">원료 Pre-Check</a><a data-goto="devmap">개발방향 매핑</a><a data-goto="material-dev">원료 개발 가이드</a><a data-goto="whitespace">화이트스페이스맵 🔒</a></section>
+          <section><h3>개발검토</h3><a data-goto="precheck">원료 Pre-Check</a><a data-goto="devmap">개발방향 매핑</a><a data-goto="material-dev">원료 개발 가이드</a><a data-goto="whitespace">화이트스페이스맵 (작업중) 🚧</a></section>
           <section><h3>원료 DB</h3><a data-goto="ingredients">개별·고시형 원료</a><a data-goto="foodraw">식품원료목록</a><a data-goto="temp-approval">한시적 인정 원료</a><a data-goto="blocked">반입차단 원료</a><a data-goto="gmo-ingredients">GMO 심사 원료</a></section>
-          <section><h3>규제자료</h3><a data-goto="laws">법령·공전·가이드라인</a><a data-goto="overseas-approval">해외 인허가 🔒</a><a data-goto="nifds">심의 관련</a><a data-goto="minutes">건기식 심의 회의록</a><a data-goto="gmo-minutes">GMO 회의록</a></section>
+          <section><h3>규제자료</h3><a data-goto="laws">법령·공전·가이드라인</a><a data-goto="overseas-approval">해외 인허가 (작업중) 🚧</a><a data-goto="nifds">심의 관련</a><a data-goto="minutes">건기식 심의 회의록</a><a data-goto="gmo-minutes">GMO 회의록</a></section>
           <section><h3>연구설계</h3><a data-goto="compare">기능성별 원료 비교</a><a data-goto="biomarkers">기능성별 프로토콜</a><a data-goto="trials">임상정보 DB</a></section>
           <section><h3>시장동향</h3><a data-goto="products">신규 등록 제품</a><a data-goto="market">시장현황</a><a data-goto="stats">인정 통계</a><a data-goto="radar">레귤러토리 레이더 🔒</a><a data-goto="news">식품 뉴스</a><a data-goto="events">학회·박람회</a></section>
         </div>
@@ -384,7 +384,7 @@
             <a class="nav-card" data-goto="devmap"><span class="nav-card-icon">매핑</span><span class="nav-card-title">개발방향 매핑</span><span class="nav-card-desc">트랙·게이트 선별</span></a>
             <a class="nav-card" data-goto="material-dev" data-devtab="individual-dev"><span class="nav-card-icon">개별</span><span class="nav-card-title">개별인정원료 개발</span><span class="nav-card-desc">제출자료·첨부서류 체크</span></a>
             <a class="nav-card" data-goto="material-dev" data-devtab="temporary-dev"><span class="nav-card-icon">한시</span><span class="nav-card-title">한시적 인정 원료 개발</span><span class="nav-card-desc">식품원료 인정자료 정리</span></a>
-            <a class="nav-card" data-goto="whitespace"><span class="nav-card-icon">전략</span><span class="nav-card-title">화이트스페이스맵 🔒</span><span class="nav-card-desc">기능성·시장 빈 영역 검토</span></a>
+            <a class="nav-card" data-goto="whitespace"><span class="nav-card-icon">🚧</span><span class="nav-card-title">화이트스페이스맵</span><span class="nav-card-desc">작업 중 · 관리자 전용</span></a>
           </div>
         </div>
 
@@ -410,7 +410,7 @@
           </div>
           <div class="hero-cat-cards">
             <a class="nav-card" data-goto="laws"><span class="nav-card-icon">법령</span><span class="nav-card-title">법령·공전·가이드라인</span><span class="nav-card-desc">작성 기준·공식 자료</span></a>
-            <a class="nav-card" data-goto="overseas-approval"><span class="nav-card-icon">수출</span><span class="nav-card-title">해외 인허가·신고</span><span class="nav-card-desc">국가별 진출 Gate 확인</span></a>
+            <a class="nav-card" data-goto="overseas-approval"><span class="nav-card-icon">🚧</span><span class="nav-card-title">해외 인허가·신고</span><span class="nav-card-desc">작업 중 · 관리자 전용</span></a>
             <a class="nav-card" data-goto="nifds"><span class="nav-card-icon">심의</span><span class="nav-card-title">심의 관련</span><span class="nav-card-desc">위원 명단·담당부서</span></a>
             <a class="nav-card" data-goto="minutes"><span class="nav-card-icon">건기식</span><span class="nav-card-title">건기식 심의 회의록</span><span class="nav-card-desc">회차별 대상 원료</span></a>
             <a class="nav-card" data-goto="gmo-minutes"><span class="nav-card-icon">GMO</span><span class="nav-card-title">유전자재조합식품 회의록</span><span class="nav-card-desc">안전성심사 회의 안내·결과</span></a>
@@ -1006,10 +1006,9 @@
   <section id="whitespace" class="tab-section">
     <div class="ws-gate" id="ws-gate">
       <div class="ws-gate-box">
-        <div class="ws-gate-icon">🔒</div>
-        <h3>비공개 페이지</h3>
-        <p>승인된 이메일로 로그인하면 보호 자료를 열람할 수 있습니다.</p>
-        <button type="button" class="protected-login-btn" data-protected-login>이메일로 로그인</button>
+        <div class="ws-gate-icon">🚧</div>
+        <h3>작업 중</h3>
+        <p>화이트스페이스맵을 정비하고 있습니다. 현재는 관리자만 열람할 수 있습니다.</p>
         <p class="ws-gate-err" id="ws-gate-err" hidden></p>
       </div>
     </div>
@@ -1269,10 +1268,9 @@
   <section id="overseas-approval" class="tab-section">
     <div class="ws-gate" id="overseas-gate">
       <div class="ws-gate-box">
-        <div class="ws-gate-icon">🔒</div>
-        <h3>비공개 페이지</h3>
-        <p>승인된 이메일로 로그인하면 해외 인허가·신고 자료를 열람할 수 있습니다.</p>
-        <button type="button" class="protected-login-btn" data-protected-login>이메일로 로그인</button>
+        <div class="ws-gate-icon">🚧</div>
+        <h3>작업 중</h3>
+        <p>해외 인허가·신고 자료를 정비하고 있습니다. 현재는 관리자만 열람할 수 있습니다.</p>
         <p class="ws-gate-err" id="overseas-gate-err" hidden></p>
       </div>
     </div>
@@ -2244,8 +2242,8 @@
     <div class="account-dialog-mark" aria-hidden="true">HA</div>
     <div id="account-logged-out">
       <span class="account-eyebrow">Protected Access</span>
-      <h2 id="account-modal-title">보호 자료 로그인</h2>
-      <p>운영자가 승인한 이메일로 일회용 인증번호를 받아 로그인합니다. 회사 이메일은 보안 정책에 따라 인증번호가 차단될 수 있어 개인 이메일 사용을 권장합니다.</p>
+      <h2 id="account-modal-title">전체 기능 로그인</h2>
+      <p>원료 Pre-Check는 로그인 없이 이용할 수 있습니다. 그 외 기능은 운영자가 승인한 이메일로 로그인한 후 이용할 수 있습니다. 회사 이메일은 인증번호가 차단될 수 있어 개인 이메일 사용을 권장합니다.</p>
       <button type="button" class="account-primary" data-protected-login>이메일로 로그인</button>
       <button type="button" class="account-secondary" id="account-request-open">접근 신청</button>
       <p class="account-help">신규 이용자는 접근 신청 후 승인 이메일로 로그인할 수 있습니다.</p>
@@ -2260,7 +2258,7 @@
         <label>인증 이메일 (개인 이메일 권장)<input type="email" name="email" maxlength="160" autocomplete="email" required><span class="account-field-help">회사 이메일은 스팸·보안 정책으로 인증번호가 차단될 수 있습니다. 가능하면 Gmail·네이버 등 개인 이메일을 사용해 주세요.</span></label>
         <label>이용 목적<textarea name="purpose" maxlength="500" rows="3" required></textarea></label>
         <label class="account-consent"><input type="checkbox" name="privacyConsent" required><span><a href="privacy.html" target="_blank" rel="noopener">개인정보 수집·이용 내용</a>을 확인했으며 접근 신청 정보의 처리에 동의합니다. <b>(필수)</b></span></label>
-        <label class="account-consent"><input type="checkbox" name="analyticsConsent"><span>메뉴 이용 기록을 서비스 배치와 기능 개선에 활용하는 데 동의합니다. 검색어·입력 원문은 수집하지 않습니다. <b>(선택)</b></span></label>
+        <label class="account-consent"><input type="checkbox" name="analyticsConsent" required><span>가명 처리된 메뉴 이용 기록을 서비스 배치와 기능 개선에 활용하는 데 동의합니다. 검색어·입력 원문은 수집하지 않습니다. <b>(필수)</b></span></label>
         <p class="account-request-status" id="account-request-status" role="status" aria-live="polite"></p>
         <button type="submit" class="account-primary">신청 보내기</button>
         <button type="button" class="account-secondary" id="account-request-back">로그인으로 돌아가기</button>
@@ -2350,7 +2348,7 @@
 <script src="data/status.js?v=20260630-news0930"></script>
 <script src="data/daily_quotes.js"></script>
 <script src="market.js"></script>
-<script src="app.js?v=20260714-admin2"></script>
+<script src="app.js?v=20260714-access-gate1"></script>
 <script src="pc-cinema.js?v=20260714-cinema2"></script>
 <script src="feedback.js?v=20260714-api1"></script>
 </body>
