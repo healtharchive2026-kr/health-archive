@@ -1,8 +1,8 @@
-const CACHE_NAME = 'healtharchive-access-insights-20260714-23';
+const CACHE_NAME = 'healtharchive-header-mobile-20260714-25';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/style.css?v=20260714-access-insights1',
+  '/style.css?v=20260714-header-mobile2',
   '/app.js?v=20260714-access-insights1',
   '/pc-cinema.js?v=20260714-cinema2',
   '/device-routing.js?v=20260714-mobile1',
