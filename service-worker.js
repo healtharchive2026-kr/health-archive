@@ -1,18 +1,18 @@
-const CACHE_NAME = 'healtharchive-access-gate-20260714-22';
+const CACHE_NAME = 'healtharchive-access-insights-20260714-23';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/style.css?v=20260714-access-gate1',
-  '/app.js?v=20260714-access-gate1',
+  '/style.css?v=20260714-access-insights1',
+  '/app.js?v=20260714-access-insights1',
   '/pc-cinema.js?v=20260714-cinema2',
   '/device-routing.js?v=20260714-mobile1',
   '/mobile-lite.html',
   '/privacy.html',
   '/terms.html',
-  '/mobile-lite.css?v=20260714-verdict3',
+  '/mobile-lite.css?v=20260714-auth1',
   '/mobile-verdict.css?v=20260714-verdict3',
   '/mobile-verdict.js?v=20260714-verdict3',
-  '/mobile-lite.js?v=20260714-mobile1',
+  '/mobile-lite.js?v=20260714-auth1',
   '/assets/logo-icon.png',
   '/assets/leaf-badge.png',
   '/assets/mobile-health-hero.jpg',

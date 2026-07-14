@@ -48,7 +48,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="style.css?v=20260714-access-gate1">
+<link rel="stylesheet" href="style.css?v=20260714-access-insights1">
 </head>
 <body>
 <a class="skip-link" href="#main-content">본문 바로가기</a>
@@ -2213,7 +2213,7 @@
     <button type="button" class="intro-modal-close" id="intro-modal-close" aria-label="닫기">×</button>
     <h3 id="intro-modal-title">HealthArchive 안내</h3>
     <p class="intro-modal-body">
-      건강기능식품 개발 실무에서 흩어진 자료를 더 빠르게 확인할 수 있도록 만든 개인 운영 아카이브입니다.<br><br>
+      건강기능식품 개발 자료를 안정적으로 제공하고 무단 수집·오용을 줄이기 위해 승인형 로그인을 운영합니다. 비밀번호는 HealthArchive가 받거나 저장하지 않으며, 로그인 후에는 검색어가 아닌 기능별 이용량만 가명으로 집계합니다.<br><br>
       자료와 기능은 계속 보완하고 있습니다. 오류나 개선 의견은 <strong>문의</strong> 탭 또는 <a href="mailto:healtharchive2026@gmail.com">Healtharchive2026@gmail.com</a>으로 알려주세요.
     </p>
     <div class="intro-modal-actions">
@@ -2243,7 +2243,13 @@
     <div id="account-logged-out">
       <span class="account-eyebrow">Protected Access</span>
       <h2 id="account-modal-title">전체 기능 로그인</h2>
-      <p>원료 Pre-Check는 로그인 없이 이용할 수 있습니다. 그 외 기능은 운영자가 승인한 이메일로 로그인한 후 이용할 수 있습니다. 회사 이메일은 인증번호가 차단될 수 있어 개인 이메일 사용을 권장합니다.</p>
+      <p>자료의 안정적인 운영과 무단 수집 방지를 위해 승인된 이용자만 전체 기능을 열 수 있습니다. 원료 Pre-Check는 로그인 없이 이용할 수 있습니다.</p>
+      <div class="account-security-note" aria-label="로그인 보안 안내">
+        <strong>보안·개인정보 보호 방식</strong>
+        <span>Cloudflare가 이메일을 인증하며 사이트는 비밀번호를 저장하지 않습니다.</span>
+        <span>서명된 세션은 최대 6시간 유지되고 브라우저 스크립트에서 읽을 수 없습니다.</span>
+        <span>기능별 이용량만 가명 집계하며 검색어·입력 원문은 수집하지 않습니다.</span>
+      </div>
       <button type="button" class="account-primary" data-protected-login>이메일로 로그인</button>
       <button type="button" class="account-secondary" id="account-request-open">접근 신청</button>
       <p class="account-help">신규 이용자는 접근 신청 후 승인 이메일로 로그인할 수 있습니다.</p>
@@ -2267,8 +2273,11 @@
     <div id="account-logged-in" hidden>
       <span class="account-eyebrow">Access granted</span>
       <h2>로그인되어 있습니다</h2>
-      <p>보호 자료 열람 권한은 마지막 인증 후 최대 6시간 유지됩니다.</p>
-      <button type="button" class="account-primary" id="account-admin-open" hidden>가입관리</button>
+      <p>한 번 로그인하면 PC와 모바일에서 같은 브라우저의 세션을 공유하며, 권한은 마지막 인증 후 최대 6시간 유지됩니다.</p>
+      <div class="account-admin-launchers" id="account-admin-launchers" hidden>
+        <button type="button" class="account-primary" id="account-admin-open">가입관리</button>
+        <button type="button" class="account-secondary" id="account-usage-open">이용통계</button>
+      </div>
       <button type="button" class="account-secondary account-logout" id="account-logout">로그아웃</button>
     </div>
     <div id="account-admin-panel" hidden>
@@ -2281,6 +2290,22 @@
       <p class="account-request-status" id="account-admin-status" role="status" aria-live="polite"></p>
       <div class="account-admin-list" id="account-admin-list"></div>
       <button type="button" class="account-secondary" id="account-admin-back">계정으로 돌아가기</button>
+    </div>
+    <div id="account-usage-panel" hidden>
+      <span class="account-eyebrow">Usage insights</span>
+      <div class="account-admin-heading">
+        <h2>기능 이용 통계</h2>
+        <button type="button" class="account-admin-refresh" id="account-usage-refresh">새로고침</button>
+      </div>
+      <p>검색어나 입력값 없이 메뉴 이용 흐름만 가명 집계합니다.</p>
+      <div class="account-usage-range" role="group" aria-label="통계 기간">
+        <button type="button" data-usage-days="7">7일</button>
+        <button type="button" class="active" data-usage-days="30">30일</button>
+        <button type="button" data-usage-days="90">90일</button>
+      </div>
+      <p class="account-request-status" id="account-usage-status" role="status" aria-live="polite"></p>
+      <div id="account-usage-content"></div>
+      <button type="button" class="account-secondary" id="account-usage-back">계정으로 돌아가기</button>
     </div>
     <div class="account-policy-links">
       <a href="privacy.html">개인정보처리방침</a>
@@ -2348,7 +2373,7 @@
 <script src="data/status.js?v=20260630-news0930"></script>
 <script src="data/daily_quotes.js"></script>
 <script src="market.js"></script>
-<script src="app.js?v=20260714-access-gate1"></script>
+<script src="app.js?v=20260714-access-insights1"></script>
 <script src="pc-cinema.js?v=20260714-cinema2"></script>
 <script src="feedback.js?v=20260714-api1"></script>
 </body>

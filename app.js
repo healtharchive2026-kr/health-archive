@@ -202,7 +202,7 @@ function setupIntroModal() {
   if (title) title.textContent = 'HealthArchive 안내';
   if (body) {
     body.innerHTML = `
-      건강기능식품 개발 실무에서 흩어진 자료를 더 빠르게 확인할 수 있도록 만든 개인 운영 아카이브입니다.<br><br>
+      건강기능식품 개발 자료를 안정적으로 제공하고 무단 수집·오용을 줄이기 위해 승인형 로그인을 운영합니다. 비밀번호는 HealthArchive가 받거나 저장하지 않으며, 로그인 후에는 검색어가 아닌 기능별 이용량만 가명으로 집계합니다.<br><br>
       자료와 기능은 계속 보완하고 있습니다. 오류나 개선 의견은 <strong>문의</strong> 탭 또는 <a href="mailto:healtharchive2026@gmail.com">Healtharchive2026@gmail.com</a>으로 알려주세요.
     `;
   }
@@ -1464,16 +1464,18 @@ function renderProtectedAccountState(authenticated) {
   const loggedOut = document.getElementById('account-logged-out');
   const loggedIn = document.getElementById('account-logged-in');
   const requestPanel = document.getElementById('account-request-panel');
-  const adminOpen = document.getElementById('account-admin-open');
+  const adminLaunchers = document.getElementById('account-admin-launchers');
   const adminPanel = document.getElementById('account-admin-panel');
+  const usagePanel = document.getElementById('account-usage-panel');
   document.body.classList.toggle('site-authenticated', authenticated === true);
   if (trigger) trigger.classList.toggle('is-authenticated', authenticated === true);
   if (label) label.textContent = authenticated ? '로그인됨' : '로그인';
   if (loggedOut) loggedOut.hidden = authenticated === true;
   if (loggedIn) loggedIn.hidden = authenticated !== true;
   if (requestPanel && authenticated) requestPanel.hidden = true;
-  if (adminOpen) adminOpen.hidden = !(authenticated && protectedAdminState);
+  if (adminLaunchers) adminLaunchers.hidden = !(authenticated && protectedAdminState);
   if (adminPanel && (!authenticated || !protectedAdminState)) adminPanel.hidden = true;
+  if (usagePanel && (!authenticated || !protectedAdminState)) usagePanel.hidden = true;
 }
 
 function openProtectedAccountModal() {
@@ -1482,11 +1484,13 @@ function openProtectedAccountModal() {
   const loggedIn = document.getElementById('account-logged-in');
   const requestPanel = document.getElementById('account-request-panel');
   const adminPanel = document.getElementById('account-admin-panel');
+  const usagePanel = document.getElementById('account-usage-panel');
   if (!modal) return;
   if (loggedOut) loggedOut.hidden = false;
   if (loggedIn) loggedIn.hidden = true;
   if (requestPanel) requestPanel.hidden = true;
   if (adminPanel) adminPanel.hidden = true;
+  if (usagePanel) usagePanel.hidden = true;
   modal.hidden = false;
   document.body.classList.add('account-modal-open');
   document.getElementById('account-modal-close')?.focus();
@@ -1549,6 +1553,78 @@ async function loadAdminAccessRequests() {
   }
 }
 
+const MOBILE_USAGE_LABELS = {
+  home: '모바일 홈', verdict: '모바일 원료 판정', ingredient: '모바일 원료검색',
+  safety: '모바일 안전성 DB', protocol: '모바일 기능성별 프로토콜', compare: '모바일 원료 비교',
+};
+
+function usageTargetLabel(target) {
+  const value = String(target || '');
+  if (value.startsWith('mobile:')) return MOBILE_USAGE_LABELS[value.slice(7)] || `모바일 ${value.slice(7)}`;
+  return HOME_TAB_LABELS[value] || value;
+}
+
+function renderAdminUsageSummary(result) {
+  const content = document.getElementById('account-usage-content');
+  if (!content) return;
+  const overview = result.overview || {};
+  const targets = Array.isArray(result.targets) ? result.targets : [];
+  const daily = Array.isArray(result.daily) ? result.daily : [];
+  const maxTarget = Math.max(1, ...targets.map(row => Number(row.events || 0)));
+  const maxDaily = Math.max(1, ...daily.map(row => Number(row.events || 0)));
+  content.innerHTML = `
+    <div class="account-usage-kpis">
+      <div><strong>${Number(overview.events || 0).toLocaleString('ko-KR')}</strong><span>${result.days}일 이용</span></div>
+      <div><strong>${Number(overview.active_users || 0).toLocaleString('ko-KR')}</strong><span>${result.days}일 이용자</span></div>
+      <div><strong>${Number(overview.active_7d || 0).toLocaleString('ko-KR')}</strong><span>최근 7일 이용자</span></div>
+      <div><strong>${Number(overview.approved_users || 0).toLocaleString('ko-KR')}</strong><span>승인 이용자</span></div>
+    </div>
+    <section class="account-usage-section">
+      <h3>기능별 이용</h3>
+      <div class="account-usage-bars">${targets.map(row => {
+        const events = Number(row.events || 0);
+        const width = Math.max(3, Math.round((events / maxTarget) * 100));
+        return `<div class="account-usage-row">
+          <div><strong>${escapeHtml(usageTargetLabel(row.target))}</strong><span>${events.toLocaleString('ko-KR')}회 · ${Number(row.users || 0).toLocaleString('ko-KR')}명</span></div>
+          <i><b style="width:${width}%"></b></i>
+        </div>`;
+      }).join('') || '<div class="account-admin-empty">아직 집계된 이용 기록이 없습니다.</div>'}</div>
+    </section>
+    <section class="account-usage-section">
+      <h3>일별 흐름</h3>
+      <div class="account-usage-days">${daily.slice(-14).map(row => {
+        const events = Number(row.events || 0);
+        const height = Math.max(4, Math.round((events / maxDaily) * 62));
+        return `<div title="${escapeHtml(row.day)} · ${events}회"><i style="height:${height}px"></i><span>${escapeHtml(String(row.day || '').slice(5))}</span></div>`;
+      }).join('') || '<div class="account-admin-empty">표시할 일별 기록이 없습니다.</div>'}</div>
+    </section>
+    <p class="account-usage-privacy">가명 이용자 키와 기능명만 최대 90일 보관합니다. 검색어·입력 원문은 수집하지 않습니다.</p>`;
+}
+
+async function loadAdminUsageSummary(days = 30) {
+  const status = document.getElementById('account-usage-status');
+  const content = document.getElementById('account-usage-content');
+  if (status) {
+    status.textContent = '이용 통계를 불러오는 중입니다.';
+    status.classList.remove('is-error');
+  }
+  if (content) content.innerHTML = '';
+  try {
+    const response = await fetch(`${PROTECTED_AUTH_API}/admin/usage-summary?days=${days}`, {
+      credentials: 'include', cache: 'no-store',
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.error || '이용 통계를 불러오지 못했습니다.');
+    renderAdminUsageSummary(result);
+    if (status) status.textContent = `최근 ${result.days}일 기준 · 개인정보 원문 미수집`;
+  } catch (error) {
+    if (status) {
+      status.textContent = error.message;
+      status.classList.add('is-error');
+    }
+  }
+}
+
 function setupProtectedAccountUi() {
   const trigger = document.getElementById('account-trigger');
   const modal = document.getElementById('account-modal');
@@ -1567,8 +1643,17 @@ function setupProtectedAccountUi() {
   const adminRefresh = document.getElementById('account-admin-refresh');
   const adminList = document.getElementById('account-admin-list');
   const adminStatus = document.getElementById('account-admin-status');
+  const usageOpen = document.getElementById('account-usage-open');
+  const usagePanel = document.getElementById('account-usage-panel');
+  const usageBack = document.getElementById('account-usage-back');
+  const usageRefresh = document.getElementById('account-usage-refresh');
+  const usageRange = document.querySelector('.account-usage-range');
+  let usageDays = 30;
   const openModal = () => {
     if (protectedAuthState === true) {
+      if (loggedIn) loggedIn.hidden = false;
+      if (adminPanel) adminPanel.hidden = true;
+      if (usagePanel) usagePanel.hidden = true;
       modal.hidden = false;
       document.body.classList.add('account-modal-open');
       close?.focus();
@@ -1608,6 +1693,7 @@ function setupProtectedAccountUi() {
     if (!protectedAdminState) return;
     if (loggedIn) loggedIn.hidden = true;
     if (adminPanel) adminPanel.hidden = false;
+    if (usagePanel) usagePanel.hidden = true;
     loadAdminAccessRequests();
   });
   adminBack?.addEventListener('click', () => {
@@ -1616,6 +1702,26 @@ function setupProtectedAccountUi() {
     adminOpen?.focus();
   });
   adminRefresh?.addEventListener('click', loadAdminAccessRequests);
+  usageOpen?.addEventListener('click', () => {
+    if (!protectedAdminState) return;
+    if (loggedIn) loggedIn.hidden = true;
+    if (adminPanel) adminPanel.hidden = true;
+    if (usagePanel) usagePanel.hidden = false;
+    loadAdminUsageSummary(usageDays);
+  });
+  usageBack?.addEventListener('click', () => {
+    if (usagePanel) usagePanel.hidden = true;
+    if (loggedIn) loggedIn.hidden = false;
+    usageOpen?.focus();
+  });
+  usageRefresh?.addEventListener('click', () => loadAdminUsageSummary(usageDays));
+  usageRange?.addEventListener('click', event => {
+    const button = event.target.closest('[data-usage-days]');
+    if (!button) return;
+    usageDays = Number(button.dataset.usageDays || 30);
+    usageRange.querySelectorAll('[data-usage-days]').forEach(item => item.classList.toggle('active', item === button));
+    loadAdminUsageSummary(usageDays);
+  });
   adminList?.addEventListener('click', async event => {
     const button = event.target.closest('[data-admin-action][data-request-id]');
     if (!button) return;

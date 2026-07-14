@@ -20,8 +20,80 @@
     .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
   const protocols = window.BIOMARKER_PROTOCOLS || {};
   const categoryNames = [...new Set(individualIngredients.map(item => item.category).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ko'));
+  const AUTH_API = 'https://api.healtharchive.kr';
+  const publicViews = new Set(['home', 'verdict']);
+  let authState = null;
+  let authCheck = null;
+  const usageTimes = new Map();
 
-  function activateView(target) {
+  function renderAuthState(authenticated) {
+    const trigger = document.getElementById('lite-account-trigger');
+    const loggedOut = document.getElementById('lite-account-logged-out');
+    const loggedIn = document.getElementById('lite-account-logged-in');
+    const request = document.getElementById('lite-account-request');
+    document.body.classList.toggle('lite-authenticated', authenticated === true);
+    if (trigger) {
+      trigger.textContent = authenticated ? '로그인됨' : '로그인';
+      trigger.classList.toggle('is-authenticated', authenticated === true);
+    }
+    if (loggedOut) loggedOut.hidden = authenticated === true;
+    if (loggedIn) loggedIn.hidden = authenticated !== true;
+    if (request && authenticated) request.hidden = true;
+  }
+
+  async function getAuthStatus(force) {
+    if (!force && authState !== null) return authState;
+    if (!force && authCheck) return authCheck;
+    authCheck = fetch(`${AUTH_API}/auth/status`, {credentials: 'include', cache: 'no-store'})
+      .then(response => response.ok ? response.json() : {authenticated: false})
+      .then(result => {
+        authState = result.authenticated === true;
+        renderAuthState(authState);
+        return authState;
+      })
+      .catch(() => {
+        authState = false;
+        renderAuthState(false);
+        return false;
+      })
+      .finally(() => { authCheck = null; });
+    return authCheck;
+  }
+
+  function openAccountModal() {
+    const modal = document.getElementById('lite-account-modal');
+    const loggedOut = document.getElementById('lite-account-logged-out');
+    const loggedIn = document.getElementById('lite-account-logged-in');
+    const request = document.getElementById('lite-account-request');
+    if (!modal) return;
+    if (loggedOut) loggedOut.hidden = authState === true;
+    if (loggedIn) loggedIn.hidden = authState !== true;
+    if (request) request.hidden = true;
+    modal.hidden = false;
+    document.body.classList.add('lite-account-open');
+    document.getElementById('lite-account-close')?.focus();
+  }
+
+  function trackUsage(target) {
+    if (authState !== true || !target) return;
+    const key = `mobile:${target}`;
+    const now = Date.now();
+    if (now - (usageTimes.get(key) || 0) < 10000) return;
+    usageTimes.set(key, now);
+    fetch(`${AUTH_API}/usage-events`, {
+      method: 'POST', credentials: 'include', keepalive: true,
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({event: 'tab_view', target: key}),
+    }).catch(() => undefined);
+  }
+
+  async function activateView(target, options) {
+    if (!publicViews.has(target) && !(await getAuthStatus(false))) {
+      sessionStorage.setItem('ha-mobile-login-target', target);
+      if (options?.initial) history.replaceState(null, '', '#home');
+      openAccountModal();
+      return false;
+    }
     document.body.classList.toggle('is-home', target === 'home');
     document.querySelectorAll('[data-lite-tab]').forEach(button => {
       button.classList.toggle('active', button.dataset.liteTab === target);
@@ -33,6 +105,8 @@
     });
     window.scrollTo({top: 0, behavior: 'auto'});
     history.replaceState(null, '', '#' + target);
+    trackUsage(target);
+    return true;
   }
 
   function setupNavigation() {
@@ -44,7 +118,95 @@
       button.addEventListener('click', () => activateView(button.dataset.homeTarget));
     });
     const initial = location.hash.replace('#', '');
-    activateView(validViews.has(initial) ? initial : 'home');
+    const pending = sessionStorage.getItem('ha-mobile-login-target');
+    getAuthStatus(true).then(authenticated => {
+      const target = authenticated && pending && validViews.has(pending)
+        ? pending
+        : (validViews.has(initial) ? initial : 'home');
+      if (authenticated && pending) sessionStorage.removeItem('ha-mobile-login-target');
+      activateView(target, {initial: true});
+    });
+  }
+
+  function setupMobileAccount() {
+    const trigger = document.getElementById('lite-account-trigger');
+    const modal = document.getElementById('lite-account-modal');
+    const close = document.getElementById('lite-account-close');
+    const login = document.getElementById('lite-login');
+    const logout = document.getElementById('lite-logout');
+    const loggedOut = document.getElementById('lite-account-logged-out');
+    const request = document.getElementById('lite-account-request');
+    const requestOpen = document.getElementById('lite-request-open');
+    const requestBack = document.getElementById('lite-request-back');
+    const form = document.getElementById('lite-account-form');
+    const status = document.getElementById('lite-account-status');
+    const closeModal = () => {
+      if (!modal) return;
+      modal.hidden = true;
+      document.body.classList.remove('lite-account-open');
+      trigger?.focus();
+    };
+
+    trigger?.addEventListener('click', openAccountModal);
+    close?.addEventListener('click', closeModal);
+    modal?.addEventListener('click', event => { if (event.target === modal) closeModal(); });
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && modal && !modal.hidden) closeModal();
+    });
+    login?.addEventListener('click', () => {
+      const returnUrl = encodeURIComponent(window.location.href);
+      window.location.assign(`${AUTH_API}/auth/access/start?return=${returnUrl}`);
+    });
+    requestOpen?.addEventListener('click', () => {
+      if (loggedOut) loggedOut.hidden = true;
+      if (request) request.hidden = false;
+      request?.querySelector('input')?.focus();
+    });
+    requestBack?.addEventListener('click', () => {
+      if (request) request.hidden = true;
+      if (loggedOut) loggedOut.hidden = false;
+      requestOpen?.focus();
+    });
+    form?.addEventListener('submit', async event => {
+      event.preventDefault();
+      const submit = form.querySelector('button[type="submit"]');
+      const data = new FormData(form);
+      const payload = {
+        company: data.get('company'), department: data.get('department'), email: data.get('email'),
+        purpose: data.get('purpose'), privacyConsent: data.get('privacyConsent') === 'on',
+        analyticsConsent: data.get('analyticsConsent') === 'on',
+      };
+      if (submit) { submit.disabled = true; submit.textContent = '신청 중'; }
+      if (status) { status.textContent = ''; status.classList.remove('is-error'); }
+      try {
+        const response = await fetch(`${AUTH_API}/access-requests`, {
+          method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload),
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.error || '접근 신청을 처리하지 못했습니다.');
+        if (status) status.textContent = result.duplicate
+          ? '오늘 접수된 동일 이메일 신청이 있습니다.'
+          : '접근 신청이 접수되었습니다. 승인 후 로그인해 주세요.';
+        if (!result.duplicate) form.reset();
+      } catch (error) {
+        if (status) { status.textContent = error.message; status.classList.add('is-error'); }
+      } finally {
+        if (submit) { submit.disabled = false; submit.textContent = '신청 보내기'; }
+      }
+    });
+    logout?.addEventListener('click', async () => {
+      logout.disabled = true;
+      try {
+        await fetch(`${AUTH_API}/auth/logout`, {method: 'POST', credentials: 'include'});
+        authState = false;
+        renderAuthState(false);
+        closeModal();
+        activateView('home');
+      } finally {
+        logout.disabled = false;
+      }
+    });
+    getAuthStatus(false);
   }
 
   function setupHome() {
@@ -312,6 +474,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     setupHome();
     setupCinemaHome();
+    setupMobileAccount();
     setupNavigation();
     setupIngredientSearch();
     setupSafetySearch();

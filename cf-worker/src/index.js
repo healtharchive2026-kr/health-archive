@@ -389,6 +389,12 @@ async function handleUsageEvent(request, env, origin) {
     return new Response(null, { status: 204, headers: corsHeaders(origin) });
   }
   const now = Math.floor(Date.now() / 1000);
+  const recent = await env.DB.prepare(
+    `SELECT id FROM usage_events
+     WHERE user_key = ? AND event_name = ? AND target = ? AND created_at >= ?
+     LIMIT 1`
+  ).bind(session.userKey, eventName, target, now - 10).first();
+  if (recent) return new Response(null, { status: 204, headers: corsHeaders(origin) });
   await env.DB.prepare(
     'INSERT INTO usage_events (user_key, event_name, target, created_at) VALUES (?, ?, ?, ?)'
   ).bind(session.userKey, eventName, target, now).run();
@@ -438,6 +444,69 @@ async function handleAdminAccessRequests(request, env, url, origin) {
     console.error('access approval failed', error);
     return authJson({ error: error.message || '승인 처리에 실패했습니다.' }, 502, origin);
   }
+}
+
+async function handleAdminUsageSummary(request, env, url, origin) {
+  if (url.pathname !== '/admin/usage-summary' || request.method !== 'GET') return null;
+  const denied = await requireAdmin(request, env, origin);
+  if (denied) return denied;
+
+  const requestedDays = Number(url.searchParams.get('days') || 30);
+  const days = Math.min(90, Math.max(7, Number.isFinite(requestedDays) ? Math.floor(requestedDays) : 30));
+  const now = Math.floor(Date.now() / 1000);
+  const since = now - (days * 24 * 60 * 60);
+  const sevenDaysAgo = now - (7 * 24 * 60 * 60);
+  const thirtyDaysAgo = now - (30 * 24 * 60 * 60);
+
+  const [overview, active, approved, targets, daily] = await Promise.all([
+    env.DB.prepare(
+      `SELECT COUNT(*) AS events, COUNT(DISTINCT user_key) AS active_users
+       FROM usage_events WHERE created_at >= ?`
+    ).bind(since).first(),
+    env.DB.prepare(
+      `SELECT
+         COUNT(DISTINCT CASE WHEN created_at >= ? THEN user_key END) AS active_7d,
+         COUNT(DISTINCT CASE WHEN created_at >= ? THEN user_key END) AS active_30d
+       FROM usage_events`
+    ).bind(sevenDaysAgo, thirtyDaysAgo).first(),
+    env.DB.prepare(
+      `SELECT COUNT(DISTINCT user_key) AS approved_users
+       FROM access_requests WHERE status = 'approved'`
+    ).first(),
+    env.DB.prepare(
+      `SELECT target, event_name, COUNT(*) AS events, COUNT(DISTINCT user_key) AS users
+       FROM usage_events WHERE created_at >= ?
+       GROUP BY target, event_name
+       ORDER BY events DESC, target ASC
+       LIMIT 100`
+    ).bind(since).all(),
+    env.DB.prepare(
+      `SELECT date(created_at, 'unixepoch', '+9 hours') AS day,
+              COUNT(*) AS events, COUNT(DISTINCT user_key) AS users
+       FROM usage_events WHERE created_at >= ?
+       GROUP BY day ORDER BY day ASC`
+    ).bind(since).all(),
+  ]);
+
+  return authJson({
+    days,
+    generated_at: now,
+    overview: {
+      events: Number(overview?.events || 0),
+      active_users: Number(overview?.active_users || 0),
+      active_7d: Number(active?.active_7d || 0),
+      active_30d: Number(active?.active_30d || 0),
+      approved_users: Number(approved?.approved_users || 0),
+    },
+    targets: targets.results || [],
+    daily: daily.results || [],
+    privacy: {
+      pseudonymous: true,
+      search_terms_collected: false,
+      raw_inputs_collected: false,
+      retention_days: 90,
+    },
+  }, 200, origin);
 }
 
 async function handleProtectedData(request, env, url, origin) {
@@ -552,6 +621,11 @@ export default {
     if (url.pathname.startsWith('/admin/access-requests')) {
       const adminAccessResponse = await handleAdminAccessRequests(request, env, url, origin);
       if (adminAccessResponse) return adminAccessResponse;
+    }
+
+    if (url.pathname === '/admin/usage-summary') {
+      const adminUsageResponse = await handleAdminUsageSummary(request, env, url, origin);
+      if (adminUsageResponse) return adminUsageResponse;
     }
 
     if (url.pathname.startsWith('/protected/data/')) {
