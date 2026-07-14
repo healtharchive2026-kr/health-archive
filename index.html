@@ -48,7 +48,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="style.css?v=20260714-cinema1">
+<link rel="stylesheet" href="style.css?v=20260714-searchhome1">
 </head>
 <body>
 <a class="skip-link" href="#main-content">본문 바로가기</a>
@@ -179,8 +179,8 @@
             <span class="vc-sep"></span>
             <span class="vc-item"><span class="vc-label">오늘 방문자</span><span class="vc-num" id="vc-today">-</span></span>
           </div>
-          <h1>건강기능식품 개발자 아카이브</h1>
-          <p class="hero-lede">아이디어가 원료 후보가 되고, 원료 후보가 제출자료가 되기까지. HealthArchive는 흩어진 근거를 연결해 오늘 확인해야 할 다음 질문을 빠르게 좁혀주는 개발자의 작업 공간입니다.</p>
+          <h1>건강기능식품 개발 실무 검색</h1>
+          <p class="hero-lede">원료, 안전성, 기능성 평가, 규제와 시장자료를 한 번에 찾습니다.</p>
         </div>
 
         <div class="hero-side">
@@ -196,30 +196,30 @@
           </div>
           <p class="hero-utility-status" id="home-bookmark-status" aria-live="polite"></p>
           <div class="daily-quote-card" id="daily-quote"></div>
-          <div class="hero-stats-row">
+          <div class="hero-stats-row home-legacy">
             <a class="hero-stat-chip" data-goto="ingredients">
-              <span class="hsc-num" id="stat-ingredients">0</span>
+              <span class="hsc-num">0</span>
               <span class="hsc-label">개별인정</span>
             </a>
             <a class="hero-stat-chip" data-goto="ingredients">
-              <span class="hsc-num" id="stat-converted">0</span>
+              <span class="hsc-num">0</span>
               <span class="hsc-label">고시형</span>
             </a>
             <a class="hero-stat-chip" data-goto="minutes">
-              <span class="hsc-num" id="stat-minutes">0</span>
+              <span class="hsc-num">0</span>
               <span class="hsc-label">회의록</span>
             </a>
           </div>
         </div>
       </div>
 
-      <div class="hero-freshness" id="hero-freshness" role="status" aria-live="polite">
+      <div class="hero-freshness home-legacy" id="hero-freshness" role="status" aria-live="polite">
         <span class="freshness-state"><span class="freshness-dot" aria-hidden="true"></span><strong>데이터 동기화 확인 중</strong></span>
         <span class="freshness-summary" id="freshness-summary">최신 자료 상태를 불러오고 있습니다.</span>
       </div>
 
       <div class="hero-search-board">
-        <div class="hero-search-copy">
+        <div class="hero-search-copy home-legacy">
           <span>통합 검색</span>
           <strong>전체 자료에서 한 번에 찾기</strong>
         </div>
@@ -233,7 +233,29 @@
         </div>
       </div>
 
-      <div class="ops-board" id="ops-board">
+      <section class="home-command" aria-labelledby="home-command-title">
+        <div class="home-command-head">
+          <h2 id="home-command-title">주요 업무</h2>
+          <span>자주 찾는 실무 화면</span>
+        </div>
+        <div class="home-command-grid">
+          <a class="home-command-item" data-goto="precheck"><span>01</span><strong>원료 Pre-Check</strong><small>개발 가능성 사전점검</small></a>
+          <a class="home-command-item" data-goto="ingredients"><span>02</span><strong>인정원료 DB</strong><small>개별·고시형·한시적 원료</small></a>
+          <a class="home-command-item" data-goto="safety-db"><span>03</span><strong>안전성 DB</strong><small>식품원료·차단성분 대조</small></a>
+          <a class="home-command-item" data-goto="biomarkers"><span>04</span><strong>기능성별 프로토콜</strong><small>대상자·평가변수·시험모델</small></a>
+          <a class="home-command-item" data-goto="laws"><span>05</span><strong>법령·가이드라인</strong><small>공전·심의·공식 기준</small></a>
+          <a class="home-command-item is-protected" data-goto="overseas-approval"><span>06</span><strong>해외 인허가</strong><small>국가별 자료 Gap 분석</small></a>
+        </div>
+      </section>
+
+      <div class="home-counts" aria-label="주요 데이터 현황">
+        <a data-goto="ingredients"><strong id="stat-ingredients">0</strong><span>개별인정</span></a>
+        <a data-goto="ingredients"><strong id="stat-converted">0</strong><span>고시형</span></a>
+        <a data-goto="minutes"><strong id="stat-minutes">0</strong><span>심의 회의록</span></a>
+        <a data-goto="news"><strong>6</strong><span>뉴스 출처</span></a>
+      </div>
+
+      <div class="ops-board home-legacy" id="ops-board">
         <section class="ops-card ops-card-primary">
           <div class="ops-card-head">
             <span>Start</span>
@@ -266,7 +288,7 @@
       </div>
 
       <div class="hero-section-head hero-menu-head">
-        <span>한눈에 보기</span>
+        <span>최근 업데이트</span>
       </div>
       <div class="home-dash">
         <div class="home-dash-card">
@@ -287,7 +309,18 @@
         </div>
       </div>
 
-      <div class="home-flow">
+      <details class="home-service-directory">
+        <summary><span>전체 서비스</span><small>모든 데이터베이스와 실무 도구 보기</small></summary>
+        <div class="home-service-groups">
+          <section><h3>개발검토</h3><a data-goto="precheck">원료 Pre-Check</a><a data-goto="devmap">개발방향 매핑</a><a data-goto="material-dev">원료 개발 가이드</a><a data-goto="whitespace">화이트스페이스맵 🔒</a></section>
+          <section><h3>원료 DB</h3><a data-goto="ingredients">개별·고시형 원료</a><a data-goto="foodraw">식품원료목록</a><a data-goto="temp-approval">한시적 인정 원료</a><a data-goto="blocked">반입차단 원료</a><a data-goto="gmo-ingredients">GMO 심사 원료</a></section>
+          <section><h3>규제자료</h3><a data-goto="laws">법령·공전·가이드라인</a><a data-goto="overseas-approval">해외 인허가 🔒</a><a data-goto="nifds">심의 관련</a><a data-goto="minutes">건기식 심의 회의록</a><a data-goto="gmo-minutes">GMO 회의록</a></section>
+          <section><h3>연구설계</h3><a data-goto="compare">기능성별 원료 비교</a><a data-goto="biomarkers">기능성별 프로토콜</a><a data-goto="trials">임상정보 DB</a></section>
+          <section><h3>시장동향</h3><a data-goto="products">신규 등록 제품</a><a data-goto="market">시장현황</a><a data-goto="stats">인정 통계</a><a data-goto="radar">레귤러토리 레이더 🔒</a><a data-goto="news">식품 뉴스</a><a data-goto="events">학회·박람회</a></section>
+        </div>
+      </details>
+
+      <div class="home-flow home-legacy">
         <a class="home-flow-step" data-goto="precheck">
           <span class="home-flow-num">01</span>
           <strong>원료 Pre-Check</strong>
@@ -325,10 +358,10 @@
         </a>
       </div>
 
-      <div class="hero-section-head hero-menu-head">
+      <div class="hero-section-head hero-menu-head home-legacy">
         <span>전체 메뉴</span>
       </div>
-      <div class="hero-categories">
+      <div class="hero-categories home-legacy">
         <div class="hero-cat">
           <div class="hero-cat-header">
             <span class="hero-cat-icon">01</span>
@@ -400,7 +433,7 @@
         </div>
       </div>
 
-      <div class="hero-grid">
+      <div class="hero-grid home-legacy">
         <div class="hero-news-card">
           <div class="hero-news-head">
             <h3>최신 뉴스 (Recent News)</h3>
@@ -1042,10 +1075,9 @@
       <div class="section-title-row">
         <div>
           <h2>레귤러토리 레이더</h2>
-          <p class="compare-intro">매일 자동 수집되는 개별인정 원료·심의 회의록·신규 제품·한시적 인정 원료 중 새로 등재된 항목만 모은 변경 다이제스트입니다. RSS로 구독하면 사이트에 들어오지 않아도 알림을 받을 수 있습니다.</p>
+          <p class="compare-intro">매일 자동 수집되는 개별인정 원료·심의 회의록·신규 제품·한시적 인정 원료 중 새로 등재된 항목만 모은 변경 다이제스트입니다.</p>
         </div>
         <div class="section-actions">
-          <a class="section-badge radar-rss-link" href="rss.xml" target="_blank" rel="noopener">📡 RSS 구독</a>
           <button type="button" class="ws-lock-btn" id="radar-lock-btn">🔒 다시 잠그기</button>
         </div>
       </div>
@@ -2257,8 +2289,7 @@
 <script src="data/status.js?v=20260630-news0930"></script>
 <script src="data/daily_quotes.js"></script>
 <script src="market.js"></script>
-<script src="app.js?v=20260714-auth2"></script>
-<script src="pc-cinema.js?v=20260714-cinema1"></script>
+<script src="app.js?v=20260714-private1"></script>
 <script src="feedback.js?v=20260714-api1"></script>
 </body>
 </html>

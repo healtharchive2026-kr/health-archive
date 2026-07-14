@@ -34,6 +34,7 @@ const AUTH_MAX_AGE = 8 * 60 * 60;
 const AUTH_MAX_FAILURES = 5;
 const AUTH_BLOCK_SECONDS = 15 * 60;
 const AUTH_COOKIE = 'ha_protected_session';
+const PROTECTED_DATA_KEYS = new Set(['radar-log', 'demand-trends', 'overseas-regulatory']);
 
 function bytesToBase64Url(bytes) {
   let binary = '';
@@ -173,6 +174,58 @@ async function handleAuth(request, env, url, origin) {
   );
 }
 
+async function handleProtectedData(request, env, url, origin) {
+  const match = url.pathname.match(/^\/protected\/data\/([a-z-]+)$/);
+  if (!match || request.method !== 'GET') return null;
+  const key = match[1];
+  if (!PROTECTED_DATA_KEYS.has(key)) return authJson({ error: 'Not found' }, 404, origin);
+  if (!(await hasValidSession(request, env.AUTH_SECRET))) {
+    return authJson({ error: '인증이 필요합니다.' }, 401, origin);
+  }
+  const object = await env.PRIVATE_DATA.get(`protected/${key}.json`);
+  if (!object) return authJson({ error: '보호 자료를 찾을 수 없습니다.' }, 404, origin);
+  return new Response(object.body, {
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Cache-Control': 'private, no-store',
+      ...corsHeaders(origin),
+    },
+  });
+}
+
+async function handleProtectedUpdate(request, env, url, origin) {
+  const match = url.pathname.match(/^\/admin\/protected\/([a-z-]+)$/);
+  if (!match || !['GET', 'PUT'].includes(request.method)) return null;
+  const key = match[1];
+  if (!PROTECTED_DATA_KEYS.has(key)) return authJson({ error: 'Not found' }, 404, origin);
+  const authorization = request.headers.get('Authorization') || '';
+  const expected = env.PROTECTED_UPDATE_TOKEN ? `Bearer ${env.PROTECTED_UPDATE_TOKEN}` : '';
+  if (!expected || !(await secureEqual(authorization, expected))) {
+    return authJson({ error: 'Unauthorized' }, 401, origin);
+  }
+  if (request.method === 'GET') {
+    const object = await env.PRIVATE_DATA.get(`protected/${key}.json`);
+    if (!object) return authJson({ error: 'Not found' }, 404, origin);
+    return new Response(object.body, {
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'no-store',
+      },
+    });
+  }
+  const payload = await request.text();
+  try {
+    JSON.parse(payload);
+  } catch (error) {
+    return authJson({ error: '유효한 JSON이 아닙니다.' }, 400, origin);
+  }
+  if (payload.length > 1024 * 1024) return authJson({ error: '자료가 너무 큽니다.' }, 413, origin);
+  await env.PRIVATE_DATA.put(`protected/${key}.json`, payload, {
+    httpMetadata: { contentType: 'application/json; charset=utf-8' },
+  });
+  return authJson({ ok: true }, 200, origin);
+}
+
 async function serveMobileSite(request, url) {
   if (request.method !== 'GET' && request.method !== 'HEAD') {
     return new Response('Method not allowed', {
@@ -214,6 +267,16 @@ export default {
     if (url.pathname.startsWith('/auth/')) {
       const authResponse = await handleAuth(request, env, url, origin);
       if (authResponse) return authResponse;
+    }
+
+    if (url.pathname.startsWith('/protected/data/')) {
+      const protectedResponse = await handleProtectedData(request, env, url, origin);
+      if (protectedResponse) return protectedResponse;
+    }
+
+    if (url.pathname.startsWith('/admin/protected/')) {
+      const updateResponse = await handleProtectedUpdate(request, env, url, origin);
+      if (updateResponse) return updateResponse;
     }
 
     const cutoff = Math.floor(Date.now() / 1000) - RETENTION_SECONDS;

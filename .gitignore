@@ -11,6 +11,9 @@ scripts/*
 !scripts/register_tasks.ps1
 SETUP.md
 data/*.json
+data/radar_log.js
+data/demand_trends.js
+rss.xml
 
 # PDF는 GitHub Pages 대신 Cloudflare R2 공개 버킷에서 제공
 laws/guidelines/

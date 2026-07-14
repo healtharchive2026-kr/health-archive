@@ -11,3 +11,7 @@ routes = [
 binding = "DB"
 database_name = "healtharchive-feedback"
 database_id = "fcf56e1f-811f-4198-a5eb-c3f0e2cc87e4"
+
+[[r2_buckets]]
+binding = "PRIVATE_DATA"
+bucket_name = "healtharchive-assets"

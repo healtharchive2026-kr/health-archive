@@ -26,7 +26,7 @@ const TAB_SCRIPT_DEPS = {
   'safety-db': ['data/safety_db.js?v=20260709-perf', 'safety-db.js?v=20260709-perf'],
 };
 
-const WS_DATA_DEPS = ['data/demand_trends.js?v=20260710-demand1'];
+const WS_DATA_KEY = 'demand-trends';
 
 const GLOBAL_SEARCH_SCRIPT_DEPS = [
   'data/products.js?v=20260709-perf',
@@ -41,7 +41,7 @@ const PRECHECK_DATA_DEPS = [
   'data/safety_db.js?v=20260709-perf'
 ];
 
-const RADAR_DATA_DEPS = ['data/radar_log.js?v=20260710-radar1'];
+const RADAR_DATA_KEY = 'radar-log';
 
 const HOME_TAB_LABELS = {
   precheck: '원료 Pre-Check',
@@ -1373,6 +1373,7 @@ function initStatsTab() {
 const PROTECTED_AUTH_API = 'https://api.healtharchive.kr';
 let protectedAuthState = null;
 let protectedAuthCheck = null;
+const protectedDataCache = new Map();
 
 async function protectedAuthStatus(force = false) {
   if (!force && protectedAuthState !== null) return protectedAuthState;
@@ -1418,7 +1419,24 @@ async function protectedAuthLogout() {
   } finally {
     protectedAuthState = false;
     protectedAuthCheck = null;
+    protectedDataCache.clear();
   }
+}
+
+async function loadProtectedData(key, force = false) {
+  if (!force && protectedDataCache.has(key)) return protectedDataCache.get(key);
+  const response = await fetch(`${PROTECTED_AUTH_API}/protected/data/${encodeURIComponent(key)}`, {
+    credentials: 'include',
+    cache: 'no-store',
+  });
+  if (response.status === 401) {
+    protectedAuthState = false;
+    throw new Error('인증 시간이 만료되었습니다. 다시 로그인해 주세요.');
+  }
+  if (!response.ok) throw new Error('보호 자료를 불러오지 못했습니다.');
+  const data = await response.json();
+  protectedDataCache.set(key, data);
+  return data;
 }
 
 function protectedGateBusy(form, busy) {
@@ -1657,7 +1675,15 @@ function wsRenderMatrix() {
 
 function wsUnlock() {
   wsShowUnlocked();
-  loadScripts(WS_DATA_DEPS).then(wsRenderMatrix).catch(() => wsRenderMatrix());
+  loadProtectedData(WS_DATA_KEY)
+    .then(data => {
+      window.DEMAND_TRENDS = data;
+      wsRenderMatrix();
+    })
+    .catch(error => {
+      wsShowLocked();
+      protectedGateError(document.getElementById('ws-gate-err'), error.message);
+    });
 }
 
 async function wsLock() {
@@ -1731,11 +1757,15 @@ function radarUnlock() {
   radarShowUnlocked();
   const feed = document.getElementById('radar-feed');
   if (feed) feed.innerHTML = '<div class="ingx-empty">레귤러토리 데이터를 불러오는 중입니다.</div>';
-  loadScripts(RADAR_DATA_DEPS)
-    .then(radarRender)
+  loadProtectedData(RADAR_DATA_KEY)
+    .then(data => {
+      window.RADAR_LOG = data;
+      radarRender();
+    })
     .catch(err => {
       console.error(err);
-      if (feed) feed.innerHTML = '<div class="ingx-empty">레귤러토리 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.</div>';
+      radarShowLocked();
+      protectedGateError(document.getElementById('radar-gate-err'), err.message);
     });
 }
 
@@ -1835,8 +1865,7 @@ function radarRender() {
 async function initRadarTab() {
   setupRadarGate();
   if (await protectedAuthStatus()) {
-    radarShowUnlocked();
-    loadScripts(RADAR_DATA_DEPS).then(radarRender).catch(console.error);
+    radarUnlock();
   } else {
     radarShowLocked();
   }
@@ -4499,73 +4528,21 @@ function setupTempApproval() {
 }
 
 // ---------- 해외 인허가: Regulatory Dossier Bridge ----------
-const DOSSIER_EVIDENCE = [
-  { id:'identity', group:'정체성', label:'원료 정체성·기원', detail:'학명·사용부위·원산지·동정자료', weight:3, next:'원료 정체성 및 기원 서술서' },
-  { id:'history', group:'정체성', label:'식용·사용 이력', detail:'국가·식품유형·기간·섭취실적', weight:3, next:'국가별 식용·사용 이력 평가서' },
-  { id:'manufacturing', group:'품질', label:'제조공정·변경점', detail:'공정도·용매·농축·발효·핵심관리점', weight:3, next:'제조공정 및 원료 변환 비교표' },
-  { id:'specs', group:'품질', label:'규격·지표성분', detail:'동정·함량·오염물질·미생물 기준', weight:3, next:'글로벌 공통 원료 규격서' },
-  { id:'methods', group:'품질', label:'시험법·밸리데이션', detail:'특이성·정확성·정밀성·정량한계', weight:3, next:'시험법 및 분석법 검증 보고서' },
-  { id:'batches', group:'품질', label:'대표 배치 분석', detail:'시험물질 동등성·배치 간 일관성', weight:2, next:'대표 배치 CoA 비교표' },
-  { id:'stability', group:'품질', label:'안정성·보관조건', detail:'지표성분·유해성분·포장·유효기간', weight:2, next:'안정성 시험계획 및 결과 요약서' },
-  { id:'intake', group:'안전성', label:'섭취량·노출평가', detail:'1일량·기간·대상군·총 노출량', weight:3, next:'국가별 섭취·노출 시나리오' },
-  { id:'toxicology', group:'안전성', label:'독성시험 패키지', detail:'유전독성·반복투여·필요 시 생식독성', weight:3, next:'독성자료 통합평가서' },
-  { id:'human_safety', group:'안전성', label:'인체 안전성 자료', detail:'이상사례·임상검사·중도탈락', weight:3, next:'인체 안전성 통합표' },
-  { id:'allergen', group:'안전성', label:'알레르기·상호작용', detail:'취약군·약물·영양성 불이익 검토', weight:2, next:'알레르기·상호작용 위험평가서' },
-  { id:'efficacy', group:'기능성', label:'인체적용시험', detail:'시험물질 일치·주평가지표·통계분석', weight:3, next:'기능성 근거 및 시험물질 브리지' },
-  { id:'mechanism', group:'기능성', label:'작용기전·전임상', detail:'기능성 개연성·용량 연계', weight:1, next:'작용기전 근거맵' },
-  { id:'quality', group:'운영', label:'품질시스템·추적성', detail:'GMP·HACCP·공급망·변경관리', weight:2, next:'품질시스템 및 변경관리 패키지' },
-  { id:'label', group:'운영', label:'표시·클레임·행정', detail:'기능성 문구·주의사항·책임주체', weight:2, next:'국가별 표시·클레임 매트릭스' }
-];
+let DOSSIER_EVIDENCE = [];
+let DOSSIER_PATHS = {};
+let DOSSIER_CROSSWALK = [];
+let dossierProtectedReady = false;
+let dossierBridgeReady = false;
 
-const DOSSIER_PATHS = {
-  kr: {
-    label:'한국', path:'개별인정형 기능성 원료',
-    requirements:['identity','history','manufacturing','specs','methods','batches','stability','intake','toxicology','human_safety','allergen','efficacy','mechanism','quality'],
-    focus:'안전성·기능성·기준 및 규격의 원료 동일성',
-    url:'https://www.mfds.go.kr/brd/m_1060/view.do?seq=15701'
-  },
-  us: {
-    label:'미국', path:'New Dietary Ingredient Notification',
-    requirements:['identity','history','manufacturing','specs','methods','intake','toxicology','human_safety','allergen','quality'],
-    focus:'정체성 및 표시조건에서 합리적으로 안전할 근거·75일 전 통지',
-    url:'https://www.fda.gov/food/dietary-supplements/new-dietary-ingredient-ndi-notification-process'
-  },
-  eu: {
-    label:'EU', path:'Novel Food Authorisation',
-    requirements:['identity','history','manufacturing','specs','methods','batches','stability','intake','toxicology','human_safety','allergen'],
-    focus:'생산·조성·예상섭취·ADME·독성·알레르기 통합 안전성',
-    url:'https://www.efsa.europa.eu/en/applications/novel-food'
-  },
-  jp: {
-    label:'일본', path:'Foods with Function Claims',
-    requirements:['identity','history','manufacturing','specs','stability','intake','human_safety','efficacy','quality','label'],
-    focus:'최종제품 또는 기능성 관여성분의 안전성·기능성 근거와 신고 표시',
-    url:'https://www.caa.go.jp/policies/policy/food_labeling/foods_with_function_claims/'
-  },
-  cn: {
-    label:'중국', path:'보건식품 등록',
-    requirements:['identity','manufacturing','specs','methods','batches','stability','intake','toxicology','human_safety','efficacy','quality','label'],
-    focus:'연구개발보고·배합·공정·안전성·보건기능·품질관리',
-    url:'https://zwfw.samr.gov.cn/guideDetail?id=22d18e7b4dc749fa9d1a52d172c2b3f8'
-  },
-  au: {
-    label:'호주', path:'Listed / Assessed Listed Medicine',
-    requirements:['identity','manufacturing','specs','intake','human_safety','efficacy','quality','label'],
-    focus:'허용 원료·GMP·indication 수준에 맞는 과학적 또는 전통적 근거',
-    url:'https://www.tga.gov.au/resources/guidance/supporting-claims-and-indications-listed-medicines'
-  }
-};
-
-const DOSSIER_CROSSWALK = [
-  { module:'정체성·기원', key:'identity', cells:{ kr:['core','원재료·기원'], us:['core','NDI identity'], eu:['core','Identity'], jp:['core','관여성분'], cn:['core','원료·배합'], au:['core','Permitted ingredient'] } },
-  { module:'제조공정', key:'manufacturing', cells:{ kr:['core','제조방법'], us:['core','Identity 변화'], eu:['core','Production'], jp:['core','생산·품질'], cn:['core','공정·관리점'], au:['core','GMP'] } },
-  { module:'규격·분석', key:'specs', cells:{ kr:['core','기준·규격'], us:['core','Specifications'], eu:['core','Composition'], jp:['core','제품정보'], cn:['core','기술요구'], au:['core','Quality'] } },
-  { module:'안정성', key:'stability', cells:{ kr:['core','보존·유통'], us:['conditional','안전성 연계'], eu:['core','Stability'], jp:['support','품질관리'], cn:['core','안정성'], au:['support','품질근거'] } },
-  { module:'섭취·노출', key:'intake', cells:{ kr:['core','일일섭취량'], us:['core','Conditions of use'], eu:['core','Exposure'], jp:['core','섭취방법'], cn:['core','용량·대상'], au:['conditional','Dose'] } },
-  { module:'안전성', key:'toxicology', cells:{ kr:['core','독성·인체'], us:['core','Safety basis'], eu:['core','Toxicology'], jp:['core','안전성'], cn:['core','안전성평가'], au:['conditional','Risk profile'] } },
-  { module:'기능성', key:'efficacy', cells:{ kr:['core','인체적용'], us:['support','NDI 범위 외'], eu:['conditional','Claim 별도'], jp:['core','RCT 또는 SR'], cn:['core','보건기능'], au:['core','Indication 근거'] } },
-  { module:'표시·행정', key:'label', cells:{ kr:['support','신청·표시'], us:['conditional','Label 조건'], eu:['conditional','사용조건'], jp:['core','신고·공개'], cn:['core','라벨·설명서'], au:['core','ARTG·Label'] } }
-];
+async function loadOverseasProtectedData() {
+  if (dossierProtectedReady) return;
+  const data = await loadProtectedData('overseas-regulatory');
+  DOSSIER_EVIDENCE = Array.isArray(data.evidence) ? data.evidence : [];
+  DOSSIER_PATHS = data.paths || {};
+  DOSSIER_CROSSWALK = Array.isArray(data.crosswalk) ? data.crosswalk : [];
+  dossierProtectedReady = true;
+  setupDossierBridge();
+}
 
 function overseasShowLocked() {
   const gate = document.getElementById('overseas-gate');
@@ -4582,8 +4559,17 @@ function overseasShowUnlocked() {
 }
 
 async function initOverseasTab() {
-  if (await protectedAuthStatus()) overseasShowUnlocked();
-  else overseasShowLocked();
+  if (!(await protectedAuthStatus())) {
+    overseasShowLocked();
+    return;
+  }
+  try {
+    await loadOverseasProtectedData();
+    overseasShowUnlocked();
+  } catch (error) {
+    overseasShowLocked();
+    protectedGateError(document.getElementById('overseas-gate-err'), error.message);
+  }
 }
 
 async function setupOverseasGate() {
@@ -4593,8 +4579,7 @@ async function setupOverseasGate() {
   const lockBtn = document.getElementById('overseas-lock-btn');
   if (!form) return;
 
-  if (await protectedAuthStatus()) overseasShowUnlocked();
-  else overseasShowLocked();
+  await initOverseasTab();
 
   form.addEventListener('submit', async event => {
     event.preventDefault();
@@ -4602,6 +4587,7 @@ async function setupOverseasGate() {
     protectedGateError(err, '');
     try {
       await protectedAuthLogin((input && input.value) || '');
+      await loadOverseasProtectedData();
       if (input) input.value = '';
       overseasShowUnlocked();
     } catch (error) {
@@ -4619,8 +4605,10 @@ async function setupOverseasGate() {
 }
 
 function setupDossierBridge() {
+  if (dossierBridgeReady || !dossierProtectedReady) return;
   const list = document.getElementById('dossier-evidence-list');
   if (!list) return;
+  dossierBridgeReady = true;
   const targetInputs = Array.from(document.querySelectorAll('.dossier-target-bar input'));
   const modeButtons = Array.from(document.querySelectorAll('[data-dossier-mode]'));
   let mode = 'kr';
@@ -4733,7 +4721,6 @@ document.addEventListener('DOMContentLoaded', () => {
   setupWhitespaceGate();
   setupRadarGate();
   setupOverseasGate();
-  setupDossierBridge();
   registerServiceWorker();
   runStartupTask('renderHeroNews', renderHeroNews);
   runStartupTask('renderDailyQuote', renderDailyQuote);
