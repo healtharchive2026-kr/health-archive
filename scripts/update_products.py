@@ -2,7 +2,7 @@
 """
 건강기능식품 종합정보 서비스(data.mfds.go.kr)의 '제품목록' 검색에서
 최근 신고(등록)된 건강기능식품 제품을 주기적으로 조회하여
-data/products.json에 자동으로 추가하는 스크립트.
+브라우저가 사용하는 data/products.js에 압축 저장하는 스크립트.
 
 Windows 작업 스케줄러에 등록해서 매일 자동 실행하도록 구성한다.
 """
@@ -12,8 +12,9 @@ import sys
 import urllib.request
 import urllib.parse
 from datetime import datetime, timedelta
+from bs4 import BeautifulSoup
 from _status import touch
-from _data_files import read_records, write_records
+from _data_files import read_records
 from _radar import record_new
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -27,6 +28,7 @@ LIST_URL = "https://data.mfds.go.kr/hid/opbaa01/prdtSrchLstSelect.do"
 KEEP_DAYS = 30           # 사이트에는 등록일자 기준 최근 30일치만 표시 (전체 이력은 ARCHIVE_FILE에 별도 보관)
 FETCH_PAGES = 40         # 최근 30일 경계까지 충분히 역순 탐색
 C003_URL = "https://openapi.foodsafetykorea.go.kr/api/{key}/C003/json/1/5/PRDLST_REPORT_NO={report_no}"
+PUBLIC_DETAIL_URL = "https://data.mfds.go.kr/hid/opbab01/prdtDtlInfo.do"
 MAX_COMPOSITION_FETCH = 200
 
 HEADERS = {
@@ -45,6 +47,14 @@ def log(msg):
         pass  # 콘솔 코드페이지(cp949)에 없는 문자가 포함된 경우 콘솔 출력만 건너뛴다.
     with open(LOG_FILE, 'a', encoding='utf-8') as f:
         f.write(line + '\n')
+
+
+def write_products(products):
+    """Keep one compact runtime copy instead of duplicate JSON and JS files."""
+    with open(JS_FILE, 'w', encoding='utf-8') as f:
+        f.write('var PRODUCTS_DATA = ')
+        json.dump(products, f, ensure_ascii=False, separators=(',', ':'))
+        f.write(';\n')
 
 
 def fetch_page(page_index, record_count=30):
@@ -153,23 +163,88 @@ def fetch_composition(report_no, api_key):
     }
 
 
+def clean_text(node):
+    return ' '.join(node.stripped_strings).replace('ㆍ ', '').strip() if node else ''
+
+
+def table_materials(soup, table_id):
+    table = soup.find('table', id=table_id)
+    values = []
+    if not table:
+        return values
+    for row in table.find_all('tr'):
+        cells = row.find_all('td')
+        if len(cells) < 2:
+            continue
+        value = clean_text(cells[-1])
+        if value and value != '내용이 없습니다.' and value not in values:
+            values.append(value)
+    return values
+
+
+def fetch_public_detail(registration_id):
+    """Fetch only compact text fields from the public MFDS detail page."""
+    body = urllib.parse.urlencode({
+        'prdlstRptRgstrNo': registration_id,
+        'entryfir': 'true',
+        'pageIndex': '1',
+        'buttonName': 'searchBtn',
+        'isSearchCondition': 'false',
+        'isSearchAll': 'false',
+    }).encode('utf-8')
+    req = urllib.request.Request(PUBLIC_DETAIL_URL, data=body, headers=HEADERS, method='POST')
+    with urllib.request.urlopen(req, timeout=25) as resp:
+        soup = BeautifulSoup(resp.read(), 'html.parser')
+
+    detail_table = soup.find('table', id='productDtailTab')
+    fields = {}
+    if detail_table:
+        for row in detail_table.find_all('tr'):
+            cells = row.find_all(['th', 'td'])
+            if len(cells) >= 2:
+                fields[clean_text(cells[0])] = clean_text(cells[1])
+
+    functional = table_materials(soup, 'fncltyRawmtrlTab')
+    other = table_materials(soup, 'etcRawmtrlTab')
+    capsule = table_materials(soup, 'capsuleRawmtrlTab')
+    if not fields and not functional and not other and not capsule:
+        return None
+
+    return {
+        'functionalMaterials': functional,
+        'otherMaterials': other,
+        'capsuleMaterials': capsule,
+        'primaryFunction': fields.get('기능성 내용', ''),
+        'intakeMethod': fields.get('섭취량/섭취방법', ''),
+        'cautions': fields.get('섭취 시 주의사항', ''),
+        'productForm': fields.get('성상', ''),
+        'shelfLife': fields.get('유통기한', ''),
+        'packaging': fields.get('포장재질(방법)', ''),
+        'storage': fields.get('보존 및 유통기준', ''),
+        'standards': fields.get('기준 및 규격', ''),
+        'detailUpdatedAt': datetime.now().strftime('%Y-%m-%d'),
+    }
+
+
 def enrich_compositions(products):
     api_key = os.environ.get('FOOD_SAFETY_KOREA_API_KEY', '').strip()
-    if not api_key:
-        log('INFO: FOOD_SAFETY_KOREA_API_KEY is not configured; composition update skipped.')
-        return 0
     recognized = load_recognized_ingredients()
     updated = 0
-    candidates = [p for p in products if p.get('reportNo') and not p.get('rawMaterialsText')]
+    candidates = [p for p in products if p.get('id') and not p.get('detailUpdatedAt')]
     for product in candidates[:MAX_COMPOSITION_FETCH]:
         try:
-            detail = fetch_composition(product['reportNo'], api_key)
+            detail = fetch_public_detail(product['id'])
+            if not detail and api_key and product.get('reportNo'):
+                detail = fetch_composition(product['reportNo'], api_key)
         except Exception as exc:
-            log(f"WARNING: C003 lookup failed for report {product['reportNo']}: {type(exc).__name__}")
+            log(f"WARNING: detail lookup failed for {product['id']}: {type(exc).__name__}")
             continue
         if not detail:
             continue
-        detail['recognizedIngredients'] = match_recognized_materials(detail['materials'], recognized)
+        materials = detail.get('functionalMaterials', []) + detail.get('otherMaterials', []) + detail.get('capsuleMaterials', [])
+        if not materials:
+            materials = detail.get('materials', [])
+        detail['recognizedIngredients'] = match_recognized_materials(materials, recognized)
         product.update(detail)
         updated += 1
     return updated
@@ -246,7 +321,7 @@ def main():
     products.sort(key=sort_key, reverse=True)
 
     if new_count or pruned_count or composition_count:
-        write_records(products, DATA_FILE, JS_FILE, 'PRODUCTS_DATA')
+        write_products(products)
         log(f"DONE: {new_count} new product(s), {composition_count} composition(s), {pruned_count} expired product(s). total={len(products)}")
     else:
         log("DONE: no new products found.")

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'healtharchive-logo-seo-daily-20260715-32';
+const CACHE_NAME = 'healtharchive-product-details-20260715-33';
 const CORE_ASSETS = [
   '/',
   '/index.html',

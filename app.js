@@ -17,7 +17,7 @@ const HOME_RECENT_KEY = 'ha_home_recent';
 const TAB_SCRIPT_DEPS = {
   market: ['libs/chart.umd.js'],
   stats: ['libs/chart.umd.js'],
-  products: ['data/products.js?v=20260709-perf'],
+  products: ['data/products.js?v=20260715-details1'],
   foodraw: ['data/food_ingredients.js?v=20260709-perf'],
   'temp-approval': ['data/temp_approval.js?v=20260709-perf'],
   blocked: ['data/blocked_ingredients.js?v=20260709-perf'],
@@ -29,7 +29,7 @@ const TAB_SCRIPT_DEPS = {
 const WS_DATA_KEY = 'demand-trends';
 
 const GLOBAL_SEARCH_SCRIPT_DEPS = [
-  'data/products.js?v=20260709-perf',
+  'data/products.js?v=20260715-details1',
   'data/food_ingredients.js?v=20260709-perf'
 ];
 
@@ -4137,12 +4137,16 @@ function fmtProductDate(s) {
 function renderProducts(list) {
   const tbody = document.querySelector('#products-table tbody');
   tbody.innerHTML = list.map((p, index) => {
-    const materials = Array.isArray(p.materials) ? p.materials : [];
+    const functionalMaterials = Array.isArray(p.functionalMaterials) ? p.functionalMaterials : [];
+    const otherProductMaterials = Array.isArray(p.otherMaterials) ? p.otherMaterials : [];
+    const capsuleMaterials = Array.isArray(p.capsuleMaterials) ? p.capsuleMaterials : [];
+    const materials = functionalMaterials.concat(otherProductMaterials, capsuleMaterials, Array.isArray(p.materials) ? p.materials : []);
     const recognized = Array.isArray(p.recognizedIngredients) ? p.recognizedIngredients : [];
     const matchedSources = new Set(recognized.map(item => item.sourceText));
     const otherMaterials = materials.filter(item => !matchedSources.has(item));
     const detailId = `product-detail-${index}`;
-    const hasDetail = materials.length || p.primaryFunction || p.intakeMethod;
+    const hasDetail = materials.length || p.primaryFunction || p.intakeMethod || p.productForm || p.shelfLife;
+    const listHtml = items => items.length ? `<ul>${items.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul>` : '<p>-</p>';
     return `
     <tr class="product-summary-row">
       <td>${fmtProductDate(p.reportDate)}</td>
@@ -4150,15 +4154,20 @@ function renderProducts(list) {
       <td>${escapeHtml(p.company || '-')}</td>
       <td>${escapeHtml(p.efficacy || '-')}</td>
       <td class="notice">${escapeHtml(p.reportNo || '-')}</td>
-      <td>${hasDetail ? `<button type="button" class="product-detail-toggle" data-product-detail="${detailId}" aria-expanded="false">구성성분</button>` : '<span class="product-detail-pending">수집 대기</span>'}</td>
+      <td>${hasDetail ? `<button type="button" class="product-detail-toggle" data-product-detail="${detailId}" aria-expanded="false">상세보기</button>` : '<span class="product-detail-pending">수집 대기</span>'}</td>
     </tr>
     ${hasDetail ? `<tr class="product-detail-row" id="${detailId}" hidden><td colspan="6">
       <div class="product-detail-grid">
         <section><strong>개별인정 원료 일치</strong>${recognized.length ? `<ul>${recognized.map(item => `<li>${escapeHtml(item.name)}${item.noticeNo ? ` <small>${escapeHtml(item.noticeNo)}</small>` : ''}</li>`).join('')}</ul>` : '<p>일치 원료 없음</p>'}</section>
-        <section><strong>기타 구성성분</strong>${otherMaterials.length ? `<ul>${otherMaterials.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul>` : '<p>-</p>'}</section>
-        <section><strong>제품 정보</strong><dl><dt>주된 기능성</dt><dd>${escapeHtml(p.primaryFunction || p.efficacy || '-')}</dd><dt>섭취방법</dt><dd>${escapeHtml(p.intakeMethod || '-')}</dd><dt>제품형태</dt><dd>${escapeHtml(p.productForm || '-')}</dd></dl></section>
+        <section><strong>기능성 원료</strong>${listHtml(functionalMaterials.length ? functionalMaterials : otherMaterials)}</section>
+        <section><strong>제품 기본정보</strong><dl><dt>유통기한</dt><dd>${escapeHtml(p.shelfLife || '-')}</dd><dt>성상</dt><dd>${escapeHtml(p.productForm || '-')}</dd><dt>포장재질</dt><dd>${escapeHtml(p.packaging || '-')}</dd></dl></section>
       </div>
-      <details class="product-raw-source"><summary>신고 원재료 원문</summary><p>${escapeHtml(p.rawMaterialsText || '-')}</p></details>
+      <div class="product-detail-grid product-detail-grid-secondary">
+        <section><strong>기타·캡슐 원재료</strong>${listHtml(otherProductMaterials.concat(capsuleMaterials))}</section>
+        <section><strong>섭취방법·기능성</strong><dl><dt>섭취방법</dt><dd>${escapeHtml(p.intakeMethod || '-')}</dd><dt>기능성</dt><dd>${escapeHtml(p.primaryFunction || p.efficacy || '-')}</dd></dl></section>
+        <section><strong>주의·보관정보</strong><dl><dt>주의사항</dt><dd>${escapeHtml(p.cautions || '-')}</dd><dt>보관기준</dt><dd>${escapeHtml(p.storage || '-')}</dd></dl></section>
+      </div>
+      ${p.standards ? `<details class="product-raw-source"><summary>기준 및 규격</summary><p>${escapeHtml(p.standards)}</p></details>` : ''}
       <p class="product-match-note">원료 일치는 공개 신고명과 개별인정 원료명의 자동 대조 결과이며, 최종 확인은 원문을 기준으로 합니다.</p>
     </td></tr>` : ''}`;
   }).join('');
@@ -4166,7 +4175,7 @@ function renderProducts(list) {
     const row = document.getElementById(button.dataset.productDetail);
     const expanded = button.getAttribute('aria-expanded') === 'true';
     button.setAttribute('aria-expanded', String(!expanded));
-    button.textContent = expanded ? '구성성분' : '닫기';
+    button.textContent = expanded ? '상세보기' : '닫기';
     row.hidden = expanded;
   }));
   document.getElementById('products-count').textContent = `${list.length}건`;
