@@ -31,9 +31,12 @@ function randomToken() {
 const MAX_LEN = 200;
 const RETENTION_SECONDS = 30 * 24 * 60 * 60;
 const AUTH_MAX_AGE = 6 * 60 * 60;
+const ACCESS_REQUEST_RETENTION = 365 * 24 * 60 * 60;
+const USAGE_EVENT_RETENTION = 90 * 24 * 60 * 60;
 const AUTH_COOKIE = 'ha_protected_session';
 const PROTECTED_DATA_KEYS = new Set(['radar-log', 'demand-trends', 'overseas-regulatory']);
 const ACCESS_LOGIN_PATH = '/auth/access/exchange';
+const USAGE_EVENTS = new Set(['tab_view', 'protected_login']);
 
 function bytesToBase64Url(bytes) {
   let binary = '';
@@ -76,22 +79,42 @@ function readCookie(request, name) {
   return part ? part.slice(prefix.length) : '';
 }
 
-async function createSession(secret) {
+async function createSession(secret, userKey) {
   const expires = Math.floor(Date.now() / 1000) + AUTH_MAX_AGE;
-  const nonce = randomToken();
-  const payload = `${expires}.${nonce}`;
+  const payload = bytesToBase64Url(new TextEncoder().encode(JSON.stringify({
+    exp: expires,
+    nonce: randomToken(),
+    uid: userKey || '',
+  })));
   return `${payload}.${await hmac(secret, payload)}`;
 }
 
-async function hasValidSession(request, secret) {
-  if (!secret) return false;
+async function readSession(request, secret) {
+  if (!secret) return null;
   const token = readCookie(request, AUTH_COOKIE);
   const parts = token.split('.');
-  if (parts.length !== 3) return false;
-  const payload = `${parts[0]}.${parts[1]}`;
-  const expires = Number(parts[0]);
-  if (!Number.isFinite(expires) || expires <= Math.floor(Date.now() / 1000)) return false;
-  return secureEqual(parts[2], await hmac(secret, payload));
+  if (parts.length === 2) {
+    if (!(await secureEqual(parts[1], await hmac(secret, parts[0])))) return null;
+    try {
+      const payload = decodeJwtPart(parts[0]);
+      if (!Number.isFinite(payload.exp) || payload.exp <= Math.floor(Date.now() / 1000)) return null;
+      return { expires: payload.exp, userKey: String(payload.uid || '') };
+    } catch (error) {
+      return null;
+    }
+  }
+  // 기존 세션은 만료 시점까지 인증만 유지하며 사용 분석에는 연결하지 않는다.
+  if (parts.length === 3) {
+    const payload = `${parts[0]}.${parts[1]}`;
+    const expires = Number(parts[0]);
+    if (!Number.isFinite(expires) || expires <= Math.floor(Date.now() / 1000)) return null;
+    return (await secureEqual(parts[2], await hmac(secret, payload))) ? { expires, userKey: '' } : null;
+  }
+  return null;
+}
+
+async function hasValidSession(request, secret) {
+  return Boolean(await readSession(request, secret));
 }
 
 function base64UrlToBytes(value) {
@@ -171,8 +194,9 @@ async function handleAccessExchange(request, env, url) {
   if (request.method !== 'GET') return new Response('Method not allowed', { status: 405 });
   if (!env.AUTH_SECRET) return new Response('인증 서비스가 준비되지 않았습니다.', { status: 503 });
   try {
-    await verifyAccessIdentity(request, env);
-    const token = await createSession(env.AUTH_SECRET);
+    const identity = await verifyAccessIdentity(request, env);
+    const userKey = await hmac(env.AUTH_SECRET, `user:${identity.email}`);
+    const token = await createSession(env.AUTH_SECRET, userKey);
     const headers = new Headers({
       'Location': safeAuthReturn(url),
       'Cache-Control': 'no-store',
@@ -229,6 +253,120 @@ async function handleAuth(request, env, url, origin) {
     return authJson({ error: '공용 비밀번호 로그인은 지원하지 않습니다.' }, 410, origin);
   }
   return null;
+}
+
+function cleanFormValue(value, maxLength) {
+  return String(value || '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, maxLength);
+}
+
+function validEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) && value.length <= 160;
+}
+
+async function notifyAccessRequest(env, requestData) {
+  if (!env.ACCESS_NOTIFY) return false;
+  const text = [
+    'HealthArchive 접근 신청',
+    '',
+    `회사명: ${requestData.company}`,
+    `부서명: ${requestData.department}`,
+    `인증 이메일: ${requestData.email}`,
+    `이용 목적: ${requestData.purpose}`,
+    `사용성 분석 동의: ${requestData.analyticsConsent ? '동의' : '미동의'}`,
+    `신청 시각: ${new Date(requestData.createdAt * 1000).toISOString()}`,
+  ].join('\n');
+  try {
+    await env.ACCESS_NOTIFY.send({
+      from: 'no-reply@healtharchive.kr',
+      to: 'healtharchive2026@gmail.com',
+      replyTo: requestData.email,
+      subject: `[HealthArchive] 접근 신청 - ${requestData.company}`,
+      text,
+    });
+    return true;
+  } catch (error) {
+    console.error('access request email failed', error);
+    return false;
+  }
+}
+
+async function handleAccessRequest(request, env, origin) {
+  if (request.method !== 'POST') return null;
+  if (!env.AUTH_SECRET) return json({ error: '신청 서비스가 준비되지 않았습니다.' }, 503, origin);
+  let body;
+  try {
+    body = await request.json();
+  } catch (error) {
+    return json({ error: '잘못된 요청입니다.' }, 400, origin);
+  }
+
+  const company = cleanFormValue(body.company, 80);
+  const department = cleanFormValue(body.department, 80);
+  const purpose = cleanFormValue(body.purpose, 500);
+  const email = cleanFormValue(body.email, 160).toLowerCase();
+  const privacyConsent = body.privacyConsent === true;
+  const analyticsConsent = body.analyticsConsent === true;
+  if (!company || !department || !purpose || !validEmail(email)) {
+    return json({ error: '회사명, 부서명, 이용 목적과 인증 이메일을 정확히 입력해 주세요.' }, 400, origin);
+  }
+  if (!privacyConsent) return json({ error: '개인정보 수집·이용 동의가 필요합니다.' }, 400, origin);
+
+  const now = Math.floor(Date.now() / 1000);
+  const address = request.headers.get('CF-Connecting-IP') || 'unknown';
+  const clientKey = await hmac(env.AUTH_SECRET, `request:${address}`);
+  const userKey = await hmac(env.AUTH_SECRET, `user:${email}`);
+  await env.DB.batch([
+    env.DB.prepare('DELETE FROM access_requests WHERE created_at < ?').bind(now - ACCESS_REQUEST_RETENTION),
+    env.DB.prepare('DELETE FROM usage_events WHERE created_at < ?').bind(now - USAGE_EVENT_RETENTION),
+  ]);
+  const recentClient = await env.DB.prepare(
+    'SELECT COUNT(*) AS count FROM access_requests WHERE client_key = ? AND created_at >= ?'
+  ).bind(clientKey, now - 86400).first();
+  if (Number(recentClient?.count || 0) >= 3) {
+    return json({ error: '하루 신청 횟수를 초과했습니다. 다음 날 다시 시도해 주세요.' }, 429, origin);
+  }
+  const recentEmail = await env.DB.prepare(
+    'SELECT id FROM access_requests WHERE email = ? AND created_at >= ? ORDER BY created_at DESC LIMIT 1'
+  ).bind(email, now - 86400).first();
+  if (recentEmail) return json({ ok: true, duplicate: true }, 200, origin);
+
+  const result = await env.DB.prepare(
+    `INSERT INTO access_requests
+      (company, department, purpose, email, user_key, client_key, analytics_consent, status, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?)`
+  ).bind(company, department, purpose, email, userKey, clientKey, analyticsConsent ? 1 : 0, now).run();
+  const notified = await notifyAccessRequest(env, {
+    company, department, purpose, email, analyticsConsent, createdAt: now,
+  });
+  return json({ ok: true, id: result.meta.last_row_id, notified }, 201, origin);
+}
+
+async function handleUsageEvent(request, env, origin) {
+  if (request.method !== 'POST') return null;
+  const session = await readSession(request, env.AUTH_SECRET);
+  if (!session) return json({ error: '인증이 필요합니다.' }, 401, origin);
+  if (!session.userKey) return new Response(null, { status: 204, headers: corsHeaders(origin) });
+  let body;
+  try {
+    body = await request.json();
+  } catch (error) {
+    return json({ error: '잘못된 요청입니다.' }, 400, origin);
+  }
+  const eventName = cleanFormValue(body.event, 40);
+  const target = cleanFormValue(body.target, 80);
+  if (!USAGE_EVENTS.has(eventName) || !target) return json({ error: '허용되지 않은 이벤트입니다.' }, 400, origin);
+  const consent = await env.DB.prepare(
+    `SELECT analytics_consent FROM access_requests
+     WHERE user_key = ? ORDER BY created_at DESC LIMIT 1`
+  ).bind(session.userKey).first();
+  if (Number(consent?.analytics_consent || 0) !== 1) {
+    return new Response(null, { status: 204, headers: corsHeaders(origin) });
+  }
+  const now = Math.floor(Date.now() / 1000);
+  await env.DB.prepare(
+    'INSERT INTO usage_events (user_key, event_name, target, created_at) VALUES (?, ?, ?, ?)'
+  ).bind(session.userKey, eventName, target, now).run();
+  return new Response(null, { status: 204, headers: corsHeaders(origin) });
 }
 
 async function handleProtectedData(request, env, url, origin) {
@@ -324,6 +462,16 @@ export default {
     if (url.pathname.startsWith('/auth/')) {
       const authResponse = await handleAuth(request, env, url, origin);
       if (authResponse) return authResponse;
+    }
+
+    if (url.pathname === '/access-requests') {
+      const accessRequestResponse = await handleAccessRequest(request, env, origin);
+      if (accessRequestResponse) return accessRequestResponse;
+    }
+
+    if (url.pathname === '/usage-events') {
+      const usageResponse = await handleUsageEvent(request, env, origin);
+      if (usageResponse) return usageResponse;
     }
 
     if (url.pathname.startsWith('/protected/data/')) {

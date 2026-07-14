@@ -2910,7 +2910,7 @@ body.account-modal-open{overflow:hidden;}
 }
 .account-overlay[hidden]{display:none;}
 .account-dialog{
-  position:relative;width:min(420px,100%);padding:32px;border:1px solid var(--border);border-radius:8px;
+  position:relative;width:min(420px,100%);max-height:calc(100vh - 36px);overflow-y:auto;padding:32px;border:1px solid var(--border);border-radius:8px;
   background:#fff;box-shadow:0 24px 80px rgba(21,41,33,.2);text-align:left;
 }
 .account-dialog-close{
@@ -2934,6 +2934,20 @@ body.account-modal-open{overflow:hidden;}
 .account-secondary{border:1px solid var(--border);background:#fff;color:var(--text);}
 .account-secondary:hover{border-color:var(--green);color:var(--green);}
 .account-dialog .account-help{margin:14px 0 0;font-size:12px;text-align:center;}
+.account-request-form{display:grid;gap:12px;}
+.account-request-form>label:not(.account-consent){display:grid;gap:6px;color:var(--text);font-size:12px;font-weight:800;}
+.account-request-form input[type="text"],.account-request-form input[type="email"],.account-request-form textarea{
+  width:100%;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text);
+  padding:10px 11px;font:500 14px/1.4 inherit;resize:vertical;
+}
+.account-request-form input:focus,.account-request-form textarea:focus{outline:3px solid rgba(37,111,91,.13);border-color:var(--green);}
+.account-consent{display:grid;grid-template-columns:18px minmax(0,1fr);gap:8px;align-items:start;color:var(--muted);font-size:11px;line-height:1.55;cursor:pointer;}
+.account-consent input{width:16px;height:16px;margin:1px 0 0;accent-color:var(--green);}
+.account-consent a{color:var(--green);font-weight:800;}
+.account-consent b{color:var(--text);}
+.account-request-status{min-height:18px;margin:0!important;color:var(--green)!important;font-size:12px!important;font-weight:750;}
+.account-request-status.is-error{color:var(--crimson,#a75c4b)!important;}
+.account-request-form .account-primary{margin:0;}
 .account-policy-links{display:flex;justify-content:center;gap:16px;margin-top:22px;padding-top:18px;border-top:1px solid var(--border);}
 .account-policy-links a{color:var(--muted);font-size:11px;text-decoration:none;}
 .account-policy-links a:hover{color:var(--green);text-decoration:underline;}

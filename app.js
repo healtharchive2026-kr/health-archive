@@ -1459,10 +1459,12 @@ function renderProtectedAccountState(authenticated) {
   const label = document.getElementById('account-trigger-label');
   const loggedOut = document.getElementById('account-logged-out');
   const loggedIn = document.getElementById('account-logged-in');
+  const requestPanel = document.getElementById('account-request-panel');
   if (trigger) trigger.classList.toggle('is-authenticated', authenticated === true);
   if (label) label.textContent = authenticated ? '로그인됨' : '로그인';
   if (loggedOut) loggedOut.hidden = authenticated === true;
   if (loggedIn) loggedIn.hidden = authenticated !== true;
+  if (requestPanel && authenticated) requestPanel.hidden = true;
 }
 
 function setupProtectedAccountUi() {
@@ -1470,6 +1472,12 @@ function setupProtectedAccountUi() {
   const modal = document.getElementById('account-modal');
   const close = document.getElementById('account-modal-close');
   const logout = document.getElementById('account-logout');
+  const loggedOut = document.getElementById('account-logged-out');
+  const requestPanel = document.getElementById('account-request-panel');
+  const requestOpen = document.getElementById('account-request-open');
+  const requestBack = document.getElementById('account-request-back');
+  const requestForm = document.getElementById('account-request-form');
+  const requestStatus = document.getElementById('account-request-status');
   const openModal = () => {
     if (!modal) return;
     modal.hidden = false;
@@ -1494,6 +1502,60 @@ function setupProtectedAccountUi() {
   document.querySelectorAll('[data-protected-login]').forEach(button => {
     button.addEventListener('click', protectedAuthStart);
   });
+  requestOpen?.addEventListener('click', () => {
+    if (loggedOut) loggedOut.hidden = true;
+    if (requestPanel) requestPanel.hidden = false;
+    requestPanel?.querySelector('input')?.focus();
+  });
+  requestBack?.addEventListener('click', () => {
+    if (requestPanel) requestPanel.hidden = true;
+    if (loggedOut) loggedOut.hidden = false;
+    requestOpen?.focus();
+  });
+  requestForm?.addEventListener('submit', async event => {
+    event.preventDefault();
+    const submit = requestForm.querySelector('button[type="submit"]');
+    const data = new FormData(requestForm);
+    const payload = {
+      company: data.get('company'),
+      department: data.get('department'),
+      email: data.get('email'),
+      purpose: data.get('purpose'),
+      privacyConsent: data.get('privacyConsent') === 'on',
+      analyticsConsent: data.get('analyticsConsent') === 'on',
+    };
+    if (submit) {
+      submit.disabled = true;
+      submit.textContent = '신청 중';
+    }
+    if (requestStatus) {
+      requestStatus.textContent = '';
+      requestStatus.classList.remove('is-error');
+    }
+    try {
+      const response = await fetch(`${PROTECTED_AUTH_API}/access-requests`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || '접근 신청을 처리하지 못했습니다.');
+      if (requestStatus) requestStatus.textContent = result.duplicate
+        ? '오늘 접수된 동일 이메일 신청이 있습니다.'
+        : '접근 신청이 접수되었습니다. 승인 후 인증 이메일로 로그인해 주세요.';
+      if (!result.duplicate) requestForm.reset();
+    } catch (error) {
+      if (requestStatus) {
+        requestStatus.textContent = error.message;
+        requestStatus.classList.add('is-error');
+      }
+    } finally {
+      if (submit) {
+        submit.disabled = false;
+        submit.textContent = '신청 보내기';
+      }
+    }
+  });
   logout?.addEventListener('click', async () => {
     logout.disabled = true;
     try {
@@ -1504,6 +1566,22 @@ function setupProtectedAccountUi() {
     }
   });
   protectedAuthStatus(true);
+}
+
+const usageEventTimes = new Map();
+function trackUsage(eventName, target) {
+  if (protectedAuthState !== true || !target) return;
+  const key = `${eventName}:${target}`;
+  const now = Date.now();
+  if (now - (usageEventTimes.get(key) || 0) < 10000) return;
+  usageEventTimes.set(key, now);
+  fetch(`${PROTECTED_AUTH_API}/usage-events`, {
+    method: 'POST',
+    credentials: 'include',
+    keepalive: true,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ event: eventName, target }),
+  }).catch(() => undefined);
 }
 
 async function protectedLockAll() {
@@ -3271,6 +3349,7 @@ function setupTabs() {
     // (display:none 상태에서 그리면 Chart.js가 크기를 0으로 계산함)
     initTabContent(tab);
     recordHomeRecent(tab);
+    trackUsage('tab_view', tab);
     document.body.classList.remove('mobile-nav-open');
     closeNavGroups();
     if (menuToggle) {

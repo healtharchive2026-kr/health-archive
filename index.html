@@ -48,7 +48,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="style.css?v=20260714-account1">
+<link rel="stylesheet" href="style.css?v=20260714-access-request1">
 </head>
 <body>
 <a class="skip-link" href="#main-content">본문 바로가기</a>
@@ -2247,8 +2247,24 @@
       <h2 id="account-modal-title">보호 자료 로그인</h2>
       <p>운영자가 승인한 이메일로 일회용 인증번호를 받아 로그인합니다. 비밀번호는 저장하지 않습니다.</p>
       <button type="button" class="account-primary" data-protected-login>이메일로 로그인</button>
-      <a class="account-secondary" href="mailto:healtharchive2026@gmail.com?subject=HealthArchive%20접근%20신청&amp;body=승인받을%20이메일%3A%0A소속%28선택%29%3A%0A이용%20목적%3A%0A">접근 신청</a>
+      <button type="button" class="account-secondary" id="account-request-open">접근 신청</button>
       <p class="account-help">신규 이용자는 접근 신청 후 승인 이메일로 로그인할 수 있습니다.</p>
+    </div>
+    <div id="account-request-panel" hidden>
+      <span class="account-eyebrow">Access request</span>
+      <h2>접근 신청</h2>
+      <p>신청 정보를 확인한 후 인증 이메일을 승인 목록에 등록합니다.</p>
+      <form class="account-request-form" id="account-request-form">
+        <label>회사명<input type="text" name="company" maxlength="80" autocomplete="organization" required></label>
+        <label>부서명<input type="text" name="department" maxlength="80" autocomplete="organization-title" required></label>
+        <label>인증 이메일<input type="email" name="email" maxlength="160" autocomplete="email" required></label>
+        <label>이용 목적<textarea name="purpose" maxlength="500" rows="3" required></textarea></label>
+        <label class="account-consent"><input type="checkbox" name="privacyConsent" required><span><a href="privacy.html" target="_blank" rel="noopener">개인정보 수집·이용 내용</a>을 확인했으며 접근 신청 정보의 처리에 동의합니다. <b>(필수)</b></span></label>
+        <label class="account-consent"><input type="checkbox" name="analyticsConsent"><span>메뉴 이용 기록을 서비스 배치와 기능 개선에 활용하는 데 동의합니다. 검색어·입력 원문은 수집하지 않습니다. <b>(선택)</b></span></label>
+        <p class="account-request-status" id="account-request-status" role="status" aria-live="polite"></p>
+        <button type="submit" class="account-primary">신청 보내기</button>
+        <button type="button" class="account-secondary" id="account-request-back">로그인으로 돌아가기</button>
+      </form>
     </div>
     <div id="account-logged-in" hidden>
       <span class="account-eyebrow">Access granted</span>
@@ -2322,7 +2338,7 @@
 <script src="data/status.js?v=20260630-news0930"></script>
 <script src="data/daily_quotes.js"></script>
 <script src="market.js"></script>
-<script src="app.js?v=20260714-account1"></script>
+<script src="app.js?v=20260714-access-request1"></script>
 <script src="pc-cinema.js?v=20260714-cinema2"></script>
 <script src="feedback.js?v=20260714-api1"></script>
 </body>
