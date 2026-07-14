@@ -1538,6 +1538,7 @@ function setupProtectedAccountUi() {
   const close = document.getElementById('account-modal-close');
   const logout = document.getElementById('account-logout');
   const loggedOut = document.getElementById('account-logged-out');
+  const loggedIn = document.getElementById('account-logged-in');
   const requestPanel = document.getElementById('account-request-panel');
   const requestOpen = document.getElementById('account-request-open');
   const requestBack = document.getElementById('account-request-back');
