@@ -21,7 +21,7 @@
   const protocols = window.BIOMARKER_PROTOCOLS || {};
   const categoryNames = [...new Set(individualIngredients.map(item => item.category).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ko'));
   const AUTH_API = 'https://api.healtharchive.kr';
-  const publicViews = new Set(['home', 'verdict']);
+  const publicViews = new Set(['home']);
   let authState = null;
   let authCheck = null;
   const usageTimes = new Map();
@@ -120,11 +120,15 @@
     const initial = location.hash.replace('#', '');
     const pending = sessionStorage.getItem('ha-mobile-login-target');
     getAuthStatus(true).then(authenticated => {
+      const enterWorkspace = authenticated && sessionStorage.getItem('ha-mobile-enter-after-login') === '1';
       const target = authenticated && pending && validViews.has(pending)
         ? pending
         : (validViews.has(initial) ? initial : 'home');
       if (authenticated && pending) sessionStorage.removeItem('ha-mobile-login-target');
-      activateView(target, {initial: true});
+      if (enterWorkspace) sessionStorage.removeItem('ha-mobile-enter-after-login');
+      activateView(enterWorkspace ? 'home' : target, {initial: true}).then(() => {
+        if (enterWorkspace) window.requestAnimationFrame(() => document.getElementById('mobile-tools')?.scrollIntoView({behavior: 'smooth', block: 'start'}));
+      });
     });
   }
 
@@ -216,26 +220,38 @@
     document.getElementById('home-food-count').textContent = foodIngredients.length.toLocaleString('ko-KR');
     document.getElementById('home-blocked-count').textContent = assignedBlocked.length.toLocaleString('ko-KR');
     document.getElementById('home-protocol-count').textContent = Object.keys(protocols).length.toLocaleString('ko-KR');
-    document.getElementById('hero-ingredient-count').textContent = (individualIngredients.length + temporaryIngredients.length).toLocaleString('ko-KR');
-    document.getElementById('hero-food-count').textContent = foodIngredients.length.toLocaleString('ko-KR');
-    document.getElementById('hero-protocol-count').textContent = Object.keys(protocols).length.toLocaleString('ko-KR');
+    const heroIngredientCount = document.getElementById('hero-ingredient-count');
+    const heroFoodCount = document.getElementById('hero-food-count');
+    const heroProtocolCount = document.getElementById('hero-protocol-count');
+    if (heroIngredientCount) heroIngredientCount.textContent = (individualIngredients.length + temporaryIngredients.length).toLocaleString('ko-KR');
+    if (heroFoodCount) heroFoodCount.textContent = foodIngredients.length.toLocaleString('ko-KR');
+    if (heroProtocolCount) heroProtocolCount.textContent = Object.keys(protocols).length.toLocaleString('ko-KR');
   }
 
   function setupCinemaHome() {
-    const scrollButton = document.querySelector('[data-scroll-tools]');
+    const startButton = document.querySelector('[data-mobile-cinema-start]');
     const tools = document.getElementById('mobile-tools');
-    scrollButton.addEventListener('click', () => tools.scrollIntoView({behavior: 'smooth', block: 'start'}));
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    startButton?.addEventListener('click', () => {
+      if (authState === true) {
+        tools?.scrollIntoView({behavior: reducedMotion ? 'auto' : 'smooth', block: 'start'});
+        return;
+      }
+      sessionStorage.setItem('ha-mobile-enter-after-login', '1');
+      openAccountModal();
+    });
 
-    const sections = [...document.querySelectorAll('.reveal-on-scroll')];
-    if (!('IntersectionObserver' in window) || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const sections = [...document.querySelectorAll('.reveal-on-scroll, [data-mobile-cinema-frame]')];
+    if (!('IntersectionObserver' in window) || reducedMotion) {
       sections.forEach(section => section.classList.add('is-revealed'));
+      document.querySelectorAll('[data-mobile-cinema-frame]').forEach(frame => frame.classList.add('is-visible'));
       return;
     }
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         if (!entry.isIntersecting) return;
-        entry.target.classList.add('is-revealed');
-        observer.unobserve(entry.target);
+        entry.target.classList.add('is-revealed', 'is-visible');
+        if (!entry.target.matches('[data-mobile-cinema-frame]')) observer.unobserve(entry.target);
       });
     }, {threshold: 0.18});
     sections.forEach(section => observer.observe(section));

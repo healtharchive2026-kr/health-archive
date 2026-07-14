@@ -225,12 +225,14 @@ function setupIntroModal() {
     if (e.key === 'Escape' && overlay.classList.contains('active')) close();
   });
 
-  const hiddenUntil = Number(localStorage.getItem(STORAGE_KEY) || 0);
-  if (hiddenUntil <= Date.now() && sessionStorage.getItem(SESSION_KEY) !== '1') {
-    overlay.classList.add('active');
-    document.body.classList.add('intro-modal-open');
-    window.setTimeout(() => confirmBtn.focus(), 0);
-  }
+  protectedAuthStatus().then(authenticated => {
+    const hiddenUntil = Number(localStorage.getItem(STORAGE_KEY) || 0);
+    if (authenticated && hiddenUntil <= Date.now() && sessionStorage.getItem(SESSION_KEY) !== '1') {
+      overlay.classList.add('active');
+      document.body.classList.add('intro-modal-open');
+      window.setTimeout(() => confirmBtn.focus(), 0);
+    }
+  });
 }
 
 function renderDataFreshness() {
@@ -1804,6 +1806,14 @@ function setupProtectedAccountUi() {
   });
   protectedAuthStatus(true).then(authenticated => {
     if (!authenticated) return;
+    if (sessionStorage.getItem('ha-enter-workspace-after-login') === '1') {
+      sessionStorage.removeItem('ha-enter-workspace-after-login');
+      Promise.resolve(window.navigateTo?.('home')).then(() => {
+        history.replaceState(null, '', '#home');
+        window.requestAnimationFrame(() => document.getElementById('workspace-start')?.scrollIntoView({behavior: 'smooth', block: 'start'}));
+      });
+      return;
+    }
     const pendingTab = sessionStorage.getItem('ha-login-target');
     if (!pendingTab || !document.getElementById(pendingTab)) return;
     sessionStorage.removeItem('ha-login-target');
@@ -3570,7 +3580,7 @@ function setupTabs() {
   const menuToggle = document.querySelector('.mobile-menu-toggle');
   const mainNav = document.getElementById('main-nav');
   const navGroups = Array.from(document.querySelectorAll('.nav-group'));
-  const publicTabs = new Set(['home', 'precheck']);
+  const publicTabs = new Set(['home']);
   const adminOnlyTabs = new Set(['whitespace', 'overseas-approval']);
 
   document.querySelectorAll('a[data-goto]:not([href])').forEach(link => {
