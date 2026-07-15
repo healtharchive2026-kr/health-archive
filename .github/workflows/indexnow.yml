@@ -1,0 +1,43 @@
+name: Notify IndexNow
+
+on:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+concurrency:
+  group: indexnow-notification
+  cancel-in-progress: true
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Wait for the verification key to deploy
+        run: |
+          for attempt in {1..18}; do
+            if curl --fail --silent --show-error \
+              https://www.healtharchive.kr/c579c34d47c540658fa9392144065aa1.txt \
+              | grep --quiet '^c579c34d47c540658fa9392144065aa1$'; then
+              exit 0
+            fi
+            sleep 10
+          done
+          exit 1
+
+      - name: Notify IndexNow
+        run: |
+          curl --fail-with-body --silent --show-error \
+            -X POST \
+            -H 'Content-Type: application/json; charset=utf-8' \
+            --data '{
+              "host": "www.healtharchive.kr",
+              "key": "c579c34d47c540658fa9392144065aa1",
+              "keyLocation": "https://www.healtharchive.kr/c579c34d47c540658fa9392144065aa1.txt",
+              "urlList": ["https://www.healtharchive.kr/"]
+            }' \
+            https://api.indexnow.org/indexnow
