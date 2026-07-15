@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """기업마당 공식 API에서 건강기능식품 관련 지원과제를 선별한다."""
 import hashlib
+import html
+import io
 import json
 import os
 import re
@@ -8,12 +10,26 @@ import time
 import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
+from itertools import zip_longest
+
+from pypdf import PdfReader
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_FILE = os.path.join(BASE_DIR, 'data', 'funding_opportunities.json')
 LOG_FILE = os.path.join(BASE_DIR, 'scripts', 'update_log.txt')
 API_URL = 'https://www.bizinfo.go.kr/uss/rss/bizinfoApi.do'
+PDF_ENRICH_LIMIT = 40
+PDF_MAX_BYTES = 15 * 1024 * 1024
+PDF_MAX_PAGES = 35
+ENRICHMENT_VERSION = 2
+
+ENRICHMENT_FIELDS = (
+    'supportAmountText', 'researchPeriodText', 'matchingFundRequirements',
+    'technologyFeeText', 'applicationEndTime', 'locationRequirements',
+    'officialDocumentCheckedAt', 'officialDocumentName',
+    'officialDocumentTextAvailable', 'officialDocumentEnrichmentVersion', 'sourceEvidence',
+)
 
 KEYWORD_SCORES = {
     5: ['건강기능식품', '기능성 원료', '기능성원료', '개별인정형', '개별인정'],
@@ -65,7 +81,15 @@ def log(message):
 
 
 def text(value):
-    return re.sub(r'<[^>]+>', ' ', str(value or '')).replace('&nbsp;', ' ').strip()
+    cleaned = re.sub(r'<[^>]+>', ' ', str(value or ''))
+    return re.sub(r'\s+', ' ', html.unescape(cleaned).replace('&nbsp;', ' ')).strip()
+
+
+def structured_text(value):
+    cleaned = re.sub(r'(?i)<(?:br\s*/?|/p|/div|/li)>', '\n', str(value or ''))
+    cleaned = re.sub(r'<[^>]+>', ' ', cleaned)
+    lines = [re.sub(r'\s+', ' ', html.unescape(line)).strip(' \t-ㆍ·※☞') for line in cleaned.splitlines()]
+    return '\n'.join(line for line in lines if line)
 
 
 def pick(item, *keys):
@@ -141,6 +165,117 @@ def parse_period(value):
     return (normalized + ['', ''])[:2]
 
 
+def extract_deadline_time(value):
+    matches = re.findall(r'(?<!\d)([01]?\d|2[0-3])\s*(?::|시)\s*([0-5]\d)?', str(value or ''))
+    if not matches:
+        return ''
+    hour, minute = matches[-1]
+    return f'{int(hour):02d}:{int(minute or 0):02d}'
+
+
+def labeled_value(content, labels, max_length=260):
+    lines = [line.strip() for line in structured_text(content).splitlines() if line.strip()]
+    for index, line in enumerate(lines):
+        if not any(label in line for label in labels):
+            continue
+        value = re.sub(r'^.*?(?:' + '|'.join(map(re.escape, labels)) + r')\s*[:：]?\s*', '', line).strip()
+        if len(value) < 3 and index + 1 < len(lines):
+            value = lines[index + 1]
+        if value:
+            value = re.split(
+                r'\s*(?:□|■)\s*|\s+(?:신청자격|접수기간|신청기간|신청방법|문의처)\s*[:：]',
+                value,
+                maxsplit=1,
+            )[0].strip()
+            return value[:min(max_length, 220)].strip()
+    return ''
+
+
+def sentence_value(content, required_words, max_length=260):
+    chunks = re.split(r'[\n。]|(?<=[.!?])\s+', structured_text(content))
+    for chunk in chunks:
+        if all(word in chunk for word in required_words):
+            return chunk.strip()[:max_length]
+    return ''
+
+
+def split_multi(value, urls=False):
+    raw = str(value or '').strip()
+    if not raw:
+        return []
+    parts = re.split(r'@(?=https?://)', raw) if urls else raw.split('@')
+    return [text(part) for part in parts if text(part)]
+
+
+def build_attachments(raw):
+    attachments = []
+    for name_key, url_key, default_type in (
+        ('fileNm', 'flpthNm', 'OTHER'), ('printFileNm', 'printFlpthNm', 'NOTICE')
+    ):
+        names = split_multi(raw.get(name_key))
+        urls = split_multi(raw.get(url_key), urls=True)
+        for name, url in zip_longest(names, urls, fillvalue=''):
+            if not url:
+                continue
+            label = name or '공식 첨부파일'
+            lowered = label.lower()
+            attachment_type = 'RFP' if any(word in lowered for word in ('rfp', '제안요청', '공고문')) else default_type
+            attachments.append({'name': label, 'url': url, 'attachmentType': attachment_type})
+    return attachments
+
+
+def fetch_pdf_text(url):
+    request = urllib.request.Request(
+        url,
+        headers={'User-Agent': 'HealthArchive/1.0 (+https://www.healtharchive.kr)'},
+    )
+    with urllib.request.urlopen(request, timeout=45) as response:
+        data = response.read(PDF_MAX_BYTES + 1)
+    if len(data) > PDF_MAX_BYTES or not data.startswith(b'%PDF'):
+        return ''
+    reader = PdfReader(io.BytesIO(data))
+    pages = []
+    for page in reader.pages[:PDF_MAX_PAGES]:
+        pages.append(page.extract_text() or '')
+    return '\n'.join(pages)[:250000]
+
+
+def enrich_from_official_document(item, checked_at):
+    candidates = [file for file in item.get('attachments', []) if file.get('attachmentType') in ('NOTICE', 'RFP')]
+    item['officialDocumentCheckedAt'] = checked_at
+    item['officialDocumentTextAvailable'] = False
+    item['officialDocumentEnrichmentVersion'] = ENRICHMENT_VERSION
+    for attachment in candidates[:2]:
+        try:
+            document = fetch_pdf_text(attachment.get('url', ''))
+        except Exception as error:
+            log(f'WARN (funding): official document read failed for {item.get("sourceId")}: {type(error).__name__}')
+            continue
+        if not document.strip():
+            continue
+        item['officialDocumentTextAvailable'] = True
+        item['officialDocumentName'] = attachment.get('name', '')
+        item['sourceEvidence'] = ['BIZINFO_API', 'OFFICIAL_DOCUMENT']
+        item['supportAmountText'] = item.get('supportAmountText') or labeled_value(
+            document, ('지원규모', '지원금액', '지원한도', '총사업비', '사업비', '지원내용')
+        )
+        item['researchPeriodText'] = item.get('researchPeriodText') or labeled_value(
+            document, ('연구기간', '사업기간', '협약기간', '수행기간', '과제기간', '지원기간')
+        )
+        item['matchingFundRequirements'] = item.get('matchingFundRequirements') or labeled_value(
+            document, ('기관부담금', '기업부담금', '민간부담금', '자부담', '자기부담금')
+        )
+        item['technologyFeeText'] = item.get('technologyFeeText') or labeled_value(
+            document, ('기술료', '성과활용료')
+        )
+        item['locationRequirements'] = item.get('locationRequirements') or sentence_value(document, ('소재', '기업'))
+        period_line = labeled_value(document, ('접수기간', '신청기간', '공고기간'))
+        item['applicationEndTime'] = item.get('applicationEndTime') or extract_deadline_time(period_line)
+        return True
+    item.setdefault('sourceEvidence', ['BIZINFO_API'])
+    return False
+
+
 def region_info(content, agency):
     matched = []
     for keyword, pair in REGION_MAP.items():
@@ -156,28 +291,35 @@ def region_info(content, agency):
 
 def normalize(raw):
     title = text(pick(raw, 'title', 'pblancNm'))
-    summary = text(pick(raw, 'description', 'bsnsSumryCn'))
+    summary_raw = pick(raw, 'description', 'bsnsSumryCn')
+    summary = text(summary_raw)
     agency = text(pick(raw, 'author', 'jrsdInsttNm'))
     managing = text(pick(raw, 'excInsttNm', 'excInsttNm'))
     hashtags = text(pick(raw, 'hashTags', 'hashtags'))
     target = text(pick(raw, 'trgetNm', 'trgetNm'))
+    application_method = text(raw.get('reqstMthPapersCn'))
+    contact = text(raw.get('refrncNm'))
+    application_url = text(raw.get('rceptEngnHmpgUrl'))
+    support_large = text(pick(raw, 'lcategory', 'pldirSportRealmLclasCodeNm'))
+    support_middle = text(raw.get('pldirSportRealmMlsfcCodeNm'))
     content = ' '.join([title, summary, agency, managing, hashtags, target])
     score, level, matched = score_relevance(content)
     if score <= 0:
         return None
     funding_level, region_group, regions = region_info(content, agency)
     support_types = [name for name, keywords in SUPPORT_TYPES.items() if any(keyword.lower() in content.lower() for keyword in keywords)]
-    start_date, end_date = parse_period(pick(raw, 'reqstDt', 'reqstDt'))
+    application_period = text(pick(raw, 'reqstDt', 'reqstBeginEndDe'))
+    start_date, end_date = parse_period(application_period)
     source_id = text(pick(raw, 'seq', 'pblancId'))
     source_url = text(pick(raw, 'link', 'pblancUrl'))
-    announcement = text(pick(raw, 'pubDate', 'creatDt'))[:10].replace('.', '-').replace('/', '-')
-    attachments = []
-    for name_key, url_key, attachment_type in (
-        ('fileNm', 'flpthNm', 'OTHER'), ('printFileNm', 'printFlpthNm', 'NOTICE')
-    ):
-        name, url = text(raw.get(name_key)), text(raw.get(url_key))
-        if name and url:
-            attachments.append({'name': name, 'url': url, 'attachmentType': attachment_type})
+    announcement = text(pick(raw, 'pubDate', 'creatDt', 'creatPnttm'))[:10].replace('.', '-').replace('/', '-')
+    structured_summary = structured_text(summary_raw)
+    support_amount = labeled_value(structured_summary, ('지원규모', '지원금액', '지원한도', '총사업비', '사업비'))
+    research_period = labeled_value(structured_summary, ('연구기간', '사업기간', '협약기간', '수행기간', '과제기간', '지원기간'))
+    location_requirement = sentence_value(structured_summary, ('소재', '기업'))
+    matching_fund = labeled_value(structured_summary, ('기관부담금', '기업부담금', '민간부담금', '자부담', '자기부담금'))
+    technology_fee = labeled_value(structured_summary, ('기술료', '성과활용료'))
+    attachments = build_attachments(raw)
     normalized = {
         'id': f'BIZINFO:{source_id or hashlib.sha256(source_url.encode()).hexdigest()[:16]}',
         'sourceId': source_id,
@@ -197,21 +339,30 @@ def normalize(raw):
         'announcementDate': announcement,
         'applicationStartDate': start_date,
         'applicationEndDate': end_date,
-        'supportAmountText': '',
-        'researchPeriodText': '',
+        'applicationEndTime': extract_deadline_time(application_period),
+        'applicationPeriodText': application_period,
+        'applicationMethodText': application_method,
+        'applicationUrl': application_url,
+        'contactText': contact,
+        'supportCategoryLarge': support_large,
+        'supportCategoryMiddle': support_middle,
+        'supportAmountText': support_amount,
+        'researchPeriodText': research_period,
         'eligibleOrganizations': target,
         'leadEligibility': target,
         'companyParticipationRequired': None,
-        'locationRequirements': '',
-        'matchingFundRequirements': '',
-        'technologyFeeText': '',
+        'locationRequirements': location_requirement,
+        'matchingFundRequirements': matching_fund,
+        'technologyFeeText': technology_fee,
+        'viewCount': int(raw.get('inqireCo') or 0),
+        'sourceUpdatedAt': text(raw.get('updtPnttm')),
+        'sourceEvidence': ['BIZINFO_API'],
         'relevanceScore': score,
         'relevanceLevel': level,
         'matchedKeywords': matched,
         'adminReviewStatus': 'APPROVED' if level == 'HIGH' else 'PENDING',
         'attachments': attachments,
     }
-    normalized['contentHash'] = hashlib.sha256(json.dumps(normalized, ensure_ascii=False, sort_keys=True).encode()).hexdigest()
     return normalized
 
 
@@ -229,6 +380,10 @@ def main():
         log('SKIP (funding): BIZINFO_API_KEY is not configured; existing protected data retained.')
         return
     raw_items = fetch_items(api_key)
+    fetched_source_ids = {
+        text(pick(raw, 'seq', 'pblancId')) for raw in raw_items
+        if text(pick(raw, 'seq', 'pblancId'))
+    }
     previous = {item.get('id'): item for item in existing.get('items', [])}
     now = datetime.now(timezone.utc).isoformat()
     items = []
@@ -240,26 +395,62 @@ def main():
         old = previous.get(item['id'], {})
         item['firstSeenAt'] = old.get('firstSeenAt', now)
         item['lastCheckedAt'] = now
+        if (
+            old.get('sourceUpdatedAt') == item.get('sourceUpdatedAt')
+            and old.get('officialDocumentCheckedAt')
+            and old.get('officialDocumentEnrichmentVersion') == ENRICHMENT_VERSION
+        ):
+            for field in ENRICHMENT_FIELDS:
+                if field in old:
+                    item[field] = old[field]
         manual = old.get('manualOverride')
         if isinstance(manual, dict):
             item.update(manual)
             item['manualOverride'] = manual
         items.append(item)
         seen_ids.add(item['id'])
-    # 원천 API의 조회 범위가 바뀌어도 기존 공고와 관리자 수정값은 삭제하지 않는다.
-    items.extend(item for item_id, item in previous.items() if item_id and item_id not in seen_ids)
+    candidates = [item for item in items if item.get('attachments') and not item.get('officialDocumentCheckedAt')]
+    candidates.sort(key=lambda item: (
+        item.get('applicationEndDate') or '9999-12-31',
+        -int(item.get('relevanceScore') or 0),
+    ))
+    enriched_count = 0
+    for item in candidates[:PDF_ENRICH_LIMIT]:
+        if enrich_from_official_document(item, now):
+            enriched_count += 1
+        time.sleep(0.08)
+    for item in items:
+        hash_payload = {key: value for key, value in item.items() if key not in ('contentHash', 'lastCheckedAt')}
+        item['contentHash'] = hashlib.sha256(
+            json.dumps(hash_payload, ensure_ascii=False, sort_keys=True).encode()
+        ).hexdigest()
+    # API 응답에서 사라진 과제와 관리자 수동 보정값만 보존한다.
+    items.extend(
+        item for item_id, item in previous.items()
+        if item_id and item_id not in seen_ids
+        and (item.get('sourceId') not in fetched_source_ids or item.get('manualOverride'))
+    )
     items.sort(key=lambda row: (row.get('applicationEndDate') or '9999', -int(row.get('relevanceScore') or 0)))
     payload = {
         'version': 1,
         'lastSuccessfulSync': now,
-        'sources': [{'name': 'BIZINFO', 'label': '기업마당 지원사업 공고 API', 'lastSuccessfulSync': now, 'count': len(items)}],
+        'sources': [{
+            'name': 'BIZINFO',
+            'label': '기업마당 지원사업 공고 API·공식 공고문',
+            'lastSuccessfulSync': now,
+            'count': len(items),
+            'officialDocumentCheckedCount': sum(1 for item in items if item.get('officialDocumentCheckedAt')),
+        }],
         'items': items,
     }
     os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
     with open(DATA_FILE, 'w', encoding='utf-8') as file:
         json.dump(payload, file, ensure_ascii=False, indent=2)
         file.write('\n')
-    log(f'DONE (funding): {len(items)} relevant item(s) from {len(raw_items)} announcement(s).')
+    log(
+        f'DONE (funding): {len(items)} relevant item(s) from {len(raw_items)} announcement(s); '
+        f'{enriched_count} official document(s) enriched.'
+    )
 
 
 if __name__ == '__main__':

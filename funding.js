@@ -53,6 +53,10 @@
     const date = parseDate(value);
     return date ? new Intl.DateTimeFormat('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }).format(date) : '공고문 확인 필요';
   }
+  function applicationPeriodText(item) {
+    const endTime = clean(item.applicationEndTime);
+    return `${dateText(item.applicationStartDate)} - ${dateText(item.applicationEndDate)}${endTime ? ` ${endTime}` : ''}`;
+  }
   function todayStart() {
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -202,7 +206,7 @@
       <button type="button" class="funding-card-title" data-funding-detail>${esc(item.title || '공고명 확인 필요')}</button>
       <p class="funding-agency">${esc(agency)}</p>
       <div class="funding-type-row">${types.map(type => `<span>${esc(type)}</span>`).join('') || '<span>지원유형 확인 필요</span>'}</div>
-      <div class="funding-card-bottom"><p><span>접수기간</span><strong>${esc(dateText(item.applicationStartDate))} - ${esc(dateText(item.applicationEndDate))}</strong></p><strong class="funding-dday" data-status="${esc(status)}">${esc(dday(item))}</strong></div>
+      <div class="funding-card-bottom"><p><span>접수기간</span><strong>${esc(applicationPeriodText(item))}</strong></p><strong class="funding-dday" data-status="${esc(status)}">${esc(dday(item))}</strong></div>
     </article>`;
   }
 
@@ -231,6 +235,7 @@
     if (!dialog || !body) return;
     const id = itemId(item, index);
     const sourceUrl = safeUrl(item.sourceUrl);
+    const applicationUrl = safeUrl(item.applicationUrl);
     const attachments = arr(item.attachments).map(file => {
       const url = safeUrl(file.url);
       return url ? `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer"><span>${esc(file.attachmentType || '첨부')}</span>${esc(file.name || '첨부파일')}</a>` : '';
@@ -239,10 +244,14 @@
     body.innerHTML = `<div class="funding-detail-title"><div class="funding-badges"><span>${clean(item.fundingLevel) === 'REGIONAL' ? '시·도 과제' : '중앙정부 과제'}</span><span class="funding-status" data-status="${esc(derivedStatus(item))}">${esc(STATUS_LABELS[derivedStatus(item)])}</span></div><h3>${esc(item.title)}</h3><p>${esc(item.managingAgency || item.centralAgency || '공고기관 확인 필요')}</p></div>
       <dl class="funding-detail-grid">
         ${detailRow('대상 지역', esc(arr(item.regions).join(' · ')))}
-        ${detailRow('접수기간', `${esc(dateText(item.applicationStartDate))} - ${esc(dateText(item.applicationEndDate))} <b>${esc(dday(item))}</b>`)}
+        ${detailRow('접수기간', `${esc(applicationPeriodText(item))} <b>${esc(dday(item))}</b>`)}
         ${detailRow('지원유형', esc(arr(item.supportTypes).join(' · ')))}
+        ${detailRow('지원분야', esc([item.supportCategoryLarge, item.supportCategoryMiddle].map(clean).filter(Boolean).join(' · ')))}
         ${detailRow('지원금액', esc(item.supportAmountText))}
         ${detailRow('연구·사업기간', esc(item.researchPeriodText))}
+        ${detailRow('신청방법', esc(item.applicationMethodText))}
+        ${detailRow('온라인 신청', applicationUrl ? `<a href="${esc(applicationUrl)}" target="_blank" rel="noopener noreferrer">신청 페이지 열기</a>` : '')}
+        ${detailRow('문의처', esc(item.contactText))}
         ${detailRow('주관기관 자격', esc(item.leadEligibility || item.eligibleOrganizations))}
         ${detailRow('기업 참여', item.companyParticipationRequired === true ? '필수' : item.companyParticipationRequired === false ? '필수 아님' : '공고문 확인 필요')}
         ${detailRow('소재지 요건', esc(item.locationRequirements))}
@@ -250,6 +259,7 @@
         ${detailRow('기술료', esc(item.technologyFeeText))}
       </dl>
       <section class="funding-detail-summary"><h4>공고 요약</h4><p>${esc(item.summary || '공고문 확인 필요')}</p></section>
+      <section class="funding-detail-keywords"><h4>자료 확인 범위</h4><div>${arr(item.sourceEvidence).map(value => `<span>${esc(value === 'OFFICIAL_DOCUMENT' ? '공식 공고문 확인' : '기업마당 API')}</span>`).join('')}</div></section>
       <section class="funding-detail-keywords"><h4>관련도 ${esc(item.relevanceScore ?? '-')}점</h4><div>${arr(item.matchedKeywords).map(keyword => `<span>${esc(keyword)}</span>`).join('') || '<span>매칭 키워드 없음</span>'}</div></section>
       ${attachments ? `<section class="funding-attachments"><h4>첨부파일·RFP</h4>${attachments}</section>` : ''}
       <div class="funding-detail-actions"><label><span>내부 진행상태</span><select data-funding-workflow data-funding-id="${esc(id)}">${Object.entries(WORKFLOW_LABELS).map(([value, label]) => `<option value="${value}"${workflow === value ? ' selected' : ''}>${label}</option>`).join('')}</select></label>${sourceUrl ? `<a href="${esc(sourceUrl)}" target="_blank" rel="noopener noreferrer">공식 원문 확인</a>` : '<span>공식 원문 확인 필요</span>'}</div>`;
