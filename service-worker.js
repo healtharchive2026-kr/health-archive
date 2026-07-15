@@ -1,9 +1,9 @@
-const CACHE_NAME = 'healtharchive-product-details-20260715-33';
+const CACHE_NAME = 'healtharchive-news-kfri-20260715-34';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/style.css?v=20260714-cinema-restore1',
-  '/app.js?v=20260714-scroll-auth1',
+  '/style.css?v=20260715-product-details1',
+  '/app.js?v=20260715-kfri1',
   '/pc-cinema.js?v=20260714-cinema-restore1',
   '/device-routing.js?v=20260714-mobile1',
   '/mobile-lite.html',

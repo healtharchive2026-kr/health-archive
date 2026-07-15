@@ -35,16 +35,4 @@
     ]);
   }
 
-  if (typeof NEWS_THINKFOOD_DATA !== 'undefined') {
-    NEWS_THINKFOOD_DATA = prependUnique(NEWS_THINKFOOD_DATA, [
-      {"title":"[인사] 농촌진흥청","link":"https://www.thinkfood.co.kr/news/articleView.html?idxno=200701","pubDate":"2026-07-02 18:12:24","source":"thinkfood"},
-      {"title":"[인사] 식약처 식품안전정책국장","link":"https://www.thinkfood.co.kr/news/articleView.html?idxno=200700","pubDate":"2026-07-02 16:40:18","source":"thinkfood"},
-      {"title":"식품산업협회, 식품과학회 국제학술대회서 당류 섭취 저감 논의","link":"https://www.thinkfood.co.kr/news/articleView.html?idxno=200699","pubDate":"2026-07-02 15:37:04","source":"thinkfood"},
-      {"title":"K-푸드 수출 늘수록 ‘보이지 않는 벽’도 높아져…“비관세장벽 대응 고도화 시급”","link":"https://www.thinkfood.co.kr/news/articleView.html?idxno=200698","pubDate":"2026-07-02 10:28:49","source":"thinkfood"},
-      {"title":"[07/02 오늘의 새상품] 하이트진로 ‘테라 슬러시 生’, 일동후디스 ‘팬카드 기획팩’ 2종, 대상펫라이프 닥터뉴토 ‘뉴트리케어 한끼밸런스 연어’, CJ웰케어 ‘멜라메이트 구미·필름 신제품’ 2종","link":"https://www.thinkfood.co.kr/news/articleView.html?idxno=200695","pubDate":"2026-07-02 10:00:37","source":"thinkfood"},
-      {"title":"BBQ, 14억 인구 대국 인도 상륙","link":"https://www.thinkfood.co.kr/news/articleView.html?idxno=200696","pubDate":"2026-07-02 09:57:44","source":"thinkfood"},
-      {"title":"비행기 타기 전 막국수 한 그릇 어때?","link":"https://www.thinkfood.co.kr/news/articleView.html?idxno=200694","pubDate":"2026-07-02 09:48:19","source":"thinkfood"},
-      {"title":"식품안전정보원, 식품과학회서 ‘미래 식품 신뢰 프로세스’ 논의","link":"https://www.thinkfood.co.kr/news/articleView.html?idxno=200693","pubDate":"2026-07-02 09:35:21","source":"thinkfood"}
-    ]);
-  }
 })();

@@ -53,7 +53,7 @@ jobs:
             scripts/update_products.py
             scripts/update_temp_approval.py
             scripts/update_news.py
-            scripts/update_news_thinkfood.py
+            scripts/update_news_kfri.py
             scripts/update_news_mfds.py
             scripts/update_news_nutraingredients.py
             scripts/update_news_supplysidesj.py

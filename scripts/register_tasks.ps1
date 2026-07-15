@@ -32,7 +32,7 @@ $tasks = @(
     @{ Name = "HealthArchive_PaperReportUpdate";         Script = "update_paper_reports.py";           Times = @("09:40am") },
 
     @{ Name = "HealthArchive_News_Foodnews";             Script = "update_news.py";                    Times = @("09:30am", "05:30pm") },
-    @{ Name = "HealthArchive_News_Thinkfood";            Script = "update_news_thinkfood.py";          Times = @("09:30am", "05:30pm") },
+    @{ Name = "HealthArchive_News_KFRI";                 Script = "update_news_kfri.py";               Times = @("09:30am", "05:30pm") },
     @{ Name = "HealthArchive_News_MFDS";                 Script = "update_news_mfds.py";               Times = @("09:30am", "05:30pm") },
     @{ Name = "HealthArchive_News_NutraIngredients";     Script = "update_news_nutraingredients.py";   Times = @("09:30am", "05:30pm") },
     @{ Name = "HealthArchive_News_SupplySideSJ";         Script = "update_news_supplysidesj.py";       Times = @("09:30am", "05:30pm") },
@@ -44,6 +44,7 @@ $legacyTasks = @(
     "HealthArchive_YakupNewsUpdate",
     "HealthArchive_ScienceDailyNewsUpdate",
     "HealthArchive_ThinkfoodNewsUpdate",
+    "HealthArchive_News_Thinkfood",
     "HealthArchive_ProductsUpdate",
     "HealthArchive_PaperReportsUpdate"
 )

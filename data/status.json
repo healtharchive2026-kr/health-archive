@@ -19,11 +19,6 @@
     "count": 11,
     "newCount": 0
   },
-  "news_thinkfood": {
-    "lastRun": "2026-07-15 09:22:06",
-    "count": 139,
-    "newCount": 1
-  },
   "news_mfds": {
     "lastRun": "2026-07-15 09:22:07",
     "count": 6,
@@ -63,5 +58,10 @@
     "lastRun": "2026-07-15 09:22:27",
     "count": 0,
     "newCount": 0
+  },
+  "news_kfri": {
+    "lastRun": "2026-07-15 09:44:05",
+    "count": 75,
+    "newCount": 75
   }
 }

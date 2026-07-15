@@ -4203,7 +4203,7 @@ function fmtNewsDate(s) {
 
 const NEWS_SOURCES = [
   { key: 'foodnews', label: '식품저널', data: () => (typeof NEWS_DATA !== 'undefined' ? NEWS_DATA : []) },
-  { key: 'thinkfood', label: '식품음료신문', data: () => (typeof NEWS_THINKFOOD_DATA !== 'undefined' ? NEWS_THINKFOOD_DATA : []) },
+  { key: 'kfri', label: '한국식품연구원', data: () => (typeof NEWS_KFRI_DATA !== 'undefined' ? NEWS_KFRI_DATA : []) },
   { key: 'mfds', label: '식약처 보도자료', data: () => (typeof NEWS_MFDS_DATA !== 'undefined' ? NEWS_MFDS_DATA : []) },
   { key: 'nutraingredients', label: 'NutraIngredients', data: () => (typeof NEWS_NUTRAINGREDIENTS_DATA !== 'undefined' ? NEWS_NUTRAINGREDIENTS_DATA : []) },
   { key: 'supplysidesj', label: 'SupplySide SJ', data: () => (typeof NEWS_SUPPLYSIDESJ_DATA !== 'undefined' ? NEWS_SUPPLYSIDESJ_DATA : []) },
