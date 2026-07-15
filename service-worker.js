@@ -1,9 +1,9 @@
-const CACHE_NAME = 'healtharchive-guideline-zip-20260715-41';
+const CACHE_NAME = 'healtharchive-guideline-queue-20260715-42';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/style.css?v=20260715-guideline-zip1',
-  '/app.js?v=20260715-guideline-zip1',
+  '/style.css?v=20260715-guideline-queue1',
+  '/app.js?v=20260715-guideline-queue1',
   '/pc-cinema.js?v=20260714-cinema-restore1',
   '/device-routing.js?v=20260714-mobile1',
   '/mobile-lite.html',

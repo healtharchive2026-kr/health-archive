@@ -595,7 +595,7 @@ async function handleProtectedData(request, env, url, origin) {
   });
 }
 
-async function handleGuidelineDownload(request, env, url) {
+async function handleGuidelineDownload(request, env, url, origin) {
   if (url.pathname !== '/public/guideline-download' || request.method !== 'GET') return null;
   const filename = String(url.searchParams.get('file') || '').trim();
   if (
@@ -617,6 +617,7 @@ async function handleGuidelineDownload(request, env, url) {
       'Content-Disposition': `attachment; filename="guideline.pdf"; filename*=UTF-8''${encodeURIComponent(filename)}`,
       'Cache-Control': 'private, max-age=3600',
       'X-Content-Type-Options': 'nosniff',
+      ...corsHeaders(origin),
     },
   });
 }
@@ -845,11 +846,8 @@ export default {
       return new Response(null, { headers: corsHeaders(origin) });
     }
 
-    const guidelineDownloadResponse = await handleGuidelineDownload(request, env, url);
+    const guidelineDownloadResponse = await handleGuidelineDownload(request, env, url, origin);
     if (guidelineDownloadResponse) return guidelineDownloadResponse;
-
-    const guidelineBundleResponse = await handleGuidelineBundle(request, env, url);
-    if (guidelineBundleResponse) return guidelineBundleResponse;
 
     if (url.pathname.startsWith('/auth/')) {
       const authResponse = await handleAuth(request, env, url, origin);

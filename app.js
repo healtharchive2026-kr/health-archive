@@ -3869,7 +3869,7 @@ function updateGuidelineSelectionUi() {
   const clearButton = document.getElementById('guideline-clear-selected');
   downloadButton.disabled = selectedCount === 0;
   clearButton.disabled = selectedCount === 0;
-  downloadButton.textContent = selectedCount ? `선택 PDF ZIP 다운로드 (${selectedCount})` : '선택 PDF ZIP 다운로드';
+  downloadButton.textContent = selectedCount ? `선택 PDF 개별 다운로드 (${selectedCount})` : '선택 PDF 개별 다운로드';
 }
 
 function renderGuidelines(list) {
@@ -3923,18 +3923,68 @@ function setupGuidelines() {
     selectedGuidelineFiles.clear();
     renderGuidelines(filteredGuidelines);
   });
-  document.getElementById('guideline-download-selected').addEventListener('click', event => {
+  document.getElementById('guideline-download-selected').addEventListener('click', async event => {
     const button = event.currentTarget;
     const files = Array.from(selectedGuidelineFiles);
     if (!files.length) return;
-    const ids = files.map(file => all.findIndex(item => item.file === file)).filter(index => index >= 0);
-    const link = document.createElement('a');
-    link.href = `${PROTECTED_AUTH_API}/public/guideline-bundle?ids=${ids.join(',')}`;
-    link.hidden = true;
-    document.body.appendChild(link);
-    link.click();
-    setTimeout(() => link.remove(), 1500);
-    button.textContent = `${files.length}개 ZIP 생성 중`;
+    const queue = document.getElementById('guideline-download-queue');
+    if (typeof window.showDirectoryPicker !== 'function') {
+      queue.hidden = false;
+      queue.innerHTML = '<strong>개별 저장을 지원하지 않는 브라우저입니다.</strong><p>최신 Edge 또는 Chrome 데스크톱에서 다시 시도해 주세요.</p>';
+      return;
+    }
+    let directory;
+    try {
+      directory = await window.showDirectoryPicker({ id: 'healtharchive-guidelines', mode: 'readwrite' });
+    } catch (error) {
+      if (error?.name !== 'AbortError') {
+        queue.hidden = false;
+        queue.innerHTML = `<strong>저장 폴더를 열지 못했습니다.</strong><p>${escapeHtml(error?.message || '브라우저 권한을 확인해 주세요.')}</p>`;
+      }
+      return;
+    }
+    queue.hidden = false;
+    queue.innerHTML = `<div class="guideline-queue-head"><strong>다운로드 대기열</strong><span>0 / ${files.length} 완료</span></div><ol>${files.map((file, index) => `<li data-guideline-queue="${index}"><em>대기</em><span>${escapeHtml(file)}</span></li>`).join('')}</ol>`;
+    button.disabled = true;
+    let completed = 0;
+    let failed = 0;
+    for (let index = 0; index < files.length; index += 1) {
+      const file = files[index];
+      const row = queue.querySelector(`[data-guideline-queue="${index}"]`);
+      row.dataset.status = 'active';
+      row.querySelector('em').textContent = '저장 중';
+      button.textContent = `개별 다운로드 ${index + 1} / ${files.length}`;
+      let writable;
+      try {
+        const response = await fetch(`${PROTECTED_AUTH_API}/public/guideline-download?file=${encodeURIComponent(file)}`);
+        if (!response.ok || !response.body) throw new Error(`다운로드 응답 오류 (${response.status})`);
+        const fileHandle = await directory.getFileHandle(file, { create: true });
+        writable = await fileHandle.createWritable();
+        const reader = response.body.getReader();
+        const totalBytes = Number(response.headers.get('Content-Length') || 0);
+        let receivedBytes = 0;
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          await writable.write(value);
+          receivedBytes += value.byteLength;
+          if (totalBytes > 0) row.querySelector('em').textContent = `${Math.min(99, Math.floor(receivedBytes / totalBytes * 100))}%`;
+        }
+        await writable.close();
+        completed += 1;
+        row.dataset.status = 'complete';
+        row.querySelector('em').textContent = '완료';
+      } catch (error) {
+        if (writable) await writable.abort().catch(() => undefined);
+        failed += 1;
+        row.dataset.status = 'failed';
+        row.querySelector('em').textContent = '실패';
+        row.title = error?.message || '다운로드 실패';
+      }
+      queue.querySelector('.guideline-queue-head span').textContent = `${completed} / ${files.length} 완료${failed ? ` · ${failed}건 실패` : ''}`;
+    }
+    button.disabled = false;
+    button.textContent = failed ? '실패 항목 확인' : `${completed}개 개별 저장 완료`;
     setTimeout(updateGuidelineSelectionUi, 2500);
   });
   document.getElementById('general-guideline-search').addEventListener('input', e => {
