@@ -16,9 +16,9 @@ const HOME_RECENT_KEY = 'ha_home_recent';
 
 const TAB_SCRIPT_DEPS = {
   market: ['libs/chart.umd.js'],
-  funding: ['funding.js?v=20260715-funding-public2'],
+  funding: ['funding.js?v=20260716-member-access1'],
   stats: ['libs/chart.umd.js'],
-  products: ['data/products.js?v=20260715-details1'],
+  products: ['data/products.js?v=20260716-daily1'],
   foodraw: ['data/food_ingredients.js?v=20260709-perf'],
   'temp-approval': ['data/temp_approval.js?v=20260709-perf'],
   blocked: ['data/blocked_ingredients.js?v=20260709-perf'],
@@ -30,7 +30,7 @@ const TAB_SCRIPT_DEPS = {
 const WS_DATA_KEY = 'demand-trends';
 
 const GLOBAL_SEARCH_SCRIPT_DEPS = [
-  'data/products.js?v=20260715-details1',
+  'data/products.js?v=20260716-daily1',
   'data/food_ingredients.js?v=20260709-perf'
 ];
 
@@ -2116,7 +2116,7 @@ async function wsLock() {
 }
 
 async function initWhitespaceTab() {
-  if (!(await protectedAuthStatus()) || !protectedAdminState) {
+  if (!(await protectedAuthStatus())) {
     wsShowLocked();
     return;
   }
@@ -3623,7 +3623,7 @@ function setupTabs() {
   const mainNav = document.getElementById('main-nav');
   const navGroups = Array.from(document.querySelectorAll('.nav-group'));
   const publicTabs = new Set(['home']);
-  const adminOnlyTabs = new Set(['whitespace', 'overseas-approval']);
+  const adminOnlyTabs = new Set();
   const strictAdminTabs = new Set();
 
   document.querySelectorAll('a[data-goto]:not([href])').forEach(link => {
@@ -5087,7 +5087,7 @@ function overseasShowUnlocked() {
 }
 
 async function initOverseasTab() {
-  if (!(await protectedAuthStatus()) || !protectedAdminState) {
+  if (!(await protectedAuthStatus())) {
     overseasShowLocked();
     return;
   }

@@ -344,7 +344,7 @@
   }
 
   window.initFundingTracker = async function initFundingTracker() {
-    if (!protectedAdminState) return;
+    if (!(await protectedAuthStatus())) return;
     if (!state.initialized) {
       state.initialized = true;
       readFiltersFromUrl();

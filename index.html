@@ -86,7 +86,7 @@
           <a href="#precheck" data-tab="precheck" class="nav-link">원료 Pre-Check</a>
           <a href="#devmap" data-tab="devmap" class="nav-link">개발방향 매핑</a>
           <a href="#material-dev" data-tab="material-dev" class="nav-link">원료 개발</a>
-          <a href="#whitespace" data-tab="whitespace" class="nav-link">화이트스페이스맵 (작업중) 🚧</a>
+          <a href="#whitespace" data-tab="whitespace" class="nav-link">화이트스페이스맵</a>
         </div>
       </div>
       <div class="nav-group" data-tabs="ingredients foodraw temp-approval safety-db blocked gmo-ingredients">
@@ -104,7 +104,7 @@
           <a href="#nifds" data-tab="nifds" class="nav-link">심의 정보·회의록</a>
         </div>
       </div>
-      <a href="#overseas-approval" data-tab="overseas-approval" class="nav-link">해외 인허가 (작업중) 🚧</a>
+      <a href="#overseas-approval" data-tab="overseas-approval" class="nav-link">해외 인허가</a>
       <div class="nav-group" data-tabs="compare biomarkers trials">
         <button type="button" class="nav-group-label" aria-expanded="false">연구설계 <span class="nav-caret" aria-hidden="true">▾</span></button>
         <div class="nav-dropdown">
@@ -256,18 +256,18 @@
           <a class="home-command-item" data-goto="safety-db"><span>03</span><strong>안전성 DB</strong><small>식품원료·차단성분 대조</small></a>
           <a class="home-command-item" data-goto="biomarkers"><span>04</span><strong>기능성별 프로토콜</strong><small>대상자·평가변수·시험모델</small></a>
           <a class="home-command-item" data-goto="laws"><span>05</span><strong>법령·가이드라인</strong><small>공전·심의·공식 기준</small></a>
-          <a class="home-command-item is-protected" data-goto="overseas-approval"><span>06</span><strong>해외 인허가 🚧</strong><small>작업 중 · 관리자 전용</small></a>
+          <a class="home-command-item" data-goto="overseas-approval"><span>06</span><strong>해외 인허가</strong><small>국가별 인허가·신고 경로</small></a>
         </div>
       </section>
 
       <details class="home-service-directory">
         <summary><span>전체 서비스</span><small>모든 데이터베이스와 실무 도구 보기</small></summary>
         <div class="home-service-groups">
-          <section><h3>개발검토</h3><a data-goto="precheck">원료 Pre-Check</a><a data-goto="devmap">개발방향 매핑</a><a data-goto="material-dev">원료 개발 가이드</a><a data-goto="whitespace">화이트스페이스맵 (작업중) 🚧</a></section>
+          <section><h3>개발검토</h3><a data-goto="precheck">원료 Pre-Check</a><a data-goto="devmap">개발방향 매핑</a><a data-goto="material-dev">원료 개발 가이드</a><a data-goto="whitespace">화이트스페이스맵</a></section>
           <section><h3>원료 DB</h3><a data-goto="ingredients">개별·고시형 원료</a><a data-goto="foodraw">식품원료목록</a><a data-goto="temp-approval">한시적 인정 원료</a><a data-goto="blocked">반입차단 원료</a><a data-goto="gmo-ingredients">GMO 심사 원료</a></section>
-          <section><h3>규제자료</h3><a data-goto="laws">법령·공전·가이드라인</a><a data-goto="overseas-approval">해외 인허가 (작업중) 🚧</a><a data-goto="nifds">심의 관련</a><a data-goto="minutes">건기식 심의 회의록</a><a data-goto="gmo-minutes">GMO 회의록</a></section>
+          <section><h3>규제자료</h3><a data-goto="laws">법령·공전·가이드라인</a><a data-goto="overseas-approval">해외 인허가</a><a data-goto="nifds">심의 관련</a><a data-goto="minutes">건기식 심의 회의록</a><a data-goto="gmo-minutes">GMO 회의록</a></section>
           <section><h3>연구설계</h3><a data-goto="compare">기능성별 원료 비교</a><a data-goto="biomarkers">기능성별 프로토콜</a><a data-goto="trials">임상정보 DB</a></section>
-          <section><h3>시장동향</h3><a data-goto="products">신규 등록 제품</a><a data-goto="market">시장현황</a><a data-goto="stats">인정 통계</a><a data-goto="funding">건기식 R&amp;D 과제</a><a data-goto="radar">레귤러토리 레이더 🔒</a><a data-goto="news">식품 뉴스</a><a data-goto="events">학회·박람회</a></section>
+          <section><h3>시장동향</h3><a data-goto="products">신규 등록 제품</a><a data-goto="market">시장현황</a><a data-goto="stats">인정 통계</a><a data-goto="funding">건기식 R&amp;D 과제</a><a data-goto="radar">레귤러토리 레이더</a><a data-goto="news">식품 뉴스</a><a data-goto="events">학회·박람회</a></section>
         </div>
       </details>
 
@@ -390,7 +390,7 @@
             <a class="nav-card" data-goto="devmap"><span class="nav-card-icon">매핑</span><span class="nav-card-title">개발방향 매핑</span><span class="nav-card-desc">트랙·게이트 선별</span></a>
             <a class="nav-card" data-goto="material-dev" data-devtab="individual-dev"><span class="nav-card-icon">개별</span><span class="nav-card-title">개별인정원료 개발</span><span class="nav-card-desc">제출자료·첨부서류 체크</span></a>
             <a class="nav-card" data-goto="material-dev" data-devtab="temporary-dev"><span class="nav-card-icon">한시</span><span class="nav-card-title">한시적 인정 원료 개발</span><span class="nav-card-desc">식품원료 인정자료 정리</span></a>
-            <a class="nav-card" data-goto="whitespace"><span class="nav-card-icon">🚧</span><span class="nav-card-title">화이트스페이스맵</span><span class="nav-card-desc">작업 중 · 관리자 전용</span></a>
+            <a class="nav-card" data-goto="whitespace"><span class="nav-card-icon">기회</span><span class="nav-card-title">화이트스페이스맵</span><span class="nav-card-desc">기능성 수요·인정 공백 분석</span></a>
           </div>
         </div>
 
@@ -416,7 +416,7 @@
           </div>
           <div class="hero-cat-cards">
             <a class="nav-card" data-goto="laws"><span class="nav-card-icon">법령</span><span class="nav-card-title">법령·공전·가이드라인</span><span class="nav-card-desc">작성 기준·공식 자료</span></a>
-            <a class="nav-card" data-goto="overseas-approval"><span class="nav-card-icon">🚧</span><span class="nav-card-title">해외 인허가·신고</span><span class="nav-card-desc">작업 중 · 관리자 전용</span></a>
+            <a class="nav-card" data-goto="overseas-approval"><span class="nav-card-icon">해외</span><span class="nav-card-title">해외 인허가·신고</span><span class="nav-card-desc">미국·EU·일본 규제 경로</span></a>
             <a class="nav-card" data-goto="nifds"><span class="nav-card-icon">심의</span><span class="nav-card-title">심의 관련</span><span class="nav-card-desc">위원 명단·담당부서</span></a>
             <a class="nav-card" data-goto="minutes"><span class="nav-card-icon">건기식</span><span class="nav-card-title">건기식 심의 회의록</span><span class="nav-card-desc">회차별 대상 원료</span></a>
             <a class="nav-card" data-goto="gmo-minutes"><span class="nav-card-icon">GMO</span><span class="nav-card-title">유전자재조합식품 회의록</span><span class="nav-card-desc">안전성심사 회의 안내·결과</span></a>
@@ -445,7 +445,7 @@
             <a class="nav-card" data-goto="market"><span class="nav-card-icon">시장</span><span class="nav-card-title">시장현황</span><span class="nav-card-desc">매출·기능성 추이</span></a>
             <a class="nav-card" data-goto="stats"><span class="nav-card-icon">통계</span><span class="nav-card-title">인정 통계</span><span class="nav-card-desc">연도·기능성 인정 흐름</span></a>
             <a class="nav-card" data-goto="funding"><span class="nav-card-icon">R&amp;D</span><span class="nav-card-title">건기식 R&amp;D 과제</span><span class="nav-card-desc">국책·지역 지원과제 추적</span></a>
-            <a class="nav-card" data-goto="radar"><span class="nav-card-icon">레이더</span><span class="nav-card-title">레귤러토리 레이더 🔒</span><span class="nav-card-desc">신규 등재 변경 다이제스트</span></a>
+            <a class="nav-card" data-goto="radar"><span class="nav-card-icon">레이더</span><span class="nav-card-title">레귤러토리 레이더</span><span class="nav-card-desc">신규 등재 변경 다이제스트</span></a>
             <a class="nav-card" data-goto="news"><span class="nav-card-icon">뉴스</span><span class="nav-card-title">식품 뉴스</span><span class="nav-card-desc">업계 동향 기사</span></a>
             <a class="nav-card" data-goto="events"><span class="nav-card-icon">일정</span><span class="nav-card-title">학회/박람회</span><span class="nav-card-desc">국내외 주요 일정</span></a>
           </div>
@@ -1081,9 +1081,9 @@
   <section id="whitespace" class="tab-section">
     <div class="ws-gate" id="ws-gate">
       <div class="ws-gate-box">
-        <div class="ws-gate-icon">🚧</div>
-        <h3>작업 중</h3>
-        <p>화이트스페이스맵을 정비하고 있습니다. 현재는 관리자만 열람할 수 있습니다.</p>
+        <div class="ws-gate-icon">DATA</div>
+        <h3>회원 데이터 확인 중</h3>
+        <p>로그인 상태와 분석 데이터를 확인하고 있습니다.</p>
         <p class="ws-gate-err" id="ws-gate-err" hidden></p>
       </div>
     </div>
@@ -1126,7 +1126,6 @@
         <span class="ws-legend-item"><span class="ws-legend-swatch ws-l3"></span>6~10건</span>
         <span class="ws-legend-item"><span class="ws-legend-swatch ws-l4"></span>11건+</span>
         <span class="ws-legend-item"><span class="ws-opp-star">A</span>우선 검토 후보</span>
-        <button type="button" class="ws-lock-btn" id="ws-lock-btn">🔒 다시 잠그기</button>
       </div>
       <div class="ws-matrix-wrap">
         <div class="ws-matrix" id="ws-matrix"></div>
@@ -1139,7 +1138,7 @@
   <section id="radar" class="tab-section">
     <nav class="context-switcher" aria-label="뉴스·규제 동향 관련 화면">
       <a href="#news" data-goto="news" class="context-switch">산업·식품 뉴스</a>
-      <a href="#radar" data-goto="radar" class="context-switch active">규제 변경 레이더 🔒</a>
+      <a href="#radar" data-goto="radar" class="context-switch active">규제 변경 레이더</a>
     </nav>
     <div class="ws-gate" id="radar-gate">
       <div class="ws-gate-box">
@@ -1158,7 +1157,6 @@
           <p class="compare-intro">매일 자동 수집되는 개별인정 원료·심의 회의록·신규 제품·한시적 인정 원료 중 새로 등재된 항목만 모은 변경 다이제스트입니다.</p>
         </div>
         <div class="section-actions">
-          <button type="button" class="ws-lock-btn" id="radar-lock-btn">🔒 다시 잠그기</button>
         </div>
       </div>
 
@@ -1346,9 +1344,9 @@
   <section id="overseas-approval" class="tab-section">
     <div class="ws-gate" id="overseas-gate">
       <div class="ws-gate-box">
-        <div class="ws-gate-icon">🚧</div>
-        <h3>작업 중</h3>
-        <p>해외 인허가·신고 자료를 정비하고 있습니다. 현재는 관리자만 열람할 수 있습니다.</p>
+        <div class="ws-gate-icon">GLOBAL</div>
+        <h3>회원 데이터 확인 중</h3>
+        <p>로그인 상태와 해외 규제 데이터를 확인하고 있습니다.</p>
         <p class="ws-gate-err" id="overseas-gate-err" hidden></p>
       </div>
     </div>
@@ -1359,7 +1357,6 @@
           <h2>해외 인허가·신고</h2>
           <p class="compare-intro">국내 건강기능식품·기능성 원료 업체가 자주 검토하는 해외 진출 규제 Gate입니다. 완제품 수출인지, 원료 수출인지, 기능성 표시를 할 것인지에 따라 인허가·신고·라벨 검토 범위가 달라집니다.</p>
         </div>
-        <button type="button" class="ws-lock-btn" id="overseas-lock-btn">🔒 다시 잠그기</button>
       </div>
 
       <section class="dossier-bridge" aria-labelledby="dossier-bridge-title">
@@ -1709,7 +1706,7 @@
   <section id="news" class="tab-section">
     <nav class="context-switcher" aria-label="뉴스·규제 동향 관련 화면">
       <a href="#news" data-goto="news" class="context-switch active">산업·식품 뉴스</a>
-      <a href="#radar" data-goto="radar" class="context-switch">규제 변경 레이더 🔒</a>
+      <a href="#radar" data-goto="radar" class="context-switch">규제 변경 레이더</a>
     </nav>
     <h2>식품 뉴스</h2>
     <p class="compare-intro">국내 식품·규제 뉴스 3개와 해외 영양·보충제 산업 뉴스 3개를 하루 2회 자동으로 모아 보여줍니다.</p>
@@ -2444,14 +2441,14 @@
 <script src="data/news.js?v=20260703-manual-news"></script>
 <script src="data/news_kfri.js?v=20260715-kfri1"></script>
 <script src="data/news_mfds.js?v=20260703-news6"></script>
-<script src="data/news_nutraingredients.js?v=20260715-daily1"></script>
+<script src="data/news_nutraingredients.js?v=20260716-daily1"></script>
 <script src="data/news_supplysidesj.js?v=20260703-news6"></script>
-<script src="data/news_nutritioninsight.js?v=20260703-news6"></script>
+<script src="data/news_nutritioninsight.js?v=20260716-daily1"></script>
 <script src="data/news_manual_20260703.js?v=20260703-manual-news"></script>
-<script src="data/status.js?v=20260630-news0930"></script>
+<script src="data/status.js?v=20260716-daily1"></script>
 <script src="data/daily_quotes.js"></script>
 <script src="market.js"></script>
-<script src="app.js?v=20260715-guideline-queue1"></script>
+<script src="app.js?v=20260716-member-access1"></script>
 <script src="pc-cinema.js?v=20260714-cinema-restore1"></script>
 <script src="feedback.js?v=20260714-api1"></script>
 </body>

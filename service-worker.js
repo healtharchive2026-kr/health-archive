@@ -1,9 +1,9 @@
-const CACHE_NAME = 'healtharchive-guideline-queue-20260715-42';
+const CACHE_NAME = 'healtharchive-member-access-20260716-43';
 const CORE_ASSETS = [
   '/',
   '/index.html',
   '/style.css?v=20260715-guideline-queue1',
-  '/app.js?v=20260715-guideline-queue1',
+  '/app.js?v=20260716-member-access1',
   '/pc-cinema.js?v=20260714-cinema-restore1',
   '/device-routing.js?v=20260714-mobile1',
   '/mobile-lite.html',
@@ -34,7 +34,7 @@ const CORE_ASSETS = [
   '/data/guidelines.js?v=20260629-glossary',
   '/data/biomarker_protocols.js?v=20260711-terms1',
   '/data/minutes.js?v=20260629-scheduler1225',
-  '/data/status.js?v=20260630-news0930'
+  '/data/status.js?v=20260716-daily1'
 ];
 
 self.addEventListener('install', event => {

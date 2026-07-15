@@ -36,7 +36,7 @@ const ACCESS_REQUEST_DAILY_LIMIT = 10;
 const USAGE_EVENT_RETENTION = 90 * 24 * 60 * 60;
 const AUTH_COOKIE = 'ha_protected_session';
 const PROTECTED_DATA_KEYS = new Set(['radar-log', 'demand-trends', 'overseas-regulatory', 'funding-opportunities']);
-const ADMIN_PROTECTED_DATA_KEYS = new Set(['demand-trends', 'overseas-regulatory']);
+const ADMIN_PROTECTED_DATA_KEYS = new Set();
 const ACCESS_LOGIN_PATH = '/auth/access/exchange';
 const USAGE_EVENTS = new Set(['tab_view', 'protected_login']);
 const ADMIN_EMAIL = 'healtharchive2026@gmail.com';
@@ -582,7 +582,7 @@ async function handleProtectedData(request, env, url, origin) {
     return authJson({ error: '인증이 필요합니다.' }, 401, origin);
   }
   if (ADMIN_PROTECTED_DATA_KEYS.has(key) && !session.admin) {
-    return authJson({ error: '관리자 전용 작업 중 자료입니다.' }, 403, origin);
+    return authJson({ error: '이 자료를 볼 권한이 없습니다.' }, 403, origin);
   }
   const object = await env.PRIVATE_DATA.get(`protected/${key}.json`);
   if (!object) return authJson({ error: '보호 자료를 찾을 수 없습니다.' }, 404, origin);
