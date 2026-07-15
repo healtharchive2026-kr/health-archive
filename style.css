@@ -43,7 +43,7 @@ body:has(#home.active){background:#fff;}
 #workspace-start .hero-intro{display:block;max-width:920px;margin:0 auto 22px;text-align:center;}
 #workspace-start .hero-copy{max-width:none;}
 #workspace-start .visitor-counter{margin:0 auto 18px;}
-#workspace-start.hero-dark h1{font-size:42px;line-height:1.2;text-align:center;margin-bottom:12px;background:none;color:var(--ink);-webkit-text-fill-color:initial;}
+#workspace-start.hero-dark .workspace-title{font-size:42px;line-height:1.2;text-align:center;margin-bottom:12px;background:none;color:var(--ink);-webkit-text-fill-color:initial;}
 #workspace-start .hero-lede{max-width:680px;margin:0 auto;color:var(--muted);font-size:15px;line-height:1.65;text-align:center;}
 #workspace-start .hero-side{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;margin:24px auto 0;max-width:760px;}
 #workspace-start .daily-quote-card{min-height:44px;padding:10px 14px;border-radius:8px;text-align:left;box-shadow:none;}
@@ -120,7 +120,7 @@ body:has(#home.active){background:#fff;}
 }
 @media(max-width:760px){
   #workspace-start.hero-dark{padding-top:34px;}
-  #workspace-start.hero-dark h1{font-size:30px;}
+  #workspace-start.hero-dark .workspace-title{font-size:30px;}
   #workspace-start .hero-side{grid-template-columns:1fr;}
   #workspace-start .hero-utility-actions{width:100%;}
   .home-command-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
@@ -678,7 +678,7 @@ body.site-authenticated #home>.pc-cinema{display:none!important;}
   padding:8px 0 20px;
   margin-bottom:32px;
 }
-.hero h1{font-size:32px;line-height:1.4;margin:0 0 16px;color:var(--green);}
+.hero .workspace-title{font-size:32px;line-height:1.4;margin:0 0 16px;color:var(--green);}
 .hero p{font-size:16px;color:var(--muted);max-width:600px;}
 
 /* ── 홈 히어로 (dark) ── */
@@ -755,7 +755,7 @@ body.site-authenticated #home>.pc-cinema{display:none!important;}
   .visitor-counter{gap:10px;padding:6px 12px;flex-wrap:wrap;}
 }
 
-.hero-dark h1{
+.hero-dark .workspace-title{
   background:linear-gradient(100deg, var(--ink) 35%, var(--signal) 82%);
   -webkit-background-clip:text;
   background-clip:text;
@@ -3119,14 +3119,14 @@ body:not(.site-authenticated) .nav-link:not([data-tab="home"]):hover{opacity:.85
   .nav-dropdown .nav-link{display:block;font-size:13px;padding:9px 10px;margin:0;border-radius:8px;}
   .nav-dropdown .nav-link:hover,.nav-dropdown .nav-link.active{background:var(--green-light);color:var(--green);}
   .hero{padding:28px;}
-  .hero h1{font-size:24px;}
+  .hero .workspace-title{font-size:24px;}
   .year-layout{flex-direction:column;align-items:stretch;}
   .year-sidebar{flex-direction:row;flex-wrap:wrap;position:static;flex-basis:auto;}
   .year-card{flex:1 0 100px;}
   .category-grid{grid-template-columns:repeat(2,1fr);}
   .hero-dark{padding:4px 0 18px;}
   .hero-dark{overflow:hidden;}
-  .hero-dark h1{font-size:27px;line-height:1.28;word-break:keep-all;}
+  .hero-dark .workspace-title{font-size:27px;line-height:1.28;word-break:keep-all;}
   .hero-lede{font-size:15px;line-height:1.65;}
   .hero-stats-row{grid-template-columns:repeat(3,minmax(0,1fr));}
   .hero-utility-actions{grid-template-columns:1fr 1fr;}
