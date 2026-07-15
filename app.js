@@ -1762,6 +1762,12 @@ function setupProtectedAccountUi() {
       if (!response.ok) throw new Error(result.error || `${labels[action]} 처리에 실패했습니다.`);
       await loadAdminAccessRequests();
       await loadApprovedMemberCount();
+      if (adminStatus && action === 'approve') {
+        adminStatus.textContent = result.notified
+          ? '승인 처리 및 신청자 안내 메일 발송을 완료했습니다.'
+          : '승인은 완료되었으나 신청자 안내 메일을 발송하지 못했습니다.';
+        adminStatus.classList.toggle('is-error', !result.notified);
+      }
     } catch (error) {
       if (adminStatus) {
         adminStatus.textContent = error.message;

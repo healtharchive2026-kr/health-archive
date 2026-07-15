@@ -315,6 +315,31 @@ async function notifyAccessRequest(env, requestData) {
   }
 }
 
+async function notifyAccessApproval(env, email) {
+  if (!env.ACCESS_REPLY) return false;
+  const text = [
+    'HealthArchive 접근 권한이 승인되었습니다. 감사합니다.',
+    '',
+    '신청해 주신 이메일로 로그인할 수 있습니다.',
+    'https://www.healtharchive.kr/',
+    '',
+    '문의: healtharchive2026@gmail.com',
+  ].join('\n');
+  try {
+    await env.ACCESS_REPLY.send({
+      from: { email: 'no-reply@healtharchive.kr', name: 'HealthArchive' },
+      to: email,
+      replyTo: 'healtharchive2026@gmail.com',
+      subject: '[HealthArchive] 접근 권한이 승인되었습니다',
+      text,
+    });
+    return true;
+  } catch (error) {
+    console.error('access approval email failed', error);
+    return false;
+  }
+}
+
 async function handleAccessRequest(request, env, origin) {
   if (request.method !== 'POST') return null;
   if (!env.AUTH_SECRET) return json({ error: '신청 서비스가 준비되지 않았습니다.' }, 503, origin);
@@ -441,7 +466,8 @@ async function handleAdminAccessRequests(request, env, url, origin) {
     await env.DB.prepare(
       'UPDATE access_requests SET status = ?, reviewed_at = ?, review_note = ? WHERE id = ?'
     ).bind(status, Math.floor(Date.now() / 1000), note, id).run();
-    return authJson({ ok: true, status }, 200, origin);
+    const notified = action === 'approve' ? await notifyAccessApproval(env, row.email) : null;
+    return authJson({ ok: true, status, notified }, 200, origin);
   } catch (error) {
     console.error('access approval failed', error);
     return authJson({ error: error.message || '승인 처리에 실패했습니다.' }, 502, origin);

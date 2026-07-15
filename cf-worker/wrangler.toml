@@ -20,3 +20,7 @@ bucket_name = "healtharchive-assets"
 name = "ACCESS_NOTIFY"
 destination_address = "healtharchive2026@gmail.com"
 allowed_sender_addresses = ["no-reply@healtharchive.kr"]
+
+[[send_email]]
+name = "ACCESS_REPLY"
+allowed_sender_addresses = ["no-reply@healtharchive.kr"]
