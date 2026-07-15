@@ -2356,7 +2356,7 @@ td.name{font-weight:600;}
 #market-func-table tr:last-child td{border-bottom:none;}
 #market-func-table tr:hover td{background:var(--green-light);}
 
-/* 관리자 전용 건강기능식품 국책·지역과제 트래커 */
+/* 건강기능식품 국책·지역과제 트래커 */
 [data-admin-only][hidden]{display:none!important;}
 .funding-page-head{align-items:flex-start;margin-bottom:18px;}
 .funding-eyebrow{display:block;margin-bottom:7px;color:var(--signal);font-family:var(--mono);font-size:10px;font-weight:850;text-transform:uppercase;}

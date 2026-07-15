@@ -3619,7 +3619,7 @@ function setupTabs() {
   const navGroups = Array.from(document.querySelectorAll('.nav-group'));
   const publicTabs = new Set(['home']);
   const adminOnlyTabs = new Set(['whitespace', 'overseas-approval']);
-  const strictAdminTabs = new Set(['funding']);
+  const strictAdminTabs = new Set();
 
   document.querySelectorAll('a[data-goto]:not([href])').forEach(link => {
     link.setAttribute('href', '#' + link.dataset.goto);

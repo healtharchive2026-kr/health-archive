@@ -1,4 +1,4 @@
-const CACHE_NAME = 'healtharchive-funding-20260715-36';
+const CACHE_NAME = 'healtharchive-funding-public-20260715-37';
 const CORE_ASSETS = [
   '/',
   '/index.html',
