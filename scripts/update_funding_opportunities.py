@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 import re
+import time
 import urllib.parse
 import urllib.request
 from datetime import datetime, timezone
@@ -102,13 +103,22 @@ def fetch_items(api_key):
         'pageUnit': '2000',
         'pageIndex': '1',
     })
-    request = urllib.request.Request(
-        f'{API_URL}?{params}',
-        headers={'User-Agent': 'HealthArchive/1.0 (+https://www.healtharchive.kr)'},
-    )
-    with urllib.request.urlopen(request, timeout=45) as response:
-        payload = json.loads(response.read().decode('utf-8'))
-    return find_items(payload)
+    last_error = None
+    for attempt in range(1, 4):
+        request = urllib.request.Request(
+            f'{API_URL}?{params}',
+            headers={'User-Agent': 'HealthArchive/1.0 (+https://www.healtharchive.kr)'},
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=60) as response:
+                payload = json.loads(response.read().decode('utf-8'))
+            return find_items(payload)
+        except (OSError, TimeoutError) as error:
+            last_error = error
+            if attempt < 3:
+                log(f'WARN (funding): API request failed; retrying ({attempt}/3).')
+                time.sleep(attempt * 10)
+    raise last_error
 
 
 def score_relevance(content):
