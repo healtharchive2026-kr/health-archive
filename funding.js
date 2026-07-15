@@ -219,7 +219,7 @@
     const list = document.getElementById('funding-list');
     if (!list) return;
     if (!state.data.items.length) {
-      list.innerHTML = '<div class="funding-empty"><strong>등록된 과제가 없습니다.</strong><span>기업마당 API 수집 후 관리자 보호 저장소에 자동 반영됩니다.</span></div>';
+      list.innerHTML = '<div class="funding-empty"><strong>등록된 과제가 없습니다.</strong><span>기업마당 API 수집 후 회원용 보호 저장소에 자동 반영됩니다.</span></div>';
       return;
     }
     list.innerHTML = items.length ? items.map(card).join('') : '<div class="funding-empty"><strong>조건에 맞는 과제가 없습니다.</strong><span>검색어나 필터를 조정해 주세요.</span></div>';
@@ -282,7 +282,7 @@
       render();
     } catch (error) {
       if (label) label.textContent = error.message || '보호 자료를 불러오지 못했습니다.';
-      if (list) list.innerHTML = '<div class="funding-empty is-error"><strong>과제 데이터를 불러오지 못했습니다.</strong><span>관리자 인증 또는 보호 저장소 상태를 확인해 주세요.</span></div>';
+      if (list) list.innerHTML = '<div class="funding-empty is-error"><strong>과제 데이터를 불러오지 못했습니다.</strong><span>로그인 상태 또는 보호 저장소 상태를 확인해 주세요.</span></div>';
     } finally {
       if (list) list.removeAttribute('aria-busy');
     }

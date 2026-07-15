@@ -16,7 +16,7 @@ const HOME_RECENT_KEY = 'ha_home_recent';
 
 const TAB_SCRIPT_DEPS = {
   market: ['libs/chart.umd.js'],
-  funding: ['funding.js?v=20260715-funding1'],
+  funding: ['funding.js?v=20260715-funding-public2'],
   stats: ['libs/chart.umd.js'],
   products: ['data/products.js?v=20260715-details1'],
   foodraw: ['data/food_ingredients.js?v=20260709-perf'],
@@ -1509,6 +1509,11 @@ function renderProtectedAccountState(authenticated) {
   if (adminPanel && (!authenticated || !protectedAdminState)) adminPanel.hidden = true;
   if (usagePanel && (!authenticated || !protectedAdminState)) usagePanel.hidden = true;
   document.querySelectorAll('[data-admin-only]').forEach(element => {
+    if (element.dataset.goto === 'funding' || element.dataset.tab === 'funding') {
+      element.removeAttribute('data-admin-only');
+      element.hidden = false;
+      return;
+    }
     element.hidden = !(authenticated && protectedAdminState);
   });
 }
