@@ -1393,6 +1393,21 @@ function initStatsTab() {
 
 const PROTECTED_AUTH_API = 'https://api.healtharchive.kr';
 
+function showAccessStatusNotice() {
+  const url = new URL(window.location.href);
+  const status = url.searchParams.get('access_status');
+  if (!status) return;
+  url.searchParams.delete('access_status');
+  window.history.replaceState({}, '', `${url.pathname}${url.search}${url.hash}`);
+  const messages = {
+    pending: '관리자가 확인 중입니다.\n승인이 완료된 후 로그인할 수 있습니다.',
+    rejected: '접근 신청이 승인되지 않았습니다.\n필요한 경우 다시 접근 신청해 주세요.',
+    revoked: '접근 권한이 해지된 계정입니다.\n다시 이용하려면 접근 신청이 필요합니다.',
+    not_requested: '승인된 접근 신청을 찾을 수 없습니다.\n먼저 접근 신청을 진행해 주세요.',
+  };
+  if (messages[status]) window.setTimeout(() => window.alert(messages[status]), 80);
+}
+
 async function loadApprovedMemberCount() {
   const count = document.getElementById('approved-member-count');
   if (!count) return;
@@ -1762,12 +1777,6 @@ function setupProtectedAccountUi() {
       if (!response.ok) throw new Error(result.error || `${labels[action]} 처리에 실패했습니다.`);
       await loadAdminAccessRequests();
       await loadApprovedMemberCount();
-      if (adminStatus && action === 'approve') {
-        adminStatus.textContent = result.notified
-          ? '승인 처리 및 신청자 안내 메일 발송을 완료했습니다.'
-          : '승인은 완료되었으나 신청자 안내 메일을 발송하지 못했습니다.';
-        adminStatus.classList.toggle('is-error', !result.notified);
-      }
     } catch (error) {
       if (adminStatus) {
         adminStatus.textContent = error.message;
@@ -5101,6 +5110,7 @@ function setupDossierBridge() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  showAccessStatusNotice();
   appDataReady = loadData().catch(err => console.error('loadData failed', err));
   setupTabs();
   setupHeroSearch();

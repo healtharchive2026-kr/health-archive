@@ -206,6 +206,13 @@ function safeAuthReturn(url) {
   }
 }
 
+function accessStatusReturn(url, status) {
+  const target = new URL(safeAuthReturn(url));
+  const allowed = new Set(['pending', 'rejected', 'revoked', 'not_requested']);
+  target.searchParams.set('access_status', allowed.has(status) ? status : 'not_requested');
+  return target.toString();
+}
+
 async function handleAccessExchange(request, env, url) {
   if (request.method !== 'GET') return new Response('Method not allowed', { status: 405 });
   if (!env.AUTH_SECRET) return new Response('인증 서비스가 준비되지 않았습니다.', { status: 503 });
@@ -216,7 +223,13 @@ async function handleAccessExchange(request, env, url) {
       const latest = await env.DB.prepare(
         'SELECT status FROM access_requests WHERE user_key = ? ORDER BY created_at DESC LIMIT 1'
       ).bind(userKey).first();
-      if (latest?.status !== 'approved') throw new Error('아직 승인되지 않은 이메일입니다. 접근 신청 후 승인을 기다려 주세요.');
+      if (latest?.status !== 'approved') {
+        const headers = new Headers({
+          'Location': accessStatusReturn(url, latest?.status || 'not_requested'),
+          'Cache-Control': 'no-store',
+        });
+        return new Response(null, { status: 302, headers });
+      }
     }
     const token = await createSession(env.AUTH_SECRET, userKey);
     const headers = new Headers({
@@ -311,31 +324,6 @@ async function notifyAccessRequest(env, requestData) {
     return true;
   } catch (error) {
     console.error('access request email failed', error);
-    return false;
-  }
-}
-
-async function notifyAccessApproval(env, email) {
-  if (!env.ACCESS_REPLY) return false;
-  const text = [
-    'HealthArchive 접근 권한이 승인되었습니다. 감사합니다.',
-    '',
-    '신청해 주신 이메일로 로그인할 수 있습니다.',
-    'https://www.healtharchive.kr/',
-    '',
-    '문의: healtharchive2026@gmail.com',
-  ].join('\n');
-  try {
-    await env.ACCESS_REPLY.send({
-      from: { email: 'no-reply@healtharchive.kr', name: 'HealthArchive' },
-      to: email,
-      replyTo: 'healtharchive2026@gmail.com',
-      subject: '[HealthArchive] 접근 권한이 승인되었습니다',
-      text,
-    });
-    return true;
-  } catch (error) {
-    console.error('access approval email failed', error);
     return false;
   }
 }
@@ -466,8 +454,7 @@ async function handleAdminAccessRequests(request, env, url, origin) {
     await env.DB.prepare(
       'UPDATE access_requests SET status = ?, reviewed_at = ?, review_note = ? WHERE id = ?'
     ).bind(status, Math.floor(Date.now() / 1000), note, id).run();
-    const notified = action === 'approve' ? await notifyAccessApproval(env, row.email) : null;
-    return authJson({ ok: true, status, notified }, 200, origin);
+    return authJson({ ok: true, status }, 200, origin);
   } catch (error) {
     console.error('access approval failed', error);
     return authJson({ error: error.message || '승인 처리에 실패했습니다.' }, 502, origin);
