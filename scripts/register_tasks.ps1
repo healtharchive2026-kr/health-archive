@@ -30,7 +30,7 @@ $tasks = @(
     @{ Name = "HealthArchive_MinutesUpdate";             Script = "update_minutes.py";                 Times = @("09:10am") },
     @{ Name = "HealthArchive_ProductUpdate";             Script = "update_products.py";                Times = @("09:30am") },
     @{ Name = "HealthArchive_PaperReportUpdate";         Script = "update_paper_reports.py";           Times = @("09:40am") },
-    @{ Name = "HealthArchive_FundingUpdate";             Script = "update_funding_opportunities.py";   Times = @("09:15am", "05:15pm") },
+    @{ Name = "HealthArchive_FundingUpdate";             Script = "update_funding_and_upload.ps1";     Times = @("09:15am", "05:15pm"); PowerShell = $true },
 
     @{ Name = "HealthArchive_News_Foodnews";             Script = "update_news.py";                    Times = @("09:30am", "05:30pm") },
     @{ Name = "HealthArchive_News_KFRI";                 Script = "update_news_kfri.py";               Times = @("09:30am", "05:30pm") },
@@ -59,7 +59,11 @@ foreach ($name in $legacyTasks) {
 
 foreach ($t in $tasks) {
     $scriptPath = Join-Path $root "scripts\$($t.Script)"
-    $action = New-ScheduledTaskAction -Execute $py -Argument "`"$scriptPath`"" -WorkingDirectory $root
+    if ($t.PowerShell) {
+        $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`"" -WorkingDirectory $root
+    } else {
+        $action = New-ScheduledTaskAction -Execute $py -Argument "`"$scriptPath`"" -WorkingDirectory $root
+    }
     $triggers = @()
     foreach ($time in $t.Times) {
         $triggers += New-ScheduledTaskTrigger -Daily -At $time
