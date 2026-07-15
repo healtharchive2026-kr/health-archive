@@ -1,9 +1,9 @@
-const CACHE_NAME = 'healtharchive-guideline-download-20260715-39';
+const CACHE_NAME = 'healtharchive-guideline-multi-20260715-40';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/style.css?v=20260715-guideline-download1',
-  '/app.js?v=20260715-guideline-download1',
+  '/style.css?v=20260715-guideline-multi1',
+  '/app.js?v=20260715-guideline-multi1',
   '/pc-cinema.js?v=20260714-cinema-restore1',
   '/device-routing.js?v=20260714-mobile1',
   '/mobile-lite.html',

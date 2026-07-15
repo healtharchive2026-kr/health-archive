@@ -55,7 +55,7 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="preload" as="image" href="assets/cinema-overview.jpg" fetchpriority="high">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="style.css?v=20260715-guideline-download1">
+<link rel="stylesheet" href="style.css?v=20260715-guideline-multi1">
 </head>
 <body>
 <a class="skip-link" href="#main-content">본문 바로가기</a>
@@ -1295,9 +1295,11 @@
 
     <div class="law-pane" id="law-pane-functional-guideline">
       <p class="compare-intro">기능성별 평가 가이드라인 PDF입니다. 개별인정원료 신청 시 인체적용시험 설계의 근거가 됩니다.</p>
-      <div class="guideline-picker-toolbar">
-        <label for="guideline-select"><span>기능성 선택</span><select id="guideline-select"><option value="">기능성을 선택하세요</option></select></label>
+      <div class="toolbar guideline-multi-toolbar">
+        <input type="text" id="guideline-search" placeholder="기능성명으로 검색... (예: 간 건강, 체지방, 눈 건강)">
         <span class="result-count" id="guideline-count"></span>
+        <button type="button" id="guideline-clear-selected" disabled>선택 해제</button>
+        <button type="button" id="guideline-download-selected" disabled>선택 PDF 다운로드</button>
       </div>
       <div class="law-link-grid" id="guideline-grid"></div>
     </div>
@@ -2448,7 +2450,7 @@
 <script src="data/status.js?v=20260630-news0930"></script>
 <script src="data/daily_quotes.js"></script>
 <script src="market.js"></script>
-<script src="app.js?v=20260715-guideline-download1"></script>
+<script src="app.js?v=20260715-guideline-multi1"></script>
 <script src="pc-cinema.js?v=20260714-cinema-restore1"></script>
 <script src="feedback.js?v=20260714-api1"></script>
 </body>

@@ -382,16 +382,9 @@ function routeHeroSearch(target, q, options = {}) {
   } else if (target === 'laws') {
     const lawtab = options.lawtab || 'general-guideline';
     selectLawTab(lawtab);
-    if (lawtab === 'general-guideline') {
-      const input = document.getElementById('general-guideline-search');
-      input.value = q;
-      input.dispatchEvent(new Event('input'));
-    } else {
-      const select = document.getElementById('guideline-select');
-      const option = Array.from(select.options).find(item => item.textContent === q || item.textContent.includes(q));
-      select.value = option?.value || '';
-      select.dispatchEvent(new Event('change'));
-    }
+    const input = document.getElementById(lawtab === 'general-guideline' ? 'general-guideline-search' : 'guideline-search');
+    input.value = q;
+    input.dispatchEvent(new Event('input'));
   } else if (target === 'foodraw') {
     const input = document.getElementById('foodraw-search');
     if (input) {
@@ -3866,18 +3859,35 @@ function renderGuidelineCards(gridId, countId, list, basePath, summaryFactory) {
   document.getElementById(countId).textContent = `${list.length}건`;
 }
 
-function renderGuidelineSelection(item, total) {
+const selectedGuidelineFiles = new Set();
+let visibleGuidelineCount = 0;
+
+function updateGuidelineSelectionUi() {
+  const selectedCount = selectedGuidelineFiles.size;
+  document.getElementById('guideline-count').textContent = `${visibleGuidelineCount}건 · ${selectedCount}건 선택`;
+  const downloadButton = document.getElementById('guideline-download-selected');
+  const clearButton = document.getElementById('guideline-clear-selected');
+  downloadButton.disabled = selectedCount === 0;
+  clearButton.disabled = selectedCount === 0;
+  downloadButton.textContent = selectedCount ? `선택 PDF 다운로드 (${selectedCount})` : '선택 PDF 다운로드';
+}
+
+function renderGuidelines(list) {
   const grid = document.getElementById('guideline-grid');
-  document.getElementById('guideline-count').textContent = `${total}개 기능성`;
-  if (!item) {
-    grid.innerHTML = '<div class="guideline-selection-empty"><strong>기능성을 선택해 주세요.</strong><span>선택한 기능성의 평가 가이드라인 한 건만 다운로드됩니다.</span></div>';
-    return;
-  }
-  const downloadUrl = `${PROTECTED_AUTH_API}/public/guideline-download?file=${encodeURIComponent(item.file)}`;
-  grid.innerHTML = `<article class="guideline-selection-card">
-    <div><span>선택된 기능성</span><h3>${escapeHtml(item.name)}</h3><p>${escapeHtml(item.file)}</p></div>
-    <a href="${escapeHtml(downloadUrl)}">가이드라인 다운로드</a>
-  </article>`;
+  visibleGuidelineCount = list.length;
+  grid.innerHTML = list.map(item => `
+    <article class="law-link-card guideline-select-card${selectedGuidelineFiles.has(item.file) ? ' is-selected' : ''}">
+      <label class="guideline-card-check" title="다운로드 항목 선택">
+        <input type="checkbox" data-guideline-file="${escapeHtml(item.file)}" aria-label="${escapeHtml(item.name)} 선택"${selectedGuidelineFiles.has(item.file) ? ' checked' : ''}>
+        <span aria-hidden="true"></span>
+      </label>
+      <a href="${escapeHtml(pdfHref('laws/guidelines/' + item.file))}" target="_blank" rel="noopener">
+        <h3>${escapeHtml(item.name)}</h3>
+        <p>${escapeHtml(item.type)} 평가 가이드 PDF</p>
+      </a>
+    </article>
+  `).join('');
+  updateGuidelineSelectionUi();
 }
 
 function renderGeneralGuidelines(list) {
@@ -3893,15 +3903,40 @@ function renderGeneralGuidelines(list) {
 function setupGuidelines() {
   const all = (typeof GUIDELINE_FILES !== 'undefined') ? GUIDELINE_FILES : [];
   const general = (typeof GENERAL_GUIDELINE_FILES !== 'undefined') ? GENERAL_GUIDELINE_FILES : [];
-  const guidelineSelect = document.getElementById('guideline-select');
-  guidelineSelect.innerHTML = '<option value="">기능성을 선택하세요</option>' + all.map((item, index) =>
-    `<option value="${index}">${escapeHtml(item.name)}</option>`
-  ).join('');
-  renderGuidelineSelection(null, all.length);
+  let filteredGuidelines = all;
+  renderGuidelines(filteredGuidelines);
   renderGeneralGuidelines(general);
-  guidelineSelect.addEventListener('change', event => {
-    const index = Number(event.target.value);
-    renderGuidelineSelection(event.target.value === '' ? null : all[index], all.length);
+  document.getElementById('guideline-search').addEventListener('input', event => {
+    const query = event.target.value.trim().toLowerCase();
+    filteredGuidelines = query ? all.filter(item => item.name.toLowerCase().includes(query)) : all;
+    renderGuidelines(filteredGuidelines);
+  });
+  document.getElementById('guideline-grid').addEventListener('change', event => {
+    const checkbox = event.target.closest('[data-guideline-file]');
+    if (!checkbox) return;
+    if (checkbox.checked) selectedGuidelineFiles.add(checkbox.dataset.guidelineFile);
+    else selectedGuidelineFiles.delete(checkbox.dataset.guidelineFile);
+    checkbox.closest('.guideline-select-card')?.classList.toggle('is-selected', checkbox.checked);
+    updateGuidelineSelectionUi();
+  });
+  document.getElementById('guideline-clear-selected').addEventListener('click', () => {
+    selectedGuidelineFiles.clear();
+    renderGuidelines(filteredGuidelines);
+  });
+  document.getElementById('guideline-download-selected').addEventListener('click', event => {
+    const button = event.currentTarget;
+    const files = Array.from(selectedGuidelineFiles);
+    if (!files.length) return;
+    files.forEach(file => {
+      const link = document.createElement('a');
+      link.href = `${PROTECTED_AUTH_API}/public/guideline-download?file=${encodeURIComponent(file)}`;
+      link.hidden = true;
+      document.body.appendChild(link);
+      link.click();
+      setTimeout(() => link.remove(), 1500);
+    });
+    button.textContent = `${files.length}개 다운로드 요청 완료`;
+    setTimeout(updateGuidelineSelectionUi, 1800);
   });
   document.getElementById('general-guideline-search').addEventListener('input', e => {
     const q = e.target.value.trim().toLowerCase();
