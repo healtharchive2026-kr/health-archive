@@ -3869,7 +3869,7 @@ function updateGuidelineSelectionUi() {
   const clearButton = document.getElementById('guideline-clear-selected');
   downloadButton.disabled = selectedCount === 0;
   clearButton.disabled = selectedCount === 0;
-  downloadButton.textContent = selectedCount ? `선택 PDF 다운로드 (${selectedCount})` : '선택 PDF 다운로드';
+  downloadButton.textContent = selectedCount ? `선택 PDF ZIP 다운로드 (${selectedCount})` : '선택 PDF ZIP 다운로드';
 }
 
 function renderGuidelines(list) {
@@ -3927,16 +3927,15 @@ function setupGuidelines() {
     const button = event.currentTarget;
     const files = Array.from(selectedGuidelineFiles);
     if (!files.length) return;
-    files.forEach(file => {
-      const link = document.createElement('a');
-      link.href = `${PROTECTED_AUTH_API}/public/guideline-download?file=${encodeURIComponent(file)}`;
-      link.hidden = true;
-      document.body.appendChild(link);
-      link.click();
-      setTimeout(() => link.remove(), 1500);
-    });
-    button.textContent = `${files.length}개 다운로드 요청 완료`;
-    setTimeout(updateGuidelineSelectionUi, 1800);
+    const ids = files.map(file => all.findIndex(item => item.file === file)).filter(index => index >= 0);
+    const link = document.createElement('a');
+    link.href = `${PROTECTED_AUTH_API}/public/guideline-bundle?ids=${ids.join(',')}`;
+    link.hidden = true;
+    document.body.appendChild(link);
+    link.click();
+    setTimeout(() => link.remove(), 1500);
+    button.textContent = `${files.length}개 ZIP 생성 중`;
+    setTimeout(updateGuidelineSelectionUi, 2500);
   });
   document.getElementById('general-guideline-search').addEventListener('input', e => {
     const q = e.target.value.trim().toLowerCase();

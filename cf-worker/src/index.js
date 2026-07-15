@@ -40,6 +40,44 @@ const ADMIN_PROTECTED_DATA_KEYS = new Set(['demand-trends', 'overseas-regulatory
 const ACCESS_LOGIN_PATH = '/auth/access/exchange';
 const USAGE_EVENTS = new Set(['tab_view', 'protected_login']);
 const ADMIN_EMAIL = 'healtharchive2026@gmail.com';
+const GUIDELINE_ARCHIVE_FILES = [
+  ['기능성 평가 가이드 - 간 건강 v2.pdf', 2568362, 2357333262],
+  ['기능성 평가 가이드 - 갱년기 남성건강.pdf', 12012750, 3785457962],
+  ['기능성 평가 가이드 - 갱년기 여성건강.pdf', 21723073, 1456940140],
+  ['기능성 평가 가이드 - 구취.pdf', 66066800, 714700601],
+  ['기능성 평가 가이드 - 근력 및 근기능.pdf', 101200369, 414664453],
+  ['기능성 평가 가이드 - 기관·기관지 건강 (기침·가래).pdf', 3295648, 1424048671],
+  ['기능성 평가 가이드 - 긴장완화.pdf', 13869051, 2955180683],
+  ['기능성 평가 가이드 - 눈 건강.pdf', 1279774, 3379225871],
+  ['기능성 평가 가이드 - 면역과민반응.pdf', 1899908, 624138098],
+  ['기능성 평가 가이드 - 면역기능.pdf', 1908084, 3768454135],
+  ['기능성 평가 가이드 - 모발 건강.pdf', 1068470, 1038610731],
+  ['기능성 평가 가이드 - 배뇨 건강.pdf', 9130776, 2339827823],
+  ['기능성 평가 가이드 - 뼈·관절 건강.pdf', 1326108, 915820252],
+  ['기능성 평가 가이드 - 요로 건강.pdf', 552788, 3057408747],
+  ['기능성 평가 가이드 - 운동수행능력.pdf', 101974085, 2986960757],
+  ['기능성 평가 가이드 - 다리 불편감(부기) 관련.pdf', 3144685, 3677674184],
+  ['기능성 평가 가이드 - 월경전 불편감 개선.pdf', 53183596, 3111344146],
+  ['기능성 평가 가이드 - 위 건강.pdf', 2180381, 3314322941],
+  ['기능성 평가 가이드 - 인지기능·기억력 개선.pdf', 907706, 2044877161],
+  ['기능성 평가 가이드 - 잇몸 건강.pdf', 13315780, 4255851343],
+  ['기능성 평가 가이드 - 콩팥에서 요독물질 관련.pdf', 63286527, 2764869019],
+  ['기능성 평가 가이드 - 장 건강 v2.pdf', 2528416, 1061415555],
+  ['기능성 평가 가이드 - 전립선 건강.pdf', 13274107, 738883927],
+  ['기능성 평가 가이드 - 청력 유지.pdf', 104337327, 2641284147],
+  ['기능성 평가 가이드 - 수면건강.pdf', 13053810, 2591723719],
+  ['기능성 평가 가이드 - 체지방 감소.pdf', 1505532, 761865778],
+  ['기능성 평가 가이드 - 치아 건강.pdf', 1318311, 2165237456],
+  ['기능성 평가 가이드 - 칼슘 흡수 촉진.pdf', 980662, 3939099346],
+  ['기능성 평가 가이드 - 피로 개선.pdf', 11806402, 4093366213],
+  ['기능성 평가 가이드 - 피부 건강.pdf', 1656568, 2522938536],
+  ['기능성 평가 가이드 - 항산화.pdf', 695964, 2664886208],
+  ['기능성 평가 가이드 - 혈당 조절.pdf', 1712017, 1856137708],
+  ['기능성 평가 가이드 - 혈압 조절.pdf', 1376923, 1880411667],
+  ['기능성 평가 가이드 - 혈중 중성지방 개선.pdf', 1585916, 2380804776],
+  ['기능성 평가 가이드 - 혈중 콜레스테롤 개선.pdf', 1065723, 2914362677],
+  ['기능성 평가 가이드 - 혈행 개선.pdf', 1863598, 3870094118],
+];
 
 function bytesToBase64Url(bytes) {
   let binary = '';
@@ -583,6 +621,159 @@ async function handleGuidelineDownload(request, env, url) {
   });
 }
 
+function zipDosTime(date) {
+  const value = date instanceof Date && !Number.isNaN(date.getTime()) ? date : new Date();
+  const year = Math.max(1980, value.getUTCFullYear());
+  return {
+    date: ((year - 1980) << 9) | ((value.getUTCMonth() + 1) << 5) | value.getUTCDate(),
+    time: (value.getUTCHours() << 11) | (value.getUTCMinutes() << 5) | Math.floor(value.getUTCSeconds() / 2),
+  };
+}
+
+function createZipLocalHeader(entry, nameBytes, stamp) {
+  const output = new Uint8Array(30 + nameBytes.length);
+  const view = new DataView(output.buffer);
+  view.setUint32(0, 0x04034b50, true);
+  view.setUint16(4, 20, true);
+  view.setUint16(6, 0x0800, true);
+  view.setUint16(8, 0, true);
+  view.setUint16(10, stamp.time, true);
+  view.setUint16(12, stamp.date, true);
+  view.setUint32(14, entry.crc32, true);
+  view.setUint32(18, entry.size, true);
+  view.setUint32(22, entry.size, true);
+  view.setUint16(26, nameBytes.length, true);
+  view.setUint16(28, 0, true);
+  output.set(nameBytes, 30);
+  return output;
+}
+
+function createZipCentralHeader(entry, nameBytes, stamp, offset) {
+  const output = new Uint8Array(46 + nameBytes.length);
+  const view = new DataView(output.buffer);
+  view.setUint32(0, 0x02014b50, true);
+  view.setUint16(4, 20, true);
+  view.setUint16(6, 20, true);
+  view.setUint16(8, 0x0800, true);
+  view.setUint16(10, 0, true);
+  view.setUint16(12, stamp.time, true);
+  view.setUint16(14, stamp.date, true);
+  view.setUint32(16, entry.crc32, true);
+  view.setUint32(20, entry.size, true);
+  view.setUint32(24, entry.size, true);
+  view.setUint16(28, nameBytes.length, true);
+  view.setUint16(30, 0, true);
+  view.setUint16(32, 0, true);
+  view.setUint16(34, 0, true);
+  view.setUint16(36, 0, true);
+  view.setUint32(38, 0, true);
+  view.setUint32(42, offset, true);
+  output.set(nameBytes, 46);
+  return output;
+}
+
+function createZipEnd(entryCount, centralSize, centralOffset) {
+  const output = new Uint8Array(22);
+  const view = new DataView(output.buffer);
+  view.setUint32(0, 0x06054b50, true);
+  view.setUint16(4, 0, true);
+  view.setUint16(6, 0, true);
+  view.setUint16(8, entryCount, true);
+  view.setUint16(10, entryCount, true);
+  view.setUint32(12, centralSize, true);
+  view.setUint32(16, centralOffset, true);
+  view.setUint16(20, 0, true);
+  return output;
+}
+
+async function handleGuidelineBundle(request, env, url) {
+  if (url.pathname !== '/public/guideline-bundle' || request.method !== 'GET') return null;
+  const ids = [...new Set(String(url.searchParams.get('ids') || '').split(',').filter(Boolean).map(Number))];
+  if (!ids.length || ids.length > GUIDELINE_ARCHIVE_FILES.length || ids.some(id => !Number.isInteger(id) || id < 0 || id >= GUIDELINE_ARCHIVE_FILES.length)) {
+    return new Response('Invalid selection', { status: 400 });
+  }
+  const entries = ids.map(id => {
+    const [name, size, crc32] = GUIDELINE_ARCHIVE_FILES[id];
+    return { name, size, crc32 };
+  });
+  const objects = await Promise.all(entries.map(entry => env.PRIVATE_DATA.head(`laws/guidelines/${entry.name}`)));
+  if (objects.some((object, index) => !object || object.size !== entries[index].size)) {
+    return new Response('Guideline file metadata changed', { status: 409 });
+  }
+
+  const encoder = new TextEncoder();
+  const stamp = zipDosTime(new Date());
+  let localOffset = 0;
+  const prepared = entries.map(entry => {
+    const nameBytes = encoder.encode(entry.name);
+    const localHeader = createZipLocalHeader(entry, nameBytes, stamp);
+    const centralHeader = createZipCentralHeader(entry, nameBytes, stamp, localOffset);
+    localOffset += localHeader.length + entry.size;
+    return { entry, localHeader, centralHeader };
+  });
+  const centralOffset = localOffset;
+  const centralSize = prepared.reduce((sum, item) => sum + item.centralHeader.length, 0);
+  const endHeader = createZipEnd(prepared.length, centralSize, centralOffset);
+  const contentLength = centralOffset + centralSize + endHeader.length;
+  let entryIndex = 0;
+  let centralIndex = 0;
+  let currentReader = null;
+  let localHeaderWritten = false;
+  let endWritten = false;
+  const body = new ReadableStream({
+    async pull(controller) {
+      try {
+        while (entryIndex < prepared.length) {
+          const item = prepared[entryIndex];
+          if (!localHeaderWritten) {
+            controller.enqueue(item.localHeader);
+            localHeaderWritten = true;
+            return;
+          }
+          if (!currentReader) {
+            const object = await env.PRIVATE_DATA.get(`laws/guidelines/${item.entry.name}`);
+            currentReader = object.body.getReader();
+          }
+          const { done, value } = await currentReader.read();
+          if (!done) {
+            controller.enqueue(value);
+            return;
+          }
+          currentReader = null;
+          localHeaderWritten = false;
+          entryIndex += 1;
+        }
+        if (centralIndex < prepared.length) {
+          controller.enqueue(prepared[centralIndex].centralHeader);
+          centralIndex += 1;
+          return;
+        }
+        if (!endWritten) {
+          controller.enqueue(endHeader);
+          endWritten = true;
+          return;
+        }
+        controller.close();
+      } catch (error) {
+        controller.error(error);
+      }
+    },
+    cancel() {
+      if (currentReader) return currentReader.cancel();
+      return undefined;
+    },
+  });
+  return new Response(body, {
+    headers: {
+      'Content-Type': 'application/zip',
+      'Content-Length': String(contentLength),
+      'Content-Disposition': `attachment; filename="HealthArchive_guidelines_${prepared.length}.zip"`,
+      'Cache-Control': 'private, no-store',
+      'X-Content-Type-Options': 'nosniff',
+    },
+  });
+}
+
 async function handleProtectedUpdate(request, env, url, origin) {
   const match = url.pathname.match(/^\/admin\/protected\/([a-z-]+)$/);
   if (!match || !['GET', 'PUT'].includes(request.method)) return null;
@@ -642,7 +833,7 @@ async function serveMobileSite(request, url) {
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, context) {
     const url = new URL(request.url);
     const origin = request.headers.get('Origin') || '';
 
@@ -656,6 +847,9 @@ export default {
 
     const guidelineDownloadResponse = await handleGuidelineDownload(request, env, url);
     if (guidelineDownloadResponse) return guidelineDownloadResponse;
+
+    const guidelineBundleResponse = await handleGuidelineBundle(request, env, url);
+    if (guidelineBundleResponse) return guidelineBundleResponse;
 
     if (url.pathname.startsWith('/auth/')) {
       const authResponse = await handleAuth(request, env, url, origin);
