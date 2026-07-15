@@ -446,6 +446,15 @@ async function handleAdminAccessRequests(request, env, url, origin) {
   }
 }
 
+async function handleAccessSummary(request, env, url, origin) {
+  if (url.pathname !== '/access-summary' || request.method !== 'GET') return null;
+  const result = await env.DB.prepare(
+    `SELECT COUNT(DISTINCT user_key) AS approved
+     FROM access_requests WHERE status = 'approved'`
+  ).first();
+  return json({ approved: Number(result?.approved || 0), capacity: 50 }, 200, origin);
+}
+
 async function handleAdminUsageSummary(request, env, url, origin) {
   if (url.pathname !== '/admin/usage-summary' || request.method !== 'GET') return null;
   const denied = await requireAdmin(request, env, origin);
@@ -611,6 +620,11 @@ export default {
     if (url.pathname === '/access-requests') {
       const accessRequestResponse = await handleAccessRequest(request, env, origin);
       if (accessRequestResponse) return accessRequestResponse;
+    }
+
+    if (url.pathname === '/access-summary') {
+      const accessSummaryResponse = await handleAccessSummary(request, env, url, origin);
+      if (accessSummaryResponse) return accessSummaryResponse;
     }
 
     if (url.pathname === '/usage-events') {

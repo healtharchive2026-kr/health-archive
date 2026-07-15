@@ -1392,6 +1392,19 @@ function initStatsTab() {
 // ---------- 화이트스페이스맵 (기능성×유래 매트릭스, 비공개) ----------
 
 const PROTECTED_AUTH_API = 'https://api.healtharchive.kr';
+
+async function loadApprovedMemberCount() {
+  const count = document.getElementById('approved-member-count');
+  if (!count) return;
+  try {
+    const response = await fetch(`${PROTECTED_AUTH_API}/access-summary`, { cache: 'no-store' });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error('member count unavailable');
+    count.textContent = Number(result.approved || 0).toLocaleString('ko-KR');
+  } catch {
+    count.closest('.pc-cinema-enter-limit')?.classList.add('count-unavailable');
+  }
+}
 let protectedAuthState = null;
 let protectedAdminState = false;
 let protectedAuthCheck = null;
@@ -1748,6 +1761,7 @@ function setupProtectedAccountUi() {
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.error || `${labels[action]} 처리에 실패했습니다.`);
       await loadAdminAccessRequests();
+      await loadApprovedMemberCount();
     } catch (error) {
       if (adminStatus) {
         adminStatus.textContent = error.message;
@@ -5086,6 +5100,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupHeroSearch();
   setupCommandPalette();
   setupProtectedAccountUi();
+  loadApprovedMemberCount();
   setupHomeOpsPanel();
   setupIngredientDetail();
   setupCompareTray();
