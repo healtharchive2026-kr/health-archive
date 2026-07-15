@@ -32,6 +32,7 @@ const MAX_LEN = 200;
 const RETENTION_SECONDS = 30 * 24 * 60 * 60;
 const AUTH_MAX_AGE = 6 * 60 * 60;
 const ACCESS_REQUEST_RETENTION = 365 * 24 * 60 * 60;
+const ACCESS_REQUEST_DAILY_LIMIT = 10;
 const USAGE_EVENT_RETENTION = 90 * 24 * 60 * 60;
 const AUTH_COOKIE = 'ha_protected_session';
 const PROTECTED_DATA_KEYS = new Set(['radar-log', 'demand-trends', 'overseas-regulatory', 'funding-opportunities']);
@@ -361,8 +362,8 @@ async function handleAccessRequest(request, env, origin) {
   const recentClient = await env.DB.prepare(
     'SELECT COUNT(*) AS count FROM access_requests WHERE client_key = ? AND created_at >= ?'
   ).bind(clientKey, now - 86400).first();
-  if (Number(recentClient?.count || 0) >= 3) {
-    return json({ error: '하루 신청 횟수를 초과했습니다. 다음 날 다시 시도해 주세요.' }, 429, origin);
+  if (Number(recentClient?.count || 0) >= ACCESS_REQUEST_DAILY_LIMIT) {
+    return json({ error: '접근 신청은 하루 최대 10회까지 가능합니다. 다음 날 다시 시도해 주세요.' }, 429, origin);
   }
   const recentEmail = await env.DB.prepare(
     `SELECT id FROM access_requests
