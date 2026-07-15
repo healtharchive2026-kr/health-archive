@@ -557,6 +557,32 @@ async function handleProtectedData(request, env, url, origin) {
   });
 }
 
+async function handleGuidelineDownload(request, env, url) {
+  if (url.pathname !== '/public/guideline-download' || request.method !== 'GET') return null;
+  const filename = String(url.searchParams.get('file') || '').trim();
+  if (
+    !filename
+    || filename.length > 180
+    || !filename.toLowerCase().endsWith('.pdf')
+    || filename.includes('/')
+    || filename.includes('\\')
+    || filename.includes('..')
+  ) {
+    return new Response('Invalid file', { status: 400 });
+  }
+  const object = await env.PRIVATE_DATA.get(`laws/guidelines/${filename}`);
+  if (!object) return new Response('Not found', { status: 404 });
+  return new Response(object.body, {
+    headers: {
+      'Content-Type': 'application/pdf',
+      'Content-Length': String(object.size),
+      'Content-Disposition': `attachment; filename="guideline.pdf"; filename*=UTF-8''${encodeURIComponent(filename)}`,
+      'Cache-Control': 'private, max-age=3600',
+      'X-Content-Type-Options': 'nosniff',
+    },
+  });
+}
+
 async function handleProtectedUpdate(request, env, url, origin) {
   const match = url.pathname.match(/^\/admin\/protected\/([a-z-]+)$/);
   if (!match || !['GET', 'PUT'].includes(request.method)) return null;
@@ -627,6 +653,9 @@ export default {
     if (request.method === 'OPTIONS') {
       return new Response(null, { headers: corsHeaders(origin) });
     }
+
+    const guidelineDownloadResponse = await handleGuidelineDownload(request, env, url);
+    if (guidelineDownloadResponse) return guidelineDownloadResponse;
 
     if (url.pathname.startsWith('/auth/')) {
       const authResponse = await handleAuth(request, env, url, origin);
