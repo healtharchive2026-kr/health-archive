@@ -1,9 +1,9 @@
-const CACHE_NAME = 'healtharchive-service-limit-20260715-35';
+const CACHE_NAME = 'healtharchive-funding-20260715-36';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/style.css?v=20260715-service-limit1',
-  '/app.js?v=20260715-kfri1',
+  '/style.css?v=20260715-funding1',
+  '/app.js?v=20260715-funding1',
   '/pc-cinema.js?v=20260714-cinema-restore1',
   '/device-routing.js?v=20260714-mobile1',
   '/mobile-lite.html',

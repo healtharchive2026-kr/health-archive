@@ -42,9 +42,19 @@ jobs:
             https://api.healtharchive.kr/admin/protected/radar-log \
             -o data/radar_log.json || printf '[]\n' > data/radar_log.json
 
+      - name: Restore protected funding tracker
+        env:
+          PROTECTED_UPDATE_TOKEN: ${{ secrets.PROTECTED_UPDATE_TOKEN }}
+        run: |
+          curl --fail --silent --show-error \
+            -H "Authorization: Bearer ${PROTECTED_UPDATE_TOKEN}" \
+            https://api.healtharchive.kr/admin/protected/funding-opportunities \
+            -o data/funding_opportunities.json || printf '{"version":1,"lastSuccessfulSync":null,"sources":[],"items":[]}\n' > data/funding_opportunities.json
+
       - name: Run scheduled update scripts
         env:
           FOOD_SAFETY_KOREA_API_KEY: ${{ secrets.FOOD_SAFETY_KOREA_API_KEY }}
+          BIZINFO_API_KEY: ${{ secrets.BIZINFO_API_KEY }}
         run: |
           set +e
           scripts=(
@@ -61,6 +71,7 @@ jobs:
             scripts/update_news_sciencedaily.py
             scripts/update_news_yakup.py
             scripts/update_paper_reports.py
+            scripts/update_funding_opportunities.py
           )
 
           failed=0
@@ -90,13 +101,24 @@ jobs:
             --data-binary @data/radar_log.json \
             https://api.healtharchive.kr/admin/protected/radar-log
 
+      - name: Update protected funding tracker
+        env:
+          PROTECTED_UPDATE_TOKEN: ${{ secrets.PROTECTED_UPDATE_TOKEN }}
+        run: |
+          curl --fail --silent --show-error \
+            -X PUT \
+            -H "Authorization: Bearer ${PROTECTED_UPDATE_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data-binary @data/funding_opportunities.json \
+            https://api.healtharchive.kr/admin/protected/funding-opportunities
+
       - name: Commit updated data
         run: |
           git config user.name "healtharchive2026-kr"
           git config user.email "healtharchive2026@gmail.com"
 
           git add -f data/*.js data/*.json minutes-pdfs/*.txt
-          git reset -- data/products_archive.json data/food_ingredients_raw.json data/ingredients_full.json data/radar_log.json || true
+          git reset -- data/products_archive.json data/food_ingredients_raw.json data/ingredients_full.json data/radar_log.json data/funding_opportunities.json || true
           if git diff --cached --quiet; then
             echo "No data changes to commit."
             exit 0

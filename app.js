@@ -16,6 +16,7 @@ const HOME_RECENT_KEY = 'ha_home_recent';
 
 const TAB_SCRIPT_DEPS = {
   market: ['libs/chart.umd.js'],
+  funding: ['funding.js?v=20260715-funding1'],
   stats: ['libs/chart.umd.js'],
   products: ['data/products.js?v=20260715-details1'],
   foodraw: ['data/food_ingredients.js?v=20260709-perf'],
@@ -64,6 +65,7 @@ const HOME_TAB_LABELS = {
   products: '신규 등록 제품',
   market: '시장현황',
   stats: '인정 통계',
+  funding: '건기식 R&D 과제',
   radar: '레귤러토리 레이더',
   news: '식품 뉴스',
   events: '학회/박람회',
@@ -1478,6 +1480,9 @@ function renderProtectedAccountState(authenticated) {
   if (adminLaunchers) adminLaunchers.hidden = !(authenticated && protectedAdminState);
   if (adminPanel && (!authenticated || !protectedAdminState)) adminPanel.hidden = true;
   if (usagePanel && (!authenticated || !protectedAdminState)) usagePanel.hidden = true;
+  document.querySelectorAll('[data-admin-only]').forEach(element => {
+    element.hidden = !(authenticated && protectedAdminState);
+  });
 }
 
 function openProtectedAccountModal() {
@@ -2899,6 +2904,9 @@ function initTabContent(tab) {
         case 'stats':
           setTimeout(initStatsTab, 0);
           break;
+        case 'funding':
+          if (typeof initFundingTracker === 'function') setTimeout(initFundingTracker, 0);
+          break;
         case 'whitespace':
           setTimeout(initWhitespaceTab, 0);
           break;
@@ -3582,6 +3590,7 @@ function setupTabs() {
   const navGroups = Array.from(document.querySelectorAll('.nav-group'));
   const publicTabs = new Set(['home']);
   const adminOnlyTabs = new Set(['whitespace', 'overseas-approval']);
+  const strictAdminTabs = new Set(['funding']);
 
   document.querySelectorAll('a[data-goto]:not([href])').forEach(link => {
     link.setAttribute('href', '#' + link.dataset.goto);
@@ -3628,6 +3637,11 @@ function setupTabs() {
         else openProtectedAccountModal();
         return false;
       }
+    }
+    if (strictAdminTabs.has(tab) && !protectedAdminState) {
+      activateView('home');
+      if (options.initial) history.replaceState(null, '', '#home');
+      return false;
     }
     activateView(tab);
     if (adminOnlyTabs.has(tab) && !protectedAdminState) {
