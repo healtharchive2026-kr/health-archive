@@ -10,12 +10,12 @@
     "newCount": 0
   },
   "products": {
-    "lastRun": "2026-07-15 03:20:58",
+    "lastRun": "2026-07-15 03:27:34",
     "count": 575,
     "newCount": 0
   },
   "news": {
-    "lastRun": "2026-07-15 03:21:21",
+    "lastRun": "2026-07-15 03:27:56",
     "count": 11,
     "newCount": 0
   },
@@ -25,17 +25,17 @@
     "newCount": 0
   },
   "news_nutraingredients": {
-    "lastRun": "2026-07-15 03:22:13",
+    "lastRun": "2026-07-15 03:28:32",
     "count": 72,
-    "newCount": 2
+    "newCount": 0
   },
   "news_supplysidesj": {
-    "lastRun": "2026-07-15 03:22:14",
+    "lastRun": "2026-07-15 03:28:33",
     "count": 61,
     "newCount": 0
   },
   "news_nutritioninsight": {
-    "lastRun": "2026-07-15 03:22:15",
+    "lastRun": "2026-07-15 03:28:34",
     "count": 57,
     "newCount": 0
   },
@@ -45,23 +45,23 @@
     "newCount": 0
   },
   "news_sciencedaily": {
-    "lastRun": "2026-07-15 03:22:16",
+    "lastRun": "2026-07-15 03:28:35",
     "count": 16,
     "newCount": 0
   },
   "news_yakup": {
-    "lastRun": "2026-07-15 03:22:19",
+    "lastRun": "2026-07-15 03:28:38",
     "count": 23,
     "newCount": 0
   },
   "papers": {
-    "lastRun": "2026-07-15 03:22:23",
+    "lastRun": "2026-07-15 03:28:41",
     "count": 0,
     "newCount": 0
   },
   "news_kfri": {
-    "lastRun": "2026-07-15 03:21:45",
+    "lastRun": "2026-07-15 03:28:06",
     "count": 75,
-    "newCount": 75
+    "newCount": 0
   }
 }
