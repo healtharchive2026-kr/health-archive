@@ -352,8 +352,10 @@ async function handleAccessRequest(request, env, origin) {
     return json({ error: '하루 신청 횟수를 초과했습니다. 다음 날 다시 시도해 주세요.' }, 429, origin);
   }
   const recentEmail = await env.DB.prepare(
-    'SELECT id FROM access_requests WHERE email = ? AND created_at >= ? ORDER BY created_at DESC LIMIT 1'
-  ).bind(email, now - 86400).first();
+    `SELECT id FROM access_requests
+     WHERE email = ? AND status IN ('pending', 'approved')
+     ORDER BY created_at DESC LIMIT 1`
+  ).bind(email).first();
   if (recentEmail) return json({ ok: true, duplicate: true }, 200, origin);
 
   const result = await env.DB.prepare(
