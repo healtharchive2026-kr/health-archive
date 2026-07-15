@@ -90,6 +90,8 @@ jobs:
             echo "::warning::One or more update scripts failed. Successful script outputs will still be committed."
           fi
 
+          python scripts/generate_public_content.py
+
       - name: Update protected radar data
         env:
           PROTECTED_UPDATE_TOKEN: ${{ secrets.PROTECTED_UPDATE_TOKEN }}
@@ -117,7 +119,7 @@ jobs:
           git config user.name "healtharchive2026-kr"
           git config user.email "healtharchive2026@gmail.com"
 
-          git add -f data/*.js data/*.json minutes-pdfs/*.txt
+          git add -f data/*.js data/*.json minutes-pdfs/*.txt insights/*.html insights/weekly/*.html sitemap.xml
           git reset -- data/products_archive.json data/food_ingredients_raw.json data/ingredients_full.json data/radar_log.json data/funding_opportunities.json || true
           if git diff --cached --quiet; then
             echo "No data changes to commit."
