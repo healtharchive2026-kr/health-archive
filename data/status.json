@@ -10,14 +10,14 @@
     "newCount": 0
   },
   "products": {
-    "lastRun": "2026-07-16 07:38:08",
+    "lastRun": "2026-07-16 13:08:52",
     "count": 573,
     "newCount": 0
   },
   "news": {
-    "lastRun": "2026-07-16 07:38:30",
+    "lastRun": "2026-07-16 13:09:14",
     "count": 15,
-    "newCount": 4
+    "newCount": 0
   },
   "news_mfds": {
     "lastRun": "2026-07-16 00:28:02",
@@ -25,19 +25,19 @@
     "newCount": 0
   },
   "news_nutraingredients": {
-    "lastRun": "2026-07-16 07:39:05",
-    "count": 74,
-    "newCount": 0
+    "lastRun": "2026-07-16 13:09:53",
+    "count": 77,
+    "newCount": 3
   },
   "news_supplysidesj": {
-    "lastRun": "2026-07-16 07:39:06",
+    "lastRun": "2026-07-16 13:09:53",
     "count": 62,
-    "newCount": 1
+    "newCount": 0
   },
   "news_nutritioninsight": {
-    "lastRun": "2026-07-16 07:39:09",
-    "count": 66,
-    "newCount": 1
+    "lastRun": "2026-07-16 13:10:00",
+    "count": 69,
+    "newCount": 3
   },
   "temp_approval": {
     "lastRun": "2026-07-16 00:27:58",
@@ -45,22 +45,22 @@
     "newCount": 0
   },
   "news_sciencedaily": {
-    "lastRun": "2026-07-16 07:39:09",
+    "lastRun": "2026-07-16 13:10:00",
     "count": 17,
     "newCount": 0
   },
   "news_yakup": {
-    "lastRun": "2026-07-16 07:39:17",
-    "count": 26,
-    "newCount": 2
+    "lastRun": "2026-07-16 13:10:04",
+    "count": 27,
+    "newCount": 1
   },
   "papers": {
-    "lastRun": "2026-07-16 07:39:31",
+    "lastRun": "2026-07-16 13:10:20",
     "count": 0,
     "newCount": 0
   },
   "news_kfri": {
-    "lastRun": "2026-07-16 07:38:39",
+    "lastRun": "2026-07-16 13:09:22",
     "count": 75,
     "newCount": 0
   }
