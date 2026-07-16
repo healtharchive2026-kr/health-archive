@@ -35,11 +35,33 @@ KEYWORD_SCORES = {
     5: ['건강기능식품', '기능성 원료', '기능성원료', '개별인정형', '개별인정'],
     3: ['인체적용시험', '생리활성', '효능평가', '효능 평가', '바이오마커'],
     2: ['천연물', '특용작물', '약용작물', '그린바이오', '해양바이오', '산림생명자원',
+        '식품산업', '식품소재', '식품원료', '농식품',
         '기능성식품', '고령친화식품', '맞춤형식품', '푸드테크', '제형', '표준화', '스케일업',
         '식약처', '기준규격', '안전성', '규제과학', '인증', '인허가'],
     1: ['시제품', '기술사업화', 'R&BD', '제품화'],
     -3: ['의료기기 전용', '의약품 전용', '화장품 전용'],
 }
+
+# 범용 지원어(인증, 시제품 등)만 일치하는 비식품 공고를 사전에 차단한다.
+FOOD_TITLE_TERMS = (
+    '건강기능식품', '기능성식품', '기능성 원료', '기능성원료', '개별인정',
+    '식품', '농식품', '푸드', '음료', '발효', '영양', '프로바이오틱스', '유산균',
+    '천연물', '특용작물', '약용작물', '농산물', '수산물', '축산물', '식용',
+)
+
+FOOD_CONTENT_TERMS = (
+    '건강기능식품', '기능성식품', '기능성 원료', '기능성원료', '개별인정',
+    '식품산업', '식품소재', '식품원료', '식품제조', '식품기업', '농식품',
+    '푸드테크', '고령친화식품', '맞춤형식품', '프로바이오틱스', '유산균',
+    '식이보충제', '특용작물', '약용작물', '식용 천연물',
+)
+
+NON_FOOD_TITLE_TERMS = (
+    '반도체', '수소', '자동차', '전기차', '이차전지', '배터리', '모빌리티',
+    '디스플레이', '철강', '조선', '방산', '항공', '우주', '로봇', '드론',
+    '금속', '기계장비', '전자부품', '전력', '에너지', '태양광', '풍력',
+    '섬유', '선박', '스마트공장',
+)
 
 SUPPORT_TYPES = {
     '연구개발(R&D)': ['연구개발', 'R&D', '기술개발'],
@@ -157,6 +179,18 @@ def score_relevance(content):
     matched = list(dict.fromkeys(matched))
     level = 'HIGH' if score >= 5 else 'MEDIUM' if score >= 3 else 'LOW' if score >= 1 else 'EXCLUDED'
     return score, level, matched
+
+
+def food_domain_match(title, content):
+    lowered_title = title.lower()
+    lowered_content = content.lower()
+    title_matches = [term for term in FOOD_TITLE_TERMS if term.lower() in lowered_title]
+    content_matches = [term for term in FOOD_CONTENT_TERMS if term.lower() in lowered_content]
+    excluded_matches = [term for term in NON_FOOD_TITLE_TERMS if term.lower() in lowered_title]
+    allowed = bool(title_matches or content_matches)
+    if excluded_matches and not title_matches:
+        allowed = False
+    return allowed, list(dict.fromkeys(title_matches + content_matches)), excluded_matches
 
 
 def parse_period(value):
@@ -303,7 +337,12 @@ def normalize(raw):
     support_large = text(pick(raw, 'lcategory', 'pldirSportRealmLclasCodeNm'))
     support_middle = text(raw.get('pldirSportRealmMlsfcCodeNm'))
     content = ' '.join([title, summary, agency, managing, hashtags, target])
+    food_domain_allowed, food_keywords, _ = food_domain_match(title, content)
+    if not food_domain_allowed:
+        return None
     score, level, matched = score_relevance(content)
+    if score <= 0 and food_keywords:
+        score, level = 1, 'LOW'
     if score <= 0:
         return None
     funding_level, region_group, regions = region_info(content, agency)
@@ -360,6 +399,7 @@ def normalize(raw):
         'relevanceScore': score,
         'relevanceLevel': level,
         'matchedKeywords': matched,
+        'foodDomainKeywords': food_keywords,
         'adminReviewStatus': 'APPROVED' if level == 'HIGH' else 'PENDING',
         'attachments': attachments,
     }
@@ -424,11 +464,22 @@ def main():
         item['contentHash'] = hashlib.sha256(
             json.dumps(hash_payload, ensure_ascii=False, sort_keys=True).encode()
         ).hexdigest()
-    # API 응답에서 사라진 과제와 관리자 수동 보정값만 보존한다.
+    # API 응답에서 사라진 과제도 동일한 식품 도메인 기준을 통과한 경우만 보존한다.
     items.extend(
         item for item_id, item in previous.items()
         if item_id and item_id not in seen_ids
-        and (item.get('sourceId') not in fetched_source_ids or item.get('manualOverride'))
+        and (
+            item.get('manualOverride')
+            or (
+                item.get('sourceId') not in fetched_source_ids
+                and food_domain_match(
+                    text(item.get('title')),
+                    ' '.join(text(item.get(key)) for key in (
+                        'title', 'summary', 'centralAgency', 'managingAgency', 'eligibleOrganizations'
+                    )),
+                )[0]
+            )
+        )
     )
     items.sort(key=lambda row: (row.get('applicationEndDate') or '9999', -int(row.get('relevanceScore') or 0)))
     payload = {
