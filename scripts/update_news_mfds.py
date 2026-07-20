@@ -7,6 +7,7 @@ import json
 import os
 import re
 import sys
+import time
 import urllib.parse
 import urllib.request
 from datetime import datetime
@@ -23,7 +24,12 @@ SITE_ROOT = 'https://www.mfds.go.kr'
 MAX_KEEP = 300
 KEYWORDS = ['건강기능식품', '건기식', '식품', '수입식품', '해외직구식품', '영양', '기능성', '원료']
 
-HEADERS = {'User-Agent': 'Mozilla/5.0', 'Accept': '*/*'}
+HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/126 Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    'Accept-Language': 'ko-KR,ko;q=0.9,en;q=0.7',
+    'Cache-Control': 'no-cache',
+}
 
 
 def log(msg):
@@ -39,9 +45,17 @@ def log(msg):
 
 
 def get(url):
-    req = urllib.request.Request(url, headers=HEADERS, method='GET')
-    with urllib.request.urlopen(req, timeout=25) as resp:
-        return resp.read().decode('utf-8', errors='replace')
+    last_error = None
+    for attempt in range(1, 4):
+        try:
+            req = urllib.request.Request(url, headers=HEADERS, method='GET')
+            with urllib.request.urlopen(req, timeout=25) as resp:
+                return resp.read().decode('utf-8', errors='replace')
+        except Exception as error:
+            last_error = error
+            if attempt < 3:
+                time.sleep(attempt * 2)
+    raise last_error
 
 
 def normalize_url(href):

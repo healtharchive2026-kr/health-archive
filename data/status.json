@@ -15,29 +15,29 @@
     "newCount": 34
   },
   "news": {
-    "lastRun": "2026-07-20 15:33:08",
+    "lastRun": "2026-07-21 08:44:32",
     "count": 15,
     "newCount": 0
   },
   "news_mfds": {
-    "lastRun": "2026-07-20 15:33:19",
+    "lastRun": "2026-07-21 08:44:37",
     "count": 9,
     "newCount": 0
   },
   "news_nutraingredients": {
-    "lastRun": "2026-07-20 15:33:25",
+    "lastRun": "2026-07-21 08:44:43",
     "count": 91,
-    "newCount": 3
-  },
-  "news_supplysidesj": {
-    "lastRun": "2026-07-20 15:33:26",
-    "count": 64,
     "newCount": 0
   },
+  "news_supplysidesj": {
+    "lastRun": "2026-07-21 08:44:48",
+    "count": 65,
+    "newCount": 1
+  },
   "news_nutritioninsight": {
-    "lastRun": "2026-07-20 15:33:34",
+    "lastRun": "2026-07-21 08:44:52",
     "count": 82,
-    "newCount": 5
+    "newCount": 0
   },
   "temp_approval": {
     "lastRun": "2026-07-20 15:33:07",
@@ -60,7 +60,7 @@
     "newCount": 0
   },
   "news_kfri": {
-    "lastRun": "2026-07-20 15:33:17",
+    "lastRun": "2026-07-21 08:44:35",
     "count": 75,
     "newCount": 0
   }
