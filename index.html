@@ -55,7 +55,7 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="preload" as="image" href="assets/cinema-overview.jpg" fetchpriority="high">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="style.css?v=20260715-guideline-queue1">
+<link rel="stylesheet" href="style.css?v=20260720-market-db1">
 </head>
 <body>
 <a class="skip-link" href="#main-content">본문 바로가기</a>
@@ -943,37 +943,112 @@
       <a href="#market" data-goto="market" class="context-switch active">매출·시장현황</a>
       <a href="#stats" data-goto="stats" class="context-switch">원료 인정 통계</a>
     </nav>
-    <h2>시장현황</h2>
-    <p class="compare-intro">식약처 「식품 등의 생산실적」 자료를 바탕으로 한 건강기능식품 매출액 추이입니다 (2021~2025, 단위: 억원).</p>
-
-    <div class="market-card">
-      <p class="sec-title">건강기능식품 총 매출액 구성 추이</p>
-      <div class="legend-row">
-        <span class="leg-item"><span class="leg-dot" style="background:var(--gosi);"></span>고시형</span>
-        <span class="leg-item"><span class="leg-dot" style="background:var(--indiv);"></span>개별인정형</span>
+    <div class="section-title-row market-title-row">
+      <div>
+        <span class="market-eyebrow">MFDS PRODUCTION &amp; SALES DB</span>
+        <h2>건강기능식품 시장현황</h2>
+        <p class="compare-intro">식약처 「식품 등의 생산실적」 건강기능식품 편을 기준으로 총시장부터 기능성·품목 실적까지 연결합니다.</p>
       </div>
-      <div class="chart-area">
-        <canvas id="stackChart" role="img" aria-label="2021-2025 고시형 및 개별인정형 매출액 누적 막대 차트">고시형+개별인정형 총매출 2021~2025</canvas>
-      </div>
-      <p class="unit-note">단위: 억원</p>
+      <span class="section-badge" id="market-source-badge">2021–2025</span>
     </div>
 
-    <div class="market-card market-tbl-card">
-      <p class="sec-title">개별인정형 기능성별 매출액 추이 (억원)</p>
-      <div class="market-table-wrap">
-        <table id="market-func-table">
-          <thead>
-            <tr>
-              <th>기능성</th>
-              <th>2021</th><th>2022</th><th>2023</th><th>2024</th><th>2025</th>
-              <th>1Y CAGR</th><th>3Y CAGR</th>
-              <th style="min-width:72px;">비중(25)</th>
-            </tr>
-          </thead>
-          <tbody id="ftb"></tbody>
+    <div class="market-filterbar" aria-label="시장현황 분석 조건">
+      <div>
+        <span class="market-filter-label">기준연도</span>
+        <div class="market-segments" id="market-year-tabs"></div>
+      </div>
+      <div>
+        <span class="market-filter-label">인정형태</span>
+        <div class="market-segments" id="market-type-tabs">
+          <button type="button" data-market-type="전체" class="active">전체</button>
+          <button type="button" data-market-type="고시형">고시형</button>
+          <button type="button" data-market-type="개별인정형">개별인정형</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="market-kpi-grid" id="market-kpis" aria-live="polite"></div>
+
+    <div class="market-overview-grid">
+      <article class="market-card market-card-wide">
+        <div class="market-card-head">
+          <div><span class="sec-title">MARKET TREND</span><h3>전체 시장매출과 인정형태 구성</h3></div>
+          <div class="legend-row">
+            <span class="leg-item"><span class="leg-dot" style="background:var(--gosi);"></span>고시형</span>
+            <span class="leg-item"><span class="leg-dot" style="background:var(--indiv);"></span>개별인정형</span>
+          </div>
+        </div>
+        <div class="chart-area market-main-chart">
+          <canvas id="stackChart" role="img" aria-label="2021-2025 고시형 및 개별인정형 매출액 누적 막대 차트">건강기능식품 총매출 2021~2025</canvas>
+        </div>
+      </article>
+
+      <article class="market-card market-mix-card">
+        <div class="market-card-head">
+          <div><span class="sec-title">YEAR SNAPSHOT</span><h3 id="market-snapshot-title">2025년 시장 구성</h3></div>
+        </div>
+        <div class="market-donut-wrap"><canvas id="marketMixChart" aria-label="선택 연도 시장 구성"></canvas></div>
+        <dl class="market-snapshot-list" id="market-snapshot-list"></dl>
+      </article>
+    </div>
+
+    <div class="market-analysis-head">
+      <div>
+        <span class="market-eyebrow">FUNCTION TO INGREDIENT</span>
+        <h3>기능성에서 품목 실적으로</h3>
+        <p>기능성 매출을 선택하면 인정원료 DB와 명칭이 연결되는 품목 실적을 함께 표시합니다.</p>
+      </div>
+      <label class="market-search-field"><span class="sr-only">기능성 검색</span><input id="market-func-search" type="search" placeholder="기능성 검색"></label>
+    </div>
+
+    <div class="market-analysis-grid">
+      <article class="market-card market-function-card">
+        <div class="market-card-head">
+          <div><span class="sec-title">FUNCTIONAL CLAIM SALES</span><h3 id="market-function-title">기능성별 매출</h3></div>
+          <span class="market-count" id="market-function-count">-</span>
+        </div>
+        <div class="market-function-chart"><canvas id="marketFunctionChart" aria-label="기능성별 매출 상위 항목"></canvas></div>
+        <div class="market-rank-list" id="market-function-list"></div>
+        <p class="market-data-note">복수 기능성을 가진 원료는 각 기능성에 중복 집계되므로 기능성 합계는 전체 시장매출과 일치하지 않습니다.</p>
+      </article>
+
+      <article class="market-card market-related-card">
+        <div class="market-card-head">
+          <div><span class="sec-title">LINKED ITEMS</span><h3 id="market-related-title">연결 품목</h3></div>
+          <span class="market-count" id="market-related-count">-</span>
+        </div>
+        <p class="market-related-intro" id="market-related-intro">기능성을 선택하면 관련 인정원료의 품목 실적을 표시합니다.</p>
+        <div class="market-related-list" id="market-related-list"></div>
+      </article>
+    </div>
+
+    <article class="market-card market-item-card">
+      <div class="market-item-head">
+        <div>
+          <span class="sec-title">ITEM PERFORMANCE</span>
+          <h3>품목별 생산·매출 실적</h3>
+          <p id="market-item-summary">선택 연도 품목별 총매출·내수·수출 실적</p>
+        </div>
+        <div class="market-item-tools">
+          <input id="market-item-search" type="search" placeholder="품목명 또는 기능성 검색">
+          <select id="market-item-sort" aria-label="품목 정렬">
+            <option value="sales">총매출 높은순</option>
+            <option value="growth">전년대비 성장순</option>
+            <option value="export">수출 높은순</option>
+            <option value="name">품목명순</option>
+          </select>
+        </div>
+      </div>
+      <div class="market-table-wrap market-item-table-wrap">
+        <table id="market-item-table">
+          <thead><tr><th>순위</th><th>품목명</th><th>인정형태</th><th>연결 기능성</th><th>총매출</th><th>내수</th><th>수출</th><th>전년대비</th></tr></thead>
+          <tbody id="market-item-body"></tbody>
         </table>
       </div>
-    </div>
+      <div class="market-table-foot"><span id="market-item-count">-</span><button type="button" id="market-item-more">더 보기</button></div>
+    </article>
+
+    <p class="market-source-note">출처: 식품의약품안전처 「식품 등의 생산실적」 건강기능식품 편. 금액 단위는 억원이며 반올림으로 세부 합계와 총계에 소폭 차이가 있을 수 있습니다.</p>
   </section>
 
   <section id="stats" class="tab-section">
@@ -2447,7 +2522,7 @@
 <script src="data/news_manual_20260703.js?v=20260703-manual-news"></script>
 <script src="data/status.js?v=20260716-daily1"></script>
 <script src="data/daily_quotes.js"></script>
-<script src="market.js"></script>
+<script src="market.js?v=20260720-production-sales1"></script>
 <script src="app.js?v=20260716-member-access1"></script>
 <script src="pc-cinema.js?v=20260714-cinema-restore1"></script>
 <script src="feedback.js?v=20260714-api1"></script>
