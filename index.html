@@ -55,7 +55,7 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="preload" as="image" href="assets/cinema-overview.jpg" fetchpriority="high">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="style.css?v=20260720-market-db1">
+<link rel="stylesheet" href="style.css?v=20260720-market-cagr1">
 </head>
 <body>
 <a class="skip-link" href="#main-content">본문 바로가기</a>
@@ -968,6 +968,42 @@
     </div>
 
     <div class="market-kpi-grid" id="market-kpis" aria-live="polite"></div>
+
+    <article class="market-card market-growth-card">
+      <div class="market-growth-head">
+        <div>
+          <span class="sec-title">FUNCTIONAL CLAIM GROWTH</span>
+          <h3>기능성별 CAGR 비교</h3>
+          <p>2025년 매출 상위 기능성을 기준으로 전체·고시형·개별인정형 성장률을 동일 축에서 비교합니다.</p>
+          <div class="market-growth-legend"><span><i data-series="total"></i>전체</span><span><i data-series="gosi"></i>고시형</span><span><i data-series="individual"></i>개별인정형</span></div>
+        </div>
+        <div class="market-growth-periods" aria-label="성장률 산정 기간">
+          <span><b>1년</b> 2024→2025</span>
+          <span><b>4년</b> 2021→2025</span>
+        </div>
+      </div>
+      <div class="market-growth-charts">
+        <section class="market-growth-chart-panel">
+          <div><strong>1년 성장률</strong><span>전년 대비</span></div>
+          <canvas id="marketGrowth1yChart" aria-label="기능성별 1년 성장률 비교"></canvas>
+          <small class="market-growth-axis-note">±100% 초과값은 축 끝에 표시 · 정확한 수치는 하단 표 참조</small>
+        </section>
+        <section class="market-growth-chart-panel">
+          <div><strong>4년 CAGR</strong><span>연평균 성장률</span></div>
+          <canvas id="marketGrowth4yChart" aria-label="기능성별 4년 연평균 성장률 비교"></canvas>
+        </section>
+      </div>
+      <div class="market-growth-table-wrap">
+        <table class="market-growth-table">
+          <thead>
+            <tr><th rowspan="2">기능성</th><th colspan="2">전체</th><th colspan="2">고시형</th><th colspan="2">개별인정형</th></tr>
+            <tr><th>1년</th><th>4년</th><th>1년</th><th>4년</th><th>1년</th><th>4년</th></tr>
+          </thead>
+          <tbody id="market-growth-table-body"></tbody>
+        </table>
+      </div>
+      <p class="market-data-note">1년 성장률=(2025/2024-1), 4년 CAGR=(2025/2021)<sup>1/4</sup>-1. 기준연도 매출이 없는 기능성은 N/A로 표시합니다.</p>
+    </article>
 
     <div class="market-overview-grid">
       <article class="market-card market-card-wide">
@@ -2522,7 +2558,7 @@
 <script src="data/news_manual_20260703.js?v=20260703-manual-news"></script>
 <script src="data/status.js?v=20260716-daily1"></script>
 <script src="data/daily_quotes.js"></script>
-<script src="market.js?v=20260720-production-sales1"></script>
+<script src="market.js?v=20260720-market-cagr1"></script>
 <script src="app.js?v=20260716-member-access1"></script>
 <script src="pc-cinema.js?v=20260714-cinema-restore1"></script>
 <script src="feedback.js?v=20260714-api1"></script>
