@@ -134,23 +134,23 @@ function marketCagr(current, base, years) {
 }
 
 function marketFunctionGrowthRows() {
-  const latestYear = Number(marketDb.meta?.years?.at(-1) || 2025);
-  const years = { current: latestYear, one: latestYear - 1, four: latestYear - 4 };
+  const years = (marketDb.meta?.years || [2021, 2022, 2023, 2024, 2025]).map(Number);
+  const latestYear = years.at(-1);
   const types = ['전체_합산', '고시형', '개별인정형'];
-  const sales = Object.fromEntries(types.map(type => [type, {
-    current: marketFunctionSales(type, years.current),
-    one: marketFunctionSales(type, years.one),
-    four: marketFunctionSales(type, years.four)
-  }]));
-  const names = new Set(types.flatMap(type => Object.keys(sales[type].current).filter(name => sales[type].current[name] > 0)));
+  const sales = Object.fromEntries(types.map(type => [type,
+    Object.fromEntries(years.map(year => [year, marketFunctionSales(type, year)]))
+  ]));
+  const names = new Set(types.flatMap(type => Object.keys(sales[type][latestYear]).filter(name => sales[type][latestYear][name] > 0)));
   return [...names].map(name => {
     const values = {};
     types.forEach(type => {
-      const current = Number(sales[type].current[name] || 0);
+      const yearly = Object.fromEntries(years.map(year => [year, Number(sales[type][year][name] || 0)]));
+      const current = yearly[latestYear];
       values[type] = {
         sales: current,
-        one: marketCagr(current, Number(sales[type].one[name] || 0), 1),
-        four: marketCagr(current, Number(sales[type].four[name] || 0), 4)
+        yearly,
+        one: marketCagr(current, yearly[latestYear - 1], 1),
+        four: marketCagr(current, yearly[latestYear - 4], 4)
       };
     });
     return { name, values };
@@ -290,67 +290,32 @@ function renderMarketDashboard() {
 }
 
 function marketGrowthValue(value) {
-  if (value === null || !Number.isFinite(value)) return '<span class="market-growth-na">N/A</span>';
+  if (value === null || !Number.isFinite(value)) return '<span class="market-growth-na">-</span>';
   const tone = value > 0.05 ? 'up' : value < -0.05 ? 'down' : 'flat';
   return `<span class="market-growth-number ${tone}">${value > 0 ? '+' : ''}${value.toFixed(1)}%</span>`;
 }
 
 function renderMarketGrowth() {
-  const chart1y = document.getElementById('marketGrowth1yChart');
-  const chart4y = document.getElementById('marketGrowth4yChart');
   const tableBody = document.getElementById('market-growth-table-body');
-  if (!chart1y || !chart4y || !tableBody) return;
+  if (!tableBody) return;
 
   const rows = marketFunctionGrowthRows();
-  const top = rows.slice(0, 12);
   const series = [
-    { key: '전체_합산', label: '전체', color: '#6f7d77' },
-    { key: '고시형', label: '고시형', color: MARKET_COLORS.gosi },
-    { key: '개별인정형', label: '개별인정형', color: MARKET_COLORS.individual }
+    { key: '전체_합산', label: '전체', type: '전체' },
+    { key: '고시형', label: '고시형', type: '고시형' },
+    { key: '개별인정형', label: '개별인정형', type: '개별인정형' }
   ];
-  const chartOptions = cap => ({
-    indexAxis: 'y',
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: { display: false },
-      tooltip: { callbacks: { label: context => {
-        const actual = context.dataset.actualData?.[context.dataIndex] ?? context.raw;
-        return actual === null ? `${context.dataset.label} N/A` : `${context.dataset.label} ${actual > 0 ? '+' : ''}${Number(actual).toFixed(1)}%`;
-      } } }
-    },
-    scales: {
-      x: { ...(cap ? { min: -cap, max: cap } : {}), grid: { color: MARKET_COLORS.grid }, border: { display: false }, ticks: { callback: value => `${value}%`, font: { size: 9 } } },
-      y: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 9 } } }
-    }
-  });
-
-  marketCharts.growth1y?.destroy();
-  marketCharts.growth4y?.destroy();
-  marketCharts.growth1y = new Chart(chart1y, {
-    type: 'bar',
-    data: { labels: top.map(row => row.name), datasets: series.map(item => {
-      const actualData = top.map(row => row.values[item.key].one);
-      return { label: item.label, actualData, data: actualData.map(value => value === null ? null : Math.max(-100, Math.min(100, value))), backgroundColor: item.color, borderRadius: 2, barPercentage: .78, categoryPercentage: .76 };
-    }) },
-    options: chartOptions(100)
-  });
-  marketCharts.growth4y = new Chart(chart4y, {
-    type: 'bar',
-    data: { labels: top.map(row => row.name), datasets: series.map(item => ({ label: item.label, data: top.map(row => row.values[item.key].four), backgroundColor: item.color, borderRadius: 2, barPercentage: .78, categoryPercentage: .76 })) },
-    options: chartOptions()
-  });
-
-  tableBody.innerHTML = rows.map(row => `
-    <tr>
-      <th scope="row">${marketEscape(row.name)}</th>
-      <td>${marketGrowthValue(row.values.전체_합산.one)}</td>
-      <td>${marketGrowthValue(row.values.전체_합산.four)}</td>
-      <td>${marketGrowthValue(row.values.고시형.one)}</td>
-      <td>${marketGrowthValue(row.values.고시형.four)}</td>
-      <td>${marketGrowthValue(row.values.개별인정형.one)}</td>
-      <td>${marketGrowthValue(row.values.개별인정형.four)}</td>
-    </tr>`).join('');
+  const years = marketDb.meta.years.map(Number);
+  tableBody.innerHTML = rows.map(row => series.map((item, index) => {
+    const value = row.values[item.key];
+    return `<tr class="${index === 0 ? 'market-growth-group-start' : ''}">
+      ${index === 0 ? `<th scope="rowgroup" rowspan="3">${marketEscape(row.name)}</th>` : ''}
+      <td><span class="market-type-badge" data-type="${item.type}">${item.label}</span></td>
+      ${years.map(year => `<td>${marketNumber(value.yearly[year])}</td>`).join('')}
+      <td>${marketGrowthValue(value.one)}</td>
+      <td>${marketGrowthValue(value.four)}</td>
+    </tr>`;
+  }).join('')).join('');
 }
 
 function renderMarketKpis() {

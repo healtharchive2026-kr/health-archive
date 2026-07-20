@@ -1,8 +1,8 @@
-const CACHE_NAME = 'healtharchive-market-cagr-20260720-44';
+const CACHE_NAME = 'healtharchive-market-cagr-20260720-45';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/style.css?v=20260720-market-cagr1',
+  '/style.css?v=20260720-market-cagr2',
   '/app.js?v=20260716-member-access1',
   '/pc-cinema.js?v=20260714-cinema-restore1',
   '/device-routing.js?v=20260714-mobile1',
@@ -36,7 +36,7 @@ const CORE_ASSETS = [
   '/data/minutes.js?v=20260629-scheduler1225',
   '/data/status.js?v=20260716-daily1',
   '/data/hff_db.json?v=20260720-production-sales1',
-  '/market.js?v=20260720-market-cagr1'
+  '/market.js?v=20260720-market-cagr2'
 ];
 
 self.addEventListener('install', event => {
