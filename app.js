@@ -1551,20 +1551,26 @@ function renderAdminAccessRequests(rows) {
     const date = new Date(Number(row.created_at) * 1000).toLocaleString('ko-KR', {
       year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit',
     });
-    const actions = row.status === 'pending'
+    const isLatest = Number(row.is_latest) === 1;
+    const accessActions = isLatest && row.status === 'pending'
       ? `<button type="button" class="account-admin-approve" data-admin-action="approve" data-request-id="${row.id}">승인</button>
          <button type="button" class="account-admin-reject" data-admin-action="reject" data-request-id="${row.id}">거절</button>`
-      : row.status === 'approved'
+      : isLatest && row.status === 'approved'
         ? `<button type="button" class="account-admin-revoke" data-admin-action="revoke" data-request-id="${row.id}">권한 회수</button>`
-        : '';
+        : isLatest && (row.status === 'revoked' || row.status === 'rejected')
+          ? `<button type="button" class="account-admin-approve" data-admin-action="approve" data-request-id="${row.id}">권한 복구</button>`
+          : '';
+    const deleteAction = isLatest && row.status === 'approved'
+      ? ''
+      : `<button type="button" class="account-admin-delete" data-admin-action="delete" data-request-id="${row.id}">기록 삭제</button>`;
     return `<article class="account-admin-item">
       <div class="account-admin-item-head">
         <strong>${escapeHtml(row.company)} · ${escapeHtml(row.department)}</strong>
         <span class="account-admin-badge" data-status="${escapeHtml(row.status)}">${escapeHtml(adminStatusLabel(row.status))}</span>
       </div>
-      <p class="account-admin-meta">${escapeHtml(row.email)}<br>${escapeHtml(date)}</p>
+      <p class="account-admin-meta"><span>${escapeHtml(row.email)}</span><time>${escapeHtml(date)}</time></p>
       <p class="account-admin-purpose">${escapeHtml(row.purpose)}</p>
-      <div class="account-admin-actions">${actions}</div>
+      <div class="account-admin-actions">${accessActions}${deleteAction}</div>
     </article>`;
   }).join('');
 }
@@ -1767,17 +1773,23 @@ function setupProtectedAccountUi() {
     if (!button) return;
     const action = button.dataset.adminAction;
     const id = button.dataset.requestId;
-    const labels = { approve: '승인', reject: '거절', revoke: '권한 회수' };
-    if (!window.confirm(`이 접근 신청을 ${labels[action]}하시겠습니까?`)) return;
+    const labels = { approve: '승인/복구', reject: '거절', revoke: '권한 회수', delete: '기록 삭제' };
+    const question = action === 'delete'
+      ? '이 신청 기록을 삭제하시겠습니까? 삭제한 기록은 복구할 수 없습니다.'
+      : `이 계정을 ${labels[action]}하시겠습니까?`;
+    if (!window.confirm(question)) return;
     adminList.querySelectorAll('button').forEach(item => { item.disabled = true; });
     if (adminStatus) {
       adminStatus.textContent = `${labels[action]} 처리 중입니다.`;
       adminStatus.classList.remove('is-error');
     }
     try {
-      const response = await fetch(`${PROTECTED_AUTH_API}/admin/access-requests/${id}/${action}`, {
-        method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: '{}',
-      });
+      const endpoint = action === 'delete'
+        ? `${PROTECTED_AUTH_API}/admin/access-requests/${id}`
+        : `${PROTECTED_AUTH_API}/admin/access-requests/${id}/${action}`;
+      const response = await fetch(endpoint, action === 'delete'
+        ? { method: 'DELETE', credentials: 'include' }
+        : { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: '{}' });
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.error || `${labels[action]} 처리에 실패했습니다.`);
       await loadAdminAccessRequests();
@@ -1819,8 +1831,8 @@ function setupProtectedAccountUi() {
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.error || '접근 신청을 처리하지 못했습니다.');
       if (requestStatus) requestStatus.textContent = result.duplicate
-        ? '오늘 접수된 동일 이메일 신청이 있습니다.'
-        : '접근 신청이 접수되었습니다. 승인 후 인증 이메일로 로그인해 주세요.';
+        ? '이미 승인된 이메일입니다. 바로 로그인해 주세요.'
+        : '가입이 자동 승인되었습니다. 입력한 이메일로 바로 로그인해 주세요.';
       if (!result.duplicate) requestForm.reset();
     } catch (error) {
       if (requestStatus) {
@@ -1830,7 +1842,7 @@ function setupProtectedAccountUi() {
     } finally {
       if (submit) {
         submit.disabled = false;
-        submit.textContent = '신청 보내기';
+        submit.textContent = '가입 및 자동 승인';
       }
     }
   });

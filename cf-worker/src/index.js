@@ -166,8 +166,12 @@ async function readAuthorizedSession(request, env) {
   if (!session?.userKey) return null;
   const adminKey = await hmac(env.AUTH_SECRET, `user:${ADMIN_EMAIL}`);
   if (await secureEqual(session.userKey, adminKey)) return { ...session, admin: true };
+  const control = await env.DB.prepare(
+    'SELECT status FROM access_controls WHERE user_key = ?'
+  ).bind(session.userKey).first();
+  if (control) return control.status === 'approved' ? { ...session, admin: false } : null;
   const latest = await env.DB.prepare(
-    'SELECT status FROM access_requests WHERE user_key = ? ORDER BY created_at DESC LIMIT 1'
+    'SELECT status FROM access_requests WHERE user_key = ? ORDER BY created_at DESC, id DESC LIMIT 1'
   ).bind(session.userKey).first();
   return latest?.status === 'approved' ? { ...session, admin: false } : null;
 }
@@ -259,8 +263,11 @@ async function handleAccessExchange(request, env, url) {
     const identity = await verifyAccessIdentity(request, env);
     const userKey = await hmac(env.AUTH_SECRET, `user:${identity.email}`);
     if (identity.email !== ADMIN_EMAIL) {
-      const latest = await env.DB.prepare(
-        'SELECT status FROM access_requests WHERE user_key = ? ORDER BY created_at DESC LIMIT 1'
+      const control = await env.DB.prepare(
+        'SELECT status FROM access_controls WHERE user_key = ?'
+      ).bind(userKey).first();
+      const latest = control || await env.DB.prepare(
+        'SELECT status FROM access_requests WHERE user_key = ? ORDER BY created_at DESC, id DESC LIMIT 1'
       ).bind(userKey).first();
       if (latest?.status !== 'approved') {
         const headers = new Headers({
@@ -350,14 +357,15 @@ async function notifyAccessRequest(env, requestData) {
     `사용성 분석 동의: ${requestData.analyticsConsent ? '동의' : '미동의'}`,
     `신청 시각: ${new Date(requestData.createdAt * 1000).toISOString()}`,
     '',
-    '처리 방법: HealthArchive 로그인 > 가입관리',
+    '처리 상태: 자동 승인 완료',
+    '관리 방법: HealthArchive 로그인 > 가입관리',
   ].join('\n');
   try {
     await env.ACCESS_NOTIFY.send({
       from: 'no-reply@healtharchive.kr',
       to: 'healtharchive2026@gmail.com',
       replyTo: requestData.email,
-      subject: `[HealthArchive] 접근 신청 - ${requestData.company}`,
+      subject: `[HealthArchive] 신규 가입 자동 승인 - ${requestData.company}`,
       text,
     });
     return true;
@@ -403,22 +411,43 @@ async function handleAccessRequest(request, env, origin) {
   if (Number(recentClient?.count || 0) >= ACCESS_REQUEST_DAILY_LIMIT) {
     return json({ error: '접근 신청은 하루 최대 10회까지 가능합니다. 다음 날 다시 시도해 주세요.' }, 429, origin);
   }
-  const recentEmail = await env.DB.prepare(
-    `SELECT id FROM access_requests
-     WHERE email = ? AND status IN ('pending', 'approved')
-     ORDER BY created_at DESC LIMIT 1`
-  ).bind(email).first();
-  if (recentEmail) return json({ ok: true, duplicate: true }, 200, origin);
+  const control = await env.DB.prepare(
+    'SELECT status FROM access_controls WHERE user_key = ?'
+  ).bind(userKey).first();
+  const latestRequest = await env.DB.prepare(
+    `SELECT id, status FROM access_requests
+     WHERE user_key = ? ORDER BY created_at DESC, id DESC LIMIT 1`
+  ).bind(userKey).first();
+  const currentStatus = control?.status || latestRequest?.status || '';
+  if (currentStatus === 'approved') {
+    return json({ ok: true, duplicate: true, approved: true }, 200, origin);
+  }
+  if (currentStatus === 'revoked') {
+    return json({ error: '관리자가 접근 권한을 회수한 계정입니다. 관리자에게 권한 복구를 요청해 주세요.', revoked: true }, 403, origin);
+  }
+
+  const approvedCount = await env.DB.prepare(
+    `SELECT COUNT(*) AS count FROM access_controls WHERE status = 'approved'`
+  ).first();
+  if (Number(approvedCount?.count || 0) >= 50) {
+    return json({ error: '초기 서비스 가입 정원 50명이 마감되었습니다.' }, 409, origin);
+  }
 
   const result = await env.DB.prepare(
     `INSERT INTO access_requests
-      (company, department, purpose, email, user_key, client_key, analytics_consent, status, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?)`
-  ).bind(company, department, purpose, email, userKey, clientKey, analyticsConsent ? 1 : 0, now).run();
+      (company, department, purpose, email, user_key, client_key, analytics_consent,
+       status, created_at, reviewed_at, review_note)
+     VALUES (?, ?, ?, ?, ?, ?, ?, 'approved', ?, ?, '자동 승인')`
+  ).bind(company, department, purpose, email, userKey, clientKey, analyticsConsent ? 1 : 0, now, now).run();
+  await env.DB.prepare(
+    `INSERT INTO access_controls (user_key, status, updated_at)
+     VALUES (?, 'approved', ?)
+     ON CONFLICT(user_key) DO UPDATE SET status = 'approved', updated_at = excluded.updated_at`
+  ).bind(userKey, now).run();
   const notified = await notifyAccessRequest(env, {
     company, department, purpose, email, analyticsConsent, createdAt: now,
   });
-  return json({ ok: true, id: result.meta.last_row_id, notified }, 201, origin);
+  return json({ ok: true, approved: true, id: result.meta.last_row_id, notified }, 201, origin);
 }
 
 async function handleUsageEvent(request, env, origin) {
@@ -437,7 +466,7 @@ async function handleUsageEvent(request, env, origin) {
   if (!USAGE_EVENTS.has(eventName) || !target) return json({ error: '허용되지 않은 이벤트입니다.' }, 400, origin);
   const consent = await env.DB.prepare(
     `SELECT analytics_consent FROM access_requests
-     WHERE user_key = ? ORDER BY created_at DESC LIMIT 1`
+     WHERE user_key = ? ORDER BY created_at DESC, id DESC LIMIT 1`
   ).bind(session.userKey).first();
   if (Number(consent?.analytics_consent || 0) !== 1) {
     return new Response(null, { status: 204, headers: corsHeaders(origin) });
@@ -470,12 +499,40 @@ async function handleAdminAccessRequests(request, env, url, origin) {
   if (url.pathname === '/admin/access-requests' && request.method === 'GET') {
     const { results } = await env.DB.prepare(
       `SELECT id, company, department, purpose, email, analytics_consent, status,
-              created_at, reviewed_at, review_note
+              created_at, reviewed_at, review_note,
+              CASE WHEN id = (
+                SELECT latest.id FROM access_requests AS latest
+                WHERE latest.user_key = access_requests.user_key
+                ORDER BY latest.created_at DESC, latest.id DESC LIMIT 1
+              ) THEN 1 ELSE 0 END AS is_latest
        FROM access_requests
        ORDER BY CASE status WHEN 'pending' THEN 0 ELSE 1 END, created_at DESC
        LIMIT 200`
     ).all();
     return authJson({ requests: results || [] }, 200, origin);
+  }
+
+  const deleteMatch = url.pathname.match(/^\/admin\/access-requests\/(\d+)$/);
+  if (deleteMatch && request.method === 'DELETE') {
+    const id = Number(deleteMatch[1]);
+    const row = await env.DB.prepare(
+      `SELECT request.id, request.user_key, request.status,
+              CASE WHEN request.id = (
+                SELECT latest.id FROM access_requests AS latest
+                WHERE latest.user_key = request.user_key
+                ORDER BY latest.created_at DESC, latest.id DESC LIMIT 1
+              ) THEN 1 ELSE 0 END AS is_latest,
+              control.status AS access_status
+       FROM access_requests AS request
+       LEFT JOIN access_controls AS control ON control.user_key = request.user_key
+       WHERE request.id = ?`
+    ).bind(id).first();
+    if (!row) return authJson({ error: '삭제할 신청 기록을 찾을 수 없습니다.' }, 404, origin);
+    if (Number(row.is_latest) === 1 && row.access_status === 'approved') {
+      return authJson({ error: '현재 이용 중인 계정입니다. 권한을 먼저 회수해 주세요.' }, 409, origin);
+    }
+    await env.DB.prepare('DELETE FROM access_requests WHERE id = ?').bind(id).run();
+    return authJson({ ok: true, deleted: id }, 200, origin);
   }
 
   const match = url.pathname.match(/^\/admin\/access-requests\/(\d+)\/(approve|reject|revoke)$/);
@@ -490,9 +547,17 @@ async function handleAdminAccessRequests(request, env, url, origin) {
   try {
     const status = action === 'approve' ? 'approved' : action === 'reject' ? 'rejected' : 'revoked';
     const note = action === 'approve' ? '관리자 승인' : action === 'reject' ? '관리자 거절' : '관리자 권한 회수';
-    await env.DB.prepare(
-      'UPDATE access_requests SET status = ?, reviewed_at = ?, review_note = ? WHERE id = ?'
-    ).bind(status, Math.floor(Date.now() / 1000), note, id).run();
+    const reviewedAt = Math.floor(Date.now() / 1000);
+    await env.DB.batch([
+      env.DB.prepare(
+        'UPDATE access_requests SET status = ?, reviewed_at = ?, review_note = ? WHERE id = ?'
+      ).bind(status, reviewedAt, note, id),
+      env.DB.prepare(
+        `INSERT INTO access_controls (user_key, status, updated_at)
+         SELECT user_key, ?, ? FROM access_requests WHERE id = ?
+         ON CONFLICT(user_key) DO UPDATE SET status = excluded.status, updated_at = excluded.updated_at`
+      ).bind(status, reviewedAt, id),
+    ]);
     return authJson({ ok: true, status }, 200, origin);
   } catch (error) {
     console.error('access approval failed', error);
@@ -503,8 +568,7 @@ async function handleAdminAccessRequests(request, env, url, origin) {
 async function handleAccessSummary(request, env, url, origin) {
   if (url.pathname !== '/access-summary' || request.method !== 'GET') return null;
   const result = await env.DB.prepare(
-    `SELECT COUNT(DISTINCT user_key) AS approved
-     FROM access_requests WHERE status = 'approved'`
+    `SELECT COUNT(*) AS approved FROM access_controls WHERE status = 'approved'`
   ).first();
   return json({ approved: Number(result?.approved || 0), capacity: 50 }, 200, origin);
 }
@@ -533,8 +597,7 @@ async function handleAdminUsageSummary(request, env, url, origin) {
        FROM usage_events`
     ).bind(sevenDaysAgo, thirtyDaysAgo).first(),
     env.DB.prepare(
-      `SELECT COUNT(DISTINCT user_key) AS approved_users
-       FROM access_requests WHERE status = 'approved'`
+      `SELECT COUNT(*) AS approved_users FROM access_controls WHERE status = 'approved'`
     ).first(),
     env.DB.prepare(
       `SELECT target, event_name, COUNT(*) AS events, COUNT(DISTINCT user_key) AS users

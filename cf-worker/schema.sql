@@ -36,6 +36,14 @@ CREATE INDEX IF NOT EXISTS idx_access_requests_user_key ON access_requests (user
 CREATE INDEX IF NOT EXISTS idx_access_requests_client_key ON access_requests (client_key, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_access_requests_created_at ON access_requests (created_at);
 
+CREATE TABLE IF NOT EXISTS access_controls (
+  user_key TEXT PRIMARY KEY,
+  status TEXT NOT NULL,
+  updated_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_access_controls_status ON access_controls (status);
+
 CREATE TABLE IF NOT EXISTS usage_events (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_key TEXT NOT NULL,

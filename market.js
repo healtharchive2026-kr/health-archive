@@ -453,7 +453,7 @@ function renderMarketFunctions() {
     options: {
       indexAxis: 'y', responsive: true, maintainAspectRatio: false,
       plugins: { legend: { display: false }, tooltip: { callbacks: { label: context => `${marketNumber(context.raw)}억원` } } },
-      scales: { x: { beginAtZero: true, grid: { color: MARKET_COLORS.grid }, border: { display: false }, ticks: { font: { size: 9 } } }, y: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 10 } } } }
+      scales: { x: { beginAtZero: true, grid: { color: MARKET_COLORS.grid }, border: { display: false }, ticks: { font: { size: 11 } } }, y: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 12 } } } }
     }
   });
 }
