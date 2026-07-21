@@ -42,8 +42,6 @@ const PRECHECK_DATA_DEPS = [
   'data/safety_db.js?v=20260709-perf'
 ];
 
-const RADAR_DATA_KEY = 'radar-log';
-
 const HOME_TAB_LABELS = {
   precheck: '원료 Pre-Check',
   devmap: '개발방향 매핑',
@@ -62,11 +60,11 @@ const HOME_TAB_LABELS = {
   compare: '기능성별 비교',
   biomarkers: '기능성별 프로토콜',
   trials: '임상정보 데이터베이스',
+  'daily-reports': 'Daily 원료 보고서',
   products: '신규 등록 제품',
   market: '시장현황',
   stats: '인정 통계',
   funding: '건기식 R&D 과제',
-  radar: '레귤러토리 레이더',
   news: '식품 뉴스',
   events: '학회/박람회',
   feedback: '문의'
@@ -1893,7 +1891,6 @@ function trackUsage(eventName, target) {
 async function protectedLockAll() {
   await protectedAuthLogout();
   wsShowLocked();
-  radarShowLocked();
   overseasShowLocked();
 }
 
@@ -2138,134 +2135,6 @@ async function initWhitespaceTab() {
 function setupWhitespaceGate() {
   const lockBtn = document.getElementById('ws-lock-btn');
   if (lockBtn) lockBtn.addEventListener('click', wsLock);
-}
-
-// ---------- 레귤러토리 레이더 (변경 다이제스트) ----------
-
-let radarGateReady = false;
-
-const RADAR_CATEGORY_LABEL = {
-  ingredients: '신규 개별인정 원료',
-  minutes: '신규 심의 회의록',
-  products: '신규 등록 제품',
-  temp_approval: '한시적 인정 원료',
-};
-const RADAR_CATEGORY_ICON = {
-  ingredients: '원료',
-  minutes: '회의',
-  products: '제품',
-  temp_approval: '한시',
-};
-let radarActiveFilter = 'all';
-
-function radarShowLocked() {
-  const gate = document.getElementById('radar-gate');
-  const content = document.getElementById('radar-content');
-  if (gate) gate.hidden = false;
-  if (content) content.hidden = true;
-}
-
-function radarShowUnlocked() {
-  const gate = document.getElementById('radar-gate');
-  const content = document.getElementById('radar-content');
-  if (gate) gate.hidden = true;
-  if (content) content.hidden = false;
-}
-
-function radarUnlock() {
-  radarShowUnlocked();
-  const feed = document.getElementById('radar-feed');
-  if (feed) feed.innerHTML = '<div class="ingx-empty">레귤러토리 데이터를 불러오는 중입니다.</div>';
-  loadProtectedData(RADAR_DATA_KEY)
-    .then(data => {
-      window.RADAR_LOG = data;
-      radarRender();
-    })
-    .catch(err => {
-      console.error(err);
-      radarShowLocked();
-      protectedGateError(document.getElementById('radar-gate-err'), err.message);
-    });
-}
-
-async function radarLock() {
-  await protectedLockAll();
-  const err = document.getElementById('radar-gate-err');
-  protectedGateError(err, '');
-}
-
-function setupRadarGate() {
-  if (radarGateReady) return;
-  const lockBtn = document.getElementById('radar-lock-btn');
-  radarGateReady = true;
-  if (lockBtn) lockBtn.addEventListener('click', radarLock);
-}
-
-function radarRelativeDate(dateStr) {
-  const d = new Date((dateStr || '').replace(' ', 'T'));
-  if (isNaN(d)) return dateStr || '';
-  const diffMs = Date.now() - d.getTime();
-  const diffH = Math.floor(diffMs / 3600000);
-  if (diffH < 1) return '방금 전';
-  if (diffH < 24) return diffH + '시간 전';
-  const diffD = Math.floor(diffH / 24);
-  if (diffD < 7) return diffD + '일 전';
-  return d.getFullYear() + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + String(d.getDate()).padStart(2, '0');
-}
-
-function radarRender() {
-  const feed = document.getElementById('radar-feed');
-  const filterRow = document.getElementById('radar-filter-row');
-  if (!feed || !filterRow) return;
-  const log = (typeof RADAR_LOG !== 'undefined') ? RADAR_LOG : [];
-
-  const counts = {};
-  log.forEach(e => { counts[e.category] = (counts[e.category] || 0) + 1; });
-  const cats = Object.keys(RADAR_CATEGORY_LABEL).filter(c => counts[c]);
-
-  filterRow.innerHTML =
-    `<button type="button" class="radar-filter-chip${radarActiveFilter === 'all' ? ' active' : ''}" data-cat="all">전체 ${log.length}</button>` +
-    cats.map(c => `<button type="button" class="radar-filter-chip${radarActiveFilter === c ? ' active' : ''}" data-cat="${c}">${escapeHtml(RADAR_CATEGORY_LABEL[c])} ${counts[c]}</button>`).join('');
-  filterRow.querySelectorAll('.radar-filter-chip').forEach(btn => {
-    btn.addEventListener('click', () => { radarActiveFilter = btn.dataset.cat; radarRender(); });
-  });
-
-  const visible = radarActiveFilter === 'all' ? log : log.filter(e => e.category === radarActiveFilter);
-
-  if (!visible.length) {
-    feed.innerHTML = '<div class="ingx-empty">아직 감지된 변경 사항이 없습니다. 매일 자동 수집 후 여기에 표시됩니다.</div>';
-    return;
-  }
-
-  feed.innerHTML = visible.map(e => `
-    <a class="radar-item" data-goto="${escapeHtml(e.link || 'home')}">
-      <span class="radar-item-icon">${escapeHtml(RADAR_CATEGORY_ICON[e.category] || '·')}</span>
-      <span class="radar-item-main">
-        <span class="radar-item-cat">${escapeHtml(RADAR_CATEGORY_LABEL[e.category] || e.category)}</span>
-        <span class="radar-item-title">${escapeHtml(e.title)}</span>
-        <span class="radar-item-meta">${escapeHtml(e.meta || '')}</span>
-      </span>
-      <span class="radar-item-date">${radarRelativeDate(e.date)}</span>
-    </a>
-  `).join('');
-
-  feed.querySelectorAll('.radar-item').forEach(el => {
-    el.addEventListener('click', e => {
-      e.preventDefault();
-      const target = el.dataset.goto;
-      navigateTo(target);
-      history.replaceState(null, '', '#' + target);
-    });
-  });
-}
-
-async function initRadarTab() {
-  setupRadarGate();
-  if (await protectedAuthStatus()) {
-    radarUnlock();
-  } else {
-    radarShowLocked();
-  }
 }
 
 // ---------- 커맨드 팔레트 (⌘/Ctrl+K 통합검색) ----------
@@ -2955,9 +2824,6 @@ function initTabContent(tab) {
           break;
         case 'whitespace':
           setTimeout(initWhitespaceTab, 0);
-          break;
-        case 'radar':
-          setTimeout(initRadarTab, 0);
           break;
         case 'overseas-approval':
           setTimeout(initOverseasTab, 0);
