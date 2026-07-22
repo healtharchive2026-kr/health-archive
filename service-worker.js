@@ -1,9 +1,9 @@
-const CACHE_NAME = 'healtharchive-daily-reports-20260721-47';
+const CACHE_NAME = 'healtharchive-runtime-fix-20260722-48';
 const CORE_ASSETS = [
   '/',
   '/index.html',
   '/style.css?v=20260721-dailyreports1',
-  '/app.js?v=20260721-dailyreports1',
+  '/app.js?v=20260722-runtimefix1',
   '/pc-cinema.js?v=20260714-cinema-restore1',
   '/device-routing.js?v=20260714-mobile1',
   '/mobile-lite.html',
@@ -27,14 +27,14 @@ const CORE_ASSETS = [
   '/assets/pc-clinical.jpg',
   '/assets/pc-data.jpg',
   '/assets/pc-regulatory.jpg',
-  '/data/ingredients.js?v=20260712-reports1',
-  '/data/temp_approval.js?v=20260713-mobile1',
-  '/data/food_ingredients.js?v=20260713-mobile1',
-  '/data/blocked_ingredients.js?v=20260713-mobile1',
+  '/data/ingredients.js?v=20260722-runtimefix1',
+  '/data/temp_approval.js?v=20260722-runtimefix1',
+  '/data/food_ingredients.js?v=20260722-runtimefix1',
+  '/data/blocked_ingredients.js?v=20260722-runtimefix1',
   '/data/guidelines.js?v=20260629-glossary',
   '/data/biomarker_protocols.js?v=20260711-terms1',
-  '/data/minutes.js?v=20260629-scheduler1225',
-  '/data/status.js?v=20260716-daily1',
+  '/data/minutes.js?v=20260722-runtimefix1',
+  '/data/status.js?v=20260722-runtimefix1',
   '/data/hff_db.json?v=20260720-production-sales1',
   '/market.js?v=20260721-access-market1'
 ];

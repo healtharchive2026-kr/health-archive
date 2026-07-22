@@ -5,6 +5,7 @@
 첨부 PDF를 받아 data/minutes.json에 자동으로 추가하는 스크립트.
 """
 import json
+import html
 import os
 import re
 import sys
@@ -92,6 +93,7 @@ def parse_list(html):
 
 
 def extract_year_meetingno(title):
+    title = html.unescape(html.unescape(title or ''))
     m_no = re.search(r'제?(\d+)\s*차', title)
     meeting_no = int(m_no.group(1)) if m_no else None
     m_year = re.search(r"['‘](\d{2})['’]?년|(\d{4})년", title)

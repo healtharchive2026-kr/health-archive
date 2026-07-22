@@ -18,27 +18,27 @@ const TAB_SCRIPT_DEPS = {
   market: ['libs/chart.umd.js'],
   funding: ['funding.js?v=20260716-member-access1'],
   stats: ['libs/chart.umd.js'],
-  products: ['data/products.js?v=20260716-daily1'],
-  foodraw: ['data/food_ingredients.js?v=20260709-perf'],
-  'temp-approval': ['data/temp_approval.js?v=20260709-perf'],
-  blocked: ['data/blocked_ingredients.js?v=20260709-perf'],
-  'gmo-minutes': ['data/gmo_minutes.js?v=20260709-perf', 'data/gmo_ingredients.js?v=20260709-perf'],
-  'gmo-ingredients': ['data/gmo_minutes.js?v=20260709-perf', 'data/gmo_ingredients.js?v=20260709-perf'],
+  products: ['data/products.js?v=20260722-runtimefix1'],
+  foodraw: ['data/food_ingredients.js?v=20260722-runtimefix1'],
+  'temp-approval': ['data/temp_approval.js?v=20260722-runtimefix1'],
+  blocked: ['data/blocked_ingredients.js?v=20260722-runtimefix1'],
+  'gmo-minutes': ['data/gmo_minutes.js?v=20260722-runtimefix1', 'data/gmo_ingredients.js?v=20260722-runtimefix1'],
+  'gmo-ingredients': ['data/gmo_minutes.js?v=20260722-runtimefix1', 'data/gmo_ingredients.js?v=20260722-runtimefix1'],
   'safety-db': ['data/safety_db.js?v=20260709-perf', 'safety-db.js?v=20260709-perf'],
 };
 
 const WS_DATA_KEY = 'demand-trends';
 
 const GLOBAL_SEARCH_SCRIPT_DEPS = [
-  'data/products.js?v=20260716-daily1',
-  'data/food_ingredients.js?v=20260709-perf'
+  'data/products.js?v=20260722-runtimefix1',
+  'data/food_ingredients.js?v=20260722-runtimefix1'
 ];
 
 const PRECHECK_DATA_DEPS = [
-  'data/food_ingredients.js?v=20260709-perf',
-  'data/temp_approval.js?v=20260709-perf',
-  'data/blocked_ingredients.js?v=20260709-perf',
-  'data/gmo_ingredients.js?v=20260709-perf',
+  'data/food_ingredients.js?v=20260722-runtimefix1',
+  'data/temp_approval.js?v=20260722-runtimefix1',
+  'data/blocked_ingredients.js?v=20260722-runtimefix1',
+  'data/gmo_ingredients.js?v=20260722-runtimefix1',
   'data/safety_db.js?v=20260709-perf'
 ];
 
@@ -115,6 +115,17 @@ function parseNotice(noticeNo) {
   return m ? { year: parseInt(m[1], 10), num: parseInt(m[2], 10) } : { year: 0, num: 0 };
 }
 
+function parseMeetingYear(record) {
+  const explicitYear = parseInt(record?.year, 10);
+  if (explicitYear >= 2000 && explicitYear <= 2100) return explicitYear;
+  const title = String(record?.meetingName || '')
+    .replace(/&#0*39;|&apos;|&rsquo;|&lsquo;/gi, "'");
+  const full = /(20\d{2})\s*년/.exec(title);
+  if (full) return parseInt(full[1], 10);
+  const short = /['‘’](\d{2})['‘’]?\s*년/.exec(title);
+  return short ? 2000 + parseInt(short[1], 10) : 0;
+}
+
 async function loadData() {
   // Data is embedded via data/ingredients.js and data/minutes.js (loaded as
   // plain <script> tags before this file) so the site works fully offline
@@ -125,7 +136,10 @@ async function loadData() {
   ingredients.forEach(r => Object.assign(r, parseNotice(r.noticeNo)));
   ingredients.sort((a, b) => (b.year - a.year) || (b.num - a.num));
 
-  minutes.forEach(r => { r.yearNum = parseInt(r.year, 10) || 0; });
+  minutes.forEach(r => {
+    r.yearNum = parseMeetingYear(r);
+    if (!r.year && r.yearNum) r.year = String(r.yearNum);
+  });
   minutes.sort((a, b) => (b.yearNum - a.yearNum) || ((b.meetingNo || 0) - (a.meetingNo || 0)));
 
   const convertedCount = ingredients.filter(r => r.noticeConverted).length;
@@ -3500,7 +3514,7 @@ function setupTabs() {
   const menuToggle = document.querySelector('.mobile-menu-toggle');
   const mainNav = document.getElementById('main-nav');
   const navGroups = Array.from(document.querySelectorAll('.nav-group'));
-  const publicTabs = new Set(['home']);
+  const publicTabs = new Set(['home', 'precheck']);
   const adminOnlyTabs = new Set();
   const strictAdminTabs = new Set();
 
@@ -4247,6 +4261,7 @@ function renderNews(query) {
 
   el.innerHTML = NEWS_SOURCES.map(src => {
     let list = src.data().slice();
+    list.sort((a, b) => (b.pubDate || '').localeCompare(a.pubDate || ''));
     if (q) list = list.filter(n => (n.title + ' ' + (n.titleEn || '')).toLowerCase().includes(q));
     totalCount += list.length;
 
@@ -5108,7 +5123,6 @@ document.addEventListener('DOMContentLoaded', () => {
   setupIngredientDetail();
   setupCompareTray();
   setupWhitespaceGate();
-  setupRadarGate();
   setupOverseasGate();
   registerServiceWorker();
   runStartupTask('renderHeroNews', renderHeroNews);
