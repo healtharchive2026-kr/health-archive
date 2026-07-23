@@ -1,67 +1,67 @@
 {
   "ingredients": {
-    "lastRun": "2026-07-22 15:20:50",
+    "lastRun": "2026-07-23 09:14:39",
     "count": 844,
     "newCount": 0
   },
   "minutes": {
-    "lastRun": "2026-07-22 15:20:52",
+    "lastRun": "2026-07-23 09:14:41",
     "count": 36,
     "newCount": 0
   },
   "products": {
-    "lastRun": "2026-07-22 15:22:41",
-    "count": 596,
-    "newCount": 45
+    "lastRun": "2026-07-23 09:15:47",
+    "count": 558,
+    "newCount": 15
   },
   "news": {
-    "lastRun": "2026-07-22 15:22:48",
+    "lastRun": "2026-07-23 09:15:54",
     "count": 16,
     "newCount": 0
   },
   "news_mfds": {
-    "lastRun": "2026-07-22 15:23:01",
-    "count": 14,
-    "newCount": 3
-  },
-  "news_nutraingredients": {
-    "lastRun": "2026-07-22 15:23:06",
-    "count": 104,
-    "newCount": 4
-  },
-  "news_supplysidesj": {
-    "lastRun": "2026-07-22 15:23:07",
-    "count": 67,
+    "lastRun": "2026-07-23 09:16:06",
+    "count": 15,
     "newCount": 1
   },
+  "news_nutraingredients": {
+    "lastRun": "2026-07-23 09:16:10",
+    "count": 106,
+    "newCount": 2
+  },
+  "news_supplysidesj": {
+    "lastRun": "2026-07-23 09:16:13",
+    "count": 69,
+    "newCount": 2
+  },
   "news_nutritioninsight": {
-    "lastRun": "2026-07-22 15:23:14",
-    "count": 92,
-    "newCount": 4
+    "lastRun": "2026-07-23 09:16:20",
+    "count": 95,
+    "newCount": 3
   },
   "temp_approval": {
-    "lastRun": "2026-07-22 15:22:46",
+    "lastRun": "2026-07-23 09:15:52",
     "count": 36,
     "newCount": 0
   },
   "news_sciencedaily": {
-    "lastRun": "2026-07-22 15:23:15",
+    "lastRun": "2026-07-23 09:16:21",
     "count": 24,
-    "newCount": 1
-  },
-  "news_yakup": {
-    "lastRun": "2026-07-22 15:23:18",
-    "count": 37,
     "newCount": 0
   },
+  "news_yakup": {
+    "lastRun": "2026-07-23 09:16:27",
+    "count": 39,
+    "newCount": 2
+  },
   "papers": {
-    "lastRun": "2026-07-22 15:23:20",
+    "lastRun": "2026-07-23 09:16:33",
     "count": 0,
     "newCount": 0
   },
   "news_kfri": {
-    "lastRun": "2026-07-22 15:22:58",
+    "lastRun": "2026-07-23 09:16:03",
     "count": 76,
-    "newCount": 1
+    "newCount": 0
   }
 }
