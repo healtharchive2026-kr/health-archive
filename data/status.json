@@ -1,67 +1,67 @@
 {
   "ingredients": {
-    "lastRun": "2026-07-23 09:14:39",
+    "lastRun": "2026-07-23 15:35:36",
     "count": 844,
     "newCount": 0
   },
   "minutes": {
-    "lastRun": "2026-07-23 09:14:41",
+    "lastRun": "2026-07-23 15:35:39",
     "count": 36,
     "newCount": 0
   },
   "products": {
-    "lastRun": "2026-07-23 09:15:47",
+    "lastRun": "2026-07-23 15:36:31",
     "count": 558,
-    "newCount": 15
+    "newCount": 0
   },
   "news": {
-    "lastRun": "2026-07-23 09:15:54",
+    "lastRun": "2026-07-23 15:36:39",
     "count": 16,
     "newCount": 0
   },
   "news_mfds": {
-    "lastRun": "2026-07-23 09:16:06",
+    "lastRun": "2026-07-23 15:36:52",
     "count": 15,
-    "newCount": 1
+    "newCount": 0
   },
   "news_nutraingredients": {
-    "lastRun": "2026-07-23 09:16:10",
-    "count": 106,
-    "newCount": 2
+    "lastRun": "2026-07-23 15:37:02",
+    "count": 114,
+    "newCount": 8
   },
   "news_supplysidesj": {
-    "lastRun": "2026-07-23 09:16:13",
+    "lastRun": "2026-07-23 15:37:02",
     "count": 69,
-    "newCount": 2
+    "newCount": 0
   },
   "news_nutritioninsight": {
-    "lastRun": "2026-07-23 09:16:20",
-    "count": 95,
+    "lastRun": "2026-07-23 15:37:08",
+    "count": 98,
     "newCount": 3
   },
   "temp_approval": {
-    "lastRun": "2026-07-23 09:15:52",
+    "lastRun": "2026-07-23 15:36:37",
     "count": 36,
     "newCount": 0
   },
   "news_sciencedaily": {
-    "lastRun": "2026-07-23 09:16:21",
-    "count": 24,
-    "newCount": 0
-  },
-  "news_yakup": {
-    "lastRun": "2026-07-23 09:16:27",
-    "count": 39,
+    "lastRun": "2026-07-23 15:37:11",
+    "count": 26,
     "newCount": 2
   },
+  "news_yakup": {
+    "lastRun": "2026-07-23 15:37:14",
+    "count": 39,
+    "newCount": 0
+  },
   "papers": {
-    "lastRun": "2026-07-23 09:16:33",
+    "lastRun": "2026-07-23 15:37:18",
     "count": 0,
     "newCount": 0
   },
   "news_kfri": {
-    "lastRun": "2026-07-23 09:16:03",
-    "count": 76,
-    "newCount": 0
+    "lastRun": "2026-07-23 15:36:48",
+    "count": 77,
+    "newCount": 1
   }
 }
