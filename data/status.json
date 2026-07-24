@@ -1,67 +1,67 @@
 {
   "ingredients": {
-    "lastRun": "2026-07-23 15:35:36",
+    "lastRun": "2026-07-24 09:11:26",
     "count": 844,
     "newCount": 0
   },
   "minutes": {
-    "lastRun": "2026-07-23 15:35:39",
+    "lastRun": "2026-07-24 09:11:28",
     "count": 36,
     "newCount": 0
   },
   "products": {
-    "lastRun": "2026-07-23 15:36:31",
-    "count": 558,
-    "newCount": 0
+    "lastRun": "2026-07-24 09:12:37",
+    "count": 564,
+    "newCount": 31
   },
   "news": {
-    "lastRun": "2026-07-23 15:36:39",
+    "lastRun": "2026-07-24 09:12:43",
     "count": 16,
     "newCount": 0
   },
   "news_mfds": {
-    "lastRun": "2026-07-23 15:36:52",
+    "lastRun": "2026-07-24 09:12:52",
     "count": 15,
     "newCount": 0
   },
   "news_nutraingredients": {
-    "lastRun": "2026-07-23 15:37:02",
-    "count": 114,
-    "newCount": 8
+    "lastRun": "2026-07-24 09:12:56",
+    "count": 116,
+    "newCount": 2
   },
   "news_supplysidesj": {
-    "lastRun": "2026-07-23 15:37:02",
+    "lastRun": "2026-07-24 09:12:57",
     "count": 69,
     "newCount": 0
   },
   "news_nutritioninsight": {
-    "lastRun": "2026-07-23 15:37:08",
-    "count": 98,
-    "newCount": 3
+    "lastRun": "2026-07-24 09:13:00",
+    "count": 99,
+    "newCount": 1
   },
   "temp_approval": {
-    "lastRun": "2026-07-23 15:36:37",
+    "lastRun": "2026-07-24 09:12:41",
     "count": 36,
     "newCount": 0
   },
   "news_sciencedaily": {
-    "lastRun": "2026-07-23 15:37:11",
+    "lastRun": "2026-07-24 09:13:01",
     "count": 26,
-    "newCount": 2
-  },
-  "news_yakup": {
-    "lastRun": "2026-07-23 15:37:14",
-    "count": 39,
     "newCount": 0
   },
+  "news_yakup": {
+    "lastRun": "2026-07-24 09:13:04",
+    "count": 40,
+    "newCount": 1
+  },
   "papers": {
-    "lastRun": "2026-07-23 15:37:18",
+    "lastRun": "2026-07-24 09:13:14",
     "count": 0,
     "newCount": 0
   },
   "news_kfri": {
-    "lastRun": "2026-07-23 15:36:48",
+    "lastRun": "2026-07-24 09:12:49",
     "count": 77,
-    "newCount": 1
+    "newCount": 0
   }
 }
