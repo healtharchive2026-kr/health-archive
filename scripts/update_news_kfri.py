@@ -17,7 +17,7 @@ JS_FILE = os.path.join(BASE_DIR, 'data', 'news_kfri.js')
 LOG_FILE = os.path.join(BASE_DIR, 'scripts', 'update_log.txt')
 LIST_URL = 'https://www.kfri.re.kr/web/board/9/postList'
 BASE_URL = 'https://www.kfri.re.kr'
-MAX_KEEP = 200
+MAX_KEEP = None  # Retain the complete collected history.
 HEADERS = {'User-Agent': 'Mozilla/5.0', 'Accept': 'text/html,*/*'}
 
 

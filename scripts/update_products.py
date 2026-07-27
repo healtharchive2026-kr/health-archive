@@ -25,7 +25,7 @@ INGREDIENTS_FILE = os.path.join(BASE_DIR, 'data', 'ingredients.json')
 LOG_FILE = os.path.join(BASE_DIR, 'scripts', 'update_log.txt')
 
 LIST_URL = "https://data.mfds.go.kr/hid/opbaa01/prdtSrchLstSelect.do"
-KEEP_DAYS = 30           # 사이트에는 등록일자 기준 최근 30일치만 표시 (전체 이력은 ARCHIVE_FILE에 별도 보관)
+FETCH_LOOKBACK_DAYS = 30  # Limit remote paging only; retained product history is never pruned.
 FETCH_PAGES = 40         # 최근 30일 경계까지 충분히 역순 탐색
 C003_URL = "https://openapi.foodsafetykorea.go.kr/api/{key}/C003/json/1/5/PRDLST_REPORT_NO={report_no}"
 PUBLIC_DETAIL_URL = "https://data.mfds.go.kr/hid/opbab01/prdtDtlInfo.do"
@@ -55,6 +55,33 @@ def write_products(products):
         f.write('var PRODUCTS_DATA = ')
         json.dump(products, f, ensure_ascii=False, separators=(',', ':'))
         f.write(';\n')
+
+
+def merge_archived_products(products):
+    if not os.path.exists(ARCHIVE_FILE):
+        return products, 0
+
+    try:
+        with open(ARCHIVE_FILE, encoding='utf-8') as f:
+            archived = json.load(f)
+    except (OSError, json.JSONDecodeError):
+        return products, 0
+
+    merged = {}
+    for item in archived + products:
+        item_id = str(item.get('id') or '').strip()
+        if not item_id:
+            continue
+        if item_id not in merged:
+            merged[item_id] = dict(item)
+            continue
+        merged[item_id].update({
+            key: value for key, value in item.items()
+            if value not in (None, '', [])
+        })
+
+    restored_count = max(0, len(merged) - len(products))
+    return list(merged.values()), restored_count
 
 
 def fetch_page(page_index, record_count=30):
@@ -252,9 +279,10 @@ def enrich_compositions(products):
 
 def main():
     products = read_records(DATA_FILE, JS_FILE)
+    products, restored_count = merge_archived_products(products)
 
     known_ids = {p['id'] for p in products if p.get('id')}
-    cutoff = (datetime.now() - timedelta(days=KEEP_DAYS)).strftime('%Y-%m-%d')
+    fetch_cutoff = (datetime.now() - timedelta(days=FETCH_LOOKBACK_DAYS)).strftime('%Y-%m-%d')
     radar_cutoff = (datetime.now() - timedelta(days=2)).strftime('%Y-%m-%d')
 
     new_count = 0
@@ -272,7 +300,7 @@ def main():
         page_new = 0
         for item in items:
             rec = to_record(item)
-            if (rec.get('reportDate') or '') < cutoff:
+            if (rec.get('reportDate') or '') < fetch_cutoff:
                 continue
             if not rec['id'] or rec['id'] in known_ids:
                 continue
@@ -290,7 +318,7 @@ def main():
 
         # 이 페이지에 신규 항목이 하나도 없으면(=이미 다 아는 데이터) 더 뒤져볼 필요 없음
         page_dates = [item.get('rptYmd') or '' for item in items]
-        if page_dates and min(page_dates) < cutoff:
+        if page_dates and min(page_dates) < fetch_cutoff:
             break
 
     record_new('products', radar_entries)
@@ -312,17 +340,16 @@ def main():
         with open(ARCHIVE_FILE, 'w', encoding='utf-8') as f:
             json.dump(archive, f, ensure_ascii=False, indent=2)
 
-    before_prune = len(products)
-    products = [p for p in products if (p.get('reportDate') or '') >= cutoff]
-    pruned_count = before_prune - len(products)
-
     def sort_key(p):
         return p.get('reportDate') or ''
     products.sort(key=sort_key, reverse=True)
 
-    if new_count or pruned_count or composition_count:
+    if new_count or restored_count or composition_count:
         write_products(products)
-        log(f"DONE: {new_count} new product(s), {composition_count} composition(s), {pruned_count} expired product(s). total={len(products)}")
+        log(
+            f"DONE: {new_count} new product(s), {restored_count} restored product(s), "
+            f"{composition_count} composition(s). total={len(products)}"
+        )
     else:
         log("DONE: no new products found.")
 

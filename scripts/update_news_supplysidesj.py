@@ -21,7 +21,7 @@ JS_FILE = os.path.join(BASE_DIR, 'data', 'news_supplysidesj.js')
 LOG_FILE = os.path.join(BASE_DIR, 'scripts', 'update_log.txt')
 
 RSS_URL = 'https://www.supplysidesj.com/rss.xml'
-MAX_KEEP = 300
+MAX_KEEP = None  # Retain the complete collected history.
 MAX_TRANSLATE = 30
 
 HEADERS = {'User-Agent': 'Mozilla/5.0', 'Accept': '*/*'}

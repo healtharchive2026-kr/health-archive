@@ -23,7 +23,7 @@ LOG_FILE = os.path.join(BASE_DIR, 'scripts', 'update_log.txt')
 
 LIST_URL = "https://www.yakup.com/news/health.html"
 SITE_ROOT = "https://www.yakup.com"
-MAX_KEEP = 300
+MAX_KEEP = None  # Retain the complete collected history.
 MAX_NEW_DETAIL_FETCH = 40  # 한 번 실행에 상세 페이지를 가져올 신규 기사 수 제한
 
 HEADERS = {"User-Agent": "Mozilla/5.0", "Accept": "*/*"}

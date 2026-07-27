@@ -21,7 +21,7 @@ LOG_FILE = os.path.join(BASE_DIR, 'scripts', 'update_log.txt')
 
 LIST_URL = 'https://www.mfds.go.kr/brd/m_99/list.do'
 SITE_ROOT = 'https://www.mfds.go.kr'
-MAX_KEEP = 300
+MAX_KEEP = None  # Retain the complete collected history.
 KEYWORDS = ['건강기능식품', '건기식', '식품', '수입식품', '해외직구식품', '영양', '기능성', '원료']
 
 HEADERS = {

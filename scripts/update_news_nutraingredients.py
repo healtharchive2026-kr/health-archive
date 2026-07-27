@@ -22,7 +22,7 @@ LOG_FILE = os.path.join(BASE_DIR, 'scripts', 'update_log.txt')
 
 LIST_URL = 'https://www.nutraingredients.com/News/'
 SITE_ROOT = 'https://www.nutraingredients.com'
-MAX_KEEP = 300
+MAX_KEEP = None  # Retain the complete collected history.
 MAX_TRANSLATE = 30
 
 HEADERS = {'User-Agent': 'Mozilla/5.0', 'Accept': '*/*'}

@@ -23,7 +23,7 @@ LOG_FILE = os.path.join(BASE_DIR, 'scripts', 'update_log.txt')
 
 RSS_URL = "https://www.foodnews.co.kr/rss/allArticle.xml"
 KEYWORDS = ["건강기능식품", "건기식"]
-MAX_KEEP = 300
+MAX_KEEP = None  # Retain the complete collected history.
 
 HEADERS = {"User-Agent": "Mozilla/5.0", "Accept": "*/*"}
 

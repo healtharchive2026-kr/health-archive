@@ -22,7 +22,7 @@ LOG_FILE = os.path.join(BASE_DIR, 'scripts', 'update_log.txt')
 
 LIST_URL = "https://www.sciencedaily.com/news/health_medicine/nutrition/"
 SITE_ROOT = "https://www.sciencedaily.com"
-MAX_KEEP = 200
+MAX_KEEP = None  # Retain the complete collected history.
 
 HEADERS = {"User-Agent": "Mozilla/5.0", "Accept": "*/*"}
 
