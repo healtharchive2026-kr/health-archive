@@ -3,8 +3,9 @@ name: Daily data update
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 0 * * *"
-    - cron: "30 8 * * *"
+    # GitHub Actions cron is UTC. Avoid top-of-hour congestion.
+    - cron: "17 0 * * *" # 09:17 KST
+    - cron: "47 8 * * *" # 17:47 KST
 
 permissions:
   contents: write
@@ -52,6 +53,7 @@ jobs:
             -o data/funding_opportunities.json || printf '{"version":1,"lastSuccessfulSync":null,"sources":[],"items":[]}\n' > data/funding_opportunities.json
 
       - name: Run scheduled update scripts
+        id: collectors
         env:
           FOOD_SAFETY_KOREA_API_KEY: ${{ secrets.FOOD_SAFETY_KOREA_API_KEY }}
           BIZINFO_API_KEY: ${{ secrets.BIZINFO_API_KEY }}
@@ -74,7 +76,7 @@ jobs:
             scripts/update_funding_opportunities.py
           )
 
-          failed=0
+          failed_scripts=()
           for script in "${scripts[@]}"; do
             echo "::group::${script}"
             python "$script"
@@ -82,15 +84,20 @@ jobs:
             echo "::endgroup::"
             if [ "$code" -ne 0 ]; then
               echo "::warning::${script} failed with exit code ${code}"
-              failed=1
+              failed_scripts+=("${script}")
             fi
           done
 
-          if [ "$failed" -ne 0 ]; then
-            echo "::warning::One or more update scripts failed. Successful script outputs will still be committed."
+          python scripts/generate_public_content.py
+          code=$?
+          if [ "$code" -ne 0 ]; then
+            echo "::warning::scripts/generate_public_content.py failed with exit code ${code}"
+            failed_scripts+=("scripts/generate_public_content.py")
           fi
 
-          python scripts/generate_public_content.py
+          failed_names="$(IFS=,; echo "${failed_scripts[*]}")"
+          echo "failed_count=${#failed_scripts[@]}" >> "$GITHUB_OUTPUT"
+          echo "failed_names=${failed_names}" >> "$GITHUB_OUTPUT"
 
       - name: Update protected radar data
         env:
@@ -135,3 +142,19 @@ jobs:
             git rebase origin/master
           done
           git push
+
+      - name: Validate scheduled update
+        if: always()
+        env:
+          FAILED_COUNT: ${{ steps.collectors.outputs.failed_count }}
+          FAILED_NAMES: ${{ steps.collectors.outputs.failed_names }}
+        run: |
+          failed=0
+
+          if [ "${FAILED_COUNT:-0}" -ne 0 ]; then
+            echo "::error::Collector failures: ${FAILED_NAMES}"
+            failed=1
+          fi
+
+          python scripts/validate_update_status.py || failed=1
+          exit "$failed"

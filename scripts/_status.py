@@ -8,10 +8,12 @@ import json
 import os
 import re
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STATUS_JSON = os.path.join(BASE_DIR, 'data', 'status.json')
 STATUS_JS = os.path.join(BASE_DIR, 'data', 'status.js')
+SEOUL_TZ = ZoneInfo('Asia/Seoul')
 
 
 def touch(key, count=None, new_count=None):
@@ -32,7 +34,8 @@ def touch(key, count=None, new_count=None):
             status = {}
 
     status[key] = {
-        'lastRun': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        'lastRun': datetime.now(SEOUL_TZ).strftime('%Y-%m-%d %H:%M:%S'),
+        'timezone': 'Asia/Seoul',
         'count': count,
         'newCount': new_count,
     }
