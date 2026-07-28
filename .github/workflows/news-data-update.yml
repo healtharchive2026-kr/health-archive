@@ -1,0 +1,106 @@
+name: News sources update
+
+on:
+  workflow_dispatch:
+  schedule:
+    # GitHub Actions cron is UTC: 09:23, 13:23, 17:23, 21:23 KST.
+    - cron: "23 0,4,8,12 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: healtharchive-data-update
+  cancel-in-progress: false
+
+jobs:
+  update-news:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Update six news sources
+        id: collectors
+        run: |
+          set +e
+          scripts=(
+            scripts/update_news.py
+            scripts/update_news_kfri.py
+            scripts/update_news_mfds.py
+            scripts/update_news_nutraingredients.py
+            scripts/update_news_supplysidesj.py
+            scripts/update_news_nutritioninsight.py
+          )
+
+          failed_scripts=()
+          for script in "${scripts[@]}"; do
+            echo "::group::${script}"
+            python "$script"
+            code=$?
+            echo "::endgroup::"
+            if [ "$code" -ne 0 ]; then
+              echo "::warning::${script} failed with exit code ${code}"
+              failed_scripts+=("${script}")
+            fi
+          done
+
+          failed_names="$(IFS=,; echo "${failed_scripts[*]}")"
+          echo "failed_count=${#failed_scripts[@]}" >> "$GITHUB_OUTPUT"
+          echo "failed_names=${failed_names}" >> "$GITHUB_OUTPUT"
+
+      - name: Commit updated news
+        run: |
+          git config user.name "healtharchive2026-kr"
+          git config user.email "healtharchive2026@gmail.com"
+
+          git add -f \
+            data/news.js data/news.json \
+            data/news_kfri.js data/news_kfri.json \
+            data/news_mfds.js data/news_mfds.json \
+            data/news_nutraingredients.js data/news_nutraingredients.json \
+            data/news_supplysidesj.js data/news_supplysidesj.json \
+            data/news_nutritioninsight.js data/news_nutritioninsight.json \
+            data/status.js data/status.json
+
+          if git diff --cached --quiet; then
+            echo "No news changes to commit."
+            exit 0
+          fi
+
+          git commit -m "Auto-update news sources"
+
+          for i in 1 2 3 4 5; do
+            git push && exit 0
+            echo "::warning::push rejected, retrying with rebase (attempt ${i})"
+            git fetch origin
+            git rebase origin/master
+          done
+          git push
+
+      - name: Validate six news sources
+        if: always()
+        env:
+          FAILED_COUNT: ${{ steps.collectors.outputs.failed_count }}
+          FAILED_NAMES: ${{ steps.collectors.outputs.failed_names }}
+        run: |
+          failed=0
+          if [ "${FAILED_COUNT:-0}" -ne 0 ]; then
+            echo "::error::News collector failures: ${FAILED_NAMES}"
+            failed=1
+          fi
+          python scripts/validate_update_status.py --news-only || failed=1
+          exit "$failed"

@@ -11,7 +11,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: daily-data-update
+  group: healtharchive-data-update
   cancel-in-progress: false
 
 jobs:

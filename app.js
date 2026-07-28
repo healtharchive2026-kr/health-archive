@@ -161,7 +161,7 @@ async function loadData() {
 
 function allNews() {
   return NEWS_SOURCES
-    .flatMap(src => src.data().map(item => ({ ...item, sourceLabel: src.label })))
+    .flatMap(src => newsSourceRows(src).map(item => ({ ...item, sourceLabel: src.label })))
     .sort((x, y) => (y.pubDate || '').localeCompare(x.pubDate || ''));
 }
 
@@ -4254,13 +4254,65 @@ const NEWS_SOURCES = [
   { key: 'nutritioninsight', label: 'Nutrition Insight', data: () => (typeof NEWS_NUTRITIONINSIGHT_DATA !== 'undefined' ? NEWS_NUTRITIONINSIGHT_DATA : []) },
 ];
 
+const NEWS_REFRESH_SOURCES = {
+  foodnews: { file: 'data/news.json', global: 'NEWS_DATA', statusKey: 'news' },
+  kfri: { file: 'data/news_kfri.json', global: 'NEWS_KFRI_DATA', statusKey: 'news_kfri' },
+  mfds: { file: 'data/news_mfds.json', global: 'NEWS_MFDS_DATA', statusKey: 'news_mfds' },
+  nutraingredients: { file: 'data/news_nutraingredients.json', global: 'NEWS_NUTRAINGREDIENTS_DATA', statusKey: 'news_nutraingredients' },
+  supplysidesj: { file: 'data/news_supplysidesj.json', global: 'NEWS_SUPPLYSIDESJ_DATA', statusKey: 'news_supplysidesj' },
+  nutritioninsight: { file: 'data/news_nutritioninsight.json', global: 'NEWS_NUTRITIONINSIGHT_DATA', statusKey: 'news_nutritioninsight' },
+};
+
+let newsRefreshPromise;
+
+function newsSourceRows(source) {
+  const config = NEWS_REFRESH_SOURCES[source.key];
+  const refreshed = config ? window[config.global] : null;
+  return Array.isArray(refreshed) ? refreshed : source.data();
+}
+
+function refreshNewsSources() {
+  if (newsRefreshPromise) return newsRefreshPromise;
+
+  const newsRequests = Object.values(NEWS_REFRESH_SOURCES).map(async config => {
+    const separator = config.file.includes('?') ? '&' : '?';
+    const response = await fetch(`${config.file}${separator}v=${Date.now()}`, { cache: 'no-store' });
+    if (!response.ok) throw new Error(`${config.file}: HTTP ${response.status}`);
+    const rows = await response.json();
+    if (!Array.isArray(rows)) throw new Error(`${config.file}: invalid data`);
+    window[config.global] = rows;
+  });
+  const statusRequest = fetch(`data/status.json?v=${Date.now()}`, { cache: 'no-store' })
+    .then(response => {
+      if (!response.ok) throw new Error(`data/status.json: HTTP ${response.status}`);
+      return response.json();
+    })
+    .then(status => {
+      if (!status || typeof status !== 'object') throw new Error('data/status.json: invalid data');
+      window.STATUS_DATA = status;
+    });
+
+  newsRefreshPromise = Promise.all([...newsRequests, statusRequest]).catch(error => {
+    console.error('News refresh failed', error);
+  });
+
+  return newsRefreshPromise;
+}
+
+function newsSourceStatus(source) {
+  const config = NEWS_REFRESH_SOURCES[source.key];
+  const item = config && window.STATUS_DATA ? window.STATUS_DATA[config.statusKey] : null;
+  if (!item || !item.lastRun) return '';
+  return `${item.lastRun.slice(5, 16).replace('-', '.')} · ${Number(item.count || 0).toLocaleString()}건`;
+}
+
 function renderNews(query) {
   const q = (query || '').trim().toLowerCase();
   const el = document.getElementById('news-columns');
   let totalCount = 0;
 
   el.innerHTML = NEWS_SOURCES.map(src => {
-    let list = src.data().slice();
+    let list = newsSourceRows(src).slice();
     list.sort((a, b) => (b.pubDate || '').localeCompare(a.pubDate || ''));
     if (q) list = list.filter(n => (n.title + ' ' + (n.titleEn || '')).toLowerCase().includes(q));
     totalCount += list.length;
@@ -4276,7 +4328,10 @@ function renderNews(query) {
 
     return `
       <div class="news-col">
-        <div class="news-col-head">${escapeHtml(src.label)}</div>
+        <div class="news-col-head">
+          <span>${escapeHtml(src.label)}</span>
+          <small>${escapeHtml(newsSourceStatus(src))}</small>
+        </div>
         <div class="news-col-body">${rows}</div>
       </div>
     `;
@@ -4287,6 +4342,10 @@ function renderNews(query) {
 
 function setupNews() {
   renderNews('');
+  refreshNewsSources().then(() => {
+    const input = document.getElementById('news-search');
+    renderNews(input ? input.value : '');
+  });
   document.getElementById('news-search').addEventListener('input', e => {
     renderNews(e.target.value);
   });
@@ -5126,6 +5185,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupOverseasGate();
   registerServiceWorker();
   runStartupTask('renderHeroNews', renderHeroNews);
+  runStartupTask('refreshNewsSources', () => refreshNewsSources().then(renderHeroNews));
   runStartupTask('renderDailyQuote', renderDailyQuote);
   runStartupTask('setupHomeUtilityActions', setupHomeUtilityActions);
   runStartupTask('renderDataFreshness', renderDataFreshness);

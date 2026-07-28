@@ -27,6 +27,14 @@ EXPECTED_KEYS = (
     'news_yakup',
     'papers',
 )
+NEWS_KEYS = (
+    'news',
+    'news_kfri',
+    'news_mfds',
+    'news_nutraingredients',
+    'news_supplysidesj',
+    'news_nutritioninsight',
+)
 
 
 def main():
@@ -36,7 +44,9 @@ def main():
     now = datetime.now(SEOUL_TZ)
     errors = []
 
-    for key in EXPECTED_KEYS:
+    expected_keys = NEWS_KEYS if '--news-only' in sys.argv else EXPECTED_KEYS
+
+    for key in expected_keys:
         item = status.get(key)
         if not isinstance(item, dict):
             errors.append(f'{key}: status entry is missing')
@@ -58,7 +68,7 @@ def main():
             print(f'::error::{error}')
         return 1
 
-    print(f'Validated {len(EXPECTED_KEYS)} collector status entries at {now:%Y-%m-%d %H:%M:%S} KST.')
+    print(f'Validated {len(expected_keys)} collector status entries at {now:%Y-%m-%d %H:%M:%S} KST.')
     return 0
 
 
