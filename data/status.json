@@ -1,78 +1,78 @@
 {
   "ingredients": {
-    "lastRun": "2026-07-28 14:16:20",
+    "lastRun": "2026-07-29 01:16:55",
     "timezone": "Asia/Seoul",
     "count": 844,
     "newCount": 0
   },
   "minutes": {
-    "lastRun": "2026-07-28 14:16:23",
+    "lastRun": "2026-07-29 01:16:57",
     "timezone": "Asia/Seoul",
     "count": 36,
     "newCount": 0
   },
   "products": {
-    "lastRun": "2026-07-28 19:14:33",
+    "lastRun": "2026-07-29 01:18:01",
     "timezone": "Asia/Seoul",
-    "count": 827,
-    "newCount": 0
+    "count": 848,
+    "newCount": 21
   },
   "news": {
-    "lastRun": "2026-07-29 01:15:00",
+    "lastRun": "2026-07-29 01:18:06",
     "timezone": "Asia/Seoul",
     "count": 17,
     "newCount": 0
   },
   "news_mfds": {
-    "lastRun": "2026-07-29 01:15:13",
+    "lastRun": "2026-07-29 01:18:17",
     "timezone": "Asia/Seoul",
     "count": 16,
     "newCount": 0
   },
   "news_nutraingredients": {
-    "lastRun": "2026-07-29 01:15:20",
+    "lastRun": "2026-07-29 01:18:20",
     "timezone": "Asia/Seoul",
     "count": 131,
-    "newCount": 5
+    "newCount": 0
   },
   "news_supplysidesj": {
-    "lastRun": "2026-07-29 01:15:21",
+    "lastRun": "2026-07-29 01:18:20",
     "timezone": "Asia/Seoul",
     "count": 73,
     "newCount": 0
   },
   "news_nutritioninsight": {
-    "lastRun": "2026-07-29 01:15:26",
+    "lastRun": "2026-07-29 01:18:22",
     "timezone": "Asia/Seoul",
     "count": 117,
-    "newCount": 4
+    "newCount": 0
   },
   "temp_approval": {
-    "lastRun": "2026-07-28 14:19:15",
+    "lastRun": "2026-07-29 01:18:05",
     "timezone": "Asia/Seoul",
     "count": 36,
     "newCount": 0
   },
   "news_sciencedaily": {
-    "lastRun": "2026-07-28 19:16:34",
+    "lastRun": "2026-07-29 01:18:22",
     "timezone": "Asia/Seoul",
     "count": 34,
     "newCount": 0
   },
   "news_yakup": {
-    "lastRun": "2026-07-28 19:16:42",
+    "lastRun": "2026-07-29 01:18:25",
     "timezone": "Asia/Seoul",
     "count": 47,
-    "newCount": 2
+    "newCount": 0
   },
   "papers": {
-    "lastRun": "2026-07-28 19:16:46",
+    "lastRun": "2026-07-29 01:18:29",
     "timezone": "Asia/Seoul",
     "count": 0,
     "newCount": 0
   },
   "news_kfri": {
-    "lastRun": "2026-07-29 01:15:11",
+    "lastRun": "2026-07-29 01:18:15",
     "timezone": "Asia/Seoul",
     "count": 77,
     "newCount": 0
