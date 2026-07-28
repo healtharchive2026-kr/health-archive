@@ -18,34 +18,34 @@
     "newCount": 0
   },
   "news": {
-    "lastRun": "2026-07-28 19:14:56",
+    "lastRun": "2026-07-29 01:15:00",
     "timezone": "Asia/Seoul",
     "count": 17,
     "newCount": 0
   },
   "news_mfds": {
-    "lastRun": "2026-07-28 14:19:29",
+    "lastRun": "2026-07-29 01:15:13",
     "timezone": "Asia/Seoul",
     "count": 16,
     "newCount": 0
   },
   "news_nutraingredients": {
-    "lastRun": "2026-07-28 19:16:29",
+    "lastRun": "2026-07-29 01:15:20",
     "timezone": "Asia/Seoul",
-    "count": 126,
-    "newCount": 0
+    "count": 131,
+    "newCount": 5
   },
   "news_supplysidesj": {
-    "lastRun": "2026-07-28 19:16:29",
+    "lastRun": "2026-07-29 01:15:21",
     "timezone": "Asia/Seoul",
     "count": 73,
     "newCount": 0
   },
   "news_nutritioninsight": {
-    "lastRun": "2026-07-28 19:16:33",
+    "lastRun": "2026-07-29 01:15:26",
     "timezone": "Asia/Seoul",
-    "count": 113,
-    "newCount": 2
+    "count": 117,
+    "newCount": 4
   },
   "temp_approval": {
     "lastRun": "2026-07-28 14:19:15",
@@ -72,7 +72,7 @@
     "newCount": 0
   },
   "news_kfri": {
-    "lastRun": "2026-07-28 19:15:06",
+    "lastRun": "2026-07-29 01:15:11",
     "timezone": "Asia/Seoul",
     "count": 77,
     "newCount": 0
