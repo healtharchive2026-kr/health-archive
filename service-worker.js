@@ -1,9 +1,9 @@
-const CACHE_NAME = 'healtharchive-runtime-fix-20260722-48';
+const CACHE_NAME = 'healtharchive-ingredient360-20260728-49';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/style.css?v=20260721-dailyreports1',
-  '/app.js?v=20260722-runtimefix1',
+  '/style.css?v=20260728-i360-1',
+  '/app.js?v=20260728-i360-1',
   '/pc-cinema.js?v=20260714-cinema-restore1',
   '/device-routing.js?v=20260714-mobile1',
   '/mobile-lite.html',
@@ -31,6 +31,7 @@ const CORE_ASSETS = [
   '/data/temp_approval.js?v=20260722-runtimefix1',
   '/data/food_ingredients.js?v=20260722-runtimefix1',
   '/data/blocked_ingredients.js?v=20260722-runtimefix1',
+  '/data/gmo_ingredients.js?v=20260722-runtimefix1',
   '/data/guidelines.js?v=20260629-glossary',
   '/data/biomarker_protocols.js?v=20260711-terms1',
   '/data/minutes.js?v=20260722-runtimefix1',

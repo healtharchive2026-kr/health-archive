@@ -42,6 +42,11 @@ const PRECHECK_DATA_DEPS = [
   'data/safety_db.js?v=20260709-perf'
 ];
 
+const INGREDIENT_360_DATA_DEPS = [
+  ...PRECHECK_DATA_DEPS,
+  'data/products.js?v=20260722-runtimefix1'
+];
+
 const HOME_TAB_LABELS = {
   precheck: '원료 Pre-Check',
   devmap: '개발방향 매핑',
@@ -558,7 +563,8 @@ function collectGlobalSearchResults(q) {
     [r.company, r.efficacy].filter(Boolean).join(' · '),
     r.noticeNo || '',
     r.name,
-    `${r.name} ${r.company} ${r.efficacy} ${r.noticeNo} ${r.dailyIntake}`
+    `${r.name} ${r.company} ${r.efficacy} ${r.noticeNo} ${r.dailyIntake}`,
+    { ingredientName: r.name }
   ));
 
   minutes.forEach(r => add(
@@ -701,8 +707,14 @@ function renderGlobalSearchResults() {
 
   const totalCount = Object.values(globalSearchState.counts).reduce((sum, n) => sum + n, 0);
   container.classList.add('active');
+  const quickAction = `<button type="button" class="global-i360-launch" data-i360-query="${escapeHtml(q)}">
+    <span>원료 360°</span>
+    <strong>“${escapeHtml(q)}” 통합 사전분석</strong>
+    <small>인정 이력·안전성·제품·연구·규제 연결</small>
+  </button>`;
   if (!totalCount) {
-    container.innerHTML = `<div class="global-search-empty">“${escapeHtml(q)}”에 대한 검색 결과가 없습니다.</div>`;
+    container.innerHTML = quickAction + `<div class="global-search-empty">직접 일치하는 자료가 없습니다. 통합 사전분석에서 유사 근거를 확인하세요.</div>`;
+    container.querySelector('[data-i360-query]')?.addEventListener('click', event => openIngredient360(event.currentTarget.dataset.i360Query));
     return;
   }
 
@@ -718,7 +730,7 @@ function renderGlobalSearchResults() {
     : globalSearchState.results.filter(r => r.group === globalSearchState.activeGroup);
 
   const items = visible.map(r => `
-    <button type="button" class="global-result-item" data-target="${escapeHtml(r.target)}" data-query="${escapeHtml(r.routeQuery)}"${r.lawtab ? ` data-lawtab="${escapeHtml(r.lawtab)}"` : ''}${r.devtab ? ` data-devtab="${escapeHtml(r.devtab)}"` : ''}>
+    <button type="button" class="global-result-item" data-target="${escapeHtml(r.target)}" data-query="${escapeHtml(r.routeQuery)}"${r.ingredientName ? ` data-ingredient="${escapeHtml(r.ingredientName)}"` : ''}${r.lawtab ? ` data-lawtab="${escapeHtml(r.lawtab)}"` : ''}${r.devtab ? ` data-devtab="${escapeHtml(r.devtab)}"` : ''}>
       <span class="global-result-badge">${escapeHtml(GLOBAL_RESULT_BADGE_LABELS[r.group] || GLOBAL_SEARCH_LABELS[r.group])}</span>
       <span class="global-result-main">
         <span class="global-result-title">${escapeHtml(r.title)}</span>
@@ -729,6 +741,7 @@ function renderGlobalSearchResults() {
   `).join('');
 
   container.innerHTML = `
+    ${quickAction}
     <div class="global-result-tabs">${tabs}</div>
     <div class="global-result-list">${items}</div>
   `;
@@ -739,8 +752,16 @@ function renderGlobalSearchResults() {
       renderGlobalSearchResults();
     });
   });
+  container.querySelector('[data-i360-query]')?.addEventListener('click', event => {
+    openIngredient360(event.currentTarget.dataset.i360Query);
+  });
   container.querySelectorAll('.global-result-item').forEach(item => {
     item.addEventListener('click', () => {
+      if (item.dataset.ingredient) {
+        const row = ingredients.find(r => ingxNorm(r.name) === ingxNorm(item.dataset.ingredient));
+        openIngredient360(item.dataset.ingredient, row);
+        return;
+      }
       const target = item.dataset.target;
       const query = item.dataset.query || globalSearchState.q;
       routeHeroSearch(target, query, { lawtab: item.dataset.lawtab, devtab: item.dataset.devtab });
@@ -791,7 +812,7 @@ function setupGlobalSearch() {
 // ---------- 다중 원료 비교함 ----------
 
 const compareTray = [];
-const COMPARE_MAX = 4;
+const COMPARE_MAX = 3;
 
 function inCompare(name) {
   return compareTray.some(x => ingxNorm(x.name) === ingxNorm(name));
@@ -853,10 +874,17 @@ function openCompareModal() {
     ['업체', r => escapeHtml(uniqueRowValues(mergedRows(r), 'company').join(' · ') || '-')],
     ['인정번호', r => escapeHtml(uniqueRowValues(mergedRows(r), 'noticeNo').join(', ') || r.noticeNo || '-')],
     ['인정연도', r => escapeHtml(String(r.year || '-'))],
+    ['인정일', r => escapeHtml(r.approvalDate || '-')],
     ['일일섭취량', r => escapeHtml(r.dailyIntake || '-')],
     ['분류', r => r.category ? '<span class="cmp-cat">' + escapeHtml(r.category) + '</span>' : '-'],
     ['기능성', r => escapeHtml(r.efficacy || '-')],
     ['고시형 전환', r => r.noticeConverted ? '예' : '아니오'],
+    ['개발 검토점', r => escapeHtml(r.noticeConverted
+      ? '공전 기준·규격 및 기능성 범위 우선 대조'
+      : '지표성분·기능성·섭취량 차별화 검토')],
+    ['근거 상태', r => ingredientReportHref(r)
+      ? '<span class="cmp-evidence original">공식 원문 연결</span>'
+      : '<span class="cmp-evidence official">공식 인정 DB</span>'],
     ['소비자 리포트', r => {
       const rep = mergedRows(r).find(x => ingredientReportHref(x));
       return rep ? ingredientReportLinkHtml(rep, rep.report ? 'PDF ↗' : '공식 원문 ↗') : '-';
@@ -866,7 +894,7 @@ function openCompareModal() {
   body.innerHTML =
     '<div class="cmp-table-wrap"><table class="cmp-table">' +
     '<thead><tr><th class="cmp-attr"></th>' +
-    items.map(r => '<th>' + escapeHtml(r.name) + '</th>').join('') + '</tr></thead>' +
+    items.map((r, index) => '<th><button type="button" class="cmp-name-open" data-cmp-i360="' + index + '">' + escapeHtml(r.name) + '<small>360° 보기</small></button></th>').join('') + '</tr></thead>' +
     '<tbody>' +
     rows.map(([label, fn]) =>
       '<tr><th class="cmp-attr">' + label + '</th>' +
@@ -874,6 +902,13 @@ function openCompareModal() {
     ).join('') +
     '</tbody></table></div>';
 
+  body.querySelectorAll('[data-cmp-i360]').forEach(button => {
+    button.addEventListener('click', () => {
+      const row = items[Number(button.dataset.cmpI360)];
+      closeCompareModal();
+      openIngredient360(row.name, row);
+    });
+  });
   overlay.hidden = false;
   document.body.classList.add('cmp-open');
 }
@@ -2220,6 +2255,11 @@ function setupCommandPalette() {
     const r = flat[i];
     if (!r) return;
     close();
+    if (r.ingredientName) {
+      const row = ingredients.find(item => ingxNorm(item.name) === ingxNorm(r.ingredientName));
+      openIngredient360(r.ingredientName, row);
+      return;
+    }
     routeHeroSearch(r.target, r.routeQuery || input.value.trim(), { lawtab: r.lawtab, devtab: r.devtab });
     navigateTo(r.target);
     if (r.target === 'material-dev' && r.devtab && typeof selectMaterialDevTab === 'function') {
@@ -2448,6 +2488,7 @@ function precheckIngredientCards(matches) {
       </div>
       <div class="precheck-match-actions">
         <button type="button" class="precheck-mini-link precheck-ing-open" data-i="${i}">상세</button>
+        <button type="button" class="precheck-mini-link precheck-i360-open" data-i="${i}">360°</button>
         ${report}
       </div>
     </div>`;
@@ -2530,6 +2571,12 @@ function precheckSummary(q, matches) {
       <h3>${escapeHtml(title)}</h3>
       <p>${escapeHtml(desc)}</p>
       <div class="precheck-query-pill">검색어: ${escapeHtml(q)}</div>
+      <div class="precheck-evidence-row">
+        <span class="precheck-evidence official">공식 DB <b>${ingredient.length + food.length + temp.length + blocked.length + gmo.length}건</b></span>
+        <span class="precheck-evidence auto">자동 대조 <b>${safety.length}건</b></span>
+        ${ingredient.some(item => ingredientReportHref(item.row)) ? '<span class="precheck-evidence original">원본 확인 가능</span>' : '<span class="precheck-evidence insufficient">원본 근거 확인 필요</span>'}
+      </div>
+      <button type="button" class="precheck-i360-primary" data-precheck-i360="${escapeHtml(q)}">원료 360° 통합 보기</button>
     </div>
     <div class="precheck-rec">
       <strong>추천 검토 방향</strong>
@@ -2726,6 +2773,16 @@ function renderPrecheck(q) {
       const item = precheckLastIngredientMatches[+btn.dataset.i];
       if (item) openIngredientDetail(item.row);
     });
+  });
+  resultEl.querySelectorAll('.precheck-i360-open').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = precheckLastIngredientMatches[+btn.dataset.i];
+      if (item) openIngredient360(item.row.name, item.row);
+    });
+  });
+  resultEl.querySelector('[data-precheck-i360]')?.addEventListener('click', event => {
+    const seed = precheckLastIngredientMatches.find(item => item.score >= 92)?.row || precheckLastIngredientMatches[0]?.row;
+    openIngredient360(event.currentTarget.dataset.precheckI360, seed);
   });
   resultEl.querySelectorAll('[data-precheck-go]').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -3111,6 +3168,7 @@ function openIngredientDetail(r) {
     : '';
 
   const links = [];
+  links.push(`<button type="button" class="ingx-action ingx-action-primary" data-act="360">원료 360° 통합 보기</button>`);
   links.push(`<button type="button" class="ingx-action ingx-action-cmp" data-act="compare-add" data-name="${escapeHtml(r.name)}">${inCompare(r.name) ? '✓ 비교함에서 제거' : '＋ 비교함에 추가'}</button>`);
   if (r.category) links.push(`<button type="button" class="ingx-action" data-act="compare">이 기능성 원료 비교 →</button>`);
   links.push(`<button type="button" class="ingx-action" data-act="trials">이 원료로 임상시험 검색 →</button>`);
@@ -3145,7 +3203,9 @@ function openIngredientDetail(r) {
         return;
       }
       closeIngredientDetail();
-      if (act === 'compare') {
+      if (act === '360') {
+        openIngredient360(r.name, r);
+      } else if (act === 'compare') {
         navigateTo('compare');
         if (typeof selectCategoryCard === 'function') { try { selectCategoryCard(r.category); } catch (e) {} }
         history.replaceState(null, '', '#compare');
@@ -3181,6 +3241,358 @@ function setupIngredientDetail() {
   overlay.addEventListener('click', e => { if (e.target === overlay) closeIngredientDetail(); });
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && !overlay.hidden) closeIngredientDetail();
+  });
+}
+
+// ---------- 원료 360° 통합 인텔리전스 ----------
+
+function ingredient360ProductText(product) {
+  const recognized = (product.recognizedIngredients || []).flatMap(item => [
+    item.name, item.noticeNo, item.sourceText
+  ]);
+  return [
+    product.name, product.company, product.efficacy, product.primaryFunction,
+    ...(product.functionalMaterials || []),
+    ...(product.otherMaterials || []),
+    ...(product.capsuleMaterials || []),
+    ...recognized
+  ].filter(Boolean).join(' ');
+}
+
+function ingredient360ProtocolMatches(query, seed) {
+  const protocols = (typeof BIOMARKER_PROTOCOLS !== 'undefined') ? BIOMARKER_PROTOCOLS : {};
+  const category = seed?.category || '';
+  const efficacy = seed?.efficacy || '';
+  return Object.keys(protocols).map(name => {
+    const protocol = protocols[name] || {};
+    const text = [
+      name,
+      protocol.guideFile,
+      protocol.clinical?.model,
+      ...(protocol.clinical?.primaryBiomarkers || []),
+      ...(protocol.clinical?.secondaryBiomarkers || []),
+      ...(protocol.preclinical?.animalModels || []),
+      ...(protocol.preclinical?.biomarkers || [])
+    ].filter(Boolean).join(' ');
+    const score = Math.max(
+      precheckScore(query, text),
+      category ? precheckScore(category, text) : 0,
+      efficacy ? precheckScore(efficacy, text) : 0
+    );
+    return { name, protocol, score };
+  }).filter(item => item.score >= 34).sort((a, b) => b.score - a.score).slice(0, 5);
+}
+
+function buildIngredient360Data(query, seedRecord) {
+  const food = (typeof FOOD_INGREDIENTS !== 'undefined') ? FOOD_INGREDIENTS : [];
+  const temp = (typeof TEMP_APPROVAL_DATA !== 'undefined') ? TEMP_APPROVAL_DATA : [];
+  const blocked = (typeof BLOCKED_INGREDIENTS_DATA !== 'undefined') ? BLOCKED_INGREDIENTS_DATA : [];
+  const gmo = (typeof GMO_INGREDIENTS_DATA !== 'undefined') ? GMO_INGREDIENTS_DATA : [];
+  const products = (typeof PRODUCTS_DATA !== 'undefined') ? PRODUCTS_DATA : [];
+  const safety = precheckSafetyRows();
+  const recognized = precheckFind(
+    ingredients, query,
+    row => [row.name, row.company, row.category, row.efficacy, row.noticeNo, row.dailyIntake].join(' '),
+    12, 30
+  );
+  const seed = seedRecord || recognized.find(item => item.score >= 92)?.row || recognized[0]?.row || null;
+  const result = {
+    query,
+    seed,
+    recognized,
+    food: precheckFind(food, query, row => [row.n, row.a, row.s, row.p, row.d, row.t, row.c].join(' '), 10, 34),
+    temp: precheckFind(temp, query, row => [row.name, row.company, row.certNo].join(' '), 10, 34),
+    blocked: precheckFind(blocked, query, row => [row.nk, row.ne, row.alias, row.t].join(' '), 10, 34),
+    gmo: precheckFind(gmo, query, row => [row.name, row.company, row.meetingNo, row.date].join(' '), 10, 34),
+    safety: precheckFind(safety, query, row => [row.name, row.source, row.status].join(' '), 10, 38),
+    products: precheckFind(products, query, ingredient360ProductText, 16, 40),
+    news: precheckFind(allNews(), query, row => [row.title, row.description, row.sourceLabel, row.author].join(' '), 8, 34),
+    protocols: ingredient360ProtocolMatches(query, seed),
+    minutes: seed ? ingxRelatedMinutes(seed).slice(0, 8) : minutes.filter(item => ingxNameMatches(query, item.ingredients)).slice(0, 8)
+  };
+  return result;
+}
+
+function ingredient360Verdict(data) {
+  const direct = data.recognized.filter(item => item.score >= 92);
+  if (data.blocked.length) return {
+    tone: 'stop',
+    label: 'HOLD',
+    title: '동일성·차단 사유 선확인',
+    summary: '반입차단 원료 또는 유사 성분 신호가 확인되었습니다.',
+    path: '원재료·추출물·지표성분 범위 분리 → 차단 사유 검토 → 개발 여부 재판정'
+  };
+  if (direct.length) return {
+    tone: 'ready',
+    label: 'ASSESS',
+    title: '인정 이력 기반 차별화 검토',
+    summary: '동일 또는 강한 유사 인정 사례가 확인되었습니다.',
+    path: '기능성·지표성분·일일섭취량 비교 → 차별화 근거 설정 → 개별인정 개발'
+  };
+  if (data.food.length || data.temp.length) return {
+    tone: 'review',
+    label: 'REVIEW',
+    title: '원재료 적합성 기반 검토',
+    summary: '식품원료 또는 한시적 인정 근거가 확인되었습니다.',
+    path: '사용부위·학명·식용근거 확정 → 안전성 Gap 검토 → 기능성 개발 경로 결정'
+  };
+  if (data.safety.length) return {
+    tone: 'review',
+    label: 'REVIEW',
+    title: '해외 안전성 근거 선검토',
+    summary: '국내 직접 근거보다 해외 안전성 유사자료가 먼저 확인되었습니다.',
+    path: '물질 동일성 확인 → 섭취량·사용조건 비교 → 국내 원재료 적합성 자료 구축'
+  };
+  return {
+    tone: 'unknown',
+    label: 'EVIDENCE GAP',
+    title: '기초 근거 구축 필요',
+    summary: '현재 보유 데이터에서 직접 연결되는 공식 근거가 제한적입니다.',
+    path: '원산지·사용부위·제조공정 특정 → 식용경험·안전성 자료 확보 → 개발 경로 재검토'
+  };
+}
+
+function ingredient360Evidence(data) {
+  const badges = [];
+  const officialCount = data.recognized.length + data.food.length + data.temp.length + data.blocked.length + data.gmo.length;
+  if (officialCount) badges.push(['official', '공식 출처', `${officialCount}건`]);
+  if (data.recognized.some(item => ingredientReportHref(item.row))) badges.push(['original', '원본 확인 가능', 'PDF·공식 원문']);
+  if (data.products.length || data.safety.length || data.news.length) badges.push(['auto', '자동 수집', `${data.products.length + data.safety.length + data.news.length}건`]);
+  if (data.minutes.length) badges.push(['review', '심의 근거 연결', `${data.minutes.length}건`]);
+  if (!officialCount) badges.push(['insufficient', '근거 불충분', '추가 확인 필요']);
+  return badges;
+}
+
+function ingredient360EvidenceHtml(data) {
+  return ingredient360Evidence(data).map(([tone, label, meta]) =>
+    `<span class="i360-evidence ${tone}"><b>${escapeHtml(label)}</b><em>${escapeHtml(meta)}</em></span>`
+  ).join('');
+}
+
+function ingredient360CountHtml(label, value, target) {
+  return `<button type="button" class="i360-count" data-i360-goto="${escapeHtml(target)}">
+    <strong>${Number(value).toLocaleString('ko-KR')}</strong><span>${escapeHtml(label)}</span>
+  </button>`;
+}
+
+function ingredient360RecognizedHtml(data) {
+  if (!data.recognized.length) return '<p class="i360-empty">동일·유사 인정 원료를 찾지 못했습니다.</p>';
+  return data.recognized.slice(0, 8).map((item, index) => {
+    const row = item.row;
+    return `<button type="button" class="i360-record" data-i360-related="${index}">
+      <span><b>${escapeHtml(precheckResultLabel(item))}</b>${escapeHtml(row.noticeNo || '-')}</span>
+      <strong>${escapeHtml(row.name || '-')}</strong>
+      <small>${escapeHtml([row.category, row.company, row.dailyIntake].filter(Boolean).join(' · ') || '-')}</small>
+    </button>`;
+  }).join('');
+}
+
+function ingredient360ProductsHtml(data) {
+  if (!data.products.length) return '<p class="i360-empty">연결되는 제품 조성 자료를 찾지 못했습니다.</p>';
+  return data.products.slice(0, 8).map(item => {
+    const product = item.row;
+    const materials = [
+      ...(product.functionalMaterials || []),
+      ...(product.otherMaterials || [])
+    ].slice(0, 7);
+    return `<article class="i360-product">
+      <div><span>${escapeHtml(product.reportDate || '-')}</span><strong>${escapeHtml(product.name || '-')}</strong><small>${escapeHtml(product.company || '-')}</small></div>
+      <p>${materials.map(material => `<b>${escapeHtml(material)}</b>`).join('')}</p>
+    </article>`;
+  }).join('');
+}
+
+function ingredient360SafetyHtml(data) {
+  const rows = [
+    ...data.food.slice(0, 4).map(item => ({
+      type: item.row.t || '식품원료',
+      name: item.row.n,
+      meta: [item.row.s, item.row.p && `사용부위 ${item.row.p}`].filter(Boolean).join(' · ')
+    })),
+    ...data.temp.slice(0, 3).map(item => ({
+      type: '한시적 인정',
+      name: item.row.name,
+      meta: [item.row.certNo, item.row.company].filter(Boolean).join(' · ')
+    })),
+    ...data.blocked.slice(0, 3).map(item => ({
+      type: '차단 신호',
+      name: [item.row.nk, item.row.ne].filter(Boolean).join(' / '),
+      meta: item.row.date || '-',
+      risk: true
+    })),
+    ...data.safety.slice(0, 4).map(item => ({
+      type: item.row.source || 'Safety DB',
+      name: item.row.name,
+      meta: [item.row.status, item.row.date].filter(Boolean).join(' · '),
+      url: item.row.url
+    }))
+  ];
+  if (!rows.length) return '<p class="i360-empty">연결되는 원재료·안전성 자료가 없습니다.</p>';
+  return rows.map(row => `<div class="i360-safety-row${row.risk ? ' risk' : ''}">
+    <span>${escapeHtml(row.type)}</span>
+    <div><strong>${escapeHtml(row.name || '-')}</strong><small>${escapeHtml(row.meta || '-')}</small></div>
+    ${row.url ? `<a href="${escapeHtml(row.url)}" target="_blank" rel="noopener">원문</a>` : ''}
+  </div>`).join('');
+}
+
+function ingredient360ResearchHtml(data) {
+  const protocols = data.protocols.length
+    ? data.protocols.map(item => `<button type="button" data-i360-protocol="${escapeHtml(item.name)}"><strong>${escapeHtml(item.name)}</strong><span>기능성별 프로토콜</span></button>`).join('')
+    : '<p class="i360-empty">직접 연결되는 기능성 프로토콜이 없습니다.</p>';
+  const minutesHtml = data.minutes.length
+    ? data.minutes.slice(0, 5).map(item => `<div class="i360-minute"><strong>${escapeHtml(item.meetingName || '-')}</strong><span>${escapeHtml(item.year || '')}</span></div>`).join('')
+    : '<p class="i360-empty">직접 연결되는 심의 회의록이 없습니다.</p>';
+  return `<div class="i360-research-column"><h4>평가 프로토콜</h4>${protocols}</div>
+    <div class="i360-research-column"><h4>심의 이력</h4>${minutesHtml}</div>`;
+}
+
+function ingredient360NewsHtml(data) {
+  if (!data.news.length) return '<p class="i360-empty">최근 수집 뉴스에서 직접 연결되는 기사를 찾지 못했습니다.</p>';
+  return data.news.slice(0, 6).map(item => {
+    const news = item.row;
+    return `<a class="i360-news-row" href="${escapeHtml(news.link || '#')}" target="_blank" rel="noopener">
+      <span>${escapeHtml(news.sourceLabel || news.source || '뉴스')}</span>
+      <strong>${escapeHtml(news.title || '-')}</strong>
+      <time>${escapeHtml(fmtNewsDate(news.pubDate))}</time>
+    </a>`;
+  }).join('');
+}
+
+function renderIngredient360(data) {
+  const body = document.getElementById('i360-body');
+  if (!body) return;
+  const verdict = ingredient360Verdict(data);
+  const seed = data.seed;
+  const category = seed?.category || data.protocols[0]?.name || '기능성 미확정';
+  const efficacy = seed?.efficacy || '직접 연결되는 인정 기능성 없음';
+  body.innerHTML = `
+    <header class="i360-head">
+      <div>
+        <span class="i360-kicker">Ingredient Intelligence / 360°</span>
+        <h2 id="i360-title">${escapeHtml(data.query)}</h2>
+        <p>${escapeHtml(category)} · ${escapeHtml(efficacy)}</p>
+      </div>
+      <div class="i360-head-actions">
+        <button type="button" data-i360-precheck>Pre-Check 실행</button>
+        ${seed ? `<button type="button" data-i360-compare>${inCompare(seed.name) ? '비교함에서 제거' : '비교함에 추가'}</button>` : ''}
+      </div>
+    </header>
+    <section class="i360-verdict ${verdict.tone}">
+      <div class="i360-verdict-code"><span>${escapeHtml(verdict.label)}</span><strong>${escapeHtml(verdict.title)}</strong></div>
+      <div><p>${escapeHtml(verdict.summary)}</p><small>${escapeHtml(verdict.path)}</small></div>
+    </section>
+    <div class="i360-evidence-row" aria-label="근거 상태">${ingredient360EvidenceHtml(data)}</div>
+    <nav class="i360-counts" aria-label="연결 데이터">
+      ${ingredient360CountHtml('인정 원료', data.recognized.length, 'ingredients')}
+      ${ingredient360CountHtml('식품·한시 원료', data.food.length + data.temp.length, 'foodraw')}
+      ${ingredient360CountHtml('안전성·주의', data.safety.length + data.blocked.length + data.gmo.length, 'safety-db')}
+      ${ingredient360CountHtml('적용 제품', data.products.length, 'products')}
+      ${ingredient360CountHtml('연구 근거', data.protocols.length + data.minutes.length, 'biomarkers')}
+      ${ingredient360CountHtml('관련 뉴스', data.news.length, 'news')}
+    </nav>
+    <section class="i360-section">
+      <div class="i360-section-head"><div><span>01</span><h3>동일·유사 인정 원료</h3></div><button type="button" data-i360-goto="ingredients">전체 DB</button></div>
+      <div class="i360-record-grid">${ingredient360RecognizedHtml(data)}</div>
+    </section>
+    <section class="i360-section">
+      <div class="i360-section-head"><div><span>02</span><h3>원재료·안전성 게이트</h3></div><button type="button" data-i360-goto="safety-db">안전성 DB</button></div>
+      <div class="i360-safety-list">${ingredient360SafetyHtml(data)}</div>
+    </section>
+    <section class="i360-section">
+      <div class="i360-section-head"><div><span>03</span><h3>제품 적용 현황</h3></div><button type="button" data-i360-goto="products">제품 DB</button></div>
+      <div class="i360-product-list">${ingredient360ProductsHtml(data)}</div>
+    </section>
+    <section class="i360-section">
+      <div class="i360-section-head"><div><span>04</span><h3>연구·심의 연결</h3></div><button type="button" data-i360-goto="trials">임상 DB</button></div>
+      <div class="i360-research-grid">${ingredient360ResearchHtml(data)}</div>
+    </section>
+    <section class="i360-section">
+      <div class="i360-section-head"><div><span>05</span><h3>시장·뉴스 신호</h3></div><button type="button" data-i360-goto="news">뉴스 전체</button></div>
+      <div class="i360-news-list">${ingredient360NewsHtml(data)}</div>
+    </section>
+    <section class="i360-next">
+      <div><span>Next action</span><h3>다음 검토로 연결</h3></div>
+      <button type="button" data-i360-goto="material-dev">개발자료 체크</button>
+      <button type="button" data-i360-goto="laws">국내 규제자료</button>
+      <button type="button" data-i360-goto="overseas-approval">해외 인허가</button>
+      <button type="button" data-i360-goto="market">시장성 확인</button>
+    </section>
+  `;
+
+  body.querySelector('[data-i360-precheck]')?.addEventListener('click', () => {
+    closeIngredient360();
+    runHomePrecheck(data.query);
+  });
+  body.querySelector('[data-i360-compare]')?.addEventListener('click', event => {
+    toggleCompare(seed);
+    event.currentTarget.textContent = inCompare(seed.name) ? '비교함에서 제거' : '비교함에 추가';
+  });
+  body.querySelectorAll('[data-i360-related]').forEach(button => {
+    button.addEventListener('click', () => {
+      const row = data.recognized[Number(button.dataset.i360Related)]?.row;
+      if (row) openIngredient360(row.name, row);
+    });
+  });
+  body.querySelectorAll('[data-i360-protocol]').forEach(button => {
+    button.addEventListener('click', () => {
+      const query = button.dataset.i360Protocol;
+      closeIngredient360();
+      routeHeroSearch('biomarkers', query);
+      navigateTo('biomarkers');
+      history.replaceState(null, '', '#biomarkers');
+    });
+  });
+  body.querySelectorAll('[data-i360-goto]').forEach(button => {
+    button.addEventListener('click', () => {
+      const target = button.dataset.i360Goto;
+      closeIngredient360();
+      navigateTo(target);
+      initTabContent(target).then(() => routeHeroSearch(target, data.query));
+      history.replaceState(null, '', '#' + target);
+    });
+  });
+}
+
+async function openIngredient360(query, seedRecord) {
+  const q = String(query || seedRecord?.name || '').trim();
+  if (!q) return;
+  if (!(await protectedAuthStatus())) {
+    openProtectedAccountModal();
+    return;
+  }
+  const overlay = document.getElementById('i360-overlay');
+  const body = document.getElementById('i360-body');
+  if (!overlay || !body) return;
+  overlay.hidden = false;
+  document.body.classList.add('i360-open');
+  body.innerHTML = '<div class="i360-loading"><strong>원료 근거 연결 중</strong><span>인정 이력·안전성·제품·연구 자료를 대조하고 있습니다.</span></div>';
+  try {
+    await loadScripts(INGREDIENT_360_DATA_DEPS);
+    renderIngredient360(buildIngredient360Data(q, seedRecord));
+    body.scrollTop = 0;
+  } catch (error) {
+    console.error(error);
+    body.innerHTML = '<div class="i360-loading error"><strong>자료를 불러오지 못했습니다.</strong><span>잠시 후 다시 시도해 주세요.</span></div>';
+  }
+}
+
+function closeIngredient360() {
+  const overlay = document.getElementById('i360-overlay');
+  if (!overlay) return;
+  overlay.hidden = true;
+  document.body.classList.remove('i360-open');
+}
+
+function setupIngredient360() {
+  const overlay = document.getElementById('i360-overlay');
+  const close = document.getElementById('i360-close');
+  if (!overlay) return;
+  close?.addEventListener('click', closeIngredient360);
+  overlay.addEventListener('click', event => {
+    if (event.target === overlay) closeIngredient360();
+  });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && !overlay.hidden) closeIngredient360();
   });
 }
 
@@ -5180,6 +5592,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadApprovedMemberCount();
   setupHomeOpsPanel();
   setupIngredientDetail();
+  setupIngredient360();
   setupCompareTray();
   setupWhitespaceGate();
   setupOverseasGate();
