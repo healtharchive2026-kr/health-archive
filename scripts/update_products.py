@@ -9,6 +9,7 @@ Windows 작업 스케줄러에 등록해서 매일 자동 실행하도록 구성
 import json
 import os
 import sys
+import time
 import urllib.request
 import urllib.parse
 from datetime import datetime, timedelta
@@ -30,6 +31,7 @@ FETCH_PAGES = 40         # 최근 30일 경계까지 충분히 역순 탐색
 C003_URL = "https://openapi.foodsafetykorea.go.kr/api/{key}/C003/json/1/5/PRDLST_REPORT_NO={report_no}"
 PUBLIC_DETAIL_URL = "https://data.mfds.go.kr/hid/opbab01/prdtDtlInfo.do"
 MAX_COMPOSITION_FETCH = 200
+COMPOSITION_TIME_BUDGET_SECONDS = 180
 
 HEADERS = {
     "Content-Type": "application/x-www-form-urlencoded",
@@ -257,8 +259,12 @@ def enrich_compositions(products):
     api_key = os.environ.get('FOOD_SAFETY_KOREA_API_KEY', '').strip()
     recognized = load_recognized_ingredients()
     updated = 0
+    started_at = time.monotonic()
     candidates = [p for p in products if p.get('id') and not p.get('detailUpdatedAt')]
     for product in candidates[:MAX_COMPOSITION_FETCH]:
+        if time.monotonic() - started_at >= COMPOSITION_TIME_BUDGET_SECONDS:
+            log(f"INFO: composition lookup paused after {updated} update(s); remaining items continue next run.")
+            break
         try:
             detail = fetch_public_detail(product['id'])
             if not detail and api_key and product.get('reportNo'):
