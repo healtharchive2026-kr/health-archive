@@ -12,13 +12,13 @@
     "newCount": 0
   },
   "products": {
-    "lastRun": "2026-07-29 19:18:06",
+    "lastRun": "2026-07-30 00:36:43",
     "timezone": "Asia/Seoul",
     "count": 848,
     "newCount": 0
   },
   "news": {
-    "lastRun": "2026-07-29 19:18:28",
+    "lastRun": "2026-07-30 00:37:05",
     "timezone": "Asia/Seoul",
     "count": 17,
     "newCount": 0
@@ -30,21 +30,21 @@
     "newCount": 0
   },
   "news_nutraingredients": {
-    "lastRun": "2026-07-29 19:20:08",
+    "lastRun": "2026-07-30 00:38:48",
     "timezone": "Asia/Seoul",
-    "count": 134,
-    "newCount": 3
+    "count": 140,
+    "newCount": 6
   },
   "news_supplysidesj": {
-    "lastRun": "2026-07-29 19:20:09",
+    "lastRun": "2026-07-30 00:38:49",
     "timezone": "Asia/Seoul",
     "count": 73,
     "newCount": 0
   },
   "news_nutritioninsight": {
-    "lastRun": "2026-07-29 19:20:12",
+    "lastRun": "2026-07-30 00:38:52",
     "timezone": "Asia/Seoul",
-    "count": 119,
+    "count": 121,
     "newCount": 2
   },
   "temp_approval": {
@@ -54,25 +54,25 @@
     "newCount": 0
   },
   "news_sciencedaily": {
-    "lastRun": "2026-07-29 19:20:13",
+    "lastRun": "2026-07-30 00:38:55",
     "timezone": "Asia/Seoul",
-    "count": 34,
-    "newCount": 0
+    "count": 36,
+    "newCount": 2
   },
   "news_yakup": {
-    "lastRun": "2026-07-29 19:20:22",
+    "lastRun": "2026-07-30 00:38:58",
     "timezone": "Asia/Seoul",
     "count": 50,
-    "newCount": 3
+    "newCount": 0
   },
   "papers": {
-    "lastRun": "2026-07-29 19:20:30",
+    "lastRun": "2026-07-30 00:39:08",
     "timezone": "Asia/Seoul",
     "count": 0,
     "newCount": 0
   },
   "news_kfri": {
-    "lastRun": "2026-07-29 19:18:42",
+    "lastRun": "2026-07-30 00:37:18",
     "timezone": "Asia/Seoul",
     "count": 77,
     "newCount": 0
