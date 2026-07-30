@@ -1,13 +1,11 @@
-const CACHE_NAME = 'healtharchive-ai-researchers-20260730-52';
+const CACHE_NAME = 'healtharchive-ai-admin-lock-20260730-53';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/style.css?v=20260728-i360-1',
-  '/simon.css?v=20260730-personas1',
-  '/app.js?v=20260728-i360-1',
-  '/simon.js?v=20260730-personas1',
-  '/assets/assistant-simon.webp',
-  '/assets/assistant-hera.webp',
+  '/style.css?v=20260730-aiadmin1',
+  '/simon.css?v=20260730-adminlock1',
+  '/app.js?v=20260730-aiadmin1',
+  '/simon.js?v=20260730-adminlock1',
   '/pc-cinema.js?v=20260714-cinema-restore1',
   '/device-routing.js?v=20260714-mobile1',
   '/mobile-lite.html',

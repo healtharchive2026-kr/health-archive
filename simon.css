@@ -37,6 +37,10 @@
   font:800 8px/1 var(--mono);
   text-transform:uppercase;
 }
+.simon-trigger.is-locked{border-color:#d7c5c9;background:#faf6f7;color:var(--signal);}
+.simon-trigger.is-locked .simon-trigger-icon{background:var(--signal);}
+.simon-trigger.is-locked .simon-trigger-beta{color:var(--signal);}
+.simon-trigger.is-locked:hover{border-color:var(--signal);background:#f8ecef;}
 .mobile-version-link{order:5;}
 .account-trigger{order:6;}
 .mobile-menu-toggle{order:7;}
@@ -159,6 +163,37 @@ body.simon-open{overflow:hidden;}
 .simon-persona[data-assistant-select="hera"]>span{background:#f8ecef;color:var(--signal);}
 .simon-persona[data-assistant-select="hera"].is-active{border-color:var(--signal);background:#fcf6f7;}
 .simon-persona:disabled{cursor:wait;opacity:.58;}
+.simon-admin-lock{display:none;}
+.simon-panel.is-locked .simon-personas,
+.simon-panel.is-locked .simon-status,
+.simon-panel.is-locked .simon-messages,
+.simon-panel.is-locked .simon-form{display:none;}
+.simon-panel.is-locked .simon-admin-lock{
+  display:flex!important;
+  flex:1;
+  min-height:0;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  padding:36px;
+  background:#fbfcfb;
+  text-align:center;
+}
+.simon-admin-lock-icon{
+  display:flex;
+  width:62px;
+  height:62px;
+  align-items:center;
+  justify-content:center;
+  margin-bottom:18px;
+  border:1px solid #dfc1c8;
+  border-radius:50%;
+  background:#fbf1f3;
+  color:var(--signal);
+  font:900 10px/1 var(--mono);
+}
+.simon-admin-lock strong{color:var(--text);font-size:18px;line-height:1.35;}
+.simon-admin-lock p{max-width:320px;margin:10px 0 0;color:var(--muted);font-size:12px;line-height:1.7;word-break:keep-all;}
 .simon-status{
   display:flex;
   min-height:38px;

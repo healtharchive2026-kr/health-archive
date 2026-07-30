@@ -1540,6 +1540,8 @@ function protectedGateError(element, message) {
 function renderProtectedAccountState(authenticated) {
   const trigger = document.getElementById('account-trigger');
   const label = document.getElementById('account-trigger-label');
+  const assistantTrigger = document.getElementById('simon-trigger');
+  const assistantBadge = assistantTrigger?.querySelector('.simon-trigger-beta');
   const loggedOut = document.getElementById('account-logged-out');
   const loggedIn = document.getElementById('account-logged-in');
   const requestPanel = document.getElementById('account-request-panel');
@@ -1549,6 +1551,12 @@ function renderProtectedAccountState(authenticated) {
   document.body.classList.toggle('site-authenticated', authenticated === true);
   if (trigger) trigger.classList.toggle('is-authenticated', authenticated === true);
   if (label) label.textContent = authenticated ? '로그인됨' : '로그인';
+  if (assistantTrigger) {
+    const assistantAdmin = authenticated === true && protectedAdminState;
+    assistantTrigger.classList.toggle('is-locked', !assistantAdmin);
+    assistantTrigger.setAttribute('aria-label', assistantAdmin ? 'AI 연구원 열기' : 'AI 연구원 관리자 전용');
+    if (assistantBadge) assistantBadge.textContent = assistantAdmin ? 'ADMIN' : 'LOCK';
+  }
   if (loggedOut) loggedOut.hidden = authenticated === true;
   if (loggedIn) loggedIn.hidden = authenticated !== true;
   if (requestPanel && authenticated) requestPanel.hidden = true;

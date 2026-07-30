@@ -406,21 +406,38 @@
     document.getElementById('simon-input')?.focus();
   }
 
-  async function openSimon(personaId = 'simon') {
-    if (!localPreview() && !(await protectedAuthStatus())) {
-      openProtectedAccountModal();
-      return;
-    }
+  function revealSimonPanel(personaId, locked = false) {
     setPersona(personaId, state.persona !== personaId);
     state.lastTrigger = document.activeElement;
     const overlay = document.getElementById('simon-overlay');
+    const panel = document.querySelector('.simon-panel');
+    const lockNotice = document.getElementById('simon-admin-lock');
+    panel?.classList.toggle('is-locked', locked);
+    if (lockNotice) lockNotice.hidden = !locked;
     overlay.hidden = false;
     document.body.classList.add('simon-open');
+    if (!locked) {
+      window.setTimeout(() => document.getElementById('simon-input')?.focus(), 30);
+    }
+  }
+
+  async function openSimon(personaId = 'simon') {
+    if (!localPreview()) {
+      const authenticated = await protectedAuthStatus();
+      if (!authenticated) {
+        openProtectedAccountModal();
+        return;
+      }
+      if (!protectedAdminState) {
+        revealSimonPanel(personaId, true);
+        return;
+      }
+    }
+    revealSimonPanel(personaId, false);
     requestQuota(false).catch(error => {
       renderQuota(null);
       console.error('Simon quota status failed', error);
     });
-    window.setTimeout(() => document.getElementById('simon-input')?.focus(), 30);
   }
 
   function closeSimon() {

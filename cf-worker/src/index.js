@@ -523,6 +523,7 @@ async function handleAssistantQuota(request, env, url, origin) {
 
   const session = await readAuthorizedSession(request, env);
   if (!session) return authJson({ error: '인증이 필요합니다.' }, 401, origin);
+  if (!session.admin) return authJson({ error: '관리자 전용 AI 기능입니다.' }, 403, origin);
 
   const now = Math.floor(Date.now() / 1000);
   const quota = await assistantQuota(env, session, now);

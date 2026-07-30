@@ -55,8 +55,8 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="preload" as="image" href="assets/cinema-overview.jpg" fetchpriority="high">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="style.css?v=20260728-i360-1">
-<link rel="stylesheet" href="simon.css?v=20260730-personas1">
+<link rel="stylesheet" href="style.css?v=20260730-aiadmin1">
+<link rel="stylesheet" href="simon.css?v=20260730-adminlock1">
 </head>
 <body>
 <a class="skip-link" href="#main-content">본문 바로가기</a>
@@ -68,10 +68,10 @@
       <span class="cmdk-trigger-label">통합검색</span>
       <span class="cmdk-trigger-kbd"><kbd>Ctrl</kbd><kbd>K</kbd></span>
     </button>
-    <button class="simon-trigger" type="button" id="simon-trigger" data-assistant="simon" aria-haspopup="dialog" aria-controls="simon-overlay">
+    <button class="simon-trigger is-locked" type="button" id="simon-trigger" data-assistant="simon" aria-label="AI 연구원 관리자 전용" aria-haspopup="dialog" aria-controls="simon-overlay">
       <span class="simon-trigger-icon" aria-hidden="true">AI</span>
       <span class="simon-trigger-label">AI 연구원</span>
-      <span class="simon-trigger-beta">Beta</span>
+      <span class="simon-trigger-beta">LOCK</span>
     </button>
     <a class="mobile-version-link" href="https://m.healtharchive.kr/" aria-label="모바일 버전 열기">
       <span class="mobile-version-icon" aria-hidden="true">M</span>
@@ -190,16 +190,6 @@
     </div>
 
     <div class="hero hero-dark" id="workspace-start">
-      <div class="hero-assistants" aria-label="AI 연구원 선택">
-        <button type="button" class="hero-assistant hero-assistant-simon" data-assistant="simon" aria-label="Simon AI 연구원에게 질문하기">
-          <img src="assets/assistant-simon.webp" alt="" width="520" height="947" decoding="async">
-          <span class="hero-assistant-label"><strong>Simon</strong><small>원료·규제 사전검토</small><i aria-hidden="true">→</i></span>
-        </button>
-        <button type="button" class="hero-assistant hero-assistant-hera" data-assistant="hera" aria-label="Hera AI 연구원에게 질문하기">
-          <img src="assets/assistant-hera.webp" alt="" width="520" height="973" decoding="async">
-          <span class="hero-assistant-label"><strong>Hera</strong><small>연구·근거 해석</small><i aria-hidden="true">→</i></span>
-        </button>
-      </div>
       <img src="assets/logo-icon.png" alt="HealthArchive 아카이브 심볼" class="hero-watermark">
       <div class="hero-intro">
         <div class="hero-copy">
@@ -2524,6 +2514,11 @@
         <span>H</span><strong>Hera</strong><small>연구·근거</small>
       </button>
     </div>
+    <div class="simon-admin-lock" id="simon-admin-lock" hidden>
+      <span class="simon-admin-lock-icon" aria-hidden="true">LOCK</span>
+      <strong>관리자 전용 AI 기능</strong>
+      <p>Simon과 Hera는 현재 관리 목적으로 제한 운영 중입니다. 관리자 계정으로 로그인한 경우에만 질문 기능을 사용할 수 있습니다.</p>
+    </div>
     <div class="simon-status" id="simon-status">
       <span class="simon-status-dot" aria-hidden="true"></span>
       <strong id="simon-status-label">Simon 연결됨</strong>
@@ -2603,8 +2598,8 @@
 <script src="data/status.js?v=20260722-runtimefix1"></script>
 <script src="data/daily_quotes.js"></script>
 <script src="market.js?v=20260721-access-market1"></script>
-<script src="app.js?v=20260728-i360-1"></script>
-<script src="simon.js?v=20260730-personas1"></script>
+<script src="app.js?v=20260730-aiadmin1"></script>
+<script src="simon.js?v=20260730-adminlock1"></script>
 <script src="pc-cinema.js?v=20260714-cinema-restore1"></script>
 <script src="feedback.js?v=20260714-api1"></script>
 </body>
