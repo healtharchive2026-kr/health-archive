@@ -47,6 +47,7 @@ jobs:
           )
 
           failed_scripts=()
+          total_count=${#scripts[@]}
           for script in "${scripts[@]}"; do
             echo "::group::${script}"
             python "$script"
@@ -55,12 +56,14 @@ jobs:
             if [ "$code" -ne 0 ]; then
               echo "::warning::${script} failed with exit code ${code}"
               failed_scripts+=("${script}")
+              python scripts/mark_update_failure.py "$script"
             fi
           done
 
           failed_names="$(IFS=,; echo "${failed_scripts[*]}")"
           echo "failed_count=${#failed_scripts[@]}" >> "$GITHUB_OUTPUT"
           echo "failed_names=${failed_names}" >> "$GITHUB_OUTPUT"
+          echo "total_count=${total_count}" >> "$GITHUB_OUTPUT"
 
       - name: Commit updated news
         run: |
@@ -96,10 +99,14 @@ jobs:
         env:
           FAILED_COUNT: ${{ steps.collectors.outputs.failed_count }}
           FAILED_NAMES: ${{ steps.collectors.outputs.failed_names }}
+          TOTAL_COUNT: ${{ steps.collectors.outputs.total_count }}
         run: |
           failed=0
           if [ "${FAILED_COUNT:-0}" -ne 0 ]; then
-            echo "::error::News collector failures: ${FAILED_NAMES}"
+            echo "::warning::Partial news collector failures: ${FAILED_NAMES}"
+          fi
+          if [ "${FAILED_COUNT:-0}" -ge "${TOTAL_COUNT:-6}" ]; then
+            echo "::error::All news collectors failed."
             failed=1
           fi
           python scripts/validate_update_status.py --news-only || failed=1

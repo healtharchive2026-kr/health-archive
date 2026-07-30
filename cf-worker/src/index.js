@@ -34,11 +34,13 @@ const AUTH_MAX_AGE = 6 * 60 * 60;
 const ACCESS_REQUEST_RETENTION = 365 * 24 * 60 * 60;
 const ACCESS_REQUEST_DAILY_LIMIT = 10;
 const USAGE_EVENT_RETENTION = 90 * 24 * 60 * 60;
+const ASSISTANT_SEARCH_LIMIT = 5;
+const ASSISTANT_WINDOW_SECONDS = 24 * 60 * 60;
 const AUTH_COOKIE = 'ha_protected_session';
 const PROTECTED_DATA_KEYS = new Set(['radar-log', 'demand-trends', 'overseas-regulatory', 'funding-opportunities']);
 const ADMIN_PROTECTED_DATA_KEYS = new Set();
 const ACCESS_LOGIN_PATH = '/auth/access/exchange';
-const USAGE_EVENTS = new Set(['tab_view', 'protected_login']);
+const USAGE_EVENTS = new Set(['tab_view', 'protected_login', 'assistant_search']);
 const ADMIN_EMAIL = 'healtharchive2026@gmail.com';
 const GUIDELINE_ARCHIVE_FILES = [
   ['기능성 평가 가이드 - 간 건강 v2.pdf', 2568362, 2357333262],
@@ -482,6 +484,82 @@ async function handleUsageEvent(request, env, origin) {
     'INSERT INTO usage_events (user_key, event_name, target, created_at) VALUES (?, ?, ?, ?)'
   ).bind(session.userKey, eventName, target, now).run();
   return new Response(null, { status: 204, headers: corsHeaders(origin) });
+}
+
+async function assistantQuota(env, session, now) {
+  if (session.admin) {
+    return {
+      allowed: true,
+      unlimited: true,
+      limit: null,
+      used: 0,
+      remaining: null,
+      resetAt: null,
+    };
+  }
+  const since = now - ASSISTANT_WINDOW_SECONDS;
+  const result = await env.DB.prepare(
+    `SELECT COUNT(*) AS used, MIN(created_at) AS first_used_at
+     FROM usage_events
+     WHERE user_key = ? AND event_name = 'assistant_search'
+       AND target = 'simon' AND created_at >= ?`
+  ).bind(session.userKey, since).first();
+  const used = Number(result?.used || 0);
+  const firstUsedAt = Number(result?.first_used_at || 0);
+  return {
+    allowed: used < ASSISTANT_SEARCH_LIMIT,
+    unlimited: false,
+    limit: ASSISTANT_SEARCH_LIMIT,
+    used,
+    remaining: Math.max(0, ASSISTANT_SEARCH_LIMIT - used),
+    resetAt: firstUsedAt ? firstUsedAt + ASSISTANT_WINDOW_SECONDS : null,
+  };
+}
+
+async function handleAssistantQuota(request, env, url, origin) {
+  const isStatus = url.pathname === '/assistant/quota' && request.method === 'GET';
+  const isConsume = url.pathname === '/assistant/quota/consume' && request.method === 'POST';
+  if (!isStatus && !isConsume) return null;
+
+  const session = await readAuthorizedSession(request, env);
+  if (!session) return authJson({ error: '인증이 필요합니다.' }, 401, origin);
+
+  const now = Math.floor(Date.now() / 1000);
+  const quota = await assistantQuota(env, session, now);
+  if (!isConsume || quota.unlimited) {
+    return authJson(quota, 200, origin);
+  }
+  if (!quota.allowed) {
+    return authJson({
+      ...quota,
+      error: '최근 24시간 검색 한도에 도달했습니다.',
+    }, 429, origin);
+  }
+
+  const inserted = await env.DB.prepare(
+    `INSERT INTO usage_events (user_key, event_name, target, created_at)
+     SELECT ?, 'assistant_search', 'simon', ?
+     WHERE (
+       SELECT COUNT(*) FROM usage_events
+       WHERE user_key = ? AND event_name = 'assistant_search'
+         AND target = 'simon' AND created_at >= ?
+     ) < ?`
+  ).bind(
+    session.userKey,
+    now,
+    session.userKey,
+    now - ASSISTANT_WINDOW_SECONDS,
+    ASSISTANT_SEARCH_LIMIT,
+  ).run();
+  const current = await assistantQuota(env, session, now);
+  if (Number(inserted?.meta?.changes || 0) !== 1) {
+    return authJson({
+      ...current,
+      allowed: false,
+      error: '최근 24시간 검색 한도에 도달했습니다.',
+    }, 429, origin);
+  }
+  return authJson({ ...current, allowed: true }, 200, origin);
 }
 
 async function requireAdmin(request, env, origin) {
@@ -930,6 +1008,11 @@ export default {
     if (url.pathname === '/usage-events') {
       const usageResponse = await handleUsageEvent(request, env, origin);
       if (usageResponse) return usageResponse;
+    }
+
+    if (url.pathname.startsWith('/assistant/quota')) {
+      const assistantQuotaResponse = await handleAssistantQuota(request, env, url, origin);
+      if (assistantQuotaResponse) return assistantQuotaResponse;
     }
 
     if (url.pathname.startsWith('/admin/access-requests')) {

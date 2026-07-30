@@ -56,6 +56,7 @@
 <link rel="preload" as="image" href="assets/cinema-overview.jpg" fetchpriority="high">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <link rel="stylesheet" href="style.css?v=20260728-i360-1">
+<link rel="stylesheet" href="simon.css?v=20260730-quota1">
 </head>
 <body>
 <a class="skip-link" href="#main-content">본문 바로가기</a>
@@ -66,6 +67,11 @@
       <span class="cmdk-trigger-icon">⌕</span>
       <span class="cmdk-trigger-label">통합검색</span>
       <span class="cmdk-trigger-kbd"><kbd>Ctrl</kbd><kbd>K</kbd></span>
+    </button>
+    <button class="simon-trigger" type="button" id="simon-trigger" aria-haspopup="dialog" aria-controls="simon-overlay">
+      <span class="simon-trigger-icon" aria-hidden="true">AI</span>
+      <span class="simon-trigger-label">자료검색</span>
+      <span class="simon-trigger-beta">Beta</span>
     </button>
     <a class="mobile-version-link" href="https://m.healtharchive.kr/" aria-label="모바일 버전 열기">
       <span class="mobile-version-icon" aria-hidden="true">M</span>
@@ -2487,6 +2493,47 @@
   </section>
 </div>
 
+<div class="simon-overlay" id="simon-overlay" hidden>
+  <aside class="simon-panel" role="dialog" aria-modal="true" aria-labelledby="simon-title" aria-describedby="simon-description">
+    <header class="simon-head">
+      <div>
+        <span class="simon-kicker">Evidence Search Assistant</span>
+        <div class="simon-title-row">
+          <h2 id="simon-title">Simon 자료검색</h2>
+          <span>Beta</span>
+        </div>
+        <p id="simon-description">원료명을 입력하면 HealthArchive의 동일한 근거 DB를 연결해 요약합니다.</p>
+      </div>
+      <button type="button" class="simon-close" id="simon-close" aria-label="AI 자료검색 닫기">×</button>
+    </header>
+    <div class="simon-status" id="simon-status">
+      <span class="simon-status-dot" aria-hidden="true"></span>
+      <strong>근거 우선 검색</strong>
+      <span>질문 원문 미저장</span>
+    </div>
+    <div class="simon-messages" id="simon-messages" aria-live="polite" aria-busy="false">
+      <article class="simon-message simon-message-system">
+        <span class="simon-avatar" aria-hidden="true">S</span>
+        <div>
+          <strong>원료 사전검토를 시작할 수 있습니다.</strong>
+          <p>원재료명, 학명 또는 영문명을 입력하세요. 공개 DB의 명칭 일치 결과를 먼저 제시하며 최종 인허가 판단을 대신하지 않습니다.</p>
+        </div>
+      </article>
+    </div>
+    <form class="simon-form" id="simon-form">
+      <label for="simon-input">검토할 원료명</label>
+      <div class="simon-input-row">
+        <input type="text" id="simon-input" maxlength="160" autocomplete="off" spellcheck="false" placeholder="검토할 원료명을 입력하세요">
+        <button type="submit" id="simon-submit">검색</button>
+      </div>
+      <div class="simon-form-meta">
+        <span id="simon-quota">24시간 기준 5회</span>
+        <button type="button" id="simon-clear">대화 지우기</button>
+      </div>
+    </form>
+  </aside>
+</div>
+
 <div class="cmp-tray" id="cmp-tray" hidden>
   <div class="cmp-tray-inner">
     <span class="cmp-tray-label">비교함</span>
@@ -2539,6 +2586,7 @@
 <script src="data/daily_quotes.js"></script>
 <script src="market.js?v=20260721-access-market1"></script>
 <script src="app.js?v=20260728-i360-1"></script>
+<script src="simon.js?v=20260730-quota1"></script>
 <script src="pc-cinema.js?v=20260714-cinema-restore1"></script>
 <script src="feedback.js?v=20260714-api1"></script>
 </body>

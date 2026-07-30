@@ -16,7 +16,7 @@ STATUS_JS = os.path.join(BASE_DIR, 'data', 'status.js')
 SEOUL_TZ = ZoneInfo('Asia/Seoul')
 
 
-def touch(key, count=None, new_count=None):
+def touch(key, count=None, new_count=None, success=True, error=None):
     status = {}
     if os.path.exists(STATUS_JSON):
         try:
@@ -33,11 +33,16 @@ def touch(key, count=None, new_count=None):
         except Exception:
             status = {}
 
+    now = datetime.now(SEOUL_TZ).strftime('%Y-%m-%d %H:%M:%S')
+    previous = status.get(key) if isinstance(status.get(key), dict) else {}
     status[key] = {
-        'lastRun': datetime.now(SEOUL_TZ).strftime('%Y-%m-%d %H:%M:%S'),
+        'lastRun': now,
+        'lastSuccess': now if success else previous.get('lastSuccess', previous.get('lastRun')),
         'timezone': 'Asia/Seoul',
-        'count': count,
+        'count': count if count is not None else previous.get('count'),
         'newCount': new_count,
+        'success': bool(success),
+        'error': None if success else str(error or 'collector failed')[:500],
     }
 
     with open(STATUS_JSON, 'w', encoding='utf-8') as f:
