@@ -22,6 +22,12 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - name: Sync latest master
+        run: git pull --ff-only origin master
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -142,9 +148,14 @@ jobs:
             git push && exit 0
             echo "::warning::push rejected, retrying with rebase (attempt ${i})"
             git fetch origin
-            git rebase origin/master
+            if ! git rebase origin/master; then
+              git rebase --abort || true
+              echo "::error::Generated daily data conflicted with a newer master update."
+              exit 1
+            fi
           done
-          git push
+          echo "::error::Unable to push generated daily data after 5 attempts."
+          exit 1
 
       - name: Validate scheduled update
         if: always()
