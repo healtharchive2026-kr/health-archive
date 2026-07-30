@@ -1,11 +1,12 @@
-const CACHE_NAME = 'healtharchive-ai-admin-lock-20260730-53';
+const CACHE_NAME = 'healtharchive-chapter-covers-20260730-54';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/style.css?v=20260730-aiadmin1',
+  '/style.css?v=20260730-chapters1',
   '/simon.css?v=20260730-adminlock1',
   '/app.js?v=20260730-aiadmin1',
   '/simon.js?v=20260730-adminlock1',
+  '/section-visuals.js?v=20260730-chapters1',
   '/pc-cinema.js?v=20260714-cinema-restore1',
   '/device-routing.js?v=20260714-mobile1',
   '/mobile-lite.html',
