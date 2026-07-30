@@ -2,12 +2,39 @@
   'use strict';
 
   const SEARCH_LIMIT = 5;
+  const PERSONAS = {
+    simon: {
+      id: 'simon',
+      name: 'Simon',
+      avatar: 'S',
+      kicker: 'Ingredient & Regulatory Assistant',
+      description: '원료명을 입력하면 인정·안전성·제품·규제 자료를 연결해 사전검토합니다.',
+      status: 'Simon 연결됨',
+      label: '검토할 원료명',
+      placeholder: '원료명, 학명 또는 영문명을 입력하세요',
+    },
+    hera: {
+      id: 'hera',
+      name: 'Hera',
+      avatar: 'H',
+      kicker: 'Research & Evidence Assistant',
+      description: '원료 또는 기능성을 입력하면 연구설계·평가 프로토콜·근거 자료를 연결합니다.',
+      status: 'Hera 연결됨',
+      label: '검토할 원료 또는 기능성',
+      placeholder: '원료명 또는 기능성 질문을 입력하세요',
+    },
+  };
   const state = {
     count: 0,
     busy: false,
     lastTrigger: null,
     quota: null,
+    persona: 'simon',
   };
+
+  function activePersona() {
+    return PERSONAS[state.persona] || PERSONAS.simon;
+  }
 
   function localPreview() {
     return ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname) || window.location.protocol === 'file:';
@@ -53,6 +80,12 @@
 
   function evidenceRows(data) {
     const rows = [];
+    const protocolRows = data.protocols.slice(0, 3).map(item => ({
+      type: '평가 프로토콜',
+      title: item.name,
+      meta: item.protocol?.guideFile || '기능성 평가 가이드',
+    }));
+    if (state.persona === 'hera') rows.push(...protocolRows);
     data.blocked.slice(0, 2).forEach(item => rows.push({
       type: '차단 주의',
       title: [item.row.nk, item.row.ne].filter(Boolean).join(' / '),
@@ -78,18 +111,53 @@
       title: item.row.name,
       meta: [item.row.company, item.row.reportDate].filter(Boolean).join(' · '),
     }));
-    data.protocols.slice(0, 2).forEach(item => rows.push({
-      type: '평가 프로토콜',
-      title: item.name,
-      meta: item.protocol?.guideFile || '기능성 평가 가이드',
-    }));
+    if (state.persona !== 'hera') rows.push(...protocolRows.slice(0, 2));
     return rows.slice(0, 8);
   }
 
+  function assistantVerdict(data) {
+    const base = ingredient360Verdict(data);
+    if (state.persona !== 'hera') return base;
+    if (data.protocols.length) return {
+      tone: 'ready',
+      label: 'EVIDENCE MAP',
+      title: '기능성 평가 설계 자료 연결',
+      summary: `${data.protocols.length}개 기능성 프로토콜과 관련 근거가 확인되었습니다.`,
+      path: '대상자 조건 → 1차·2차 유효성 평가변수 → 전임상 유도모델 → 원문 가이드 확인',
+    };
+    if (data.recognized.length || data.products.length || data.minutes.length) return {
+      tone: base.tone === 'stop' ? 'stop' : 'review',
+      label: 'RESEARCH REVIEW',
+      title: '연구 근거 확장 검토',
+      summary: '인정 이력·제품·심의 자료를 연구설계 관점에서 연결할 수 있습니다.',
+      path: '기능성 범위 설정 → 작용기전 가설 → 핵심 평가변수 → 임상·전임상 근거 Gap 확인',
+    };
+    return {
+      ...base,
+      label: 'EVIDENCE GAP',
+      title: '연구 가설 구체화 필요',
+      path: '원료 동일성·기능성 가설 특정 → 작용기전 문헌 → 평가변수·시험모델 순으로 근거 구축',
+    };
+  }
+
   function answerHtml(data) {
-    const verdict = ingredient360Verdict(data);
+    const verdict = assistantVerdict(data);
     const rows = evidenceRows(data);
     const safetySignals = data.blocked.length + data.gmo.length + data.safety.length;
+    const isHera = state.persona === 'hera';
+    const actionButtons = isHera
+      ? [
+          ['i360', '원료 360°'],
+          ['biomarkers', '기능성 프로토콜'],
+          ['trials', '임상정보 DB'],
+          ['compare', '원료 비교'],
+        ]
+      : [
+          ['i360', '원료 360°'],
+          ['precheck', 'Pre-Check'],
+          ['ingredients', '인정원료 DB'],
+          ['safety-db', '안전성 DB'],
+        ];
     const evidence = rows.length
       ? `<div class="simon-evidence">
           <h3>연결된 근거</h3>
@@ -102,7 +170,7 @@
 
     return `<div class="simon-answer ${escapeHtml(verdict.tone)}" data-simon-query="${escapeHtml(data.query)}">
       <div class="simon-answer-head">
-        <span class="simon-answer-kicker">${escapeHtml(verdict.label)} / NAME-BASED SCREENING</span>
+        <span class="simon-answer-kicker">${escapeHtml(verdict.label)} / ${isHera ? 'RESEARCH EVIDENCE' : 'NAME-BASED SCREENING'}</span>
         <strong>${escapeHtml(verdict.title)}</strong>
         <p>${escapeHtml(verdict.summary)}</p>
       </div>
@@ -115,10 +183,7 @@
       ${evidence}
       <p class="simon-next"><b>다음 검토:</b> ${escapeHtml(verdict.path)}</p>
       <div class="simon-actions">
-        <button type="button" data-simon-action="i360">원료 360°</button>
-        <button type="button" data-simon-action="precheck">Pre-Check</button>
-        <button type="button" data-simon-action="ingredients">인정원료 DB</button>
-        <button type="button" data-simon-action="safety-db">안전성 DB</button>
+        ${actionButtons.map(([action, label]) => `<button type="button" data-simon-action="${action}">${label}</button>`).join('')}
       </div>
     </div>`;
   }
@@ -129,18 +194,20 @@
   }
 
   function appendLoading() {
+    const persona = activePersona();
     const messages = document.getElementById('simon-messages');
     messages.insertAdjacentHTML('beforeend', `<article class="simon-message simon-message-system simon-message-loading" id="simon-loading">
-      <span class="simon-avatar" aria-hidden="true">S</span>
+      <span class="simon-avatar" aria-hidden="true">${persona.avatar}</span>
       <div><div class="simon-loading-line" aria-label="근거 검색 중"><i></i><i></i><i></i></div></div>
     </article>`);
   }
 
   function appendAnswer(data) {
+    const persona = activePersona();
     document.getElementById('simon-loading')?.remove();
     const messages = document.getElementById('simon-messages');
     messages.insertAdjacentHTML('beforeend', `<article class="simon-message simon-message-system">
-      <span class="simon-avatar" aria-hidden="true">S</span>${answerHtml(data)}
+      <span class="simon-avatar" aria-hidden="true">${persona.avatar}</span>${answerHtml(data)}
     </article>`);
     const answer = messages.lastElementChild;
     answer.querySelectorAll('[data-simon-action]').forEach(button => {
@@ -175,10 +242,11 @@
   }
 
   function appendError(message) {
+    const persona = activePersona();
     document.getElementById('simon-loading')?.remove();
     const messages = document.getElementById('simon-messages');
     messages.insertAdjacentHTML('beforeend', `<article class="simon-message simon-message-system">
-      <span class="simon-avatar" aria-hidden="true">S</span>
+      <span class="simon-avatar" aria-hidden="true">${persona.avatar}</span>
       <div><strong>검색을 완료하지 못했습니다.</strong><p>${escapeHtml(message)}</p></div>
     </article>`);
     messages.scrollTop = messages.scrollHeight;
@@ -240,6 +308,9 @@
     if (submit) submit.disabled = busy;
     if (input) input.disabled = busy;
     if (messages) messages.setAttribute('aria-busy', String(busy));
+    document.querySelectorAll('[data-assistant-select]').forEach(button => {
+      button.disabled = busy;
+    });
   }
 
   async function runSimon(question) {
@@ -268,7 +339,7 @@
       }
       appendAnswer(data);
     } catch (error) {
-      console.error('Simon search failed', error);
+      console.error(`${activePersona().name} search failed`, error);
       appendError(error.message || '필요한 HealthArchive 자료를 불러오지 못했습니다. 잠시 후 다시 시도하세요.');
     } finally {
       setBusy(false);
@@ -277,13 +348,56 @@
   }
 
   function initialMessage() {
+    const persona = activePersona();
+    const content = persona.id === 'hera'
+      ? {
+          title: '연구 근거 연결을 시작할 수 있습니다.',
+          body: '원료명 또는 기능성을 입력하세요. 기능성 평가 프로토콜, 인정 이력과 연구설계 자료를 우선 연결합니다.',
+        }
+      : {
+          title: '원료 사전검토를 시작할 수 있습니다.',
+          body: '원재료명, 학명 또는 영문명을 입력하세요. 공개 DB의 명칭 일치 결과를 먼저 제시하며 최종 인허가 판단을 대신하지 않습니다.',
+        };
     return `<article class="simon-message simon-message-system">
-      <span class="simon-avatar" aria-hidden="true">S</span>
+      <span class="simon-avatar" aria-hidden="true">${persona.avatar}</span>
       <div>
-        <strong>원료 사전검토를 시작할 수 있습니다.</strong>
-        <p>원재료명, 학명 또는 영문명을 입력하세요. 공개 DB의 명칭 일치 결과를 먼저 제시하며 최종 인허가 판단을 대신하지 않습니다.</p>
+        <strong>${content.title}</strong>
+        <p>${content.body}</p>
       </div>
     </article>`;
+  }
+
+  function setPersona(personaId, resetConversation = true) {
+    const next = PERSONAS[personaId] || PERSONAS.simon;
+    if (state.busy) return;
+    const changed = state.persona !== next.id;
+    state.persona = next.id;
+
+    const panel = document.querySelector('.simon-panel');
+    panel?.classList.toggle('is-hera', next.id === 'hera');
+    const name = document.getElementById('simon-name');
+    const kicker = document.getElementById('simon-kicker');
+    const description = document.getElementById('simon-description');
+    const statusLabel = document.getElementById('simon-status-label');
+    const formLabel = document.querySelector('.simon-form > label');
+    const input = document.getElementById('simon-input');
+    if (name) name.textContent = next.name;
+    if (kicker) kicker.textContent = next.kicker;
+    if (description) description.textContent = next.description;
+    if (statusLabel) statusLabel.textContent = localPreview() ? '로컬 검증 모드' : next.status;
+    if (formLabel) formLabel.textContent = next.label;
+    if (input) input.placeholder = next.placeholder;
+
+    document.querySelectorAll('[data-assistant-select]').forEach(button => {
+      const selected = button.dataset.assistantSelect === next.id;
+      button.classList.toggle('is-active', selected);
+      button.setAttribute('aria-selected', String(selected));
+    });
+
+    if (changed || resetConversation) {
+      const messages = document.getElementById('simon-messages');
+      if (messages) messages.innerHTML = initialMessage();
+    }
   }
 
   function clearSimon() {
@@ -292,19 +406,16 @@
     document.getElementById('simon-input')?.focus();
   }
 
-  async function openSimon() {
+  async function openSimon(personaId = 'simon') {
     if (!localPreview() && !(await protectedAuthStatus())) {
       openProtectedAccountModal();
       return;
     }
+    setPersona(personaId, state.persona !== personaId);
     state.lastTrigger = document.activeElement;
     const overlay = document.getElementById('simon-overlay');
     overlay.hidden = false;
     document.body.classList.add('simon-open');
-    const status = document.getElementById('simon-status');
-    if (localPreview() && status) {
-      status.querySelector('strong').textContent = '로컬 검증 모드';
-    }
     requestQuota(false).catch(error => {
       renderQuota(null);
       console.error('Simon quota status failed', error);
@@ -321,10 +432,15 @@
   }
 
   function setupSimon() {
-    const trigger = document.getElementById('simon-trigger');
     const overlay = document.getElementById('simon-overlay');
     const form = document.getElementById('simon-form');
-    trigger?.addEventListener('click', openSimon);
+    setPersona('simon', false);
+    document.querySelectorAll('[data-assistant]').forEach(button => {
+      button.addEventListener('click', () => openSimon(button.dataset.assistant));
+    });
+    document.querySelectorAll('[data-assistant-select]').forEach(button => {
+      button.addEventListener('click', () => setPersona(button.dataset.assistantSelect));
+    });
     document.getElementById('simon-close')?.addEventListener('click', closeSimon);
     document.getElementById('simon-clear')?.addEventListener('click', clearSimon);
     overlay?.addEventListener('click', event => {
