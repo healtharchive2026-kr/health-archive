@@ -27,8 +27,8 @@
     "error": null
   },
   "news": {
-    "lastRun": "2026-08-04 12:42:44",
-    "lastSuccess": "2026-08-04 12:42:44",
+    "lastRun": "2026-08-04 12:48:33",
+    "lastSuccess": "2026-08-04 12:48:33",
     "timezone": "Asia/Seoul",
     "count": 19,
     "newCount": 0,
@@ -36,17 +36,17 @@
     "error": null
   },
   "news_mfds": {
-    "lastRun": "2026-08-04 12:44:18",
-    "lastSuccess": "2026-08-04 00:21:58",
+    "lastRun": "2026-08-04 12:48:43",
+    "lastSuccess": "2026-08-04 12:48:43",
     "timezone": "Asia/Seoul",
     "count": 17,
     "newCount": 0,
-    "success": false,
-    "error": "update_news_mfds.py failed; the last successful dataset was preserved"
+    "success": true,
+    "error": null
   },
   "news_nutraingredients": {
-    "lastRun": "2026-08-04 12:44:18",
-    "lastSuccess": "2026-08-04 12:44:18",
+    "lastRun": "2026-08-04 12:48:44",
+    "lastSuccess": "2026-08-04 12:48:44",
     "timezone": "Asia/Seoul",
     "count": 158,
     "newCount": 0,
@@ -54,20 +54,20 @@
     "error": null
   },
   "news_supplysidesj": {
-    "lastRun": "2026-08-04 12:44:20",
-    "lastSuccess": "2026-08-04 12:44:20",
+    "lastRun": "2026-08-04 12:48:45",
+    "lastSuccess": "2026-08-04 12:48:45",
     "timezone": "Asia/Seoul",
     "count": 78,
-    "newCount": 1,
+    "newCount": 0,
     "success": true,
     "error": null
   },
   "news_nutritioninsight": {
-    "lastRun": "2026-08-04 12:44:22",
-    "lastSuccess": "2026-08-04 12:44:22",
+    "lastRun": "2026-08-04 12:48:46",
+    "lastSuccess": "2026-08-04 12:48:46",
     "timezone": "Asia/Seoul",
     "count": 138,
-    "newCount": 1,
+    "newCount": 0,
     "success": true,
     "error": null
   },
@@ -108,8 +108,8 @@
     "error": null
   },
   "news_kfri": {
-    "lastRun": "2026-08-04 12:42:56",
-    "lastSuccess": "2026-08-04 12:42:56",
+    "lastRun": "2026-08-04 12:48:40",
+    "lastSuccess": "2026-08-04 12:48:40",
     "timezone": "Asia/Seoul",
     "count": 78,
     "newCount": 0,
