@@ -1,10 +1,10 @@
-const CACHE_NAME = 'healtharchive-chapter-covers-20260730-54';
+const CACHE_NAME = 'healtharchive-runtime-20260806-55';
 const CORE_ASSETS = [
   '/',
   '/index.html',
   '/style.css?v=20260730-chapters1',
   '/simon.css?v=20260730-adminlock1',
-  '/app.js?v=20260730-aiadmin1',
+  '/app.js?v=20260806-visitor1',
   '/simon.js?v=20260730-adminlock1',
   '/section-visuals.js?v=20260730-chapters1',
   '/pc-cinema.js?v=20260714-cinema-restore1',
@@ -87,7 +87,13 @@ self.addEventListener('fetch', event => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
-  if (request.mode === 'navigate' || url.pathname.endsWith('.html') || url.pathname.startsWith('/data/')) {
+  if (
+    request.mode === 'navigate'
+    || url.pathname.endsWith('.html')
+    || url.pathname.endsWith('.js')
+    || url.pathname.endsWith('.css')
+    || url.pathname.startsWith('/data/')
+  ) {
     event.respondWith(networkFirst(request));
     return;
   }
