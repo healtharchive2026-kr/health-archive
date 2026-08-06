@@ -274,47 +274,25 @@ function renderDataFreshness() {
   container.classList.add('is-ready');
 }
 
-// ---------- 방문자 카운터 (CounterAPI v1, 키 없이 사용 가능) ----------
+// ---------- 방문자 카운터 (Cloudflare Worker + D1) ----------
 
-const VISITOR_COUNTER_NAMESPACE = 'healtharchive';
-
-function visitorCounterTodayKey() {
-  const d = new Date();
-  const pad = n => String(n).padStart(2, '0');
-  return `daily-${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`;
-}
-
-async function bumpVisitorCounter(key) {
-  const res = await fetch(`https://api.counterapi.dev/v1/${VISITOR_COUNTER_NAMESPACE}/${key}/up`);
-  if (!res.ok) throw new Error('counter request failed');
-  const data = await res.json();
-  return data.count;
-}
+const VISITOR_COUNTER_API = 'https://api.healtharchive.kr/visitors';
 
 async function setupVisitorCounter() {
   const totalEl = document.getElementById('vc-total');
   const todayEl = document.getElementById('vc-today');
   if (!totalEl || !todayEl) return;
 
-  // 같은 브라우저에서 하루에 한 번만 카운트 (창 종료·새로고침 중복 집계 방지)
-  const dailyVisitKey = 'ha-visited-' + visitorCounterTodayKey();
-  const alreadyCounted = localStorage.getItem(dailyVisitKey);
-
   try {
-    if (alreadyCounted) {
-      const res = await fetch(`https://api.counterapi.dev/v1/${VISITOR_COUNTER_NAMESPACE}/total`);
-      const data = await res.json();
-      totalEl.textContent = (data.count || 0).toLocaleString('ko-KR');
-      const res2 = await fetch(`https://api.counterapi.dev/v1/${VISITOR_COUNTER_NAMESPACE}/${visitorCounterTodayKey()}`);
-      const data2 = await res2.json();
-      todayEl.textContent = (data2.count || 0).toLocaleString('ko-KR');
-    } else {
-      const total = await bumpVisitorCounter('total');
-      const today = await bumpVisitorCounter(visitorCounterTodayKey());
-      totalEl.textContent = total.toLocaleString('ko-KR');
-      todayEl.textContent = today.toLocaleString('ko-KR');
-      localStorage.setItem(dailyVisitKey, '1');
-    }
+    const res = await fetch(VISITOR_COUNTER_API, {
+      method: 'POST',
+      credentials: 'include',
+      cache: 'no-store',
+    });
+    if (!res.ok) throw new Error('visitor counter request failed');
+    const data = await res.json();
+    totalEl.textContent = Number(data.total || 0).toLocaleString('ko-KR');
+    todayEl.textContent = Number(data.today || 0).toLocaleString('ko-KR');
   } catch (e) {
     totalEl.textContent = '-';
     todayEl.textContent = '-';

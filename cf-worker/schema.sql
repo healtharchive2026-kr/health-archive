@@ -55,3 +55,9 @@ CREATE TABLE IF NOT EXISTS usage_events (
 CREATE INDEX IF NOT EXISTS idx_usage_events_user_created ON usage_events (user_key, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_usage_events_target_created ON usage_events (target, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_usage_events_created_at ON usage_events (created_at);
+
+CREATE TABLE IF NOT EXISTS visitor_counts (
+  counter_key TEXT PRIMARY KEY,
+  count INTEGER NOT NULL DEFAULT 0 CHECK (count >= 0),
+  updated_at INTEGER NOT NULL
+);

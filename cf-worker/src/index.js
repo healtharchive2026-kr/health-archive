@@ -23,6 +23,60 @@ function json(data, status, origin) {
   });
 }
 
+function visitorDayKey() {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Seoul',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date());
+  const values = Object.fromEntries(parts.map(part => [part.type, part.value]));
+  return `${values.year}${values.month}${values.day}`;
+}
+
+function secondsUntilSeoulMidnight() {
+  const now = new Date();
+  const seoulDate = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
+  const midnight = new Date(seoulDate);
+  midnight.setHours(24, 0, 0, 0);
+  return Math.max(60, Math.floor((midnight.getTime() - seoulDate.getTime()) / 1000));
+}
+
+async function handleVisitorCount(request, env, origin) {
+  if (!['GET', 'POST'].includes(request.method)) return null;
+
+  const day = visitorDayKey();
+  const dailyKey = `daily-${day}`;
+  const alreadyCounted = readCookie(request, 'ha_visitor_day') === day;
+  const now = Math.floor(Date.now() / 1000);
+
+  if (request.method === 'POST' && !alreadyCounted) {
+    await env.DB.batch([
+      env.DB.prepare(
+        `INSERT INTO visitor_counts (counter_key, count, updated_at) VALUES ('total', 1, ?)
+         ON CONFLICT(counter_key) DO UPDATE SET count = count + 1, updated_at = excluded.updated_at`
+      ).bind(now),
+      env.DB.prepare(
+        `INSERT INTO visitor_counts (counter_key, count, updated_at) VALUES (?, 1, ?)
+         ON CONFLICT(counter_key) DO UPDATE SET count = count + 1, updated_at = excluded.updated_at`
+      ).bind(dailyKey, now),
+    ]);
+  }
+
+  const { results } = await env.DB.prepare(
+    `SELECT counter_key, count FROM visitor_counts WHERE counter_key IN ('total', ?)`
+  ).bind(dailyKey).all();
+  const counts = Object.fromEntries(results.map(row => [row.counter_key, Number(row.count || 0)]));
+  const response = json({ total: counts.total || 0, today: counts[dailyKey] || 0 }, 200, origin);
+  if (request.method === 'POST' && !alreadyCounted) {
+    response.headers.append(
+      'Set-Cookie',
+      `ha_visitor_day=${day}; Path=/; Max-Age=${secondsUntilSeoulMidnight()}; HttpOnly; Secure; SameSite=Lax`
+    );
+  }
+  return response;
+}
+
 function randomToken() {
   const bytes = crypto.getRandomValues(new Uint8Array(16));
   return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
@@ -1009,6 +1063,11 @@ export default {
     if (url.pathname === '/usage-events') {
       const usageResponse = await handleUsageEvent(request, env, origin);
       if (usageResponse) return usageResponse;
+    }
+
+    if (url.pathname === '/visitors') {
+      const visitorResponse = await handleVisitorCount(request, env, origin);
+      if (visitorResponse) return visitorResponse;
     }
 
     if (url.pathname.startsWith('/assistant/quota')) {
