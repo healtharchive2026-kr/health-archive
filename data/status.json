@@ -27,35 +27,35 @@
     "error": null
   },
   "news": {
-    "lastRun": "2026-08-07 14:54:25",
-    "lastSuccess": "2026-08-07 14:54:25",
+    "lastRun": "2026-08-07 18:27:51",
+    "lastSuccess": "2026-08-07 18:27:51",
     "timezone": "Asia/Seoul",
-    "count": 20,
-    "newCount": 0,
+    "count": 21,
+    "newCount": 1,
     "success": true,
     "error": null
   },
   "news_mfds": {
-    "lastRun": "2026-08-07 14:55:58",
-    "lastSuccess": "2026-08-07 12:19:53",
+    "lastRun": "2026-08-07 18:28:04",
+    "lastSuccess": "2026-08-07 18:28:04",
     "timezone": "Asia/Seoul",
     "count": 19,
-    "newCount": 0,
-    "success": false,
-    "error": "update_news_mfds.py failed; the last successful dataset was preserved"
-  },
-  "news_nutraingredients": {
-    "lastRun": "2026-08-07 14:55:58",
-    "lastSuccess": "2026-08-07 14:55:58",
-    "timezone": "Asia/Seoul",
-    "count": 181,
     "newCount": 0,
     "success": true,
     "error": null
   },
+  "news_nutraingredients": {
+    "lastRun": "2026-08-07 18:28:05",
+    "lastSuccess": "2026-08-07 18:28:05",
+    "timezone": "Asia/Seoul",
+    "count": 182,
+    "newCount": 1,
+    "success": true,
+    "error": null
+  },
   "news_supplysidesj": {
-    "lastRun": "2026-08-07 14:55:59",
-    "lastSuccess": "2026-08-07 14:55:59",
+    "lastRun": "2026-08-07 18:28:06",
+    "lastSuccess": "2026-08-07 18:28:06",
     "timezone": "Asia/Seoul",
     "count": 80,
     "newCount": 0,
@@ -63,8 +63,8 @@
     "error": null
   },
   "news_nutritioninsight": {
-    "lastRun": "2026-08-07 14:56:00",
-    "lastSuccess": "2026-08-07 14:56:00",
+    "lastRun": "2026-08-07 18:28:08",
+    "lastSuccess": "2026-08-07 18:28:08",
     "timezone": "Asia/Seoul",
     "count": 152,
     "newCount": 0,
@@ -108,8 +108,8 @@
     "error": null
   },
   "news_kfri": {
-    "lastRun": "2026-08-07 14:54:36",
-    "lastSuccess": "2026-08-07 14:54:36",
+    "lastRun": "2026-08-07 18:28:01",
+    "lastSuccess": "2026-08-07 18:28:01",
     "timezone": "Asia/Seoul",
     "count": 79,
     "newCount": 0,
