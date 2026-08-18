@@ -2,13 +2,65 @@ const MANIFEST_KEY = 'daily-reports/manifest.json';
 const STATUS_KEY = 'daily-reports/status.json';
 const MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
 const MAX_SOURCE_BYTES = 25 * 1024 * 1024;
-const MAX_SOURCE_CHARS = 50000;
-const AGENT_STEP_TIMEOUT_MS = 8 * 60 * 1000;
+const MAX_SOURCE_CHARS = 90000;
+const AGENT_STEP_TIMEOUT_MS = 12 * 60 * 1000;
 const DISCOVERY_TERM = '(TITLE_ABS:"functional food" OR TITLE_ABS:nutraceutical OR TITLE_ABS:probiotic OR TITLE_ABS:botanical OR TITLE_ABS:"plant extract" OR TITLE_ABS:phytochemical)';
 const BLOCKED_PUBLIC_TERMS = [
   '대외비', '사내한', '내부용', '내부 검토', 'confidential', 'do not distribute',
   '대원제약', '대원', 'daewon pharmaceutical',
 ];
+
+const OUTCOME_PROPERTIES = {
+  domain: { type: 'string' },
+  endpoint: { type: 'string' },
+  tissue: { type: 'string' },
+  result: { type: 'string' },
+  statistic: { type: 'string' },
+  evidenceLocation: { type: 'string' },
+};
+
+const EVIDENCE_SCHEMA = {
+  type: 'object',
+  properties: {
+    sourceType: { type: 'string', enum: ['인체적용시험', '동물시험', '시험관시험', '문헌고찰', '기타'] },
+    testArticle: { type: 'string' },
+    rawMaterial: { type: 'string' },
+    manufacturing: { type: 'string' },
+    studyDesign: {
+      type: 'object',
+      properties: {
+        subjects: { type: 'string' },
+        model: { type: 'string' },
+        groups: { type: 'string' },
+        dose: { type: 'string' },
+        duration: { type: 'string' },
+        comparators: { type: 'string' },
+        randomization: { type: 'string' },
+        blinding: { type: 'string' },
+        statistics: { type: 'string' },
+        ethics: { type: 'string' },
+      },
+      required: ['subjects', 'model', 'groups', 'dose', 'duration', 'comparators', 'randomization', 'blinding', 'statistics', 'ethics'],
+    },
+    outcomeMatrix: {
+      type: 'array',
+      maxItems: 20,
+      items: {
+        type: 'object',
+        properties: OUTCOME_PROPERTIES,
+        required: ['domain', 'endpoint', 'tissue', 'result', 'statistic', 'evidenceLocation'],
+      },
+    },
+    safetyObservations: { type: 'array', maxItems: 8, items: { type: 'string' } },
+    authorLimitations: { type: 'array', maxItems: 10, items: { type: 'string' } },
+    internalInconsistencies: { type: 'array', maxItems: 6, items: { type: 'string' } },
+    sourceNotes: { type: 'array', maxItems: 8, items: { type: 'string' } },
+  },
+  required: [
+    'sourceType', 'testArticle', 'rawMaterial', 'manufacturing', 'studyDesign',
+    'outcomeMatrix', 'safetyObservations', 'authorLimitations', 'internalInconsistencies', 'sourceNotes',
+  ],
+};
 
 const REPORT_SCHEMA = {
   type: 'object',
@@ -18,8 +70,12 @@ const REPORT_SCHEMA = {
     ingredientType: { type: 'string' },
     functionality: { type: 'string' },
     verdict: { type: 'string' },
+    keyDecision: { type: 'string' },
     grade: { type: 'string', enum: ['A', 'B', 'C', 'D', '확인 필요'] },
     evidenceGrade: { type: 'string', enum: ['높음', '중간', '낮음', '확인 필요'] },
+    evidenceMaturityScore: { type: 'integer', minimum: 0, maximum: 5 },
+    humanEvidenceScore: { type: 'integer', minimum: 0, maximum: 5 },
+    developmentReadinessScore: { type: 'integer', minimum: 0, maximum: 5 },
     novelty: { type: 'string' },
     feasibility: { type: 'string' },
     summary: { type: 'string' },
@@ -47,15 +103,30 @@ const REPORT_SCHEMA = {
       },
     },
     mechanisms: { type: 'array', maxItems: 5, items: { type: 'string' } },
+    outcomeMatrix: {
+      type: 'array',
+      maxItems: 20,
+      items: {
+        type: 'object',
+        properties: OUTCOME_PROPERTIES,
+        required: ['domain', 'endpoint', 'tissue', 'result', 'statistic', 'evidenceLocation'],
+      },
+    },
+    limitations: { type: 'array', maxItems: 10, items: { type: 'string' } },
+    inconsistencies: { type: 'array', maxItems: 6, items: { type: 'string' } },
+    developmentActions: { type: 'array', maxItems: 8, items: { type: 'string' } },
+    noGoClaims: { type: 'array', maxItems: 5, items: { type: 'string' } },
     marketReview: { type: 'array', maxItems: 4, items: { type: 'string' } },
     regulatoryReview: { type: 'array', maxItems: 5, items: { type: 'string' } },
     gaps: { type: 'array', maxItems: 5, items: { type: 'string' } },
     sourceNotes: { type: 'array', maxItems: 4, items: { type: 'string' } },
   },
   required: [
-    'ingredient', 'scientificName', 'ingredientType', 'functionality', 'verdict', 'grade',
-    'evidenceGrade', 'novelty', 'feasibility', 'summary', 'rawMaterial', 'intakeBasis',
+    'ingredient', 'scientificName', 'ingredientType', 'functionality', 'verdict', 'keyDecision', 'grade',
+    'evidenceGrade', 'evidenceMaturityScore', 'humanEvidenceScore', 'developmentReadinessScore',
+    'novelty', 'feasibility', 'summary', 'rawMaterial', 'intakeBasis',
     'process', 'specifications', 'safety', 'studies', 'mechanisms', 'marketReview',
+    'outcomeMatrix', 'limitations', 'inconsistencies', 'developmentActions', 'noGoClaims',
     'regulatoryReview', 'gaps', 'sourceNotes',
   ],
 };
@@ -104,7 +175,11 @@ function isPublishableReport(report) {
     && !unavailable(report.functionality)
     && !genericFunctionality.test(report.functionality)
     && !unavailable(report.summary)
-    && report.summary.length >= 40;
+    && report.summary.length >= 100
+    && (report.studies?.length || 0) >= 1
+    && (report.outcomeMatrix?.length || 0) >= 3
+    && (report.limitations?.length || 0) >= 2
+    && (report.developmentActions?.length || 0) >= 2;
 }
 
 function cleanDuration(value) {
@@ -230,25 +305,17 @@ async function validatedPdfResponse(response, url) {
   return signature === '%PDF-' ? { buffer, url } : null;
 }
 
-function aiPrompt(candidate, sourceText) {
-  return `당신은 건강기능식품 개별인정원료 개발을 검토하는 HealthArchive AI 연구팀이다.
-아래 원문 PDF 변환 텍스트만 근거로 4단계 검토를 수행하라.
-1) 원료·안전성 검토 2) 임상·전임상 근거 검토 3) 시장·인허가 전환성 검토 4) 종합판정 및 자료 Gap.
+function evidencePrompt(candidate, sourceText) {
+  return `아래 원문 PDF 변환 텍스트에서 검증 가능한 사실만 추출하라. 개발성·시장성·허가 가능성을 해석하지 말고 원문의 수치와 표현을 보존한다.
 
-필수 규칙:
-- ingredient에는 논문에서 실제 투여·처리한 균주, 추출물, 분획물 또는 식품소재의 구체적 명칭을 기재한다. 포괄적 분류명만 확인되면 "확인 필요"로 기재한다.
-- functionality에는 "신경보호", "우울·불안 관련 행동 개선", "항산화"처럼 평가된 건강 결과를 명사구로 기재한다. "가능", "중간", 등급 또는 판정어를 쓰지 않는다.
-- verdict에는 진행권장, 조건부 진행 검토, 추가자료 필요 또는 보류 중 하나와 핵심 사유를 기재한다.
-- 원문에 없는 수치, 시험설계, 규격, 제조공정, 시장규모, 허가현황을 추정하거나 생성하지 않는다.
-- 확인되지 않은 모든 항목은 정확히 "확인 필요"로 기재한다.
-- 연구 결과와 개발 가능성을 구분한다. 단일 논문으로 허가 가능성을 확정하지 않는다.
-- 연구 수치에는 표·그림·절·페이지 등 확인 가능한 evidenceLocation을 기재한다.
-- 회사 내부정보, 실명, 대외비 표현은 출력하지 않는다.
-- 한국어 전문 용어를 사용하고 구어체를 쓰지 않는다.
-- summary는 320자 이내, 각 배열 항목은 간결한 키워드 문장으로 작성한다.
-- specifications·safety·mechanisms·regulatoryReview·gaps는 각각 최대 5개, studies는 최대 4개, marketReview·sourceNotes는 각각 최대 4개로 제한한다.
-- studies의 outcomes를 제외한 개별 문자열은 160자 이내, outcomes는 300자 이내로 제한한다.
-- 동일한 의미의 문장을 반복하지 않고 JSON 바깥의 설명은 출력하지 않는다.
+추출 규칙:
+- 시험물질, 제조·처리 조건, 시험대상, 모델, 군 구성, 용량, 기간, 비교군, 무작위배정, 눈가림, 통계, 윤리승인을 구분한다.
+- 모든 주요 유효성·안전성 결과를 outcomeMatrix에 지표 단위로 기록한다. 방향, 유의성, F/t/CI/p 값이 있으면 그대로 기록한다.
+- 결과가 유의하지 않으면 반드시 "유의하지 않음"으로 기록한다.
+- 저자가 명시한 한계와 원문 내부에서 수치·서술이 상충하는 부분을 각각 분리한다.
+- 확인되지 않은 항목은 "확인 필요"로 기록하고 추정하지 않는다.
+- evidenceLocation에는 페이지, Figure/Table 또는 Results/Methods 절을 기록한다.
+- 한국어 전문 용어를 사용하고 JSON 바깥의 설명은 출력하지 않는다.
 
 논문 메타데이터:
 PMCID: ${candidate.pmcid}
@@ -261,7 +328,81 @@ DOI: ${candidate.doi || '확인 필요'}
 ${sourceText.slice(0, MAX_SOURCE_CHARS)}`;
 }
 
-function normalizeAiReport(raw, candidate) {
+function reviewPrompt(candidate, evidence) {
+  return `당신은 건강기능식품 기능성 원료의 CMC·비임상·인체적용·규제 전환을 검토하는 시니어 연구개발 책임자다.
+아래 구조화된 원문 증거만 사용하여 전문가 수준의 개발 검토서를 작성하라.
+
+판정 원칙:
+- 원문 사실과 분석자 판단을 문장 안에서 명확히 구분한다.
+- 단일 동물시험은 탐색 전임상으로 평가하며 인체 기능성 또는 허가 가능성을 확정하지 않는다.
+- 질병의 치료·예방 표현을 건강기능식품 기능성으로 전환하지 않는다. noGoClaims에 금지할 표현을 명시한다.
+- 국내 개별인정 검토는 기원·제조·특성·표준화·기준규격·안전성·기능성·섭취량 자료축으로 나누어 공백을 제시한다.
+- 시장·경쟁·특허 정보가 원문에 없으면 "별도 조사 필요"로 기재하고 생성하지 않는다.
+- 사균체는 CFU만으로 표준화하지 말고 총세포수·불활성화 검증·지표성분 또는 생물활성 단위 필요성을 검토한다.
+- 영양성분 강화 제제는 총량뿐 아니라 화학종, 잔류 전구체, 생체이용률, 축적과 안전역을 검토한다.
+- outcomeMatrix는 아래 증거의 수치·방향·위치를 변형하지 않고 핵심 지표를 최대 20개 보존한다.
+- limitations에는 번역성·편향·표본·대조군·용량반응·독성·표준화 공백을 우선순위순으로 기재한다.
+- developmentActions는 치명적 불확실성을 먼저 제거하는 Gate 순서로 작성한다.
+- keyDecision은 현재 단계에서 할 일 1개와 보류할 일 1개를 포함한 180자 이내의 의사결정 문장으로 작성한다.
+- summary는 500자 이내, 각 목록은 중복 없이 전문 문장으로 작성한다.
+- 회사 내부정보, 실명, 대외비 표현과 JSON 바깥의 설명은 출력하지 않는다.
+
+논문 메타데이터:
+PMCID: ${candidate.pmcid}
+DOI: ${candidate.doi || '확인 필요'}
+제목: ${candidate.title}
+저널: ${candidate.journal}
+발행일: ${candidate.pubDate}
+
+구조화 원문 증거:
+${JSON.stringify(evidence)}`;
+}
+
+function normalizeScore(value) {
+  const score = Number(value);
+  return Number.isFinite(score) ? Math.max(0, Math.min(5, Math.round(score))) : 0;
+}
+
+function normalizeOutcomeMatrix(value, limit = 20) {
+  return (Array.isArray(value) ? value : []).slice(0, limit).map(item => ({
+    domain: cleanText(item.domain, '확인 필요', 100),
+    endpoint: cleanText(item.endpoint, '확인 필요', 140),
+    tissue: cleanText(item.tissue, '-', 100),
+    result: cleanText(item.result, '확인 필요', 260),
+    statistic: cleanText(item.statistic, '확인 필요', 160),
+    evidenceLocation: cleanText(item.evidenceLocation, '확인 필요', 140),
+  }));
+}
+
+function normalizeEvidence(raw) {
+  const evidence = typeof raw === 'string' ? JSON.parse(raw) : raw;
+  const design = evidence?.studyDesign || {};
+  return {
+    sourceType: cleanText(evidence?.sourceType),
+    testArticle: cleanText(evidence?.testArticle, '확인 필요', 600),
+    rawMaterial: cleanText(evidence?.rawMaterial, '확인 필요', 600),
+    manufacturing: cleanText(evidence?.manufacturing, '확인 필요', 1200),
+    studyDesign: {
+      subjects: cleanText(design.subjects, '확인 필요', 500),
+      model: cleanText(design.model, '확인 필요', 400),
+      groups: cleanText(design.groups, '확인 필요', 800),
+      dose: cleanText(design.dose, '확인 필요', 600),
+      duration: cleanText(design.duration, '확인 필요', 300),
+      comparators: cleanText(design.comparators, '확인 필요', 400),
+      randomization: cleanText(design.randomization, '확인 필요', 300),
+      blinding: cleanText(design.blinding, '확인 필요', 300),
+      statistics: cleanText(design.statistics, '확인 필요', 500),
+      ethics: cleanText(design.ethics, '확인 필요', 400),
+    },
+    outcomeMatrix: normalizeOutcomeMatrix(evidence?.outcomeMatrix),
+    safetyObservations: cleanList(evidence?.safetyObservations, 8),
+    authorLimitations: cleanList(evidence?.authorLimitations, 10),
+    internalInconsistencies: cleanList(evidence?.internalInconsistencies, 6),
+    sourceNotes: cleanList(evidence?.sourceNotes, 8),
+  };
+}
+
+function normalizeAiReport(raw, candidate, evidence) {
   const report = typeof raw === 'string' ? JSON.parse(raw) : raw;
   const studies = (Array.isArray(report.studies) ? report.studies : []).slice(0, 8).map(item => ({
     kind: cleanText(item.kind),
@@ -281,8 +422,12 @@ function normalizeAiReport(raw, candidate) {
     ingredientType: cleanText(report.ingredientType, '확인 필요', 120),
     functionality: cleanText(report.functionality, '확인 필요', 160),
     verdict: cleanText(report.verdict, '추가 자료 검토 필요', 180),
+    keyDecision: cleanText(report.keyDecision, '원료 정체성과 안전성을 먼저 확인하고 인체시험 설계는 보류', 300),
     grade,
     evidenceGrade,
+    evidenceMaturityScore: normalizeScore(report.evidenceMaturityScore),
+    humanEvidenceScore: normalizeScore(report.humanEvidenceScore),
+    developmentReadinessScore: normalizeScore(report.developmentReadinessScore),
     novelty: cleanText(report.novelty),
     feasibility: cleanText(report.feasibility),
     summary: cleanText(report.summary, '원문 근거 추가 검토 필요', 420),
@@ -293,10 +438,16 @@ function normalizeAiReport(raw, candidate) {
     safety: cleanList(report.safety),
     studies,
     mechanisms: cleanList(report.mechanisms),
+    outcomeMatrix: normalizeOutcomeMatrix(report.outcomeMatrix?.length ? report.outcomeMatrix : evidence?.outcomeMatrix),
+    limitations: cleanList(report.limitations?.length ? report.limitations : evidence?.authorLimitations, 10),
+    inconsistencies: cleanList(report.inconsistencies?.length ? report.inconsistencies : evidence?.internalInconsistencies, 6),
+    developmentActions: cleanList(report.developmentActions, 8),
+    noGoClaims: cleanList(report.noGoClaims, 5),
     marketReview: cleanList(report.marketReview),
     regulatoryReview: cleanList(report.regulatoryReview),
     gaps: cleanList(report.gaps),
     sourceNotes: cleanList(report.sourceNotes),
+    evidenceAudit: evidence,
     source: candidate,
   };
 }
@@ -306,7 +457,7 @@ function listHtml(items, empty = '확인 필요') {
   return `<ul>${values.map(value => `<li>${escapeHtml(value)}</li>`).join('')}</ul>`;
 }
 
-function reportHtml(report, id, date) {
+function legacyReportHtml(report, id, date) {
   const studies = report.studies.length ? report.studies.map((study, index) => `
     <article class="study">
       <h3>${String(index + 1).padStart(2, '0')} · ${escapeHtml(study.kind)}</h3>
@@ -337,6 +488,45 @@ function reportHtml(report, id, date) {
   </main></body></html>`;
 }
 
+function reportHtml(report, id, date) {
+  const audit = report.evidenceAudit || {};
+  const design = audit.studyDesign || {};
+  const studies = report.studies.length ? report.studies.map((study, index) => `
+    <article class="study"><h3>${String(index + 1).padStart(2, '0')} · ${escapeHtml(study.kind)}</h3>
+    <dl><dt>시험설계</dt><dd>${escapeHtml(study.design)}</dd><dt>대상/모델</dt><dd>${escapeHtml(study.subjects)}</dd>
+    <dt>섭취량/처치</dt><dd>${escapeHtml(study.dose)}</dd><dt>기간</dt><dd>${escapeHtml(study.duration)}</dd>
+    <dt>결과</dt><dd>${escapeHtml(study.outcomes)}</dd><dt>안전성</dt><dd>${escapeHtml(study.safety)}</dd>
+    <dt>근거 위치</dt><dd>${escapeHtml(study.evidenceLocation)}</dd></dl></article>`).join('') : '<p>확인 필요</p>';
+  const outcomes = report.outcomeMatrix.length ? report.outcomeMatrix.map(item => `
+    <tr><td>${escapeHtml(item.domain)}</td><td><b>${escapeHtml(item.endpoint)}</b></td><td>${escapeHtml(item.tissue)}</td>
+    <td>${escapeHtml(item.result)}</td><td>${escapeHtml(item.statistic)}</td><td>${escapeHtml(item.evidenceLocation)}</td></tr>`).join('') : '<tr><td colspan="6">확인 필요</td></tr>';
+  const score = (label, value, note, tone = '') => `<div class="score ${tone}"><span>${escapeHtml(label)}</span><b>${escapeHtml(value)} / 5</b><small>${escapeHtml(note)}</small></div>`;
+  return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${escapeHtml(report.ingredient)} 전문가 검토</title>
+  <style>
+  :root{--ink:#14211d;--deep:#0b3c35;--muted:#596a64;--line:#dce5e1;--accent:#147864;--soft:#e7f1ed;--blue:#315d82;--blue-soft:#eaf1f6;--warn:#a26812;--warn-soft:#fbf0d9;--bad:#a33c36;--bad-soft:#f8e9e6}*{box-sizing:border-box}
+  body{margin:0;color:var(--ink);font-family:"Noto Sans KR","Malgun Gothic",sans-serif;line-height:1.55;background:#fff;font-size:11px}.wrap{max-width:900px;margin:auto;padding:32px 38px 48px}
+  header{padding:16px 0 23px}.eyebrow{color:var(--accent);font-size:9px;font-weight:800;letter-spacing:.11em}.top{display:flex;justify-content:space-between;gap:20px}.top h1{font-size:28px;line-height:1.25;margin:9px 0 4px}.subtitle{color:var(--muted);font-size:12px}.verdict{align-self:flex-start;border:1px solid var(--warn);background:var(--warn-soft);color:var(--warn);padding:7px 11px;font-weight:800}
+  .decision{border:1px solid var(--accent);background:#f3f8f6;padding:14px 16px;margin:8px 0 15px}.decision b{display:block;font-size:14px;color:var(--deep);margin-bottom:5px}.scores{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0 0 16px}.score{border:1px solid var(--line);padding:10px;background:#fff}.score span,.score small{display:block;color:var(--muted);font-size:8px}.score b{display:block;font-size:19px;color:var(--deep);margin:4px 0}.score.bad{border-color:#d58c85;background:var(--bad-soft)}.score.warn{border-color:#d9a54c;background:var(--warn-soft)}.score.blue{border-color:#87a9c5;background:var(--blue-soft)}
+  .meta{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--line);margin:15px 0}.meta div{padding:9px;border-right:1px solid var(--line)}.meta div:last-child{border:0}.meta span{display:block;color:var(--muted);font-size:8px}.meta b{display:block;margin-top:3px}section{margin-top:22px}.page{break-before:page}.section-title{display:flex;align-items:baseline;gap:10px;border-bottom:1px solid var(--line);padding-bottom:6px;margin-bottom:11px}.section-title span{color:var(--accent);font-weight:800}.section-title h2{font-size:16px;margin:0}.card,.study{border:1px solid var(--line);padding:12px 14px;margin-top:9px;break-inside:avoid}.callout{background:var(--warn-soft);border-color:var(--warn)}.danger{background:var(--bad-soft);border-color:var(--bad)}
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:10px}.split h3,.card h3{margin:0 0 7px;font-size:11px}.study h3{margin:0 0 8px;color:var(--deep)}dl{display:grid;grid-template-columns:105px 1fr;margin:0;border:1px solid var(--line)}dt,dd{padding:7px 9px;margin:0;border-bottom:1px solid var(--line)}dt{font-weight:800;background:#f7faf8}dd{border-left:1px solid var(--line)}ul{margin:0;padding-left:17px}li+li{margin-top:5px}
+  table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:9px}th,td{border:1px solid var(--line);padding:6px 7px;vertical-align:top;word-break:break-word}th{background:#f3f8f6;color:var(--deep);text-align:left;font-size:8px}.matrix th:nth-child(1){width:11%}.matrix th:nth-child(2){width:17%}.matrix th:nth-child(3){width:11%}.matrix th:nth-child(4){width:25%}.matrix th:nth-child(5){width:18%}.matrix th:nth-child(6){width:18%}.summary{font-size:13px;font-weight:700;color:var(--deep)}.source{margin-top:24px;padding-top:12px;border-top:1px solid var(--line);color:var(--muted);font-size:8px;word-break:break-all}
+  @page{size:A4;margin:12mm}@media print{.wrap{padding:0}.page{break-before:page}.study,.card{break-inside:avoid}}
+  </style></head><body><main class="wrap">
+  <header><div class="eyebrow">HEALTHARCHIVE · DAILY INGREDIENT INTELLIGENCE · ${escapeHtml(id)}</div><div class="top"><div><h1>${escapeHtml(report.ingredient)}</h1><div class="subtitle"><i>${escapeHtml(report.scientificName)}</i> · 원료 개발 타당성·근거 수준·규제 전환 검토</div></div><div class="verdict">${escapeHtml(report.verdict)}</div></div></header>
+  <div class="decision"><b>EXECUTIVE DECISION</b><div>${escapeHtml(report.keyDecision)}</div></div>
+  <div class="scores">${score('근거 성숙도', report.evidenceMaturityScore, report.evidenceGrade, 'bad')}${score('인체 직접성', report.humanEvidenceScore, audit.sourceType || '원문 유형', 'bad')}${score('개발 준비도', report.developmentReadinessScore, report.feasibility, 'warn')}${score('기전·결과 구조화', Math.min(5, Math.ceil(report.outcomeMatrix.length / 4)), `${report.outcomeMatrix.length}개 결과 추적`, 'blue')}</div>
+  <div class="meta"><div><span>검토일</span><b>${escapeHtml(date)}</b></div><div><span>작성</span><b>HealthArchive Research Intelligence</b></div><div><span>원료 유형</span><b>${escapeHtml(report.ingredientType)}</b></div><div><span>원문</span><b>${escapeHtml(report.source.pmcid)}</b></div></div>
+  <section><div class="section-title"><span>01</span><h2>판정 요약</h2></div><div class="card"><div class="summary">${escapeHtml(report.summary)}</div></div><div class="split"><div class="card"><h3>검토 기능 방향</h3><p>${escapeHtml(report.functionality)}</p><h3>신규성</h3><p>${escapeHtml(report.novelty)}</p></div><div class="card danger"><h3>사용하지 않을 주장</h3>${listHtml(report.noGoClaims)}</div></div></section>
+  <section class="page"><div class="section-title"><span>02</span><h2>원료 정체성·제조·표준화</h2></div><div class="card"><dl><dt>시험물질</dt><dd>${escapeHtml(audit.testArticle || report.ingredient)}</dd><dt>원재료</dt><dd>${escapeHtml(report.rawMaterial)}</dd><dt>제조·처리</dt><dd>${escapeHtml(report.process)}</dd><dt>섭취량 근거</dt><dd>${escapeHtml(report.intakeBasis)}</dd></dl></div><div class="split"><div class="card"><h3>규격·표준화</h3>${listHtml(report.specifications)}</div><div class="card danger"><h3>안전성 검토</h3>${listHtml(report.safety)}</div></div></section>
+  <section class="page"><div class="section-title"><span>03</span><h2>시험설계</h2></div><div class="card"><dl><dt>원문 유형</dt><dd>${escapeHtml(audit.sourceType || '확인 필요')}</dd><dt>대상</dt><dd>${escapeHtml(design.subjects || '확인 필요')}</dd><dt>모델</dt><dd>${escapeHtml(design.model || '확인 필요')}</dd><dt>군 구성</dt><dd>${escapeHtml(design.groups || '확인 필요')}</dd><dt>투여량</dt><dd>${escapeHtml(design.dose || '확인 필요')}</dd><dt>기간</dt><dd>${escapeHtml(design.duration || '확인 필요')}</dd><dt>비교군</dt><dd>${escapeHtml(design.comparators || '확인 필요')}</dd><dt>무작위·눈가림</dt><dd>${escapeHtml(`${design.randomization || '확인 필요'} / ${design.blinding || '확인 필요'}`)}</dd><dt>통계</dt><dd>${escapeHtml(design.statistics || '확인 필요')}</dd><dt>윤리</dt><dd>${escapeHtml(design.ethics || '확인 필요')}</dd></dl></div>${studies}</section>
+  <section class="page"><div class="section-title"><span>04</span><h2>유효성·안전성 결과 행렬</h2></div><table class="matrix"><thead><tr><th>영역</th><th>평가지표</th><th>조직</th><th>결과</th><th>통계</th><th>근거 위치</th></tr></thead><tbody>${outcomes}</tbody></table></section>
+  <section class="page"><div class="section-title"><span>05</span><h2>기전·번역성·중대한 한계</h2></div><div class="split"><div class="card"><h3>주요 작용기전</h3>${listHtml(report.mechanisms)}</div><div class="card callout"><h3>중대한 한계</h3>${listHtml(report.limitations)}</div></div><div class="card danger"><h3>원문 내부 불일치·확인 필요</h3>${listHtml(report.inconsistencies)}</div></section>
+  <section class="page"><div class="section-title"><span>06</span><h2>국내 개발·인허가 전환</h2></div><div class="split"><div class="card"><h3>규제 검토</h3>${listHtml(report.regulatoryReview)}</div><div class="card"><h3>시장·경쟁 정보</h3>${listHtml(report.marketReview)}</div></div><div class="card callout"><h3>자료 Gap</h3>${listHtml(report.gaps)}</div></section>
+  <section class="page"><div class="section-title"><span>07</span><h2>다음 개발 관문</h2></div><div class="card"><h3>우선순위 실행안</h3>${listHtml(report.developmentActions)}</div><div class="card"><h3>원문 주석</h3>${listHtml(report.sourceNotes)}</div></section>
+  <div class="source">원문: ${escapeHtml(report.source.title)} · ${escapeHtml(report.source.journal)} · ${escapeHtml(report.source.pubDate)} · ${escapeHtml(report.source.pmcid)}${report.source.doi ? ` · DOI ${escapeHtml(report.source.doi)}` : ''}<br>본 문서는 원문 PDF 기반 후보 선별 검토자료다. 인정 신청·인체적용·독성시험 의사결정 전 최신 식약처 기준과 원자료를 전문가가 재대조해야 한다.</div>
+  </main></body></html>`;
+}
+
 async function analyzePdf(env, candidate, pdfBuffer) {
   const converted = await env.AI.toMarkdown({
     name: `${candidate.pmcid}.pdf`,
@@ -345,17 +535,27 @@ async function analyzePdf(env, candidate, pdfBuffer) {
   if (!converted || converted.format === 'error' || !converted.data) {
     throw new Error(`원문 PDF 변환 실패: ${converted?.error || '내용 없음'}`);
   }
-  const result = await env.AI.run(MODEL, {
+  const extraction = await env.AI.run(MODEL, {
     messages: [
-      { role: 'system', content: '근거가 확보된 내용만 구조화하는 건강기능식품 원료개발 전문 연구원이다.' },
-      { role: 'user', content: aiPrompt(candidate, converted.data) },
+      { role: 'system', content: '원문에 있는 사실과 수치만 추출하는 과학문헌 데이터 큐레이터다. 해석하거나 보충하지 않는다.' },
+      { role: 'user', content: evidencePrompt(candidate, converted.data) },
+    ],
+    response_format: { type: 'json_schema', json_schema: EVIDENCE_SCHEMA },
+    max_tokens: 7800,
+    temperature: 0,
+  });
+  const evidence = normalizeEvidence(extraction?.response ?? extraction);
+  if (evidence.outcomeMatrix.length < 3) throw new Error('원문 결과 지표 추출 부족');
+  const synthesis = await env.AI.run(MODEL, {
+    messages: [
+      { role: 'system', content: '원문 증거와 개발 판단을 구분하는 건강기능식품 원료개발 시니어 검토자다.' },
+      { role: 'user', content: reviewPrompt(candidate, evidence) },
     ],
     response_format: { type: 'json_schema', json_schema: REPORT_SCHEMA },
-    max_tokens: 7000,
-    temperature: 0.1,
+    max_tokens: 7800,
+    temperature: 0.05,
   });
-  const response = result?.response ?? result;
-  return normalizeAiReport(response, candidate);
+  return normalizeAiReport(synthesis?.response ?? synthesis, candidate, evidence);
 }
 
 async function publishReport(env, report, pdfBuffer) {
@@ -379,6 +579,7 @@ async function publishReport(env, report, pdfBuffer) {
       httpMetadata: { contentType: 'text/html; charset=utf-8', cacheControl: 'private, no-store' },
     }),
     writeJsonObject(env.PRIVATE_DATA, `${prefix}/report.json`, report),
+    writeJsonObject(env.PRIVATE_DATA, `${prefix}/evidence.json`, report.evidenceAudit || {}),
   ]);
   const summary = {
     id, date,
@@ -389,6 +590,9 @@ async function publishReport(env, report, pdfBuffer) {
     verdict: report.verdict,
     grade: report.grade,
     evidenceGrade: report.evidenceGrade,
+    evidenceMaturityScore: report.evidenceMaturityScore,
+    humanEvidenceScore: report.humanEvidenceScore,
+    developmentReadinessScore: report.developmentReadinessScore,
     summary: report.summary,
     sourceTitle: report.source.title,
     sourcePmcid: report.source.pmcid,
@@ -421,7 +625,7 @@ export async function runDailyReportAgent(env, options = {}) {
     let analyzed = 0;
     const rejected = [];
     for (const candidate of candidates) {
-      if (published.has(candidate.pmcid)) continue;
+      if (published.has(candidate.pmcid) && !options.force) continue;
       await setStatus(env, 'running', { stage: 'source-pdf', candidate: candidate.pmcid });
       const source = await fetchOriginalPdf(candidate);
       if (!source) continue;

@@ -8,11 +8,12 @@ Daily 원료 보고서는 별도 PC나 로컬 작업 스케줄러 없이 Cloudfl
 2. 후보 탐색: Europe PMC의 공개 원문 논문 중 발행 후 21일이 지난 자료
 3. 원문 확보: Europe PMC PDF 우선, NCBI OA 대체 경로, PDF 서명, 25 MB 이하 여부 검증
 4. 문서 변환: Workers AI `toMarkdown`
-5. AI 검토: 원료·안전성, 임상·전임상, 시장·인허가, 종합판정 순서의 JSON 구조화
-6. 검증: 원료명·기능성 발간 품질 게이트, 필수 필드, 등급 허용값, 비식별화, 길이 제한 적용
-7. PDF 생성: Cloudflare Browser Run
-8. 저장: R2 `daily-reports/<report-id>/`
-9. 제공: 공개 요약 목록과 로그인 전용 분석 PDF·원문 PDF
+5. 1차 AI 추출: 시험물질·제조조건·시험설계·개별 평가지표·통계값·원문 한계·내부 불일치를 원문 사실로 구조화
+6. 2차 AI 검토: 원문 사실과 개발자 판단을 분리하여 CMC·안전성·기능성·규제 전환·개발 Gate를 작성
+7. 검증: 결과지표 3개 이상, 한계 2개 이상, 개발조치 2개 이상, 필수 필드, 등급 허용값, 비식별화 적용
+8. PDF 생성: Cloudflare Browser Run
+9. 저장: R2 `daily-reports/<report-id>/`
+10. 제공: 공개 요약 목록과 로그인 전용 분석 PDF·원문 PDF
 
 ## 공개 범위
 
@@ -41,6 +42,7 @@ daily-reports/
     source.pdf
     report.html
     report.json
+    evidence.json
 ```
 
 ## API
