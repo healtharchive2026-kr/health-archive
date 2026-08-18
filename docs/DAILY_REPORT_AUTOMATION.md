@@ -51,6 +51,7 @@ daily-reports/
 - `GET /admin/daily-reports/status`: 관리자 실행 상태
 - `POST /admin/daily-reports/run`: 관리자 수동 실행
 - `POST /admin/daily-reports/run?force=1`: 실행 잠금 무시 후 재실행
+- `POST /admin/daily-reports/run?force=1&pmcid=PMC...`: 공개 원문 PMCID 지정 발간
 
 수동 실행은 관리자 로그인 세션 또는 `PROTECTED_UPDATE_TOKEN` Bearer 인증이 필요하다.
 

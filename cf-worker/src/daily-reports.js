@@ -104,7 +104,12 @@ function isPublishableReport(report) {
     && !unavailable(report.functionality)
     && !genericFunctionality.test(report.functionality)
     && !unavailable(report.summary)
-    && report.summary.length >= 60;
+    && report.summary.length >= 40;
+}
+
+function cleanDuration(value) {
+  const duration = cleanText(value);
+  return /[×x]$/i.test(duration) ? '확인 필요' : duration;
 }
 
 function escapeHtml(value) {
@@ -161,17 +166,19 @@ async function withTimeout(task, label) {
   }
 }
 
-async function discoverCandidates() {
+async function discoverCandidates(targetPmcid = '') {
   const publicationEnd = new Date(Date.now() - 21 * 24 * 60 * 60 * 1000);
   const publicationStart = new Date(publicationEnd.getTime() - 365 * 24 * 60 * 60 * 1000);
   const date = value => value.toISOString().slice(0, 10);
-  const query = `${DISCOVERY_TERM} AND OPEN_ACCESS:Y AND IN_EPMC:Y AND FIRST_PDATE:[${date(publicationStart)} TO ${date(publicationEnd)}]`;
+  const query = targetPmcid
+    ? `PMCID:${targetPmcid}`
+    : `${DISCOVERY_TERM} AND OPEN_ACCESS:Y AND IN_EPMC:Y AND FIRST_PDATE:[${date(publicationStart)} TO ${date(publicationEnd)}]`;
   const search = new URL('https://www.ebi.ac.uk/europepmc/webservices/rest/search');
   search.searchParams.set('query', query);
   search.searchParams.set('format', 'json');
   search.searchParams.set('resultType', 'core');
-  search.searchParams.set('pageSize', '25');
-  search.searchParams.set('sort', 'FIRST_PDATE_D desc');
+  search.searchParams.set('pageSize', targetPmcid ? '1' : '25');
+  if (!targetPmcid) search.searchParams.set('sort', 'FIRST_PDATE_D desc');
   const headers = { 'User-Agent': 'HealthArchive/1.0 (healtharchive2026@gmail.com)' };
   const result = await fetch(search, { headers });
   if (!result.ok) throw new Error(`Europe PMC 검색 실패 (${result.status})`);
@@ -189,7 +196,7 @@ async function discoverCandidates() {
       pubDate: cleanText(item.firstPublicationDate, '발행일 확인 필요', 60),
       candidateScore: ingredientCandidateScore(item),
     };
-  }).filter(item => item.pmcid && item.pdfUrl && item.candidateScore >= 2)
+  }).filter(item => item.pmcid && item.pdfUrl && (targetPmcid || item.candidateScore >= 2))
     .sort((a, b) => b.candidateScore - a.candidateScore || b.pubDate.localeCompare(a.pubDate));
   return [...new Map(ranked.map(item => [item.pmcid, item])).values()];
 }
@@ -261,7 +268,7 @@ function normalizeAiReport(raw, candidate) {
     design: cleanText(item.design),
     subjects: cleanText(item.subjects),
     dose: cleanText(item.dose),
-    duration: cleanText(item.duration),
+    duration: cleanDuration(item.duration),
     outcomes: cleanText(item.outcomes, '확인 필요', 1800),
     safety: cleanText(item.safety),
     evidenceLocation: cleanText(item.evidenceLocation),
@@ -410,7 +417,7 @@ export async function runDailyReportAgent(env, options = {}) {
   try {
     const manifest = await readJsonObject(env.PRIVATE_DATA, MANIFEST_KEY, { reports: [] });
     const published = new Set((manifest.reports || []).map(item => item.sourcePmcid));
-    const candidates = await discoverCandidates();
+    const candidates = await discoverCandidates(options.pmcid || '');
     let analyzed = 0;
     const rejected = [];
     for (const candidate of candidates) {
@@ -491,7 +498,14 @@ export async function handleDailyReports(request, env, url, origin, deps) {
     const tokenAllowed = expected && await deps.secureEqual(authorization, expected);
     const session = tokenAllowed ? null : await deps.readAuthorizedSession(request, env);
     if (!tokenAllowed && !session?.admin) return deps.authJson({ error: '관리자 권한이 필요합니다.' }, 403, origin);
-    const result = await runDailyReportAgent(env, { force: url.searchParams.get('force') === '1' });
+    const pmcid = (url.searchParams.get('pmcid') || '').toUpperCase();
+    if (pmcid && !/^PMC\d{6,}$/.test(pmcid)) {
+      return deps.authJson({ error: 'PMCID 형식이 올바르지 않습니다.' }, 400, origin);
+    }
+    const result = await runDailyReportAgent(env, {
+      force: url.searchParams.get('force') === '1',
+      pmcid,
+    });
     return deps.authJson(result, 200, origin);
   }
   return null;
