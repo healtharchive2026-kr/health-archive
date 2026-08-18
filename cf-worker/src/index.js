@@ -1,3 +1,5 @@
+import { handleDailyReports, runDailyReportAgent } from './daily-reports.js';
+
 const ALLOWED_ORIGINS = new Set([
   'https://www.healtharchive.kr',
   'https://healtharchive.kr',
@@ -1105,6 +1107,13 @@ export default {
       if (updateResponse) return updateResponse;
     }
 
+    if (url.pathname === '/daily-reports' || url.pathname.startsWith('/daily-reports/') || url.pathname.startsWith('/admin/daily-reports/')) {
+      const dailyReportResponse = await handleDailyReports(request, env, url, origin, {
+        json, authJson, corsHeaders, readAuthorizedSession, secureEqual,
+      });
+      if (dailyReportResponse) return dailyReportResponse;
+    }
+
     const cutoff = Math.floor(Date.now() / 1000) - RETENTION_SECONDS;
     await env.DB.prepare('DELETE FROM posts WHERE created_at < ?').bind(cutoff).run();
 
@@ -1159,5 +1168,13 @@ export default {
     }
 
     return json({ error: 'Not found' }, 404, origin);
+  },
+
+  async scheduled(controller, env) {
+    try {
+      await runDailyReportAgent(env);
+    } catch (error) {
+      console.error('daily report agent failed', error);
+    }
   },
 };

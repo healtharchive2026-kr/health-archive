@@ -4669,6 +4669,59 @@ function newsSourceRows(source) {
   return Array.isArray(refreshed) ? refreshed : source.data();
 }
 
+let dailyReports = [];
+
+function renderDailyReports() {
+  const list = document.getElementById('daily-report-list');
+  const count = document.querySelector('.daily-report-count');
+  const search = document.getElementById('daily-report-search');
+  if (!list || !count) return;
+  const query = String(search?.value || '').trim().toLowerCase();
+  const filtered = dailyReports.filter(item => [
+    item.ingredient, item.scientificName, item.ingredientType, item.functionality,
+    item.verdict, item.summary, item.sourceTitle,
+  ].some(value => String(value || '').toLowerCase().includes(query)));
+  count.textContent = `${filtered.length.toLocaleString('ko-KR')}건`;
+  if (!filtered.length) {
+    list.innerHTML = `<div class="daily-report-empty"><span>REPORT ARCHIVE</span><strong>${query ? '검색 결과 없음' : '발간 대기 중'}</strong><p>${query ? '다른 원료명이나 기능성으로 검색해 주세요.' : '원문 PDF 확보와 검증을 완료한 보고서가 순차적으로 등록됩니다.'}</p></div>`;
+    return;
+  }
+  list.innerHTML = filtered.map(item => `
+    <article class="daily-report-card">
+      <div class="daily-report-card-date"><strong>${escapeHtml(item.date || '-')}</strong><span>${escapeHtml(item.sourcePmcid || 'SOURCE')}</span></div>
+      <div class="daily-report-card-main">
+        <div class="daily-report-card-kicker"><span>${escapeHtml(item.ingredientType || '원료 유형 확인 필요')}</span><b>근거 ${escapeHtml(item.evidenceGrade || '확인 필요')} · ${escapeHtml(item.grade || '-')}</b></div>
+        <h3>${escapeHtml(item.ingredient || '원료명 확인 필요')}</h3>
+        <p class="daily-report-scientific"><i>${escapeHtml(item.scientificName || '확인 필요')}</i> · ${escapeHtml(item.functionality || '기능성 확인 필요')}</p>
+        <p class="daily-report-summary">${escapeHtml(item.summary || '원문 근거 추가 검토 필요')}</p>
+        <small>${escapeHtml(item.sourceTitle || '원문 제목 확인 필요')}</small>
+      </div>
+      <div class="daily-report-card-actions">
+        <span>${escapeHtml(item.verdict || '검토 필요')}</span>
+        <a href="${escapeHtml(item.reportUrl)}" target="_blank" rel="noopener">분석 PDF</a>
+        <a href="${escapeHtml(item.sourcePdfUrl)}" target="_blank" rel="noopener">원문 PDF</a>
+      </div>
+    </article>`).join('');
+}
+
+async function loadDailyReports() {
+  const search = document.getElementById('daily-report-search');
+  if (search && !search.dataset.bound) {
+    search.dataset.bound = '1';
+    search.addEventListener('input', renderDailyReports);
+  }
+  try {
+    const response = await fetch(`${PROTECTED_AUTH_API}/daily-reports`, { cache: 'no-store' });
+    if (!response.ok) throw new Error(`Daily report API ${response.status}`);
+    const payload = await response.json();
+    dailyReports = Array.isArray(payload.reports) ? payload.reports : [];
+  } catch (error) {
+    console.error('loadDailyReports failed', error);
+    dailyReports = [];
+  }
+  renderDailyReports();
+}
+
 function refreshNewsSources() {
   if (newsRefreshPromise) return newsRefreshPromise;
 
@@ -5586,6 +5639,7 @@ document.addEventListener('DOMContentLoaded', () => {
   runStartupTask('renderHeroNews', renderHeroNews);
   runStartupTask('refreshNewsSources', () => refreshNewsSources().then(renderHeroNews));
   runStartupTask('renderDailyQuote', renderDailyQuote);
+  runStartupTask('loadDailyReports', loadDailyReports);
   runStartupTask('setupHomeUtilityActions', setupHomeUtilityActions);
   runStartupTask('renderDataFreshness', renderDataFreshness);
   runStartupTask('setupVisitorCounter', setupVisitorCounter);

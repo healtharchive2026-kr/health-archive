@@ -1,6 +1,6 @@
 name = "healtharchive-feedback"
 main = "src/index.js"
-compatibility_date = "2026-07-01"
+compatibility_date = "2026-08-18"
 
 routes = [
   { pattern = "api.healtharchive.kr", custom_domain = true },
@@ -20,3 +20,15 @@ bucket_name = "healtharchive-assets"
 name = "ACCESS_NOTIFY"
 destination_address = "healtharchive2026@gmail.com"
 allowed_sender_addresses = ["no-reply@healtharchive.kr"]
+
+[ai]
+binding = "AI"
+
+[browser]
+binding = "BROWSER"
+
+[triggers]
+crons = [ "35 21 * * *" ] # 06:35 KST daily
+
+[observability]
+enabled = true
