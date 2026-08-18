@@ -2,6 +2,8 @@
 .DS_Store
 Thumbs.db
 cf-worker/.wrangler/
+cf-worker/.daily-agent-*
+cf-worker/.wrangler-dry-run*/
 audit-screenshots/
 scripts/*
 !scripts/_status.py
