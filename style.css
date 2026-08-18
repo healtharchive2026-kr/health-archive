@@ -3944,3 +3944,25 @@ body:not(.site-authenticated) .nav-link:not([data-tab="home"]):hover{opacity:.85
   .logo-leaf{display:none;}
   .mobile-version-link,.cmdk-trigger,.account-trigger,.mobile-menu-toggle{width:36px;height:36px;min-height:36px;margin-left:0;}
 }
+
+/* Public resource links below the cinematic service overview. */
+.pc-cinema-preview-note{
+  margin:0;
+  padding:22px 16px 0;
+  color:#53665c;
+  font-size:14px;
+  font-weight:600;
+  line-height:1.7;
+  text-align:center;
+  word-break:keep-all;
+}
+.pc-cinema-preview-note a{
+  color:#176b55;
+  font-weight:750;
+  text-decoration-thickness:1px;
+  text-underline-offset:4px;
+}
+.pc-cinema-preview-note a:hover{
+  color:#0d4f3e;
+  text-decoration-thickness:2px;
+}
