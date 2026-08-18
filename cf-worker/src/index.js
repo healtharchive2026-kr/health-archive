@@ -19,7 +19,11 @@ function corsHeaders(origin) {
 function json(data, status, origin) {
   return new Response(JSON.stringify(data), {
     status: status || 200,
-    headers: { 'Content-Type': 'application/json', ...corsHeaders(origin) },
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Robots-Tag': 'noindex, nofollow',
+      ...corsHeaders(origin),
+    },
   });
 }
 
@@ -1036,6 +1040,12 @@ export default {
 
     if (url.hostname === 'm.healtharchive.kr') {
       return serveMobileSite(request, url);
+    }
+
+    if (request.method === 'GET' && url.pathname === '/') {
+      const response = json({ service: 'HealthArchive API', status: 'ok' }, 200, origin);
+      response.headers.set('Cache-Control', 'no-store');
+      return response;
     }
 
     if (request.method === 'OPTIONS') {

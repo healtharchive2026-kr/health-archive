@@ -27,13 +27,14 @@ def generate():
     monday=date.today()-timedelta(days=date.today().weekday()); slug=monday.isoformat()
     body=f'<span class="eyebrow">Weekly intelligence · {slug}</span><h1>주간 신규 제품·규제·R&amp;D 브리프</h1><p class="lede">건강기능식품 개발자가 먼저 확인할 신규 제품, 식약처 동향과 연구 신호를 공개 데이터에서 선별했습니다.</p><h2>신규 등록 제품</h2><div class="list">{product_rows(products)}</div><h2>규제·정책 신호</h2><div class="list">{link_rows(rules)}</div><h2>R&amp;D 신호</h2><div class="list">{link_rows(papers)}</div><p class="notice">공개 자료 탐색을 돕는 요약이며 규제·법률·투자 자문이 아닙니다. 최종 판단 전 원문과 최신 공고를 확인하세요.</p><div class="cta"><a class="button" href="{BASE}/">HealthArchive 시작하기</a><a class="button secondary" href="{BASE}/en/">Global co-development</a></div>'
     brief=page(f'{slug} 건강기능식품 주간 브리프 | HealthArchive','신규 등록 제품, 식약처 규제 동향과 건강기능식품 R&D 신호를 정리한 주간 브리프.',f'{BASE}/insights/weekly/{slug}.html',body,'../../')
-    (WEEKLY/f'{slug}.html').write_text(brief,encoding='utf-8'); (WEEKLY/'latest.html').write_text(brief.replace(f'{slug}.html','latest.html'),encoding='utf-8')
+    (WEEKLY/f'{slug}.html').write_text(brief,encoding='utf-8')
+    latest=brief.replace('content="index,follow,max-snippet:-1"','content="noindex,follow"')
+    (WEEKLY/'latest.html').write_text(latest,encoding='utf-8')
     archives=sorted(WEEKLY.glob('20??-??-??.html'),reverse=True)
     cards=''.join(f'<article class="card"><span class="eyebrow">Weekly</span><h3><a href="weekly/{p.name}">{p.stem} 브리프</a></h3><p>신규 제품·규제·R&amp;D 업데이트</p></article>' for p in archives[:24])
-    index=f'<span class="eyebrow">Public intelligence</span><h1>건강기능식품 개발 공개 브리프</h1><p class="lede">신규 제품, 규제 변화와 연구 신호를 주간 단위로 연결합니다. 상세 데이터베이스와 판정 도구는 로그인 후 제공됩니다.</p><div class="grid">{cards}</div><div class="cta"><a class="button" href="weekly/latest.html">최신 브리프 보기</a><a class="button secondary" href="../en/">해외 원료사 문의</a></div>'
+    index=f'<span class="eyebrow">Public intelligence</span><h1>건강기능식품 개발 공개 브리프</h1><p class="lede">신규 제품, 규제 변화와 연구 신호를 주간 단위로 연결합니다. 상세 데이터베이스와 판정 도구는 로그인 후 제공됩니다.</p><div class="grid">{cards}</div><div class="cta"><a class="button" href="weekly/{slug}.html">최신 브리프 보기</a><a class="button secondary" href="../en/">해외 원료사 문의</a></div>'
     (OUT/'index.html').write_text(page('건강기능식품 개발 공개 브리프 | HealthArchive','신규 제품, 규제 변화와 R&D 신호를 연결한 건강기능식품 개발 주간 브리프.',f'{BASE}/insights/',index),encoding='utf-8')
-    paths=[('/', 'daily','1.0'),('/insights/','weekly','0.9'),('/insights/weekly/latest.html','weekly','0.8'),(f'/insights/weekly/{slug}.html','weekly','0.8'),('/en/','monthly','0.8')]
+    paths=[('/', 'daily','1.0'),('/insights/','weekly','0.9'),(f'/insights/weekly/{slug}.html','weekly','0.8'),('/en/','monthly','0.8')]
     entries=''.join(f'  <url>\n    <loc>{BASE}{p}</loc>\n    <lastmod>{date.today()}</lastmod>\n    <changefreq>{freq}</changefreq>\n    <priority>{priority}</priority>\n  </url>\n' for p,freq,priority in paths)
-    entries+=f'  <url>\n    <loc>https://m.healtharchive.kr/</loc>\n    <lastmod>{date.today()}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.7</priority>\n  </url>\n'
     (ROOT/'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'+entries+'</urlset>\n',encoding='utf-8')
 if __name__=='__main__':generate()
