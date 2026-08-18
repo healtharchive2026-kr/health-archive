@@ -88,7 +88,7 @@ function randomToken() {
 
 const MAX_LEN = 200;
 const RETENTION_SECONDS = 30 * 24 * 60 * 60;
-const AUTH_MAX_AGE = 6 * 60 * 60;
+const AUTH_MAX_AGE = 365 * 24 * 60 * 60;
 const ACCESS_REQUEST_RETENTION = 365 * 24 * 60 * 60;
 const ACCESS_REQUEST_DAILY_LIMIT = 10;
 const USAGE_EVENT_RETENTION = 90 * 24 * 60 * 60;
