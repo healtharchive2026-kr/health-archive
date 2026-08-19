@@ -459,6 +459,10 @@ function reviewPrompt(candidate, evidence) {
 아래 구조화된 원문 증거만 사용하여 전문가 수준의 개발 검토서를 작성하라.
 
 판정 원칙:
+- 보고서의 우선순위는 결론 → 확인된 기능성 결과 → 바이오마커·작용기전 → 개발 가능성 → 안전성·식약처 제출자료 공백 순이다.
+- 기능성 결과는 평가변수·시험군·방향·통계값이 한눈에 연결되도록 작성하고, 행동·주요 유효성 지표를 가장 먼저 배치한다.
+- 동일한 사실·한계·자료 공백은 보고서 전체에서 한 번만 기술한다. 의례적 서론, 같은 뜻의 반복 문장, 불필요한 수식어를 쓰지 않는다.
+- 확인된 원문 결과와 개발 판단에 직접 필요한 내용만 남기고, 각 목록은 짧은 키워드형 문장으로 작성한다.
 - 원문 사실과 분석자 판단을 문장 안에서 명확히 구분한다.
 - 단일 동물시험은 탐색 전임상으로 평가하며 인체 기능성 또는 허가 가능성을 확정하지 않는다.
 - 질병의 치료·예방 표현을 건강기능식품 기능성으로 전환하지 않는다. noGoClaims에 금지할 표현을 명시한다.
@@ -473,7 +477,7 @@ function reviewPrompt(candidate, evidence) {
 - limitations에는 번역성·편향·표본·대조군·용량반응·독성·표준화 공백을 우선순위순으로 기재한다.
 - developmentActions는 치명적 불확실성을 먼저 제거하는 Gate 순서로 작성한다.
 - keyDecision은 현재 단계에서 할 일 1개와 보류할 일 1개를 포함한 180자 이내의 의사결정 문장으로 작성한다.
-- summary는 500자 이내, 각 목록은 중복 없이 전문 문장으로 작성한다.
+- summary는 300자 이내로 기능성 신호, 차별 신호, 결정적 한계, 현재 개발판정을 각각 한 번만 포함한다.
 - 회사 내부정보, 실명, 대외비 표현과 JSON 바깥의 설명은 출력하지 않는다.
 
 논문 메타데이터:
@@ -618,7 +622,7 @@ function normalizeAiReport(raw, candidate, evidence) {
     regulatoryReview: cleanList(report.regulatoryReview),
     gaps: cleanList(report.gaps),
     sourceNotes: cleanList(report.sourceNotes),
-    reportFormat: '식약처 건강기능식품 기능성 원료 제출자료 작성 가이드 준용',
+    reportFormat: '기능성 결과 중심 · 식약처 건강기능식품 기능성 원료 제출자료 작성 가이드 준용',
     groupDefinitions,
     safetyDatabaseSearch: evidence?.safetyDatabaseSearch || [],
     evidenceAudit: evidence,
@@ -662,7 +666,7 @@ function legacyReportHtml(report, id, date) {
   </main></body></html>`;
 }
 
-function reportHtml(report, id, date) {
+function reportHtmlMfdsV1(report, id, date) {
   const audit = report.evidenceAudit || {};
   const design = audit.studyDesign || {};
   const groupRows = (report.groupDefinitions || []).length ? report.groupDefinitions.map(item => `
@@ -704,6 +708,30 @@ function reportHtml(report, id, date) {
   <section class="page"><div class="section-title"><span>07-2</span><h2>작용기전·번역성·중대한 한계</h2></div><div class="split"><div class="card"><h3>주요 작용기전</h3>${listHtml(report.mechanisms)}</div><div class="card callout"><h3>중대한 한계</h3>${listHtml(report.limitations)}</div></div><div class="card danger"><h3>원문 내부 불일치·확인 필요</h3>${listHtml(report.inconsistencies)}</div></section>
   <section class="page"><div class="section-title"><span>08</span><h2>섭취량·섭취방법·주의사항 및 다음 관문</h2></div><div class="split"><div class="card"><h3>국내 규제 검토</h3>${listHtml(report.regulatoryReview)}</div><div class="card"><h3>우선순위 실행안</h3>${listHtml(report.developmentActions)}</div></div><div class="card"><h3>원문 주석</h3>${listHtml(report.sourceNotes)}</div></section>
   <div class="source">원문: ${escapeHtml(report.source.title)} · ${escapeHtml(report.source.journal)} · ${escapeHtml(report.source.pubDate)} · ${escapeHtml(report.source.pmcid)}${report.source.doi ? ` · DOI ${escapeHtml(report.source.doi)}` : ''}<br>형식: 식약처 건강기능식품 기능성 원료 제출자료 작성 가이드 준용. 본 문서는 원문 PDF 기반 후보 선별 검토자료이며 인정 신청자료를 대체하지 않는다.</div>
+  </main></body></html>`;
+}
+
+function reportHtml(report, id, date) {
+  const audit = report.evidenceAudit || {};
+  const design = audit.studyDesign || {};
+  const groupRows = (report.groupDefinitions || []).length ? report.groupDefinitions.map(item => `
+    <tr><td><b>${escapeHtml(item.reportName)}</b></td><td>${escapeHtml(item.sourceCode)}</td><td>${escapeHtml(item.description)}</td><td>${escapeHtml(item.role)}</td></tr>`).join('') : '<tr><td colspan="4">확인 필요</td></tr>';
+  const outcomeRows = (report.outcomeMatrix || []).length ? report.outcomeMatrix.map(item => `
+    <tr><td>${escapeHtml(item.domain)}</td><td><b>${escapeHtml(item.endpoint)}</b></td><td>${escapeHtml(item.result)}</td><td>${escapeHtml(item.statistic)}</td><td>${escapeHtml(item.evidenceLocation)}</td></tr>`).join('') : '<tr><td colspan="5">확인된 결과 없음</td></tr>';
+  const safetyRows = (report.safetyDatabaseSearch || []).length ? report.safetyDatabaseSearch.map(item => `
+    <tr><td>${escapeHtml(item.database)}</td><td>${escapeHtml(item.query)}</td><td><b>${escapeHtml(item.status)}</b></td><td>${escapeHtml(item.finding)}</td></tr>`).join('') : '<tr><td colspan="4">안전성 DB 검색 필요</td></tr>';
+  const metric = (label, value, note, tone = '') => `<div class="metric ${tone}"><span>${escapeHtml(label)}</span><b>${escapeHtml(value)}</b><small>${escapeHtml(note)}</small></div>`;
+  return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(report.ingredient)} 기능성 개발 검토</title>
+  <style>
+  :root{--ink:#14211d;--deep:#0b3c35;--muted:#596a64;--line:#dce5e1;--green:#147864;--soft:#e7f1ed;--blue:#315d82;--blue-soft:#eaf1f6;--amber:#a26812;--amber-soft:#fbf0d9;--red:#a33c36;--red-soft:#f8e9e6}*{box-sizing:border-box}body{margin:0;color:var(--ink);font-family:"Noto Sans KR","Malgun Gothic",sans-serif;line-height:1.55;background:#fff;font-size:12px}.wrap{max-width:940px;margin:auto;padding:40px 42px 56px}.eyebrow{color:var(--green);font-size:9px;font-weight:800;letter-spacing:.1em}h1{font-size:31px;line-height:1.25;margin:10px 0 5px}.subtitle{color:var(--muted);font-size:13px}.decision{border:1px solid var(--green);background:#f3f8f6;padding:15px 17px;margin:22px 0 12px}.decision b{display:block;color:var(--deep);font-size:16px;margin-bottom:5px}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:28px}.metric{border:1px solid var(--line);padding:11px}.metric span,.metric small{display:block;color:var(--muted);font-size:9px}.metric b{display:block;font-size:20px;margin:4px 0;color:var(--deep)}.metric.red{background:var(--red-soft);border-color:#d58c85}.metric.amber{background:var(--amber-soft);border-color:#d9a54c}.metric.blue{background:var(--blue-soft);border-color:#89a9c2}section{border-top:1px solid var(--line);padding:24px 0}.page{break-before:page}.title{display:flex;align-items:baseline;gap:10px;margin-bottom:13px}.title span{color:var(--green);font-size:10px;font-weight:800}.title h2{font-size:20px;margin:0}.lead{font-size:14px;font-weight:700;color:var(--deep)}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.panel{border:1px solid var(--line);padding:13px}.panel.good{background:#f3f8f6;border-color:var(--green)}.panel.risk{background:var(--red-soft);border-color:#d58c85}.panel h3{font-size:12px;margin:0 0 7px}ul{margin:0;padding-left:18px}li+li{margin-top:5px}dl{display:grid;grid-template-columns:120px 1fr;margin:0;border:1px solid var(--line)}dt,dd{padding:7px 9px;margin:0;border-bottom:1px solid var(--line)}dt{font-weight:800;background:#f7faf8}dd{border-left:1px solid var(--line)}table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:9px}th,td{border:1px solid var(--line);padding:6px 7px;text-align:left;vertical-align:top;word-break:break-word}th{background:#f3f8f6;color:var(--deep)}.outcomes th:nth-child(1){width:13%}.outcomes th:nth-child(2){width:20%}.outcomes th:nth-child(3){width:31%}.outcomes th:nth-child(4){width:17%}.outcomes th:nth-child(5){width:19%}.notice{background:var(--amber-soft);border-left:4px solid var(--amber);padding:12px;margin-top:10px}.source{font-size:9px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px;margin-top:18px;word-break:break-all}@page{size:A4;margin:12mm}@media print{.wrap{padding:0}.page{break-before:page}.panel,table{break-inside:avoid}}@media(max-width:720px){.wrap{padding:26px 15px 48px}.metrics,.grid{grid-template-columns:1fr 1fr}.scroll{overflow:auto}.scroll table{min-width:760px}}@media(max-width:460px){.metrics,.grid{grid-template-columns:1fr}}
+  </style></head><body><main class="wrap">
+  <header><div class="eyebrow">HEALTHARCHIVE · FUNCTIONALITY-FIRST REVIEW · ${escapeHtml(id)}</div><h1>${escapeHtml(report.ingredient)}</h1><div class="subtitle"><i>${escapeHtml(report.scientificName)}</i> · 확보 원문 PDF 기반 기능성 결과 및 개발 가능성 검토</div><div class="decision"><b>${escapeHtml(report.verdict)}</b>${escapeHtml(report.keyDecision || report.summary)}</div><div class="metrics">${metric('기능성 근거', `${report.outcomeMatrix?.length || 0}개 지표`, report.evidenceGrade, 'blue')}${metric('인체 직접성', `${report.humanEvidenceScore || 0}/5`, audit.sourceType || '원문 유형', 'red')}${metric('개발 준비도', `${report.developmentReadinessScore || 0}/5`, report.feasibility, 'amber')}${metric('개발 단계', '탐색', '재현시험 전')}</div></header>
+  <section><div class="title"><span>01</span><h2>기능성 결과 한눈에</h2></div><p class="lead">${escapeHtml(report.summary)}</p><dl><dt>기능 방향</dt><dd>${escapeHtml(report.functionality)}</dd><dt>시험대상</dt><dd>${escapeHtml(design.subjects || '확인 필요')}</dd><dt>시험모델</dt><dd>${escapeHtml(design.model || '확인 필요')}</dd><dt>기간</dt><dd>${escapeHtml(design.duration || '확인 필요')}</dd><dt>근거 수준</dt><dd>${escapeHtml(`${report.evidenceGrade} · ${report.grade}`)}</dd></dl><h3>시험군 정의</h3><div class="scroll"><table><thead><tr><th>보고서 명칭</th><th>원문 약어</th><th>설명</th><th>역할</th></tr></thead><tbody>${groupRows}</tbody></table></div></section>
+  <section class="page"><div class="title"><span>02</span><h2>평가변수별 기능성 결과</h2></div><div class="scroll"><table class="outcomes"><thead><tr><th>영역</th><th>평가지표</th><th>확인 결과</th><th>통계</th><th>근거 위치</th></tr></thead><tbody>${outcomeRows}</tbody></table></div></section>
+  <section class="page"><div class="title"><span>03</span><h2>바이오마커·작용기전</h2></div><div class="grid"><div class="panel good"><h3>확인된 기전 신호</h3>${listHtml(report.mechanisms)}</div><div class="panel risk"><h3>해석 한계</h3>${listHtml(report.limitations)}</div></div>${report.inconsistencies?.length ? `<div class="notice"><b>원문 확인 필요</b>${listHtml(report.inconsistencies)}</div>` : ''}</section>
+  <section class="page"><div class="title"><span>04</span><h2>개발 가능성·다음 관문</h2></div><div class="grid"><div class="panel good"><h3>우선 실행</h3>${listHtml(report.developmentActions)}</div><div class="panel risk"><h3>사용 금지 주장</h3>${listHtml(report.noGoClaims)}</div></div><div class="panel"><h3>표준화·규격 공백</h3>${listHtml(report.specifications)}<h3>국내 규제 전환</h3>${listHtml(report.regulatoryReview)}</div></section>
+  <section class="page"><div class="title"><span>05</span><h2>안전성·식약처 제출자료 부록</h2></div><div class="panel risk"><h3>안전성 핵심</h3>${listHtml(report.safety)}</div><h3>안전성 DB 검색</h3><div class="scroll"><table><thead><tr><th>DB</th><th>검색어</th><th>결과</th><th>확인 내용</th></tr></thead><tbody>${safetyRows}</tbody></table></div><div class="notice">‘검색 결과 없음’은 안전성 입증이 아니다. 정확한 신청원료의 균주·제조공정·강화성분 결합 안전성은 별도 자료로 확인한다.</div><h3>제출자료 공백</h3>${listHtml(report.gaps)}</section>
+  <div class="source">원문: ${escapeHtml(report.source.title)} · ${escapeHtml(report.source.journal)} · ${escapeHtml(report.source.pubDate)} · ${escapeHtml(report.source.pmcid)}${report.source.doi ? ` · DOI ${escapeHtml(report.source.doi)}` : ''}<br>형식: 기능성 결과 중심 · 식약처 건강기능식품 기능성 원료 제출자료 작성 가이드 준용. 본 문서는 원문 PDF 기반 후보 선별 검토자료이며 인정 신청자료를 대체하지 않는다.</div>
   </main></body></html>`;
 }
 
