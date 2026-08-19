@@ -1010,6 +1010,47 @@ async function handleProtectedUpdate(request, env, url, origin) {
   return authJson({ ok: true }, 200, origin);
 }
 
+async function handleMinutesPdfUpload(request, env, url, origin) {
+  const match = url.pathname.match(/^\/admin\/protected\/minutes-pdf\/([^/]+)$/);
+  if (!match) return null;
+  if (request.method !== 'PUT') {
+    return new Response('Method not allowed', { status: 405, headers: { Allow: 'PUT' } });
+  }
+  const authorization = request.headers.get('Authorization') || '';
+  const expected = env.PROTECTED_UPDATE_TOKEN ? `Bearer ${env.PROTECTED_UPDATE_TOKEN}` : '';
+  if (!expected || !(await secureEqual(authorization, expected))) {
+    return authJson({ error: 'Unauthorized' }, 401, origin);
+  }
+
+  let filename = '';
+  try {
+    filename = decodeURIComponent(match[1]);
+  } catch (error) {
+    return authJson({ error: '잘못된 파일명입니다.' }, 400, origin);
+  }
+  if (!/^제\d+차\.pdf$/.test(filename)) {
+    return authJson({ error: '허용되지 않은 파일명입니다.' }, 400, origin);
+  }
+
+  const payload = await request.arrayBuffer();
+  if (payload.byteLength < 5 || payload.byteLength > 25 * 1024 * 1024) {
+    return authJson({ error: 'PDF 용량이 허용 범위를 벗어났습니다.' }, 413, origin);
+  }
+  const signature = new TextDecoder('ascii').decode(payload.slice(0, 5));
+  if (signature !== '%PDF-') {
+    return authJson({ error: '유효한 PDF 파일이 아닙니다.' }, 400, origin);
+  }
+
+  await env.PRIVATE_DATA.put(`minutes-pdfs/${filename}`, payload, {
+    httpMetadata: {
+      contentType: 'application/pdf',
+      contentDisposition: `inline; filename*=UTF-8''${encodeURIComponent(filename)}`,
+      cacheControl: 'public, max-age=86400',
+    },
+  });
+  return authJson({ ok: true, filename, size: payload.byteLength }, 200, origin);
+}
+
 async function serveMobileSite(request, url) {
   if (request.method !== 'GET' && request.method !== 'HEAD') {
     return new Response('Method not allowed', {
@@ -1100,6 +1141,11 @@ export default {
     if (url.pathname.startsWith('/protected/data/')) {
       const protectedResponse = await handleProtectedData(request, env, url, origin);
       if (protectedResponse) return protectedResponse;
+    }
+
+    if (url.pathname.startsWith('/admin/protected/minutes-pdf/')) {
+      const minutesPdfResponse = await handleMinutesPdfUpload(request, env, url, origin);
+      if (minutesPdfResponse) return minutesPdfResponse;
     }
 
     if (url.pathname.startsWith('/admin/protected/')) {

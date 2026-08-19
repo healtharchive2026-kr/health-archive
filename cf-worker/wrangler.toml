@@ -28,7 +28,7 @@ binding = "AI"
 binding = "BROWSER"
 
 [triggers]
-crons = [ "35 21 * * *" ] # 06:35 KST daily
+crons = [ "32 23 * * *" ] # 08:32 KST daily
 
 [observability]
 enabled = true

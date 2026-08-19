@@ -119,6 +119,22 @@ jobs:
             --data-binary @data/radar_log.json \
             https://api.healtharchive.kr/admin/protected/radar-log
 
+      - name: Upload new committee minutes PDFs
+        env:
+          PROTECTED_UPDATE_TOKEN: ${{ secrets.PROTECTED_UPDATE_TOKEN }}
+        run: |
+          shopt -s nullglob
+          for file in minutes-pdfs/*.pdf; do
+            name="$(basename "$file")"
+            encoded="$(python -c 'import sys, urllib.parse; print(urllib.parse.quote(sys.argv[1]))' "$name")"
+            curl --fail --silent --show-error \
+              -X PUT \
+              -H "Authorization: Bearer ${PROTECTED_UPDATE_TOKEN}" \
+              -H "Content-Type: application/pdf" \
+              --data-binary "@$file" \
+              "https://api.healtharchive.kr/admin/protected/minutes-pdf/${encoded}"
+          done
+
       - name: Update protected funding tracker
         env:
           PROTECTED_UPDATE_TOKEN: ${{ secrets.PROTECTED_UPDATE_TOKEN }}

@@ -2,15 +2,58 @@
   {
     "id": 1,
     "meetingNo": 202,
-    "meetingName": "[영양기능연구과] 제202차(&#039;26년 제4차) 건강기능식품심의위원회(기능성 원료·성분 인정 및 기준·규격분과, 인체적용시험평가분과) 회의 결과",
+    "meetingName": "제202차 건강기능식품심의위원회",
     "year": "2026",
-    "ingredients": [],
+    "ingredients": [
+      "하고초추출분말",
+      "Lactiplantibacillus plantarum NK151과 Bifidobacterium bifidum NK175의 프로바이오틱스 복합물(LB101)",
+      "치마버섯유래베타글루칸",
+      "2’-O-푸코실락토오스(2’-FL)",
+      "블랙라즈베리한속단추출복합분말",
+      "Lacticaseibacillus paracasei BEPC22와 Lactiplantibacillus plantarum BELP53의 프로바이오틱스 복합물(BN-202M)",
+      "피치세라마이드(PF3)",
+      "삼칠숙지황복합추출물(Denjolex®)",
+      "청호추출분말(리베라템)",
+      "미배아발효분말",
+      "연어코연골추출물",
+      "저분자돈태반펩타이드",
+      "크릴오일(FJH-KO)",
+      "살라시아레티큘라타추출물",
+      "녹용효소분해추출물(HENKIV®)"
+    ],
     "pdf": "제202차.pdf",
     "dept": "영양기능연구과",
     "seq": "33422"
   },
   {
     "id": 2,
+    "meetingNo": 201,
+    "meetingName": "제201차 건강기능식품심의위원회",
+    "year": "2026",
+    "ingredients": [
+      "Lactiplantibacillus plantarum APsulloc 331261(GTB1Ⓡ-M)",
+      "Lactiplantibacillus plantarum PL-02 프로바이오틱스",
+      "Lactiplantibacillus plantarum NCHBL-004 프로바이오틱스",
+      "L.plantarum NK3과 B. longumNK49의 프로바이오틱스 복합물 (NVP-1905)",
+      "LimosilactobacillusfermentumKBL674 프로바이오틱스",
+      "LimosilactobacillusreuteriLRC 프로바이오틱스",
+      "자색옥수수추출분말",
+      "감태추출물",
+      "찔레나무뿌리추출물(RosaFloraⓇ)",
+      "로즈마리 등 추출 복합물(FatdizolⓇ)",
+      "인삼",
+      "BifidobacteriumbreveB-3 프로바이오틱스",
+      "뮤코다당·단백",
+      "천마추출물",
+      "Lactiplantibacillus plantarum APsulloc 331261(GTB1®-M)",
+      "Lactiplantibacillus plantarum APsulloc 331261(GTB1®-M) 프로바이오틱스"
+    ],
+    "pdf": "제201차.pdf",
+    "dept": "영양기능연구과",
+    "seq": "33420"
+  },
+  {
+    "id": 3,
     "meetingNo": 200,
     "meetingName": "제200차 건강기능식품심의위원회",
     "year": "2026",
@@ -35,7 +78,7 @@
     "pdf": "제200차.pdf"
   },
   {
-    "id": 3,
+    "id": 4,
     "meetingNo": 199,
     "meetingName": "제199차 건강기능식품심의위원회",
     "year": "2026",
@@ -57,7 +100,7 @@
     "pdf": "제199차.pdf"
   },
   {
-    "id": 4,
+    "id": 5,
     "meetingNo": 198,
     "meetingName": "제198차 건강기능식품심의위원회",
     "year": "2025",
@@ -75,7 +118,7 @@
     "pdf": "제198차.pdf"
   },
   {
-    "id": 5,
+    "id": 6,
     "meetingNo": 197,
     "meetingName": "제197차 건강기능식품심의위원회",
     "year": "2025",
@@ -94,7 +137,7 @@
     "pdf": "제197차.pdf"
   },
   {
-    "id": 6,
+    "id": 7,
     "meetingNo": 196,
     "meetingName": "제196차 건강기능식품심의위원회",
     "year": "2025",
@@ -111,7 +154,7 @@
     "pdf": "제196차.pdf"
   },
   {
-    "id": 7,
+    "id": 8,
     "meetingNo": 195,
     "meetingName": "제195차 건강기능식품심의위원회",
     "year": "2025",
@@ -120,7 +163,7 @@
       "미선나무잎추출물",
       "백출양춘사추출복합물",
       "홍어껍질콜라겐펩타이드",
-      "Lacticaseibacillusparacaseisubsp. paracasei 327(K-1) 열처리배양건조물",
+      "Lacticaseibacillus paracaseisubsp. paracasei 327(K-1) 열처리배양건조물",
       "홀리바질추출물(Holixer)",
       "발효녹용농축분말",
       "롱비다강황추출물(LongvidaⓇ)",
@@ -132,7 +175,7 @@
     "pdf": "제195차.pdf"
   },
   {
-    "id": 8,
+    "id": 9,
     "meetingNo": 194,
     "meetingName": "제194차 건강기능식품심의위원회",
     "year": "2025",
@@ -140,7 +183,7 @@
       "정향추출물",
       "괭생이모자반추출물",
       "백출오미자복합추출물",
-      "LactiplantibacillusplantarumKM2 발효배양열처리복합물",
+      "Lactiplantibacillus plantarum KM2 발효배양열처리복합물",
       "해바라기종자박추출물(Sun Dy Fit)",
       "살라시아추출물",
       "인디안구스베리등복합물(IB Complex)",
@@ -151,7 +194,7 @@
     "pdf": "제194차.pdf"
   },
   {
-    "id": 9,
+    "id": 10,
     "meetingNo": 193,
     "meetingName": "제193차 건강기능식품심의위원회",
     "year": "2025",
@@ -174,7 +217,7 @@
     "pdf": "제193차.pdf"
   },
   {
-    "id": 10,
+    "id": 11,
     "meetingNo": 192,
     "meetingName": "제192차 건강기능식품심의위원회",
     "year": "2025",
@@ -196,7 +239,7 @@
     "pdf": "제192차.pdf"
   },
   {
-    "id": 11,
+    "id": 12,
     "meetingNo": 191,
     "meetingName": "제191차 건강기능식품심의위원회",
     "year": "2025",
@@ -215,7 +258,7 @@
     "pdf": "제191차.pdf"
   },
   {
-    "id": 12,
+    "id": 13,
     "meetingNo": 190,
     "meetingName": "제190차 건강기능식품심의위원회",
     "year": "2025",
@@ -237,7 +280,7 @@
     "pdf": "제190차.pdf"
   },
   {
-    "id": 13,
+    "id": 14,
     "meetingNo": 189,
     "meetingName": "제189차 건강기능식품심의위원회",
     "year": "2024",
@@ -257,7 +300,7 @@
     "pdf": "제189차.pdf"
   },
   {
-    "id": 14,
+    "id": 15,
     "meetingNo": 188,
     "meetingName": "제188차 건강기능식품심의위원회",
     "year": "2024",
@@ -282,7 +325,7 @@
     "pdf": "제188차.pdf"
   },
   {
-    "id": 15,
+    "id": 16,
     "meetingNo": 187,
     "meetingName": "제187차 건강기능식품심의위원회",
     "year": "2024",
@@ -301,7 +344,7 @@
     "pdf": "제187차.pdf"
   },
   {
-    "id": 16,
+    "id": 17,
     "meetingNo": 186,
     "meetingName": "제186차 건강기능식품심의위원회",
     "year": "2024",
@@ -316,7 +359,7 @@
     "pdf": "제186차.pdf"
   },
   {
-    "id": 17,
+    "id": 18,
     "meetingNo": 185,
     "meetingName": "제185차 건강기능식품심의위원회",
     "year": "2024",
@@ -333,7 +376,7 @@
     "pdf": "제185차.pdf"
   },
   {
-    "id": 18,
+    "id": 19,
     "meetingNo": 184,
     "meetingName": "제184차 건강기능식품심의위원회",
     "year": "2024",
@@ -350,7 +393,7 @@
     "pdf": "제184차.pdf"
   },
   {
-    "id": 19,
+    "id": 20,
     "meetingNo": 183,
     "meetingName": "제183차 건강기능식품심의위원회",
     "year": "2024",
@@ -371,7 +414,7 @@
     "pdf": "제183차.pdf"
   },
   {
-    "id": 20,
+    "id": 21,
     "meetingNo": 182,
     "meetingName": "제182차 건강기능식품심의위원회",
     "year": "2024",
@@ -392,7 +435,7 @@
     "pdf": "제182차.pdf"
   },
   {
-    "id": 21,
+    "id": 22,
     "meetingNo": 180,
     "meetingName": "제180차 건강기능식품심의위원회",
     "year": "2023",
@@ -412,7 +455,7 @@
     "pdf": "제180차.pdf"
   },
   {
-    "id": 22,
+    "id": 23,
     "meetingNo": 178,
     "meetingName": "제178차 건강기능식품심의위원회",
     "year": "2023",
@@ -431,7 +474,7 @@
     "pdf": "제178차.pdf"
   },
   {
-    "id": 23,
+    "id": 24,
     "meetingNo": 177,
     "meetingName": "제177차 건강기능식품심의위원회",
     "year": "2023",
@@ -447,7 +490,7 @@
     "pdf": "제177차.pdf"
   },
   {
-    "id": 24,
+    "id": 25,
     "meetingNo": 176,
     "meetingName": "제176차 건강기능식품심의위원회",
     "year": "2023",
@@ -463,7 +506,7 @@
     "pdf": "제176차.pdf"
   },
   {
-    "id": 25,
+    "id": 26,
     "meetingNo": 175,
     "meetingName": "제175차 건강기능식품심의위원회",
     "year": "2023",
@@ -472,7 +515,7 @@
       "칸나추출물(젬브린)",
       "새싹보리추출물(RexcliverⓇ)",
       "숙잠동결건조분말",
-      "L.plantarumLC27 및 B.longumLC67 복합물(프로바이오틱스\nNVP1702)",
+      "L.plantarum LC27 및 B.longumLC67 복합물(프로바이오틱스 NVP1702)",
       "녹용당귀등 복합추출물",
       "베르가모트오렌지추출물",
       "락토페린(우유정제단백질)",
@@ -485,7 +528,7 @@
     "pdf": "제175차.pdf"
   },
   {
-    "id": 26,
+    "id": 27,
     "meetingNo": 174,
     "meetingName": "제174차 건강기능식품심의위원회",
     "year": "2023",
@@ -505,7 +548,7 @@
     "pdf": "제174차.pdf"
   },
   {
-    "id": 27,
+    "id": 28,
     "meetingNo": 173,
     "meetingName": "제173차 건강기능식품심의위원회",
     "year": "2023",
@@ -517,7 +560,7 @@
     "pdf": "제173차.pdf"
   },
   {
-    "id": 28,
+    "id": 29,
     "meetingNo": 172,
     "meetingName": "제172차 건강기능식품심의위원회",
     "year": "2023",
@@ -535,7 +578,7 @@
     "pdf": "제172차.pdf"
   },
   {
-    "id": 29,
+    "id": 30,
     "meetingNo": 168,
     "meetingName": "제168차 건강기능식품심의위원회",
     "year": "2022",
@@ -543,7 +586,7 @@
       "오미자등복합추출물",
       "아쉬아간다추출물",
       "산삼배양근추출발효물(HLJG0701-β)",
-      "프로바이오틱스 Lactobacillus casei HY2782와 갈근추출물\n혼합물",
+      "프로바이오틱스 Lactobacillus casei HY2782와 갈근추출물 혼합물",
       "산수유복합추출물",
       "금빛제비집추출물",
       "루바브뿌리추출물",
@@ -555,7 +598,7 @@
     "pdf": "제168차.pdf"
   },
   {
-    "id": 30,
+    "id": 31,
     "meetingNo": 167,
     "meetingName": "제167차 건강기능식품심의위원회",
     "year": "2022",
@@ -569,7 +612,7 @@
     "pdf": "제167차.pdf"
   },
   {
-    "id": 31,
+    "id": 32,
     "meetingNo": 166,
     "meetingName": "제166차 건강기능식품심의위원회",
     "year": "2022",
@@ -587,7 +630,7 @@
     "pdf": "제166차.pdf"
   },
   {
-    "id": 32,
+    "id": 33,
     "meetingNo": 165,
     "meetingName": "제165차 건강기능식품심의위원회",
     "year": "2022",
@@ -606,7 +649,7 @@
     "pdf": "제165차.pdf"
   },
   {
-    "id": 33,
+    "id": 34,
     "meetingNo": 164,
     "meetingName": "제164차 건강기능식품심의위원회",
     "year": "2022",
@@ -622,7 +665,7 @@
     "pdf": "제164차.pdf"
   },
   {
-    "id": 34,
+    "id": 35,
     "meetingNo": 9,
     "meetingName": "제9차 건강기능식품심의위원회",
     "year": "2022",
@@ -643,7 +686,7 @@
     "pdf": "제9차.pdf"
   },
   {
-    "id": 35,
+    "id": 36,
     "meetingNo": 8,
     "meetingName": "제8차 건강기능식품심의위원회",
     "year": "2022",
@@ -669,7 +712,7 @@
     "pdf": "제8차.pdf"
   },
   {
-    "id": 36,
+    "id": 37,
     "meetingNo": 1,
     "meetingName": "제1차 건강기능식품심의위원회",
     "year": "2022",
@@ -688,32 +731,5 @@
       "수국잎열수추출물"
     ],
     "pdf": "제1차.pdf"
-  },
-  {
-    "id": 37,
-    "meetingNo": 201,
-    "meetingName": "[영양기능연구과] 제201차(&#039;26년 제3차) 건강기능식품심의위원회(기능성 원료·성분 인정 및 기준·규격분과, 인체적용시험평가분과) 회의 결과",
-    "year": "",
-    "ingredients": [
-      "LactiplantibacillusplantarumAPsulloc 331261(GTB1Ⓡ-M)",
-      "LactiplantibacillusplantarumPL-02 프로바이오틱스",
-      "LactiplantibacillusplantarumNCHBL-004 프로바이오틱스",
-      "L.plantarumNK3과 B. longumNK49의 프로바이오틱스 복합물\n(NVP-1905)",
-      "LimosilactobacillusfermentumKBL674 프로바이오틱스",
-      "LimosilactobacillusreuteriLRC 프로바이오틱스",
-      "자색옥수수추출분말",
-      "감태추출물",
-      "찔레나무뿌리추출물(RosaFloraⓇ)",
-      "로즈마리 등 추출 복합물(FatdizolⓇ)",
-      "인삼",
-      "BifidobacteriumbreveB-3 프로바이오틱스",
-      "뮤코다당·단백",
-      "천마추출물",
-      "Lactiplantibacillus plantarum APsulloc 331261(GTB1®-M)",
-      "Lactiplantibacillus plantarum APsulloc 331261(GTB1®-M)\n프로바이오틱스"
-    ],
-    "pdf": "제201차.pdf",
-    "dept": "영양기능연구과",
-    "seq": "33420"
   }
 ]

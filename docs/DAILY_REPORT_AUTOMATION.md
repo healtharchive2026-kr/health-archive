@@ -4,7 +4,7 @@
 
 Daily 원료 보고서는 별도 PC나 로컬 작업 스케줄러 없이 Cloudflare에서 실행된다.
 
-1. Cron Trigger: 매일 06:35 KST 실행
+1. Cron Trigger: 매일 08:32 KST 실행
 2. 후보 탐색: Europe PMC의 공개 원문 논문 중 발행 후 21일이 지난 자료
 3. 원문 확보: Europe PMC PDF 우선, NCBI OA 대체 경로, PDF 서명, 25 MB 이하 여부 검증
 4. 문서 변환: Workers AI `toMarkdown`
