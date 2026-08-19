@@ -19,6 +19,23 @@ const OUTCOME_PROPERTIES = {
   evidenceLocation: { type: 'string' },
 };
 
+const GROUP_PROPERTIES = {
+  reportName: { type: 'string' },
+  sourceCode: { type: 'string' },
+  description: { type: 'string' },
+  role: { type: 'string' },
+};
+
+const MFDS_SAFETY_DATABASES = [
+  ['식약처 Tox-Info', 'https://www.nifds.go.kr/toxinfo/'],
+  ['FDA GRAS Notices', 'https://hfpappexternal.fda.gov/scripts/fdcc/index.cfm?set=GRASNotices'],
+  ['PubMed (Europe PMC 연계)', 'https://pubmed.ncbi.nlm.nih.gov/'],
+  ['PubChem', 'https://pubchem.ncbi.nlm.nih.gov/'],
+  ['Health Canada NHPID/LNHPD', 'https://health-products.canada.ca/'],
+  ['EFSA QPS', 'https://www.efsa.europa.eu/en/topics/topic/qualified-presumption-safety-qps'],
+  ['Natural Medicines', 'https://naturalmedicines.therapeuticresearch.com/'],
+];
+
 const EVIDENCE_SCHEMA = {
   type: 'object',
   properties: {
@@ -26,6 +43,7 @@ const EVIDENCE_SCHEMA = {
     testArticle: { type: 'string' },
     rawMaterial: { type: 'string' },
     manufacturing: { type: 'string' },
+    safetySearchTerms: { type: 'array', maxItems: 5, items: { type: 'string' } },
     studyDesign: {
       type: 'object',
       properties: {
@@ -42,6 +60,15 @@ const EVIDENCE_SCHEMA = {
       },
       required: ['subjects', 'model', 'groups', 'dose', 'duration', 'comparators', 'randomization', 'blinding', 'statistics', 'ethics'],
     },
+    groupDefinitions: {
+      type: 'array',
+      maxItems: 10,
+      items: {
+        type: 'object',
+        properties: GROUP_PROPERTIES,
+        required: ['reportName', 'sourceCode', 'description', 'role'],
+      },
+    },
     outcomeMatrix: {
       type: 'array',
       maxItems: 20,
@@ -57,7 +84,7 @@ const EVIDENCE_SCHEMA = {
     sourceNotes: { type: 'array', maxItems: 8, items: { type: 'string' } },
   },
   required: [
-    'sourceType', 'testArticle', 'rawMaterial', 'manufacturing', 'studyDesign',
+    'sourceType', 'testArticle', 'rawMaterial', 'manufacturing', 'safetySearchTerms', 'studyDesign', 'groupDefinitions',
     'outcomeMatrix', 'safetyObservations', 'authorLimitations', 'internalInconsistencies', 'sourceNotes',
   ],
 };
@@ -178,6 +205,8 @@ function isPublishableReport(report) {
     && report.summary.length >= 100
     && (report.studies?.length || 0) >= 1
     && (report.outcomeMatrix?.length || 0) >= 3
+    && (report.groupDefinitions?.length || 0) >= 2
+    && (report.safetyDatabaseSearch || []).filter(item => ['관련 정보 있음', '검색 결과 없음'].includes(item.status)).length >= 4
     && (report.limitations?.length || 0) >= 2
     && (report.developmentActions?.length || 0) >= 2;
 }
@@ -305,11 +334,108 @@ async function validatedPdfResponse(response, url) {
   return signature === '%PDF-' ? { buffer, url } : null;
 }
 
+function safetyDatabaseResult(database, query, status, finding, sourceUrl) {
+  return {
+    database,
+    query: cleanText(query, '확인 필요', 160),
+    status,
+    finding: cleanText(finding, '확인 필요', 500),
+    sourceUrl,
+    searchedAt: new Date().toISOString(),
+  };
+}
+
+async function searchToxInfo(query) {
+  const sourceUrl = 'https://www.nifds.go.kr/toxinfo/tcd/initial/list.do';
+  const response = await fetch(sourceUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+    body: new URLSearchParams({ searchText: query }),
+  });
+  if (!response.ok) throw new Error(`Tox-Info ${response.status}`);
+  const html = await response.text();
+  const count = Number((html.match(/검색결과\s*총\s*<i>([\d,]+)<\/i>\s*건/i)?.[1] || '0').replace(/,/g, ''));
+  return safetyDatabaseResult(
+    '식약처 Tox-Info', query, count ? '관련 정보 있음' : '검색 결과 없음',
+    count ? `검색 결과 ${count}건 · 세부 독성정보 원문 대조 필요` : '일치 항목 없음 · 안전성 입증을 의미하지 않음', sourceUrl,
+  );
+}
+
+async function searchFdaGras(query) {
+  const url = new URL('https://hfpappexternal.fda.gov/scripts/fdcc/index.cfm');
+  url.searchParams.set('set', 'GRASNotices');
+  url.searchParams.set('type', 'basic');
+  url.searchParams.set('search', query);
+  const response = await fetch(url, { headers: { 'User-Agent': 'HealthArchive/1.0 (healtharchive2026@gmail.com)' } });
+  if (!response.ok) throw new Error(`FDA GRAS ${response.status}`);
+  const html = await response.text();
+  const count = Number((html.match(/id="recordCount"[^>]*>\s*Records Found:\s*([\d,]+)/i)?.[1] || '0').replace(/,/g, ''));
+  return safetyDatabaseResult(
+    'FDA GRAS Notices', query, count ? '관련 정보 있음' : '검색 결과 없음',
+    count ? `검색 결과 ${count}건 · 정확한 원료·균주 동일성 확인 필요` : '일치 통지 없음 · 다른 균주·유사원료로 확대해석 금지', url.toString(),
+  );
+}
+
+async function searchEuropePmcSafety(query) {
+  const url = new URL('https://www.ebi.ac.uk/europepmc/webservices/rest/search');
+  url.searchParams.set('query', `"${query.replace(/"/g, '')}" AND (safety OR toxicity OR "adverse event")`);
+  url.searchParams.set('format', 'json');
+  url.searchParams.set('resultType', 'lite');
+  url.searchParams.set('pageSize', '3');
+  const response = await fetch(url, { headers: { 'User-Agent': 'HealthArchive/1.0 (healtharchive2026@gmail.com)' } });
+  if (!response.ok) throw new Error(`PubMed/Europe PMC ${response.status}`);
+  const payload = await response.json();
+  const count = Number(payload?.hitCount || 0);
+  const titles = (payload?.resultList?.result || []).map(item => decodeTitle(item.title)).filter(Boolean).slice(0, 2);
+  return safetyDatabaseResult(
+    'PubMed (Europe PMC 연계)', query, count ? '관련 정보 있음' : '검색 결과 없음',
+    count ? `검색 결과 ${count}건${titles.length ? ` · ${titles.join(' / ')}` : ''}` : '안전성·독성·이상사례 조합 일치 문헌 없음', url.toString(),
+  );
+}
+
+async function searchPubChem(query) {
+  const sourceUrl = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/${encodeURIComponent(query)}/cids/JSON`;
+  const response = await fetch(sourceUrl);
+  if (response.status === 404) {
+    return safetyDatabaseResult('PubChem', query, '검색 결과 없음', '정확명칭 일치 화합물 없음', sourceUrl);
+  }
+  if (!response.ok) throw new Error(`PubChem ${response.status}`);
+  const payload = await response.json();
+  const cids = (payload?.IdentifierList?.CID || []).slice(0, 5);
+  return safetyDatabaseResult(
+    'PubChem', query, cids.length ? '관련 정보 있음' : '검색 결과 없음',
+    cids.length ? `CID ${cids.join(', ')} · 독성·동의어·물성 세부화면 대조 필요` : '정확명칭 일치 화합물 없음', sourceUrl,
+  );
+}
+
+async function searchSafetyDatabases(terms) {
+  const queries = [...new Set(cleanList(terms, 5).map(item => item.slice(0, 120)))].slice(0, 3);
+  const checks = queries.flatMap(query => [
+    ['식약처 Tox-Info', query, () => searchToxInfo(query)],
+    ['FDA GRAS Notices', query, () => searchFdaGras(query)],
+    ['PubMed (Europe PMC 연계)', query, () => searchEuropePmcSafety(query)],
+    ['PubChem', query, () => searchPubChem(query)],
+  ]);
+  const settled = await Promise.allSettled(checks.map(item => item[2]()));
+  const rows = settled.map((result, index) => result.status === 'fulfilled'
+    ? result.value
+    : safetyDatabaseResult(checks[index][0], checks[index][1], '조회 오류', result.reason?.message || '자동조회 실패', MFDS_SAFETY_DATABASES.find(item => item[0] === checks[index][0])?.[1] || ''));
+  const primary = queries[0] || '신청원료명 확인 필요';
+  ['Health Canada NHPID/LNHPD', 'EFSA QPS', 'Natural Medicines'].forEach(database => {
+    const sourceUrl = MFDS_SAFETY_DATABASES.find(item => item[0] === database)?.[1] || '';
+    rows.push(safetyDatabaseResult(database, primary, '확인 필요', '자동조회 미연동 · 발간 전 직접 검색 및 화면 첨부 필요', sourceUrl));
+  });
+  return rows;
+}
+
 function evidencePrompt(candidate, sourceText) {
   return `아래 원문 PDF 변환 텍스트에서 검증 가능한 사실만 추출하라. 개발성·시장성·허가 가능성을 해석하지 말고 원문의 수치와 표현을 보존한다.
 
 추출 규칙:
 - 시험물질, 제조·처리 조건, 시험대상, 모델, 군 구성, 용량, 기간, 비교군, 무작위배정, 눈가림, 통계, 윤리승인을 구분한다.
+- safetySearchTerms에는 안전성 DB에서 검색할 신청원료명, 학명·균주명, 원재료, 기능(지표)성분 및 관련물질을 서로 중복되지 않게 최대 5개 기록한다.
+- groupDefinitions에는 대조군을 먼저, 시험군을 원문 순서대로, 양성대조군을 마지막에 둔다. 보고서 명칭은 반드시 ‘대조군’, ‘시험군 1’, ‘시험군 2’ 순으로 부여하고 양성대조는 ‘양성대조군’으로 부여한다.
+- 원문 약어는 sourceCode에만 보존한다. 각 outcomeMatrix.result에는 원문 약어 대신 위 보고서 명칭만 사용한다.
 - 모든 주요 유효성·안전성 결과를 outcomeMatrix에 지표 단위로 기록한다. 방향, 유의성, F/t/CI/p 값이 있으면 그대로 기록한다.
 - 결과가 유의하지 않으면 반드시 "유의하지 않음"으로 기록한다.
 - 저자가 명시한 한계와 원문 내부에서 수치·서술이 상충하는 부분을 각각 분리한다.
@@ -340,6 +466,9 @@ function reviewPrompt(candidate, evidence) {
 - 시장·경쟁·특허 정보가 원문에 없으면 "별도 조사 필요"로 기재하고 생성하지 않는다.
 - 사균체는 CFU만으로 표준화하지 말고 총세포수·불활성화 검증·지표성분 또는 생물활성 단위 필요성을 검토한다.
 - 영양성분 강화 제제는 총량뿐 아니라 화학종, 잔류 전구체, 생체이용률, 축적과 안전역을 검토한다.
+- 시험군의 원문 약어와 설명은 evidence.groupDefinitions에서 한 번만 정의한다. studies와 outcomeMatrix의 결과에는 ‘시험군 1’, ‘시험군 2’ 형식만 사용하고 약어·설명을 반복하지 않는다.
+- evidence.safetyDatabaseSearch는 실제 자동조회 결과다. ‘검색 결과 없음’은 안전성 입증이 아니라 해당 공개 DB에서 일치 항목이 없다는 의미로 해석한다. ‘확인 필요’ 항목을 임의로 ‘없음’으로 바꾸지 않는다.
+- 안전성은 식약처 제출자료 형식에 맞춰 섭취근거, DB 검색, 균주·원료 특이 위해성, 동물 독성, 인체 안전성, 취약군·주의사항으로 구분한다.
 - outcomeMatrix는 아래 증거의 수치·방향·위치를 변형하지 않고 핵심 지표를 최대 20개 보존한다.
 - limitations에는 번역성·편향·표본·대조군·용량반응·독성·표준화 공백을 우선순위순으로 기재한다.
 - developmentActions는 치명적 불확실성을 먼저 제거하는 Gate 순서로 작성한다.
@@ -374,14 +503,53 @@ function normalizeOutcomeMatrix(value, limit = 20) {
   }));
 }
 
+function normalizeGroupDefinitions(value) {
+  let testIndex = 0;
+  return (Array.isArray(value) ? value : []).slice(0, 10).map(item => {
+    const proposedName = cleanText(item.reportName, '', 40);
+    const role = cleanText(item.role, '확인 필요', 100);
+    const isPositive = /양성대조|positive control/i.test(`${proposedName} ${role}`);
+    const isControl = !isPositive && (
+      /^(대조군|control|vehicle)$/i.test(proposedName)
+      || /음성대조|negative control|vehicle/i.test(role)
+    );
+    const reportName = isPositive ? '양성대조군' : isControl ? '대조군' : `시험군 ${++testIndex}`;
+    return {
+      reportName,
+      sourceCode: cleanText(item.sourceCode, '-', 80),
+      description: cleanText(item.description, '확인 필요', 500),
+      role,
+    };
+  });
+}
+
+function standardizeGroupText(value, groups) {
+  let text = cleanText(value, '확인 필요', 1800);
+  const mappings = (groups || [])
+    .filter(item => item.sourceCode && item.sourceCode !== '-' && item.sourceCode !== item.reportName)
+    .sort((a, b) => b.sourceCode.length - a.sourceCode.length);
+  mappings.forEach(({ sourceCode, reportName }) => {
+    const escaped = sourceCode.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    text = text.replace(new RegExp(`(^|[\\s·,;/()])${escaped}(?=$|[\\s·,;/()])`, 'gi'), `$1${reportName}`);
+  });
+  return text;
+}
+
 function normalizeEvidence(raw) {
   const evidence = typeof raw === 'string' ? JSON.parse(raw) : raw;
   const design = evidence?.studyDesign || {};
+  const groupDefinitions = normalizeGroupDefinitions(evidence?.groupDefinitions);
+  const outcomeMatrix = normalizeOutcomeMatrix(evidence?.outcomeMatrix).map(item => ({
+    ...item,
+    result: standardizeGroupText(item.result, groupDefinitions),
+  }));
   return {
     sourceType: cleanText(evidence?.sourceType),
     testArticle: cleanText(evidence?.testArticle, '확인 필요', 600),
     rawMaterial: cleanText(evidence?.rawMaterial, '확인 필요', 600),
     manufacturing: cleanText(evidence?.manufacturing, '확인 필요', 1200),
+    safetySearchTerms: cleanList(evidence?.safetySearchTerms, 5),
+    groupDefinitions,
     studyDesign: {
       subjects: cleanText(design.subjects, '확인 필요', 500),
       model: cleanText(design.model, '확인 필요', 400),
@@ -394,7 +562,8 @@ function normalizeEvidence(raw) {
       statistics: cleanText(design.statistics, '확인 필요', 500),
       ethics: cleanText(design.ethics, '확인 필요', 400),
     },
-    outcomeMatrix: normalizeOutcomeMatrix(evidence?.outcomeMatrix),
+    outcomeMatrix,
+    safetyDatabaseSearch: [],
     safetyObservations: cleanList(evidence?.safetyObservations, 8),
     authorLimitations: cleanList(evidence?.authorLimitations, 10),
     internalInconsistencies: cleanList(evidence?.internalInconsistencies, 6),
@@ -404,13 +573,14 @@ function normalizeEvidence(raw) {
 
 function normalizeAiReport(raw, candidate, evidence) {
   const report = typeof raw === 'string' ? JSON.parse(raw) : raw;
+  const groupDefinitions = evidence?.groupDefinitions || [];
   const studies = (Array.isArray(report.studies) ? report.studies : []).slice(0, 8).map(item => ({
     kind: cleanText(item.kind),
     design: cleanText(item.design),
     subjects: cleanText(item.subjects),
     dose: cleanText(item.dose),
     duration: cleanDuration(item.duration),
-    outcomes: cleanText(item.outcomes, '확인 필요', 1800),
+    outcomes: standardizeGroupText(item.outcomes, groupDefinitions),
     safety: cleanText(item.safety),
     evidenceLocation: cleanText(item.evidenceLocation),
   }));
@@ -430,15 +600,16 @@ function normalizeAiReport(raw, candidate, evidence) {
     developmentReadinessScore: normalizeScore(report.developmentReadinessScore),
     novelty: cleanText(report.novelty),
     feasibility: cleanText(report.feasibility),
-    summary: cleanText(report.summary, '원문 근거 추가 검토 필요', 420),
+    summary: standardizeGroupText(report.summary || '원문 근거 추가 검토 필요', groupDefinitions),
     rawMaterial: cleanText(report.rawMaterial),
     intakeBasis: cleanText(report.intakeBasis),
     process: cleanText(report.process),
     specifications: cleanList(report.specifications),
     safety: cleanList(report.safety),
     studies,
-    mechanisms: cleanList(report.mechanisms),
-    outcomeMatrix: normalizeOutcomeMatrix(report.outcomeMatrix?.length ? report.outcomeMatrix : evidence?.outcomeMatrix),
+    mechanisms: cleanList(report.mechanisms).map(item => standardizeGroupText(item, groupDefinitions)),
+    outcomeMatrix: normalizeOutcomeMatrix(report.outcomeMatrix?.length ? report.outcomeMatrix : evidence?.outcomeMatrix)
+      .map(item => ({ ...item, result: standardizeGroupText(item.result, groupDefinitions) })),
     limitations: cleanList(report.limitations?.length ? report.limitations : evidence?.authorLimitations, 10),
     inconsistencies: cleanList(report.inconsistencies?.length ? report.inconsistencies : evidence?.internalInconsistencies, 6),
     developmentActions: cleanList(report.developmentActions, 8),
@@ -447,6 +618,9 @@ function normalizeAiReport(raw, candidate, evidence) {
     regulatoryReview: cleanList(report.regulatoryReview),
     gaps: cleanList(report.gaps),
     sourceNotes: cleanList(report.sourceNotes),
+    reportFormat: '식약처 건강기능식품 기능성 원료 제출자료 작성 가이드 준용',
+    groupDefinitions,
+    safetyDatabaseSearch: evidence?.safetyDatabaseSearch || [],
     evidenceAudit: evidence,
     source: candidate,
   };
@@ -491,10 +665,14 @@ function legacyReportHtml(report, id, date) {
 function reportHtml(report, id, date) {
   const audit = report.evidenceAudit || {};
   const design = audit.studyDesign || {};
+  const groupRows = (report.groupDefinitions || []).length ? report.groupDefinitions.map(item => `
+    <tr><td><b>${escapeHtml(item.reportName)}</b></td><td>${escapeHtml(item.sourceCode)}</td><td>${escapeHtml(item.description)}</td><td>${escapeHtml(item.role)}</td></tr>`).join('') : '<tr><td colspan="4">확인 필요</td></tr>';
+  const safetyDatabaseRows = (report.safetyDatabaseSearch || []).length ? report.safetyDatabaseSearch.map(item => `
+    <tr><td>${escapeHtml(item.database)}</td><td>${escapeHtml(item.query)}</td><td><b>${escapeHtml(item.status)}</b></td><td>${escapeHtml(item.finding)}</td></tr>`).join('') : '<tr><td colspan="4">안전성 DB 검색 필요</td></tr>';
   const studies = report.studies.length ? report.studies.map((study, index) => `
     <article class="study"><h3>${String(index + 1).padStart(2, '0')} · ${escapeHtml(study.kind)}</h3>
     <dl><dt>시험설계</dt><dd>${escapeHtml(study.design)}</dd><dt>대상/모델</dt><dd>${escapeHtml(study.subjects)}</dd>
-    <dt>섭취량/처치</dt><dd>${escapeHtml(study.dose)}</dd><dt>기간</dt><dd>${escapeHtml(study.duration)}</dd>
+    <dt>기간</dt><dd>${escapeHtml(study.duration)}</dd>
     <dt>결과</dt><dd>${escapeHtml(study.outcomes)}</dd><dt>안전성</dt><dd>${escapeHtml(study.safety)}</dd>
     <dt>근거 위치</dt><dd>${escapeHtml(study.evidenceLocation)}</dd></dl></article>`).join('') : '<p>확인 필요</p>';
   const outcomes = report.outcomeMatrix.length ? report.outcomeMatrix.map(item => `
@@ -516,14 +694,16 @@ function reportHtml(report, id, date) {
   <div class="decision"><b>EXECUTIVE DECISION</b><div>${escapeHtml(report.keyDecision)}</div></div>
   <div class="scores">${score('근거 성숙도', report.evidenceMaturityScore, report.evidenceGrade, 'bad')}${score('인체 직접성', report.humanEvidenceScore, audit.sourceType || '원문 유형', 'bad')}${score('개발 준비도', report.developmentReadinessScore, report.feasibility, 'warn')}${score('기전·결과 구조화', Math.min(5, Math.ceil(report.outcomeMatrix.length / 4)), `${report.outcomeMatrix.length}개 결과 추적`, 'blue')}</div>
   <div class="meta"><div><span>검토일</span><b>${escapeHtml(date)}</b></div><div><span>작성</span><b>HealthArchive Research Intelligence</b></div><div><span>원료 유형</span><b>${escapeHtml(report.ingredientType)}</b></div><div><span>원문</span><b>${escapeHtml(report.source.pmcid)}</b></div></div>
-  <section><div class="section-title"><span>01</span><h2>판정 요약</h2></div><div class="card"><div class="summary">${escapeHtml(report.summary)}</div></div><div class="split"><div class="card"><h3>검토 기능 방향</h3><p>${escapeHtml(report.functionality)}</p><h3>신규성</h3><p>${escapeHtml(report.novelty)}</p></div><div class="card danger"><h3>사용하지 않을 주장</h3>${listHtml(report.noGoClaims)}</div></div></section>
-  <section class="page"><div class="section-title"><span>02</span><h2>원료 정체성·제조·표준화</h2></div><div class="card"><dl><dt>시험물질</dt><dd>${escapeHtml(audit.testArticle || report.ingredient)}</dd><dt>원재료</dt><dd>${escapeHtml(report.rawMaterial)}</dd><dt>제조·처리</dt><dd>${escapeHtml(report.process)}</dd><dt>섭취량 근거</dt><dd>${escapeHtml(report.intakeBasis)}</dd></dl></div><div class="split"><div class="card"><h3>규격·표준화</h3>${listHtml(report.specifications)}</div><div class="card danger"><h3>안전성 검토</h3>${listHtml(report.safety)}</div></div></section>
-  <section class="page"><div class="section-title"><span>03</span><h2>시험설계</h2></div><div class="card"><dl><dt>원문 유형</dt><dd>${escapeHtml(audit.sourceType || '확인 필요')}</dd><dt>대상</dt><dd>${escapeHtml(design.subjects || '확인 필요')}</dd><dt>모델</dt><dd>${escapeHtml(design.model || '확인 필요')}</dd><dt>군 구성</dt><dd>${escapeHtml(design.groups || '확인 필요')}</dd><dt>투여량</dt><dd>${escapeHtml(design.dose || '확인 필요')}</dd><dt>기간</dt><dd>${escapeHtml(design.duration || '확인 필요')}</dd><dt>비교군</dt><dd>${escapeHtml(design.comparators || '확인 필요')}</dd><dt>무작위·눈가림</dt><dd>${escapeHtml(`${design.randomization || '확인 필요'} / ${design.blinding || '확인 필요'}`)}</dd><dt>통계</dt><dd>${escapeHtml(design.statistics || '확인 필요')}</dd><dt>윤리</dt><dd>${escapeHtml(design.ethics || '확인 필요')}</dd></dl></div>${studies}</section>
-  <section class="page"><div class="section-title"><span>04</span><h2>유효성·안전성 결과 행렬</h2></div><table class="matrix"><thead><tr><th>영역</th><th>평가지표</th><th>조직</th><th>결과</th><th>통계</th><th>근거 위치</th></tr></thead><tbody>${outcomes}</tbody></table></section>
-  <section class="page"><div class="section-title"><span>05</span><h2>기전·번역성·중대한 한계</h2></div><div class="split"><div class="card"><h3>주요 작용기전</h3>${listHtml(report.mechanisms)}</div><div class="card callout"><h3>중대한 한계</h3>${listHtml(report.limitations)}</div></div><div class="card danger"><h3>원문 내부 불일치·확인 필요</h3>${listHtml(report.inconsistencies)}</div></section>
-  <section class="page"><div class="section-title"><span>06</span><h2>국내 개발·인허가 전환</h2></div><div class="split"><div class="card"><h3>규제 검토</h3>${listHtml(report.regulatoryReview)}</div><div class="card"><h3>시장·경쟁 정보</h3>${listHtml(report.marketReview)}</div></div><div class="card callout"><h3>자료 Gap</h3>${listHtml(report.gaps)}</div></section>
-  <section class="page"><div class="section-title"><span>07</span><h2>다음 개발 관문</h2></div><div class="card"><h3>우선순위 실행안</h3>${listHtml(report.developmentActions)}</div><div class="card"><h3>원문 주석</h3>${listHtml(report.sourceNotes)}</div></section>
-  <div class="source">원문: ${escapeHtml(report.source.title)} · ${escapeHtml(report.source.journal)} · ${escapeHtml(report.source.pubDate)} · ${escapeHtml(report.source.pmcid)}${report.source.doi ? ` · DOI ${escapeHtml(report.source.doi)}` : ''}<br>본 문서는 원문 PDF 기반 후보 선별 검토자료다. 인정 신청·인체적용·독성시험 의사결정 전 최신 식약처 기준과 원자료를 전문가가 재대조해야 한다.</div>
+  <section><div class="section-title"><span>00</span><h2>제출자료 총괄 요약본</h2></div><div class="card"><div class="summary">${escapeHtml(report.summary)}</div></div><div class="split"><div class="card"><h3>기능성 내용</h3><p>${escapeHtml(report.functionality)}</p><h3>근거 수준</h3><p>${escapeHtml(`${report.evidenceGrade} · ${report.grade}`)}</p></div><div class="card danger"><h3>사용하지 않을 주장</h3>${listHtml(report.noGoClaims)}</div></div></section>
+  <section class="page"><div class="section-title"><span>01</span><h2>기원·개발경위·국내외 인정 및 사용현황</h2></div><div class="card"><dl><dt>시험물질</dt><dd>${escapeHtml(audit.testArticle || report.ingredient)}</dd><dt>원재료</dt><dd>${escapeHtml(report.rawMaterial)}</dd><dt>섭취·사용근거</dt><dd>${escapeHtml(report.intakeBasis)}</dd><dt>신규성</dt><dd>${escapeHtml(report.novelty)}</dd></dl></div><div class="card"><h3>시장·해외정보</h3>${listHtml(report.marketReview)}</div></section>
+  <section class="page"><div class="section-title"><span>02</span><h2>제조방법</h2></div><div class="card"><dl><dt>원문 제조·처리</dt><dd>${escapeHtml(audit.manufacturing || report.process)}</dd><dt>신청원료 제조검토</dt><dd>${escapeHtml(report.process)}</dd></dl></div></section>
+  <section class="page"><div class="section-title"><span>03-05</span><h2>원료 특성·기능(지표)성분·유해물질 규격</h2></div><div class="card"><h3>규격·표준화</h3>${listHtml(report.specifications)}</div><div class="card callout"><h3>자료 Gap</h3>${listHtml(report.gaps)}</div></section>
+  <section class="page"><div class="section-title"><span>06</span><h2>안전성 자료</h2></div><div class="card danger"><h3>안전성 시놉시스</h3>${listHtml(report.safety)}</div><div class="card"><h3>식약처 가이드 기반 안전성 DB 검색</h3><table><thead><tr><th>DB</th><th>검색어</th><th>결과</th><th>확인 내용</th></tr></thead><tbody>${safetyDatabaseRows}</tbody></table><p><b>주의:</b> ‘검색 결과 없음’은 안전하다는 뜻이 아니며, ‘확인 필요’를 임의로 ‘없음’으로 해석하지 않는다.</p></div></section>
+  <section class="page"><div class="section-title"><span>07</span><h2>기능성 자료·시놉시스</h2></div><div class="card"><dl><dt>원문 유형</dt><dd>${escapeHtml(audit.sourceType || '확인 필요')}</dd><dt>대상</dt><dd>${escapeHtml(design.subjects || '확인 필요')}</dd><dt>모델</dt><dd>${escapeHtml(design.model || '확인 필요')}</dd><dt>기간</dt><dd>${escapeHtml(design.duration || '확인 필요')}</dd><dt>무작위·눈가림</dt><dd>${escapeHtml(`${design.randomization || '확인 필요'} / ${design.blinding || '확인 필요'}`)}</dd><dt>통계</dt><dd>${escapeHtml(design.statistics || '확인 필요')}</dd><dt>윤리</dt><dd>${escapeHtml(design.ethics || '확인 필요')}</dd></dl></div><div class="card"><h3>시험군 정의(본 보고서 1회)</h3><table><thead><tr><th>보고서 명칭</th><th>원문 약어</th><th>설명</th><th>역할</th></tr></thead><tbody>${groupRows}</tbody></table></div>${studies}</section>
+  <section class="page"><div class="section-title"><span>07-1</span><h2>기능성 평가변수 및 결과</h2></div><table class="matrix"><thead><tr><th>영역</th><th>평가지표</th><th>조직</th><th>결과</th><th>통계</th><th>근거 위치</th></tr></thead><tbody>${outcomes}</tbody></table></section>
+  <section class="page"><div class="section-title"><span>07-2</span><h2>작용기전·번역성·중대한 한계</h2></div><div class="split"><div class="card"><h3>주요 작용기전</h3>${listHtml(report.mechanisms)}</div><div class="card callout"><h3>중대한 한계</h3>${listHtml(report.limitations)}</div></div><div class="card danger"><h3>원문 내부 불일치·확인 필요</h3>${listHtml(report.inconsistencies)}</div></section>
+  <section class="page"><div class="section-title"><span>08</span><h2>섭취량·섭취방법·주의사항 및 다음 관문</h2></div><div class="split"><div class="card"><h3>국내 규제 검토</h3>${listHtml(report.regulatoryReview)}</div><div class="card"><h3>우선순위 실행안</h3>${listHtml(report.developmentActions)}</div></div><div class="card"><h3>원문 주석</h3>${listHtml(report.sourceNotes)}</div></section>
+  <div class="source">원문: ${escapeHtml(report.source.title)} · ${escapeHtml(report.source.journal)} · ${escapeHtml(report.source.pubDate)} · ${escapeHtml(report.source.pmcid)}${report.source.doi ? ` · DOI ${escapeHtml(report.source.doi)}` : ''}<br>형식: 식약처 건강기능식품 기능성 원료 제출자료 작성 가이드 준용. 본 문서는 원문 PDF 기반 후보 선별 검토자료이며 인정 신청자료를 대체하지 않는다.</div>
   </main></body></html>`;
 }
 
@@ -546,6 +726,7 @@ async function analyzePdf(env, candidate, pdfBuffer) {
   });
   const evidence = normalizeEvidence(extraction?.response ?? extraction);
   if (evidence.outcomeMatrix.length < 3) throw new Error('원문 결과 지표 추출 부족');
+  evidence.safetyDatabaseSearch = await searchSafetyDatabases(evidence.safetySearchTerms);
   const synthesis = await env.AI.run(MODEL, {
     messages: [
       { role: 'system', content: '원문 증거와 개발 판단을 구분하는 건강기능식품 원료개발 시니어 검토자다.' },
