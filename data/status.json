@@ -27,8 +27,8 @@
     "error": null
   },
   "news": {
-    "lastRun": "2026-08-19 18:18:04",
-    "lastSuccess": "2026-08-19 18:18:04",
+    "lastRun": "2026-08-19 22:15:20",
+    "lastSuccess": "2026-08-19 22:15:20",
     "timezone": "Asia/Seoul",
     "count": 23,
     "newCount": 0,
@@ -36,26 +36,26 @@
     "error": null
   },
   "news_mfds": {
-    "lastRun": "2026-08-19 18:19:37",
-    "lastSuccess": "2026-08-19 13:55:54",
+    "lastRun": "2026-08-19 22:15:31",
+    "lastSuccess": "2026-08-19 22:15:31",
     "timezone": "Asia/Seoul",
     "count": 23,
-    "newCount": 0,
-    "success": false,
-    "error": "update_news_mfds.py failed; the last successful dataset was preserved"
-  },
-  "news_nutraingredients": {
-    "lastRun": "2026-08-19 18:19:38",
-    "lastSuccess": "2026-08-19 18:19:38",
-    "timezone": "Asia/Seoul",
-    "count": 238,
     "newCount": 0,
     "success": true,
     "error": null
   },
+  "news_nutraingredients": {
+    "lastRun": "2026-08-19 22:15:35",
+    "lastSuccess": "2026-08-19 22:15:35",
+    "timezone": "Asia/Seoul",
+    "count": 241,
+    "newCount": 3,
+    "success": true,
+    "error": null
+  },
   "news_supplysidesj": {
-    "lastRun": "2026-08-19 18:19:39",
-    "lastSuccess": "2026-08-19 18:19:39",
+    "lastRun": "2026-08-19 22:15:36",
+    "lastSuccess": "2026-08-19 22:15:36",
     "timezone": "Asia/Seoul",
     "count": 89,
     "newCount": 0,
@@ -63,11 +63,11 @@
     "error": null
   },
   "news_nutritioninsight": {
-    "lastRun": "2026-08-19 18:19:40",
-    "lastSuccess": "2026-08-19 18:19:40",
+    "lastRun": "2026-08-19 22:15:39",
+    "lastSuccess": "2026-08-19 22:15:39",
     "timezone": "Asia/Seoul",
-    "count": 192,
-    "newCount": 0,
+    "count": 193,
+    "newCount": 1,
     "success": true,
     "error": null
   },
@@ -108,11 +108,11 @@
     "error": null
   },
   "news_kfri": {
-    "lastRun": "2026-08-19 18:18:15",
-    "lastSuccess": "2026-08-19 18:18:15",
+    "lastRun": "2026-08-19 22:15:29",
+    "lastSuccess": "2026-08-19 22:15:29",
     "timezone": "Asia/Seoul",
-    "count": 80,
-    "newCount": 0,
+    "count": 81,
+    "newCount": 1,
     "success": true,
     "error": null
   }
