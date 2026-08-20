@@ -60,8 +60,10 @@ daily-reports/
 - `POST /admin/daily-reports/run`: 관리자 수동 실행
 - `POST /admin/daily-reports/run?force=1`: 실행 잠금 무시 후 재실행
 - `POST /admin/daily-reports/run?force=1&pmcid=PMC...`: 공개 원문 PMCID 지정 발간
+- `POST /admin/daily-reports/run?date=YYYY-MM-DD`: 누락 발간일 지정 백필
 
 수동 실행은 관리자 로그인 세션 또는 `PROTECTED_UPDATE_TOKEN` Bearer 인증이 필요하다.
+일반 자동 실행은 전일과 당일 중 보고서가 없는 가장 이른 날짜를 먼저 채운다.
 
 ## 상태 값
 

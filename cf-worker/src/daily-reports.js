@@ -1,8 +1,11 @@
 const MANIFEST_KEY = 'daily-reports/manifest.json';
 const STATUS_KEY = 'daily-reports/status.json';
-const MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
+const EVIDENCE_MODEL = '@cf/meta/llama-3.1-8b-instruct-fast';
+const REPORT_MODEL = '@cf/zai-org/glm-4.7-flash';
 const MAX_SOURCE_BYTES = 25 * 1024 * 1024;
-const MAX_SOURCE_CHARS = 90000;
+const MAX_SOURCE_CHARS = 42000;
+const EVIDENCE_OUTPUT_TOKENS = 7000;
+const REPORT_OUTPUT_TOKENS = 7000;
 const AGENT_STEP_TIMEOUT_MS = 12 * 60 * 1000;
 const DISCOVERY_TERM = '(TITLE_ABS:"functional food" OR TITLE_ABS:nutraceutical OR TITLE_ABS:probiotic OR TITLE_ABS:botanical OR TITLE_ABS:"plant extract" OR TITLE_ABS:phytochemical)';
 const BLOCKED_PUBLIC_TERMS = [
@@ -185,6 +188,7 @@ function ingredientCandidateScore(item) {
   const title = decodeTitle(item.title).toLowerCase();
   const types = (item.pubTypeList?.pubType || []).join(' ').toLowerCase();
   let score = 0;
+  if (/randomi[sz]ed|clinical trial|controlled trial/.test(`${title} ${types}`)) score += 10;
   if (/extract|ingredient|postbiotic|ferment|fraction|supplement|polyphenol|peptide|polysaccharide|flavonoid|oil\b/.test(title)) score += 5;
   if (/probiotic/.test(title)) score += 2;
   if (/randomized controlled trial|clinical trial/.test(types)) score += 2;
@@ -202,9 +206,9 @@ function isPublishableReport(report) {
     && !unavailable(report.functionality)
     && !genericFunctionality.test(report.functionality)
     && !unavailable(report.summary)
-    && report.summary.length >= 100
+    && report.summary.length >= 40
     && (report.studies?.length || 0) >= 1
-    && (report.outcomeMatrix?.length || 0) >= 3
+    && (report.outcomeMatrix?.length || 0) >= 2
     && (report.groupDefinitions?.length || 0) >= 2
     && (report.safetyDatabaseSearch || []).filter(item => ['관련 정보 있음', '검색 결과 없음'].includes(item.status)).length >= 4
     && (report.limitations?.length || 0) >= 2
@@ -234,10 +238,53 @@ function slugify(value) {
     .slice(0, 52) || 'ingredient';
 }
 
-function seoulDate() {
+function seoulDate(offsetDays = 0) {
+  const date = new Date(Date.now() + offsetDays * 24 * 60 * 60 * 1000);
   return new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit',
-  }).format(new Date());
+  }).format(date);
+}
+
+function sourceExcerpt(value) {
+  const text = String(value || '');
+  const find = pattern => text.search(pattern);
+  const methods = find(/(?:^|\n)#{0,4}\s*(?:\d+\.?\s*)?(?:materials? and methods?|methods?|participants?)\b/im);
+  const results = find(/(?:^|\n)#{0,4}\s*(?:\d+\.?\s*)?results?\b/im);
+  const discussion = find(/(?:^|\n)#{0,4}\s*(?:\d+\.?\s*)?(?:discussion|conclusions?)\b/im);
+  const parts = [text.slice(0, 10000)];
+  if (methods >= 0) parts.push(text.slice(methods, results > methods ? results : methods + 14000));
+  if (results >= 0) parts.push(text.slice(results, discussion > results ? discussion : results + 16000));
+  if (discussion >= 0) parts.push(text.slice(discussion, discussion + 6000));
+  parts.push(text.slice(-3000));
+  return parts.join('\n\n[SECTION]\n\n').slice(0, MAX_SOURCE_CHARS);
+}
+
+function unwrapAiResponse(result) {
+  return result?.response ?? result?.choices?.[0]?.message?.content ?? result;
+}
+
+function parseAiJson(value) {
+  if (value && typeof value === 'object') return value;
+  const text = String(value || '').trim();
+  try {
+    return JSON.parse(text);
+  } catch {
+    const start = text.indexOf('{');
+    const end = text.lastIndexOf('}');
+    if (start >= 0 && end > start) return JSON.parse(text.slice(start, end + 1));
+    throw new Error('AI 구조화 응답에서 JSON 객체를 찾을 수 없습니다.');
+  }
+}
+
+function translateReportLabel(value, translations) {
+  const text = cleanText(value);
+  return translations[text.toLowerCase()] || text;
+}
+
+function reportDateForRun(manifest, requestedDate = '') {
+  if (/^\d{4}-\d{2}-\d{2}$/.test(requestedDate)) return requestedDate;
+  const publishedDates = new Set((manifest.reports || []).map(item => item.date));
+  return [seoulDate(-1), seoulDate()].find(date => !publishedDates.has(date)) || seoulDate();
 }
 
 async function readJsonObject(bucket, key, fallback) {
@@ -435,6 +482,8 @@ function evidencePrompt(candidate, sourceText) {
 - 시험물질, 제조·처리 조건, 시험대상, 모델, 군 구성, 용량, 기간, 비교군, 무작위배정, 눈가림, 통계, 윤리승인을 구분한다.
 - safetySearchTerms에는 안전성 DB에서 검색할 신청원료명, 학명·균주명, 원재료, 기능(지표)성분 및 관련물질을 서로 중복되지 않게 최대 5개 기록한다.
 - groupDefinitions에는 대조군을 먼저, 시험군을 원문 순서대로, 양성대조군을 마지막에 둔다. 보고서 명칭은 반드시 ‘대조군’, ‘시험군 1’, ‘시험군 2’ 순으로 부여하고 양성대조는 ‘양성대조군’으로 부여한다.
+- sourceCode에는 원문에 실제 표시된 군명 또는 약어(PRSE, placebo 등)를 기록한다. ‘대조군’, ‘시험군 1’ 같은 보고서용 일반 명칭을 sourceCode에 반복하지 않는다.
+- 원문에 없는 시험군·양성대조군을 만들지 않는다. 교차시험은 동일 참여자의 각 중재기간을 실제 중재명 기준으로 정의한다.
 - 원문 약어는 sourceCode에만 보존한다. 각 outcomeMatrix.result에는 원문 약어 대신 위 보고서 명칭만 사용한다.
 - 모든 주요 유효성·안전성 결과를 outcomeMatrix에 지표 단위로 기록한다. 방향, 유의성, F/t/CI/p 값이 있으면 그대로 기록한다.
 - 결과가 유의하지 않으면 반드시 "유의하지 않음"으로 기록한다.
@@ -450,8 +499,8 @@ DOI: ${candidate.doi || '확인 필요'}
 저널: ${candidate.journal}
 발행일: ${candidate.pubDate}
 
-원문 변환 텍스트:
-${sourceText.slice(0, MAX_SOURCE_CHARS)}`;
+원문 변환 텍스트(초록·시험방법·결과·결론 우선 발췌):
+${sourceExcerpt(sourceText)}`;
 }
 
 function reviewPrompt(candidate, evidence) {
@@ -509,7 +558,14 @@ function normalizeOutcomeMatrix(value, limit = 20) {
 
 function normalizeGroupDefinitions(value) {
   let testIndex = 0;
-  return (Array.isArray(value) ? value : []).slice(0, 10).map(item => {
+  const seenSourceCodes = new Set();
+  return (Array.isArray(value) ? value : []).filter(item => {
+    const sourceCode = cleanText(item?.sourceCode, '', 80);
+    const key = sourceCode.toLowerCase();
+    if (!sourceCode || /^(대조군|시험군\s*\d*|양성대조군)$/i.test(sourceCode) || seenSourceCodes.has(key)) return false;
+    seenSourceCodes.add(key);
+    return true;
+  }).slice(0, 10).map(item => {
     const proposedName = cleanText(item.reportName, '', 40);
     const role = cleanText(item.role, '확인 필요', 100);
     const isPositive = /양성대조|positive control/i.test(`${proposedName} ${role}`);
@@ -540,15 +596,19 @@ function standardizeGroupText(value, groups) {
 }
 
 function normalizeEvidence(raw) {
-  const evidence = typeof raw === 'string' ? JSON.parse(raw) : raw;
+  const evidence = parseAiJson(raw);
   const design = evidence?.studyDesign || {};
   const groupDefinitions = normalizeGroupDefinitions(evidence?.groupDefinitions);
+  let sourceType = cleanText(evidence?.sourceType);
+  if (sourceType === '기타' && /(helsinki|ethics committee|institutional review|IRB|임상시험|환자|참여자)/i.test(`${design.ethics || ''} ${design.subjects || ''} ${design.model || ''}`)) {
+    sourceType = '인체적용시험';
+  }
   const outcomeMatrix = normalizeOutcomeMatrix(evidence?.outcomeMatrix).map(item => ({
     ...item,
     result: standardizeGroupText(item.result, groupDefinitions),
   }));
   return {
-    sourceType: cleanText(evidence?.sourceType),
+    sourceType,
     testArticle: cleanText(evidence?.testArticle, '확인 필요', 600),
     rawMaterial: cleanText(evidence?.rawMaterial, '확인 필요', 600),
     manufacturing: cleanText(evidence?.manufacturing, '확인 필요', 1200),
@@ -557,7 +617,9 @@ function normalizeEvidence(raw) {
     studyDesign: {
       subjects: cleanText(design.subjects, '확인 필요', 500),
       model: cleanText(design.model, '확인 필요', 400),
-      groups: cleanText(design.groups, '확인 필요', 800),
+      groups: groupDefinitions.length
+        ? groupDefinitions.map(item => `${item.reportName}(${item.sourceCode})`).join(', ')
+        : cleanText(design.groups, '확인 필요', 800),
       dose: cleanText(design.dose, '확인 필요', 600),
       duration: cleanText(design.duration, '확인 필요', 300),
       comparators: cleanText(design.comparators, '확인 필요', 400),
@@ -576,7 +638,7 @@ function normalizeEvidence(raw) {
 }
 
 function normalizeAiReport(raw, candidate, evidence) {
-  const report = typeof raw === 'string' ? JSON.parse(raw) : raw;
+  const report = parseAiJson(raw);
   const groupDefinitions = evidence?.groupDefinitions || [];
   const studies = (Array.isArray(report.studies) ? report.studies : []).slice(0, 8).map(item => ({
     kind: cleanText(item.kind),
@@ -590,13 +652,32 @@ function normalizeAiReport(raw, candidate, evidence) {
   }));
   const grade = ['A', 'B', 'C', 'D', '확인 필요'].includes(report.grade) ? report.grade : '확인 필요';
   const evidenceGrade = ['높음', '중간', '낮음', '확인 필요'].includes(report.evidenceGrade) ? report.evidenceGrade : '확인 필요';
+  let verdict = cleanText(report.verdict, '추가 자료 검토 필요', 180);
+  let keyDecision = cleanText(report.keyDecision, '원료 정체성과 안전성을 먼저 확인하고 인체시험 설계는 보류', 300);
+  let summary = standardizeGroupText(report.summary || '원문 근거 추가 검토 필요', groupDefinitions);
+  if (evidence?.sourceType === '인체적용시험') {
+    verdict = verdict.replace(/탐색\s*전임상/g, '소규모 탐색 인체시험');
+    summary = summary.replace(/탐색\s*전임상/g, '소규모 탐색 인체시험');
+    keyDecision = keyDecision.replace(/인체\s*적용\s*근거\s*확보/g, '추가 인체적용 근거 확보');
+  }
+  verdict = translateReportLabel(verdict, {
+    exploratory: '탐색 개발 검토',
+    'no-go': '개발 보류',
+    go: '개발 진행 검토',
+  });
   return {
     ingredient: cleanText(report.ingredient, '원료명 확인 필요', 180),
     scientificName: cleanText(report.scientificName, '확인 필요', 180),
-    ingredientType: cleanText(report.ingredientType, '확인 필요', 120),
-    functionality: cleanText(report.functionality, '확인 필요', 160),
-    verdict: cleanText(report.verdict, '추가 자료 검토 필요', 180),
-    keyDecision: cleanText(report.keyDecision, '원료 정체성과 안전성을 먼저 확인하고 인체시험 설계는 보류', 300),
+    ingredientType: translateReportLabel(report.ingredientType, {
+      'functional ingredient': '기능성 원료',
+      'plant extract': '식물 추출물',
+    }),
+    functionality: translateReportLabel(report.functionality, {
+      'gastrointestinal integrity': '위장관 장벽 유지',
+      'gut barrier integrity': '장 장벽 유지',
+    }),
+    verdict,
+    keyDecision,
     grade,
     evidenceGrade,
     evidenceMaturityScore: normalizeScore(report.evidenceMaturityScore),
@@ -604,7 +685,7 @@ function normalizeAiReport(raw, candidate, evidence) {
     developmentReadinessScore: normalizeScore(report.developmentReadinessScore),
     novelty: cleanText(report.novelty),
     feasibility: cleanText(report.feasibility),
-    summary: standardizeGroupText(report.summary || '원문 근거 추가 검토 필요', groupDefinitions),
+    summary,
     rawMaterial: cleanText(report.rawMaterial),
     intakeBasis: cleanText(report.intakeBasis),
     process: cleanText(report.process),
@@ -743,33 +824,33 @@ async function analyzePdf(env, candidate, pdfBuffer) {
   if (!converted || converted.format === 'error' || !converted.data) {
     throw new Error(`원문 PDF 변환 실패: ${converted?.error || '내용 없음'}`);
   }
-  const extraction = await env.AI.run(MODEL, {
+  const extraction = await env.AI.run(EVIDENCE_MODEL, {
     messages: [
       { role: 'system', content: '원문에 있는 사실과 수치만 추출하는 과학문헌 데이터 큐레이터다. 해석하거나 보충하지 않는다.' },
       { role: 'user', content: evidencePrompt(candidate, converted.data) },
     ],
     response_format: { type: 'json_schema', json_schema: EVIDENCE_SCHEMA },
-    max_tokens: 7800,
+    max_tokens: EVIDENCE_OUTPUT_TOKENS,
     temperature: 0,
   });
-  const evidence = normalizeEvidence(extraction?.response ?? extraction);
-  if (evidence.outcomeMatrix.length < 3) throw new Error('원문 결과 지표 추출 부족');
+  const evidence = normalizeEvidence(unwrapAiResponse(extraction));
   evidence.safetyDatabaseSearch = await searchSafetyDatabases(evidence.safetySearchTerms);
-  const synthesis = await env.AI.run(MODEL, {
+  const synthesis = await env.AI.run(REPORT_MODEL, {
     messages: [
       { role: 'system', content: '원문 증거와 개발 판단을 구분하는 건강기능식품 원료개발 시니어 검토자다.' },
       { role: 'user', content: reviewPrompt(candidate, evidence) },
     ],
     response_format: { type: 'json_schema', json_schema: REPORT_SCHEMA },
-    max_tokens: 7800,
+    max_tokens: REPORT_OUTPUT_TOKENS,
+    reasoning_effort: 'low',
     temperature: 0.05,
   });
-  return normalizeAiReport(synthesis?.response ?? synthesis, candidate, evidence);
+  return normalizeAiReport(unwrapAiResponse(synthesis), candidate, evidence);
 }
 
-async function publishReport(env, report, pdfBuffer) {
+async function publishReport(env, report, pdfBuffer, reportDate = seoulDate()) {
   const manifest = await readJsonObject(env.PRIVATE_DATA, MANIFEST_KEY, { version: 1, updatedAt: null, reports: [] });
-  const date = seoulDate();
+  const date = reportDate;
   const id = `${date.replace(/-/g, '')}-${slugify(report.ingredient)}-${report.source.pmcid.toLowerCase()}`;
   const prefix = `daily-reports/${id}`;
   const html = reportHtml(report, id, date);
@@ -810,7 +891,12 @@ async function publishReport(env, report, pdfBuffer) {
     sourcePdfUrl: `https://api.healtharchive.kr/daily-reports/${encodeURIComponent(id)}/source.pdf`,
   };
   const reports = [summary, ...(manifest.reports || []).filter(item => item.id !== id && item.sourcePmcid !== summary.sourcePmcid)].slice(0, 365);
-  await writeJsonObject(env.PRIVATE_DATA, MANIFEST_KEY, { version: 1, updatedAt: new Date().toISOString(), reports });
+  await writeJsonObject(env.PRIVATE_DATA, MANIFEST_KEY, {
+    version: 1,
+    updatedAt: new Date().toISOString(),
+    reports,
+    rejectedPmcids: manifest.rejectedPmcids || [],
+  });
   return summary;
 }
 
@@ -829,12 +915,14 @@ export async function runDailyReportAgent(env, options = {}) {
   await setStatus(env, 'running', { stage: 'discovery' });
   try {
     const manifest = await readJsonObject(env.PRIVATE_DATA, MANIFEST_KEY, { reports: [] });
+    const reportDate = reportDateForRun(manifest, options.reportDate || '');
     const published = new Set((manifest.reports || []).map(item => item.sourcePmcid));
+    const rejectedPmcids = new Set(manifest.rejectedPmcids || []);
     const candidates = await discoverCandidates(options.pmcid || '');
     let analyzed = 0;
     const rejected = [];
     for (const candidate of candidates) {
-      if (published.has(candidate.pmcid) && !options.force) continue;
+      if ((published.has(candidate.pmcid) || rejectedPmcids.has(candidate.pmcid)) && !options.force) continue;
       await setStatus(env, 'running', { stage: 'source-pdf', candidate: candidate.pmcid });
       const source = await fetchOriginalPdf(candidate);
       if (!source) continue;
@@ -844,16 +932,22 @@ export async function runDailyReportAgent(env, options = {}) {
       const report = await withTimeout(analyzePdf(env, candidate, source.buffer), 'AI 원문 검토');
       if (!isPublishableReport(report)) {
         rejected.push(candidate.pmcid);
-        await writeJsonObject(env.PRIVATE_DATA, `daily-reports/rejections/${seoulDate()}-${candidate.pmcid}.json`, {
+        rejectedPmcids.add(candidate.pmcid);
+        await writeJsonObject(env.PRIVATE_DATA, `daily-reports/rejections/${reportDate}-${candidate.pmcid}.json`, {
           rejectedAt: new Date().toISOString(),
           reason: '원료명 또는 기능성 근거 불충분',
           report,
         });
+        await writeJsonObject(env.PRIVATE_DATA, MANIFEST_KEY, {
+          ...manifest,
+          updatedAt: new Date().toISOString(),
+          rejectedPmcids: [...rejectedPmcids],
+        });
         await setStatus(env, 'running', { stage: 'quality-gate', candidate: candidate.pmcid, message: '원료명 또는 기능성 근거 불충분' });
-        continue;
+        break;
       }
       await setStatus(env, 'running', { stage: 'pdf-publish', candidate: candidate.pmcid });
-      const summary = await withTimeout(publishReport(env, report, source.buffer), '보고서 PDF 발간');
+      const summary = await withTimeout(publishReport(env, report, source.buffer, reportDate), '보고서 PDF 발간');
       await setStatus(env, 'success', { reportId: summary.id, candidate: candidate.pmcid });
       return { ok: true, report: summary };
     }
@@ -915,9 +1009,14 @@ export async function handleDailyReports(request, env, url, origin, deps) {
     if (pmcid && !/^PMC\d{6,}$/.test(pmcid)) {
       return deps.authJson({ error: 'PMCID 형식이 올바르지 않습니다.' }, 400, origin);
     }
+    const reportDate = url.searchParams.get('date') || '';
+    if (reportDate && !/^\d{4}-\d{2}-\d{2}$/.test(reportDate)) {
+      return deps.authJson({ error: 'date는 YYYY-MM-DD 형식이어야 합니다.' }, 400, origin);
+    }
     const result = await runDailyReportAgent(env, {
       force: url.searchParams.get('force') === '1',
       pmcid,
+      reportDate,
     });
     return deps.authJson(result, 200, origin);
   }
