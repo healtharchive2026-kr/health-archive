@@ -7,7 +7,7 @@ const MAX_SOURCE_CHARS = 42000;
 const EVIDENCE_OUTPUT_TOKENS = 7000;
 const REPORT_OUTPUT_TOKENS = 7000;
 const AGENT_STEP_TIMEOUT_MS = 12 * 60 * 1000;
-const VISUAL_EVIDENCE_VERSION = 8;
+const VISUAL_EVIDENCE_VERSION = 10;
 const STATISTICS_EVIDENCE_VERSION = 1;
 const MAX_RESULT_VISUALS = 4;
 const MAX_VISUAL_BYTES = 8 * 1024 * 1024;
@@ -891,6 +891,35 @@ function renderTableSvg(record) {
   return { buffer, contentType: 'image/svg+xml', extension: 'svg' };
 }
 
+function cssAttributeValue(value) {
+  return String(value || '').replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+}
+
+async function capturePublishedTable(env, record) {
+  if (!record.id || !record.sourceUrl) return null;
+  const response = await env.BROWSER.quickAction('screenshot', {
+    url: record.sourceUrl,
+    selector: `[id="${cssAttributeValue(record.id)}"]`,
+    viewport: { width: 1440, height: 1800 },
+    screenshotOptions: {
+      type: 'png',
+      captureBeyondViewport: true,
+      omitBackground: false,
+    },
+    addStyleTag: [{ content: '.text-right a[target="_blank"]{display:none!important}' }],
+    gotoOptions: { waitUntil: 'networkidle0', timeout: 30000 },
+  });
+  if (!response?.ok) return null;
+  const buffer = await response.arrayBuffer();
+  if (buffer.byteLength <= 512 || buffer.byteLength > MAX_VISUAL_BYTES) return null;
+  return {
+    buffer,
+    contentType: 'image/png',
+    extension: 'png',
+    captureMethod: 'PMC 원문 표 캡처',
+  };
+}
+
 async function fetchFigureImage(record) {
   if (!record.imageUrl) return null;
   const response = await fetch(record.imageUrl, {
@@ -934,7 +963,14 @@ async function collectResultVisuals(env, report) {
   const visuals = [];
   for (const record of selected) {
     try {
-      const image = record.kind === 'table' ? renderTableSvg(record) : await fetchFigureImage(record);
+      let image;
+      if (record.kind === 'table') {
+        image = await capturePublishedTable(env, record);
+        if (!image) image = { ...renderTableSvg(record), captureMethod: '원문 데이터 재구성' };
+      } else {
+        image = await fetchFigureImage(record);
+        if (image) image.captureMethod = '논문 제공 원본 Figure';
+      }
       if (!image) continue;
       visuals.push({
         ...record,
@@ -1643,6 +1679,22 @@ function outcomeResultText(value) {
     .trim() || '확인 필요';
 }
 
+function isSignificantPValue(value) {
+  for (const match of String(value || '').matchAll(/\bp(?:\s*[- ]?value)?\s*(<=|>=|=|<|>|[≤≥])\s*(0?\.\d+|1(?:\.0+)?)/gi)) {
+    const operator = match[1] === '≤' ? '<=' : match[1] === '≥' ? '>=' : match[1];
+    const number = Number(match[2]);
+    if (!Number.isFinite(number)) continue;
+    if ((operator === '=' && number < 0.05) || ((operator === '<' || operator === '<=') && number <= 0.05)) return true;
+  }
+  return false;
+}
+
+function pValueHtml(value) {
+  const text = cleanText(value, '원문 미보고', 600);
+  const parts = text.split(/\s*[·;]\s*/).map(part => part.trim()).filter(Boolean);
+  return `<span class="p-value-list">${parts.map(part => `<span class="p-value-item${isSignificantPValue(part) ? ' significant' : ''}">${escapeHtml(part)}</span>`).join('')}</span>`;
+}
+
 function statisticalDesignSummary(design, outcomes) {
   const methodPattern = /(?:anova|ancova|wilcoxon|mann[ -]?whitney|t[ -]?test|chi[ -]?square|fisher|regression|mixed[ -]?(?:effect|model)|generalized estimating|kruskal|friedman|검정|분산분석|회귀|혼합모형)/i;
   const candidates = [design?.statistics, ...(outcomes || []).map(item => item.statistic)]
@@ -1661,7 +1713,8 @@ function outcomeRowsHtml(outcomes) {
       while (index + rowSpan < outcomes.length && cleanText(outcomes[index + rowSpan]?.domain, '', 100) === domain) rowSpan += 1;
     }
     const domainCell = startsDomain ? `<td class="domain-cell" rowspan="${rowSpan}">${escapeHtml(domain)}</td>` : '';
-    return `<tr>${domainCell}<td><b>${escapeHtml(item.endpoint)}</b></td><td>${escapeHtml(outcomeResultText(item.result))}</td><td><b class="p-value">${escapeHtml(item.pValue || '원문 미보고')}</b></td><td>${escapeHtml(item.evidenceLocation)}</td></tr>`;
+    const significant = isSignificantPValue(item.pValue);
+    return `<tr class="${significant ? 'significant-row' : ''}">${domainCell}<td class="endpoint-cell"><b>${escapeHtml(item.endpoint)}</b></td><td class="result-cell">${escapeHtml(outcomeResultText(item.result))}</td><td class="p-value">${pValueHtml(item.pValue)}</td><td class="evidence-cell">${escapeHtml(item.evidenceLocation)}</td></tr>`;
   }).join('');
 }
 
@@ -1776,6 +1829,7 @@ export function reportHtml(report, id, date, visualAssets = []) {
     const caption = `<figcaption><div class="visual-title"><b>${escapeHtml(item.label)}</b><span>${escapeHtml(item.legend)}</span></div>
       ${item.matchedEndpoints?.length ? `<small>연결 평가변수 · ${escapeHtml(item.matchedEndpoints.join(' · '))}</small>` : ''}
       ${item.matchedPValues?.length ? `<small class="visual-p-values">연결 p값 · ${escapeHtml(item.matchedPValues.join(' / '))}</small>` : ''}
+      <small class="visual-source">수록 방식 · ${escapeHtml(item.captureMethod || '원문 시각자료')}</small>
       <a href="${escapeHtml(item.sourceUrl)}">원문 위치</a></figcaption>`;
     const image = `<img src="${item.imageDataUri}" alt="${escapeHtml(`${item.label} ${item.legend}`)}">`;
     return `<figure class="result-visual ${item.kind}">${item.kind === 'table' ? `${caption}${image}` : `${image}${caption}`}</figure>`;
@@ -1793,6 +1847,7 @@ export function reportHtml(report, id, date, visualAssets = []) {
   .safety-table{font-size:7.5px;line-height:1.18}.safety-table th,.safety-table td{padding:2.5px 4px}.safety-table td small{font-size:6.6px}.grid.three .panel{line-height:1.2}
   :root{--ink:#26312d;--deep:#174f43;--muted:#65736d;--line:#d4dfda;--green:#287965;--green-soft:#eef5f2;--blue-soft:#eef3f6;--amber-soft:#faf3e4;--red:#9a4b45;--red-soft:#f8eeec}*{letter-spacing:0}body{font-family:Pretendard,"Noto Sans KR","Noto Sans CJK KR","Apple SD Gothic Neo","Segoe UI","Malgun Gothic",Arial,sans-serif;font-size:10px;line-height:1.38;font-weight:400;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}h1{font-size:23.5px;line-height:1.2;font-weight:700}.topline{font-size:7.5px;font-weight:600}.subtitle{font-size:9.6px;line-height:1.35}.decision b{font-size:10.2px;font-weight:700}.decision div{font-weight:400}.metric b{font-size:13.2px;font-weight:650}.metric span,.metric small{font-size:7.1px}.title h2{font-size:12.8px;line-height:1.25;font-weight:700}.title span{font-size:7.6px;font-weight:700}.lead{font-size:10.4px;line-height:1.4;font-weight:600}.panel h3{font-size:9.7px;font-weight:650}dt,th{font-weight:650}table{font-size:8.1px;line-height:1.32}th{font-size:7.6px;line-height:1.25}.outcomes{font-size:7.9px}.p-value{font-weight:650}.visual-title b{font-size:9.1px;font-weight:700}.result-visual figcaption{font-size:8.25px;line-height:1.38}.result-visual figcaption small,.result-visual figcaption a{font-size:7.35px;line-height:1.35}.reference h2{font-size:9.8px;font-weight:700}.reference p{font-size:7.9px;line-height:1.4}.disclaimer{font-size:7.1px;line-height:1.35}a{font-weight:650}
   .outcomes th:nth-child(1){width:11%}.outcomes th:nth-child(2){width:23%}.outcomes th:nth-child(3){width:34%}.outcomes th:nth-child(4){width:22%}.outcomes th:nth-child(5){width:10%}.outcomes .domain-cell{vertical-align:middle;background:#f3f7f5;color:var(--deep);font-weight:650;border-bottom-color:#b8cac3}
+  table th{text-align:center;vertical-align:middle}table td{vertical-align:middle;word-break:keep-all;overflow-wrap:anywhere}.outcomes .domain-cell{text-align:center}.outcomes .p-value,.outcomes .evidence-cell{text-align:center}.outcomes .evidence-cell{white-space:nowrap}.outcomes .endpoint-cell,.outcomes .result-cell{line-height:1.3}.p-value-list{display:flex;flex-direction:column;align-items:center;gap:2px}.p-value-item{display:inline-block;white-space:nowrap;line-height:1.25}.p-value-item.significant{color:var(--deep);background:#dcefe7;border:1px solid #92c2b1;border-radius:3px;padding:1px 4px;font-weight:750}.outcomes .significant-row .p-value{background:#f3faf7}.result-visual figcaption .visual-source{color:var(--deep)}
   </style></head><body><main class="wrap">
   <header><div class="topline"><span>HEALTHARCHIVE · DAILY INGREDIENT REVIEW · ${escapeHtml(id)}</span><span class="date-chip">검토일 ${escapeHtml(date)}</span></div><h1>${escapeHtml(report.ingredient)}</h1><div class="subtitle"><i>${escapeHtml(report.scientificName)}</i> · ${escapeHtml(report.ingredientType)}</div><div class="decision"><b>${escapeHtml(report.verdict)}</b><div>${escapeHtml(report.keyDecision || report.summary)}</div></div><div class="metrics">${metric('기능성 근거', `${report.outcomeMatrix?.length || 0}개`, report.evidenceGrade, 'blue')}${metric('인체 직접성', `${report.humanEvidenceScore || 0}/5`, audit.sourceType || '원문 유형', 'red')}${metric('개발 준비도', `${report.developmentReadinessScore || 0}/5`, report.feasibility, 'amber')}${metric('근거 등급', report.grade || '-', `${source.pmcid || '원문 확인'}`)}</div></header>
   <section><div class="title"><span>01</span><h2>핵심 결론 및 시험설계</h2></div><p class="lead">${escapeHtml(report.summary)}</p><div class="grid"><dl><dt>기능 방향</dt><dd>${escapeHtml(report.functionality)}</dd><dt>시험대상</dt><dd>${escapeHtml(design.subjects || '확인 필요')}</dd><dt>시험모델</dt><dd>${escapeHtml(design.model || '확인 필요')}</dd></dl><dl><dt>용량</dt><dd>${escapeHtml(design.dose || report.intakeBasis || '확인 필요')}</dd><dt>기간</dt><dd>${escapeHtml(design.duration || '확인 필요')}</dd><dt>비교군</dt><dd>${escapeHtml(design.comparators || '확인 필요')}</dd><dt>통계분석</dt><dd>${escapeHtml(statisticsSummary)}</dd></dl></div><div class="scroll"><table class="studies"><thead><tr><th>근거 유형</th><th>설계</th><th>대상·모델</th><th>용량</th><th>기간</th></tr></thead><tbody>${studyRows}</tbody></table></div><div class="scroll"><table class="groups"><thead><tr><th>군</th><th>원문 표기</th><th>정의</th><th>역할</th></tr></thead><tbody>${groupRows}</tbody></table></div></section>
@@ -1887,6 +1942,7 @@ async function publishReport(env, report, pdfBuffer, reportDate = seoulDate()) {
     evidenceLocations: item.evidenceLocations,
     matchedEndpoints: item.matchedEndpoints,
     matchedPValues: item.matchedPValues,
+    captureMethod: item.captureMethod,
     storageKey: `${prefix}/visuals/${String(index + 1).padStart(2, '0')}-${item.kind}.${item.extension}`,
   }));
   report.statisticsEvidenceVersion = STATISTICS_EVIDENCE_VERSION;
@@ -1935,7 +1991,7 @@ async function publishReport(env, report, pdfBuffer, reportDate = seoulDate()) {
     sourceTitle: report.source.title,
     sourcePmcid: report.source.pmcid,
     sourceDoi: report.source.doi,
-    reportVersion: 19,
+    reportVersion: 20,
     visualEvidenceVersion: VISUAL_EVIDENCE_VERSION,
     statisticsEvidenceVersion: STATISTICS_EVIDENCE_VERSION,
     resultVisualCount: report.resultVisuals.length,
