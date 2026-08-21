@@ -7,7 +7,7 @@ const MAX_SOURCE_CHARS = 42000;
 const EVIDENCE_OUTPUT_TOKENS = 7000;
 const REPORT_OUTPUT_TOKENS = 7000;
 const AGENT_STEP_TIMEOUT_MS = 12 * 60 * 1000;
-const VISUAL_EVIDENCE_VERSION = 4;
+const VISUAL_EVIDENCE_VERSION = 6;
 const STATISTICS_EVIDENCE_VERSION = 1;
 const MAX_RESULT_VISUALS = 4;
 const MAX_VISUAL_BYTES = 8 * 1024 * 1024;
@@ -849,19 +849,19 @@ export function enrichOutcomePValues(report, records) {
 }
 
 function renderTableSvg(record) {
-  const width = 1200;
-  const padding = 12;
-  const lineHeight = 18;
+  const width = 1280;
+  const padding = 10;
+  const lineHeight = 17;
   const grid = tableGrid(record.tableHtml);
   const columnWidth = (width - padding * 2) / grid.columnCount;
-  const rowHeights = Array(grid.rowCount).fill(34);
+  const rowHeights = Array(grid.rowCount).fill(30);
   grid.cells.forEach(cell => {
-    const availableWidth = columnWidth * cell.colspan - 16;
-    cell.lines = wrapSvgText(cell.text, Math.max(8, availableWidth / 7.1));
-    if (cell.rowspan === 1) rowHeights[cell.row] = Math.max(rowHeights[cell.row], 16 + cell.lines.length * lineHeight);
+    const availableWidth = columnWidth * cell.colspan - 14;
+    cell.lines = wrapSvgText(cell.text || '-', Math.max(8, availableWidth / 7.4));
+    if (cell.rowspan === 1) rowHeights[cell.row] = Math.max(rowHeights[cell.row], 13 + cell.lines.length * lineHeight);
   });
   grid.cells.filter(cell => cell.rowspan > 1).forEach(cell => {
-    const required = 16 + cell.lines.length * lineHeight;
+    const required = 13 + cell.lines.length * lineHeight;
     const current = rowHeights.slice(cell.row, cell.row + cell.rowspan).reduce((sum, value) => sum + value, 0);
     if (required > current) {
       const extra = (required - current) / cell.rowspan;
@@ -880,11 +880,11 @@ function renderTableSvg(record) {
     const y = rowTops[cell.row];
     const cellWidth = columnWidth * cell.colspan;
     const cellHeight = rowHeights.slice(cell.row, cell.row + cell.rowspan).reduce((sum, value) => sum + value, 0);
-    const fill = cell.header ? '#e9f2ee' : cell.row % 2 ? '#f8faf9' : '#ffffff';
-    elements.push(`<rect x="${x}" y="${y}" width="${cellWidth}" height="${cellHeight}" fill="${fill}" stroke="#9fb2aa" stroke-width="1"/>`);
-    const weight = cell.header ? '700' : '400';
-    const tspans = cell.lines.map((line, index) => `<tspan x="${x + 8}" dy="${index ? lineHeight : 0}">${svgText(line)}</tspan>`).join('');
-    elements.push(`<text x="${x + 8}" y="${y + 19}" fill="${cell.header ? '#0d4439' : '#17211e'}" font-family="Arial, sans-serif" font-size="13" font-weight="${weight}">${tspans}</text>`);
+    const fill = cell.header ? '#e7f0ec' : cell.row % 2 ? '#f7f9f8' : '#ffffff';
+    elements.push(`<rect x="${x}" y="${y}" width="${cellWidth}" height="${cellHeight}" fill="${fill}" stroke="#829a91" stroke-width="0.9"/>`);
+    const weight = cell.header || cell.column === 0 ? '700' : '400';
+    const tspans = cell.lines.map((line, index) => `<tspan x="${x + 7}" dy="${index ? lineHeight : 0}">${svgText(line)}</tspan>`).join('');
+    elements.push(`<text x="${x + 7}" y="${y + 18}" fill="${cell.header ? '#0d4439' : '#17211e'}" font-family="Arial, sans-serif" font-size="14" font-weight="${weight}">${tspans}</text>`);
   });
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${elements.join('')}</svg>`;
   const buffer = new TextEncoder().encode(svg).buffer;
@@ -1716,8 +1716,19 @@ export function reportHtml(report, id, date, visualAssets = []) {
     <tr><td><b>${escapeHtml(item.reportName)}</b></td><td>${escapeHtml(item.sourceCode)}</td><td>${escapeHtml(item.description)}</td><td>${escapeHtml(item.role)}</td></tr>`).join('') : '<tr><td colspan="4">확인 필요</td></tr>';
   const outcomeRows = (report.outcomeMatrix || []).length ? report.outcomeMatrix.map(item => `
     <tr><td>${escapeHtml(item.domain)}</td><td><b>${escapeHtml(item.endpoint)}</b></td><td>${escapeHtml(item.result)}</td><td>${escapeHtml(item.statistic)}</td><td><b class="p-value">${escapeHtml(item.pValue || '원문 미보고')}</b></td><td>${escapeHtml(item.evidenceLocation)}</td></tr>`).join('') : '<tr><td colspan="6">확인된 결과 없음</td></tr>';
-  const safetyRows = (report.safetyDatabaseSearch || []).length ? report.safetyDatabaseSearch.map(item => `
-    <tr><td><b>${escapeHtml(item.database)}</b><small>${escapeHtml(item.query)}</small></td><td><b>${escapeHtml(item.status)}</b></td><td>${escapeHtml(item.finding)}</td></tr>`).join('') : '<tr><td colspan="3">안전성 DB 검색 필요</td></tr>';
+  const safetyGroups = new Map();
+  (report.safetyDatabaseSearch || []).forEach(item => {
+    const group = safetyGroups.get(item.database) || { queries: new Set(), statuses: new Set(), findings: new Set() };
+    group.queries.add(cleanText(item.query, '', 120));
+    group.statuses.add(cleanText(item.status, '확인 필요', 40));
+    group.findings.add(cleanText(item.finding, '확인 필요', 500));
+    safetyGroups.set(item.database, group);
+  });
+  const safetyRows = safetyGroups.size ? [...safetyGroups].map(([database, group]) => {
+    const statuses = [...group.statuses];
+    const status = statuses.includes('관련 정보 있음') ? '관련 정보 있음' : statuses.includes('확인 필요') ? '확인 필요' : statuses[0];
+    return `<tr><td><b>${escapeHtml(database)}</b><small>${escapeHtml([...group.queries].filter(Boolean).join(' · '))}</small></td><td><b>${escapeHtml(status)}</b></td><td>${escapeHtml([...group.findings].filter(Boolean).join(' / '))}</td></tr>`;
+  }).join('') : '<tr><td colspan="3">안전성 DB 검색 필요</td></tr>';
   const studyRows = (report.studies || []).length ? report.studies.map(item => `
     <tr><td>${escapeHtml(item.kind)}</td><td>${escapeHtml(item.design)}</td><td>${escapeHtml(item.subjects)}</td><td>${escapeHtml(item.dose)}</td><td>${escapeHtml(item.duration)}</td></tr>`).join('') : '<tr><td colspan="5">확인 필요</td></tr>';
   const relatedRows = (items, emptyMessage) => (items || []).length ? items.map(item => {
@@ -1729,15 +1740,14 @@ export function reportHtml(report, id, date, visualAssets = []) {
   const similarRows = relatedRows(related.similarIngredientStudies, '원본 PDF가 확보되고 원재료·추출방법 차이가 확인된 유사원료 자료 없음');
   const metric = (label, value, note, tone = '') => `<div class="metric ${tone}"><span>${escapeHtml(label)}</span><b>${escapeHtml(value)}</b><small>${escapeHtml(note)}</small></div>`;
   const source = report.source || {};
-  const resultVisualsHtml = visualAssets.length ? visualAssets.map(item => `
-    <figure class="result-visual ${item.kind}">
-      <div class="visual-kicker">${escapeHtml(item.kind === 'table' ? 'TABLE EVIDENCE' : 'FIGURE EVIDENCE')}</div>
-      <img src="${item.imageDataUri}" alt="${escapeHtml(`${item.label} ${item.legend}`)}">
-      <figcaption><b>${escapeHtml(item.label)}</b> ${escapeHtml(item.legend)}
+  const resultVisualsHtml = visualAssets.length ? visualAssets.map(item => {
+    const caption = `<figcaption><div class="visual-title"><b>${escapeHtml(item.label)}</b><span>${escapeHtml(item.legend)}</span></div>
       ${item.matchedEndpoints?.length ? `<small>연결 평가변수 · ${escapeHtml(item.matchedEndpoints.join(' · '))}</small>` : ''}
       ${item.matchedPValues?.length ? `<small class="visual-p-values">연결 p값 · ${escapeHtml(item.matchedPValues.join(' / '))}</small>` : ''}
-      <a href="${escapeHtml(item.sourceUrl)}">원문 위치</a></figcaption>
-    </figure>`).join('') : '<div class="notice">평가변수와 직접 연결되는 원문 Figure·Table 이미지를 자동 확보하지 못함. 원본 PDF의 근거 위치 확인 필요.</div>';
+      <a href="${escapeHtml(item.sourceUrl)}">원문 위치</a></figcaption>`;
+    const image = `<img src="${item.imageDataUri}" alt="${escapeHtml(`${item.label} ${item.legend}`)}">`;
+    return `<figure class="result-visual ${item.kind}">${item.kind === 'table' ? `${caption}${image}` : `${image}${caption}`}</figure>`;
+  }).join('') : '<div class="notice">평가변수와 직접 연결되는 원문 Figure·Table 이미지를 자동 확보하지 못함. 원본 PDF의 근거 위치 확인 필요.</div>';
   const citationParts = [
     source.authors || '저자 정보 원문 참조',
     source.title || '논문 제목 확인 필요',
@@ -1747,6 +1757,8 @@ export function reportHtml(report, id, date, visualAssets = []) {
   return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(report.ingredient)} 기능성 개발 검토</title>
   <style>
   :root{--ink:#17211e;--deep:#0d4439;--muted:#62706b;--line:#d8e1dd;--green:#19745f;--green-soft:#edf5f2;--blue-soft:#edf3f7;--amber:#9a6410;--amber-soft:#fbf2df;--red:#9e453f;--red-soft:#f8ece9}*{box-sizing:border-box}body{margin:0;color:var(--ink);font-family:"Noto Sans KR","Malgun Gothic",sans-serif;line-height:1.34;background:#fff;font-size:9px}.wrap{width:100%;margin:0;padding:0}.topline{display:flex;justify-content:space-between;align-items:center;color:var(--green);font-size:7px;font-weight:800;letter-spacing:.08em}.date-chip{border:1px solid var(--line);padding:3px 6px;color:var(--ink);letter-spacing:0}h1{font-size:23px;line-height:1.12;margin:6px 0 2px}.subtitle{color:var(--muted);font-size:9px}.decision{display:grid;grid-template-columns:105px 1fr;border:1px solid var(--green);background:var(--green-soft);margin:9px 0 7px}.decision b,.decision div{padding:7px 9px}.decision b{color:var(--deep);border-right:1px solid #b8d2ca;font-size:10px}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:8px}.metric{border:1px solid var(--line);padding:5px 7px;min-height:43px}.metric span,.metric small{display:block;color:var(--muted);font-size:6.7px}.metric b{display:block;font-size:13px;margin:2px 0;color:var(--deep)}.metric.red{background:var(--red-soft)}.metric.amber{background:var(--amber-soft)}.metric.blue{background:var(--blue-soft)}section{border-top:1px solid var(--line);padding:8px 0}.title{display:flex;align-items:baseline;gap:6px;margin-bottom:5px;break-after:avoid}.title span{color:var(--green);font-size:7px;font-weight:800}.title h2{font-size:12px;margin:0}.lead{font-size:10px;font-weight:700;color:var(--deep);margin:0 0 6px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}.grid.three{grid-template-columns:repeat(3,1fr)}.panel{border:1px solid var(--line);padding:7px 8px;break-inside:avoid}.panel.good{background:var(--green-soft)}.panel.risk{background:var(--red-soft)}.panel h3{font-size:9px;margin:0 0 4px;color:var(--deep)}p{margin:2px 0 5px}ul{margin:0;padding-left:14px}li+li{margin-top:2px}a{color:var(--green);font-weight:800;text-decoration:none}dl{display:grid;grid-template-columns:76px 1fr;margin:0;border:1px solid var(--line)}dt,dd{padding:4px 6px;margin:0;border-bottom:1px solid var(--line)}dt{font-weight:800;background:#f6f9f7}dd{border-left:1px solid var(--line)}table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:7.4px}thead{display:table-header-group}tr{break-inside:avoid}th,td{border:1px solid var(--line);padding:3.5px 4.5px;text-align:left;vertical-align:top;word-break:break-word}th{background:#f0f6f3;color:var(--deep);font-size:6.8px}td small{display:block;color:var(--muted);font-size:6.3px;margin-top:2px}.groups th:nth-child(1){width:12%}.groups th:nth-child(2){width:20%}.groups th:nth-child(3){width:48%}.groups th:nth-child(4){width:20%}.studies th:nth-child(1){width:14%}.studies th:nth-child(2){width:26%}.studies th:nth-child(3){width:28%}.studies th:nth-child(4){width:20%}.studies th:nth-child(5){width:12%}.outcomes th:nth-child(1){width:10%}.outcomes th:nth-child(2){width:18%}.outcomes th:nth-child(3){width:29%}.outcomes th:nth-child(4){width:13%}.outcomes th:nth-child(5){width:17%}.outcomes th:nth-child(6){width:13%}.p-value{color:var(--red);font-variant-numeric:tabular-nums}.related-table th:nth-child(1){width:20%}.related-table th:nth-child(2){width:20%}.related-table th:nth-child(3){width:38%}.related-table th:nth-child(4){width:22%}.safety-table th:nth-child(1){width:27%}.safety-table th:nth-child(2){width:16%}.safety-table th:nth-child(3){width:57%}.notice{background:var(--amber-soft);border-left:3px solid var(--amber);padding:5px 7px;margin-top:5px}.visual-grid{display:grid;grid-template-columns:1fr;gap:8px}.result-visual{margin:0;border:1px solid var(--line);padding:7px;background:#fff;break-inside:avoid;page-break-inside:avoid}.result-visual img{display:block;width:100%;height:auto;max-height:225mm;object-fit:contain;background:#fff}.visual-kicker{color:var(--green);font-size:6.5px;font-weight:800;letter-spacing:.08em;margin-bottom:4px}.result-visual figcaption{border-top:1px solid var(--line);padding-top:5px;margin-top:5px;font-size:7.2px;color:#46534f}.result-visual figcaption b{color:var(--deep);margin-right:3px}.result-visual figcaption small{display:block;margin-top:3px;color:var(--muted)}.result-visual figcaption .visual-p-values{color:var(--red);font-weight:700}.result-visual figcaption a{display:inline-block;margin-top:3px}.reference{border:1px solid var(--line);background:#f8faf9;padding:7px 8px;margin-top:7px;break-inside:avoid}.reference h2{font-size:9px;margin:0 0 4px}.reference p{font-size:7.2px;color:#46534f;margin:0;word-break:break-word}.reference .published{display:inline-block;color:var(--deep);font-weight:800;margin-top:3px}.disclaimer{font-size:6.5px;color:var(--muted);margin-top:4px}@page{size:A4;margin:8mm}@media print{.panel,.reference,.decision,.metrics,.result-visual{break-inside:avoid}.visual-section{break-before:page}section{break-inside:auto}}@media(max-width:720px){body{font-size:11px}.wrap{padding:15px}.grid,.grid.three,.metrics{grid-template-columns:1fr}.scroll{overflow:auto}.scroll table{min-width:720px}}
+  body{font-size:9.8px;line-height:1.28}h1{font-size:24px;margin:5px 0 1px}.subtitle{font-size:9.5px}.topline{font-size:7.4px}.decision{margin:6px 0 5px;grid-template-columns:112px 1fr}.decision b,.decision div{padding:6px 8px}.metrics{gap:3px;margin-bottom:5px}.metric{min-height:38px;padding:4px 6px}.metric span,.metric small{font-size:7px}.metric b{font-size:13.5px;margin:1px 0}section{padding:6px 0}.title{margin-bottom:4px}.title h2{font-size:13px}.title span{font-size:7.5px}.lead{font-size:10.5px;margin-bottom:4px}.grid{gap:4px}.panel{padding:5px 6px}.panel h3{font-size:9.6px}p{margin:1px 0 4px}li+li{margin-top:1px}dt,dd{padding:3.5px 5px}table{font-size:8px}th,td{padding:3px 4px}th{font-size:7.4px}td small{font-size:6.8px}.outcomes{font-size:7.8px}.visual-grid{gap:5px}.result-visual{border:0;border-top:1.5px solid var(--deep);padding:5px 0 4px}.result-visual img{max-height:215mm}.result-visual figcaption{font-size:8.2px;line-height:1.3;color:#26332f}.result-visual.table figcaption{border-top:0;border-bottom:1px solid var(--line);padding:0 0 5px;margin:0 0 4px}.result-visual.figure figcaption{padding-top:5px;margin-top:4px}.visual-title b{display:inline;color:var(--deep);font-size:9px;margin-right:4px}.visual-title span{color:#26332f}.result-visual figcaption small{font-size:7.2px;margin-top:2px}.result-visual figcaption a{font-size:7.2px;margin-top:2px}.reference{padding:5px 6px;margin-top:5px}.reference h2{font-size:9.6px}.reference p{font-size:7.7px}.disclaimer{font-size:7px}@page{size:A4;margin:7mm}@media print{.visual-section{break-before:auto}.result-visual{break-inside:avoid;page-break-inside:avoid}.title{break-after:avoid}}
+  .safety-table{font-size:7.5px;line-height:1.18}.safety-table th,.safety-table td{padding:2.5px 4px}.safety-table td small{font-size:6.6px}.grid.three .panel{line-height:1.2}
   </style></head><body><main class="wrap">
   <header><div class="topline"><span>HEALTHARCHIVE · DAILY INGREDIENT REVIEW · ${escapeHtml(id)}</span><span class="date-chip">검토일 ${escapeHtml(date)}</span></div><h1>${escapeHtml(report.ingredient)}</h1><div class="subtitle"><i>${escapeHtml(report.scientificName)}</i> · ${escapeHtml(report.ingredientType)}</div><div class="decision"><b>${escapeHtml(report.verdict)}</b><div>${escapeHtml(report.keyDecision || report.summary)}</div></div><div class="metrics">${metric('기능성 근거', `${report.outcomeMatrix?.length || 0}개`, report.evidenceGrade, 'blue')}${metric('인체 직접성', `${report.humanEvidenceScore || 0}/5`, audit.sourceType || '원문 유형', 'red')}${metric('개발 준비도', `${report.developmentReadinessScore || 0}/5`, report.feasibility, 'amber')}${metric('근거 등급', report.grade || '-', `${source.pmcid || '원문 확인'}`)}</div></header>
   <section><div class="title"><span>01</span><h2>핵심 결론 및 시험설계</h2></div><p class="lead">${escapeHtml(report.summary)}</p><div class="grid"><dl><dt>기능 방향</dt><dd>${escapeHtml(report.functionality)}</dd><dt>시험대상</dt><dd>${escapeHtml(design.subjects || '확인 필요')}</dd><dt>시험모델</dt><dd>${escapeHtml(design.model || '확인 필요')}</dd></dl><dl><dt>용량</dt><dd>${escapeHtml(design.dose || report.intakeBasis || '확인 필요')}</dd><dt>기간</dt><dd>${escapeHtml(design.duration || '확인 필요')}</dd><dt>비교군</dt><dd>${escapeHtml(design.comparators || '확인 필요')}</dd></dl></div><div class="scroll"><table class="studies"><thead><tr><th>근거 유형</th><th>설계</th><th>대상·모델</th><th>용량</th><th>기간</th></tr></thead><tbody>${studyRows}</tbody></table></div><div class="scroll"><table class="groups"><thead><tr><th>군</th><th>원문 표기</th><th>정의</th><th>역할</th></tr></thead><tbody>${groupRows}</tbody></table></div></section>
@@ -1889,7 +1901,7 @@ async function publishReport(env, report, pdfBuffer, reportDate = seoulDate()) {
     sourceTitle: report.source.title,
     sourcePmcid: report.source.pmcid,
     sourceDoi: report.source.doi,
-    reportVersion: 15,
+    reportVersion: 17,
     visualEvidenceVersion: VISUAL_EVIDENCE_VERSION,
     statisticsEvidenceVersion: STATISTICS_EVIDENCE_VERSION,
     resultVisualCount: report.resultVisuals.length,
