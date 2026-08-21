@@ -7,6 +7,9 @@ const MAX_SOURCE_CHARS = 42000;
 const EVIDENCE_OUTPUT_TOKENS = 7000;
 const REPORT_OUTPUT_TOKENS = 7000;
 const AGENT_STEP_TIMEOUT_MS = 12 * 60 * 1000;
+const VISUAL_EVIDENCE_VERSION = 3;
+const MAX_RESULT_VISUALS = 4;
+const MAX_VISUAL_BYTES = 8 * 1024 * 1024;
 const DISCOVERY_TERM = '(TITLE_ABS:"functional food" OR TITLE_ABS:nutraceutical OR TITLE_ABS:probiotic OR TITLE_ABS:botanical OR TITLE_ABS:"plant extract" OR TITLE_ABS:phytochemical)';
 const BLOCKED_PUBLIC_TERMS = [
   '대외비', '사내한', '내부용', '내부 검토', 'confidential', 'do not distribute',
@@ -494,6 +497,360 @@ async function fetchOriginalPdf(candidate) {
   const url = match[1].replace(/^ftp:\/\//i, 'https://');
   const response = await fetch(url, { redirect: 'follow', headers });
   return validatedPdfResponse(response, url);
+}
+
+function decodeXmlEntities(value) {
+  const named = {
+    amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: ' ',
+    plusmn: '±', alpha: 'α', beta: 'β', gamma: 'γ', Delta: 'Δ', micro: 'µ',
+    le: '≤', ge: '≥', ndash: '-', mdash: '-', times: '×', middot: '·',
+  };
+  return String(value || '')
+    .replace(/&#x([0-9a-f]+);/gi, (_, code) => String.fromCodePoint(Number.parseInt(code, 16)))
+    .replace(/&#(\d+);/g, (_, code) => String.fromCodePoint(Number.parseInt(code, 10)))
+    .replace(/&([a-z]+);/gi, (entity, name) => named[name] ?? entity);
+}
+
+function xmlPlainText(value, maxLength = 2200) {
+  return cleanText(decodeXmlEntities(String(value || '')
+    .replace(/<break\b[^>]*\/?\s*>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')), '', maxLength);
+}
+
+function xmlAttribute(tag, name) {
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const match = String(tag || '').match(new RegExp(`\\b${escaped}\\s*=\\s*["']([^"']+)["']`, 'i'));
+  return decodeXmlEntities(match?.[1] || '');
+}
+
+function visualReferenceKey(kind, label, fallbackIndex = 0) {
+  const number = xmlPlainText(label, 80).match(/\d+[a-z]?/i)?.[0] || String(fallbackIndex + 1);
+  return `${kind === 'table' ? 'table' : 'figure'}:${number.toLowerCase()}`;
+}
+
+function sanitizeTableXml(block) {
+  const table = String(block || '').match(/<table\b[\s\S]*?<\/table>/i)?.[0] || '';
+  if (!table) return '';
+  const allowed = new Set(['table', 'thead', 'tbody', 'tfoot', 'tr', 'th', 'td', 'sup', 'sub', 'p', 'br', 'b', 'strong', 'i', 'em']);
+  return table
+    .replace(/<!--[\s\S]*?-->/g, '')
+    .replace(/<\/?([a-z][\w:-]*)\b([^>]*)>/gi, (tag, rawName, attributes) => {
+      const closing = /^<\//.test(tag);
+      const name = rawName.toLowerCase().replace(/^.*:/, '');
+      if (!allowed.has(name)) return '';
+      if (closing) return `</${name}>`;
+      if (name === 'br') return '<br>';
+      const spans = [];
+      for (const attribute of ['rowspan', 'colspan']) {
+        const value = attributes.match(new RegExp(`\\b${attribute}\\s*=\\s*["']?(\\d+)`, 'i'))?.[1];
+        if (value) spans.push(`${attribute}="${value}"`);
+      }
+      return `<${name}${spans.length ? ` ${spans.join(' ')}` : ''}>`;
+    });
+}
+
+function pmcImageMap(articleHtml, pmcid) {
+  const images = new Map();
+  for (const match of String(articleHtml || '').matchAll(/<img\b[^>]*\bsrc=["']([^"']+)["'][^>]*>/gi)) {
+    try {
+      const source = decodeXmlEntities(match[1]);
+      const url = new URL(source, `https://pmc.ncbi.nlm.nih.gov/articles/${pmcid}/`).toString();
+      const filename = decodeURIComponent(new URL(url).pathname.split('/').pop() || '').toLowerCase();
+      if (filename) images.set(filename, url);
+    } catch {
+      // Ignore malformed article image URLs.
+    }
+  }
+  return images;
+}
+
+export function extractPmcVisualRecords(xml, articleHtml, pmcid) {
+  const imageMap = pmcImageMap(articleHtml, pmcid);
+  const records = [];
+  const figures = [...String(xml || '').matchAll(/<fig\b[\s\S]*?<\/fig>/gi)].map(match => match[0]);
+  figures.forEach((block, index) => {
+    const openTag = block.match(/^<fig\b[^>]*>/i)?.[0] || '';
+    const labelXml = block.match(/<label\b[^>]*>([\s\S]*?)<\/label>/i)?.[1] || `Figure ${index + 1}`;
+    const captionXml = block.match(/<caption\b[^>]*>([\s\S]*?)<\/caption>/i)?.[1] || '';
+    const graphicTags = [...block.matchAll(/<graphic\b[^>]*>/gi)].map(match => match[0]);
+    const graphic = graphicTags.find(tag => !/content-type=["']thumb["']/i.test(tag)) || graphicTags[0] || '';
+    const filename = xmlAttribute(graphic, 'xlink:href') || xmlAttribute(graphic, 'href');
+    const imageUrl = imageMap.get(filename.toLowerCase()) || '';
+    const id = xmlAttribute(openTag, 'id');
+    records.push({
+      kind: 'figure', key: visualReferenceKey('figure', labelXml, index),
+      label: xmlPlainText(labelXml, 100), legend: xmlPlainText(captionXml),
+      id, filename, imageUrl,
+      sourceUrl: `https://pmc.ncbi.nlm.nih.gov/articles/${encodeURIComponent(pmcid)}/${id ? `#${encodeURIComponent(id)}` : ''}`,
+    });
+  });
+  const tables = [...String(xml || '').matchAll(/<table-wrap\b[\s\S]*?<\/table-wrap>/gi)].map(match => match[0]);
+  tables.forEach((block, index) => {
+    const openTag = block.match(/^<table-wrap\b[^>]*>/i)?.[0] || '';
+    const labelXml = block.match(/<label\b[^>]*>([\s\S]*?)<\/label>/i)?.[1] || `Table ${index + 1}`;
+    const captionXml = block.match(/<caption\b[^>]*>([\s\S]*?)<\/caption>/i)?.[1] || '';
+    const id = xmlAttribute(openTag, 'id');
+    const tableHtml = sanitizeTableXml(block);
+    if (!tableHtml) return;
+    records.push({
+      kind: 'table', key: visualReferenceKey('table', labelXml, index),
+      label: xmlPlainText(labelXml, 100), legend: xmlPlainText(captionXml),
+      id, tableHtml,
+      sourceUrl: `https://pmc.ncbi.nlm.nih.gov/articles/${encodeURIComponent(pmcid)}/${id ? `#${encodeURIComponent(id)}` : ''}`,
+    });
+  });
+  return records;
+}
+
+function requestedVisualKeys(report) {
+  const requested = new Map();
+  (report.outcomeMatrix || []).forEach(item => {
+    const location = cleanText(item.evidenceLocation, '', 160);
+    for (const match of location.matchAll(/\b(fig(?:ure)?|table)\s*\.?\s*(\d+[a-z]?)/gi)) {
+      const kind = /^table$/i.test(match[1]) ? 'table' : 'figure';
+      const key = `${kind}:${match[2].toLowerCase()}`;
+      const current = requested.get(key) || { locations: new Set(), endpoints: new Set() };
+      current.locations.add(location);
+      current.endpoints.add(cleanText(item.endpoint, '', 180));
+      requested.set(key, current);
+    }
+  });
+  return requested;
+}
+
+function resultVisualTokens(report) {
+  const stopWords = new Set([
+    'result', 'results', 'table', 'figure', 'page', 'group', 'groups', 'change', 'score', 'scores',
+    'with', 'from', 'between', 'after', 'before', 'level', 'levels', 'test', 'assay', 'total', 'plasma',
+    'response', 'intervention', 'following', 'concentration', 'concentrations', 'placebo', 'compared',
+    'higher', 'lower', 'attenuated', 'average', 'pre', 'ehs', 'prse',
+    '결과', '대조군', '시험군', '점수', '수준', '전체', '변화', '측정', '분석', '기능성',
+  ]);
+  let text = [report.functionality, ...(report.outcomeMatrix || []).flatMap(item => [item.endpoint, item.result])].join(' ');
+  if (/\bdass(?:\s*[- ]?\s*21)?\b/i.test(text)) text += ' depression anxiety stress';
+  return [...new Set(normalizedIdentityText(text).split(' ').filter(token => (
+    (/[가-힣]/.test(token) ? token.length >= 2 : token.length >= 3) && !stopWords.has(token)
+  )))].slice(0, 120);
+}
+
+export function selectResultVisualRecords(records, report) {
+  const requested = requestedVisualKeys(report);
+  const tokens = resultVisualTokens(report);
+  const outcomes = report.outcomeMatrix || [];
+  const scored = (records || []).map((record, index) => {
+    const normalized = normalizedIdentityText(`${record.label} ${record.legend}`);
+    const normalizedTokens = new Set(normalized.split(' '));
+    const direct = requested.get(record.key);
+    const matchedEndpoints = new Set(direct ? [...direct.endpoints] : []);
+    let score = direct ? 1000 : 0;
+    for (const item of outcomes) {
+      const endpoint = normalizedIdentityText(item.endpoint);
+      if (endpoint.length >= 3 && normalized.includes(endpoint)) {
+        score += 12;
+        matchedEndpoints.add(cleanText(item.endpoint, '', 180));
+      } else {
+        const endpointTokens = endpoint.split(' ').filter(token => (
+          token.length >= 4 && ![
+            'plasma', 'group', 'groups', 'compared', 'placebo', 'average', 'lower', 'higher',
+            'level', 'levels', 'small', 'intestine', 'hippocampus', 'prefrontal', 'cortex',
+            'expression', 'mrna', 'transcription', 'number', 'time', 'spent', 'open', 'arms',
+            'immobility', 'assay', 'concentration', 'concentrations', 'response', 'intervention',
+            'total', 'pre', 'ehs', 'prse',
+          ].includes(token)
+        ));
+        const overlap = endpointTokens.filter(token => normalizedTokens.has(token)).length;
+        if (overlap) {
+          score += overlap * 2;
+          matchedEndpoints.add(cleanText(item.endpoint, '', 180));
+        }
+      }
+    }
+    score += tokens.reduce((total, token) => total + (normalizedTokens.has(token) ? 1 : 0), 0);
+    return {
+      ...record, score, index,
+      evidenceLocations: direct ? [...direct.locations] : [],
+      matchedEndpoints: [...matchedEndpoints].filter(Boolean).slice(0, 8),
+    };
+  });
+  const explicit = scored.filter(item => requested.has(item.key)).sort((a, b) => a.index - b.index);
+  const targetCount = Math.min(MAX_RESULT_VISUALS, Math.max(3, explicit.length));
+  const selected = explicit.slice(0, MAX_RESULT_VISUALS);
+  for (const item of scored.filter(item => !requested.has(item.key)).sort((a, b) => b.score - a.score || a.index - b.index)) {
+    if (selected.length >= targetCount) break;
+    if (item.score < 2) continue;
+    selected.push(item);
+  }
+  return selected;
+}
+
+function bufferToDataUri(buffer, contentType) {
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  for (let offset = 0; offset < bytes.length; offset += 0x8000) {
+    binary += String.fromCharCode(...bytes.subarray(offset, offset + 0x8000));
+  }
+  return `data:${contentType};base64,${btoa(binary)}`;
+}
+
+function svgText(value) {
+  return String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function textUnits(value) {
+  return [...String(value || '')].reduce((total, char) => total + (/[^\x00-\x7F]/.test(char) ? 1.8 : 1), 0);
+}
+
+function wrapSvgText(value, maxUnits) {
+  const words = String(value || '').split(/\s+/).filter(Boolean);
+  const lines = [];
+  let line = '';
+  const pushLongWord = word => {
+    let chunk = '';
+    for (const char of [...word]) {
+      if (chunk && textUnits(chunk + char) > maxUnits) {
+        lines.push(chunk);
+        chunk = char;
+      } else chunk += char;
+    }
+    return chunk;
+  };
+  for (const word of words) {
+    const candidate = line ? `${line} ${word}` : word;
+    if (textUnits(candidate) <= maxUnits) {
+      line = candidate;
+    } else {
+      if (line) lines.push(line);
+      line = textUnits(word) > maxUnits ? pushLongWord(word) : word;
+    }
+  }
+  if (line) lines.push(line);
+  return lines.length ? lines : ['-'];
+}
+
+function tableGrid(tableHtml) {
+  const occupied = [];
+  const cells = [];
+  let columnCount = 0;
+  const rows = [...String(tableHtml || '').matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr>/gi)].map(match => match[1]);
+  rows.forEach((row, rowIndex) => {
+    occupied[rowIndex] ||= [];
+    let column = 0;
+    for (const match of row.matchAll(/<(th|td)\b([^>]*)>([\s\S]*?)<\/\1>/gi)) {
+      while (occupied[rowIndex][column]) column += 1;
+      const colspan = Math.max(1, Number(match[2].match(/\bcolspan="(\d+)"/i)?.[1] || 1));
+      const rowspan = Math.max(1, Number(match[2].match(/\browspan="(\d+)"/i)?.[1] || 1));
+      const cell = {
+        row: rowIndex, column, colspan, rowspan, header: match[1].toLowerCase() === 'th',
+        text: xmlPlainText(match[3], 2400), lines: [],
+      };
+      cells.push(cell);
+      for (let r = rowIndex; r < rowIndex + rowspan; r += 1) {
+        occupied[r] ||= [];
+        for (let c = column; c < column + colspan; c += 1) occupied[r][c] = true;
+      }
+      column += colspan;
+      columnCount = Math.max(columnCount, column);
+    }
+  });
+  return { cells, rowCount: rows.length, columnCount: Math.max(1, columnCount) };
+}
+
+function renderTableSvg(record) {
+  const width = 1200;
+  const padding = 12;
+  const lineHeight = 18;
+  const grid = tableGrid(record.tableHtml);
+  const columnWidth = (width - padding * 2) / grid.columnCount;
+  const rowHeights = Array(grid.rowCount).fill(34);
+  grid.cells.forEach(cell => {
+    const availableWidth = columnWidth * cell.colspan - 16;
+    cell.lines = wrapSvgText(cell.text, Math.max(8, availableWidth / 7.1));
+    if (cell.rowspan === 1) rowHeights[cell.row] = Math.max(rowHeights[cell.row], 16 + cell.lines.length * lineHeight);
+  });
+  grid.cells.filter(cell => cell.rowspan > 1).forEach(cell => {
+    const required = 16 + cell.lines.length * lineHeight;
+    const current = rowHeights.slice(cell.row, cell.row + cell.rowspan).reduce((sum, value) => sum + value, 0);
+    if (required > current) {
+      const extra = (required - current) / cell.rowspan;
+      for (let row = cell.row; row < Math.min(grid.rowCount, cell.row + cell.rowspan); row += 1) rowHeights[row] += extra;
+    }
+  });
+  const rowTops = [];
+  rowHeights.reduce((top, height, index) => {
+    rowTops[index] = top;
+    return top + height;
+  }, padding);
+  const height = Math.ceil(padding * 2 + rowHeights.reduce((sum, value) => sum + value, 0));
+  const elements = [`<rect width="${width}" height="${height}" fill="#ffffff"/>`];
+  grid.cells.forEach(cell => {
+    const x = padding + cell.column * columnWidth;
+    const y = rowTops[cell.row];
+    const cellWidth = columnWidth * cell.colspan;
+    const cellHeight = rowHeights.slice(cell.row, cell.row + cell.rowspan).reduce((sum, value) => sum + value, 0);
+    const fill = cell.header ? '#e9f2ee' : cell.row % 2 ? '#f8faf9' : '#ffffff';
+    elements.push(`<rect x="${x}" y="${y}" width="${cellWidth}" height="${cellHeight}" fill="${fill}" stroke="#9fb2aa" stroke-width="1"/>`);
+    const weight = cell.header ? '700' : '400';
+    const tspans = cell.lines.map((line, index) => `<tspan x="${x + 8}" dy="${index ? lineHeight : 0}">${svgText(line)}</tspan>`).join('');
+    elements.push(`<text x="${x + 8}" y="${y + 19}" fill="${cell.header ? '#0d4439' : '#17211e'}" font-family="Arial, sans-serif" font-size="13" font-weight="${weight}">${tspans}</text>`);
+  });
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">${elements.join('')}</svg>`;
+  const buffer = new TextEncoder().encode(svg).buffer;
+  return { buffer, contentType: 'image/svg+xml', extension: 'svg' };
+}
+
+async function fetchFigureImage(record) {
+  if (!record.imageUrl) return null;
+  const response = await fetch(record.imageUrl, {
+    redirect: 'follow',
+    headers: { 'User-Agent': 'HealthArchive/1.0 (healtharchive2026@gmail.com)' },
+  });
+  const contentType = (response.headers.get('Content-Type') || '').toLowerCase();
+  if (!response.ok || !contentType.startsWith('image/')) return null;
+  const buffer = await response.arrayBuffer();
+  if (buffer.byteLength <= 512 || buffer.byteLength > MAX_VISUAL_BYTES) return null;
+  const extension = contentType.includes('png') ? 'png' : contentType.includes('webp') ? 'webp' : 'jpg';
+  return { buffer, contentType: contentType.split(';')[0], extension };
+}
+
+async function fetchTextWithRetry(url, attempts = 2) {
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    try {
+      const response = await fetch(url, {
+        redirect: 'follow',
+        headers: { 'User-Agent': 'HealthArchive/1.0 (healtharchive2026@gmail.com)' },
+      });
+      if (response.ok) return response.text();
+    } catch {
+      // Retry transient source errors.
+    }
+  }
+  return '';
+}
+
+async function collectResultVisuals(env, report) {
+  const pmcid = cleanText(report.source?.pmcid, '', 40).toUpperCase();
+  if (!/^PMC\d{6,}$/.test(pmcid)) return [];
+  const [xml, articleHtml] = await Promise.all([
+    fetchTextWithRetry(`https://www.ebi.ac.uk/europepmc/webservices/rest/${encodeURIComponent(pmcid)}/fullTextXML`),
+    fetchTextWithRetry(`https://pmc.ncbi.nlm.nih.gov/articles/${encodeURIComponent(pmcid)}/`),
+  ]);
+  if (!xml) return [];
+  const selected = selectResultVisualRecords(extractPmcVisualRecords(xml, articleHtml, pmcid), report);
+  const visuals = [];
+  for (const record of selected) {
+    try {
+      const image = record.kind === 'table' ? renderTableSvg(record) : await fetchFigureImage(record);
+      if (!image) continue;
+      visuals.push({
+        ...record,
+        ...image,
+        imageDataUri: bufferToDataUri(image.buffer, image.contentType),
+      });
+    } catch {
+      // A single inaccessible asset must not block the daily report.
+    }
+  }
+  return visuals;
 }
 
 async function validatedPdfResponse(response, url) {
@@ -1253,7 +1610,7 @@ function reportHtmlMfdsV1(report, id, date) {
   </main></body></html>`;
 }
 
-export function reportHtml(report, id, date) {
+export function reportHtml(report, id, date, visualAssets = []) {
   const audit = report.evidenceAudit || {};
   const design = audit.studyDesign || {};
   const groupRows = (report.groupDefinitions || []).length ? report.groupDefinitions.map(item => `
@@ -1273,6 +1630,14 @@ export function reportHtml(report, id, date) {
   const similarRows = relatedRows(related.similarIngredientStudies, '원본 PDF가 확보되고 원재료·추출방법 차이가 확인된 유사원료 자료 없음');
   const metric = (label, value, note, tone = '') => `<div class="metric ${tone}"><span>${escapeHtml(label)}</span><b>${escapeHtml(value)}</b><small>${escapeHtml(note)}</small></div>`;
   const source = report.source || {};
+  const resultVisualsHtml = visualAssets.length ? visualAssets.map(item => `
+    <figure class="result-visual ${item.kind}">
+      <div class="visual-kicker">${escapeHtml(item.kind === 'table' ? 'TABLE EVIDENCE' : 'FIGURE EVIDENCE')}</div>
+      <img src="${item.imageDataUri}" alt="${escapeHtml(`${item.label} ${item.legend}`)}">
+      <figcaption><b>${escapeHtml(item.label)}</b> ${escapeHtml(item.legend)}
+      ${item.matchedEndpoints?.length ? `<small>연결 평가변수 · ${escapeHtml(item.matchedEndpoints.join(' · '))}</small>` : ''}
+      <a href="${escapeHtml(item.sourceUrl)}">원문 위치</a></figcaption>
+    </figure>`).join('') : '<div class="notice">평가변수와 직접 연결되는 원문 Figure·Table 이미지를 자동 확보하지 못함. 원본 PDF의 근거 위치 확인 필요.</div>';
   const citationParts = [
     source.authors || '저자 정보 원문 참조',
     source.title || '논문 제목 확인 필요',
@@ -1281,16 +1646,17 @@ export function reportHtml(report, id, date) {
   ].filter(Boolean).map(value => escapeHtml(value));
   return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(report.ingredient)} 기능성 개발 검토</title>
   <style>
-  :root{--ink:#17211e;--deep:#0d4439;--muted:#62706b;--line:#d8e1dd;--green:#19745f;--green-soft:#edf5f2;--blue-soft:#edf3f7;--amber:#9a6410;--amber-soft:#fbf2df;--red:#9e453f;--red-soft:#f8ece9}*{box-sizing:border-box}body{margin:0;color:var(--ink);font-family:"Noto Sans KR","Malgun Gothic",sans-serif;line-height:1.34;background:#fff;font-size:9px}.wrap{width:100%;margin:0;padding:0}.topline{display:flex;justify-content:space-between;align-items:center;color:var(--green);font-size:7px;font-weight:800;letter-spacing:.08em}.date-chip{border:1px solid var(--line);padding:3px 6px;color:var(--ink);letter-spacing:0}h1{font-size:23px;line-height:1.12;margin:6px 0 2px}.subtitle{color:var(--muted);font-size:9px}.decision{display:grid;grid-template-columns:105px 1fr;border:1px solid var(--green);background:var(--green-soft);margin:9px 0 7px}.decision b,.decision div{padding:7px 9px}.decision b{color:var(--deep);border-right:1px solid #b8d2ca;font-size:10px}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:8px}.metric{border:1px solid var(--line);padding:5px 7px;min-height:43px}.metric span,.metric small{display:block;color:var(--muted);font-size:6.7px}.metric b{display:block;font-size:13px;margin:2px 0;color:var(--deep)}.metric.red{background:var(--red-soft)}.metric.amber{background:var(--amber-soft)}.metric.blue{background:var(--blue-soft)}section{border-top:1px solid var(--line);padding:8px 0}.title{display:flex;align-items:baseline;gap:6px;margin-bottom:5px}.title span{color:var(--green);font-size:7px;font-weight:800}.title h2{font-size:12px;margin:0}.lead{font-size:10px;font-weight:700;color:var(--deep);margin:0 0 6px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}.grid.three{grid-template-columns:repeat(3,1fr)}.panel{border:1px solid var(--line);padding:7px 8px;break-inside:avoid}.panel.good{background:var(--green-soft)}.panel.risk{background:var(--red-soft)}.panel h3{font-size:9px;margin:0 0 4px;color:var(--deep)}p{margin:2px 0 5px}ul{margin:0;padding-left:14px}li+li{margin-top:2px}a{color:var(--green);font-weight:800;text-decoration:none}dl{display:grid;grid-template-columns:76px 1fr;margin:0;border:1px solid var(--line)}dt,dd{padding:4px 6px;margin:0;border-bottom:1px solid var(--line)}dt{font-weight:800;background:#f6f9f7}dd{border-left:1px solid var(--line)}table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:7.4px}thead{display:table-header-group}tr{break-inside:avoid}th,td{border:1px solid var(--line);padding:3.5px 4.5px;text-align:left;vertical-align:top;word-break:break-word}th{background:#f0f6f3;color:var(--deep);font-size:6.8px}td small{display:block;color:var(--muted);font-size:6.3px;margin-top:2px}.groups th:nth-child(1){width:12%}.groups th:nth-child(2){width:20%}.groups th:nth-child(3){width:48%}.groups th:nth-child(4){width:20%}.studies th:nth-child(1){width:14%}.studies th:nth-child(2){width:26%}.studies th:nth-child(3){width:28%}.studies th:nth-child(4){width:20%}.studies th:nth-child(5){width:12%}.outcomes th:nth-child(1){width:12%}.outcomes th:nth-child(2){width:20%}.outcomes th:nth-child(3){width:38%}.outcomes th:nth-child(4){width:14%}.outcomes th:nth-child(5){width:16%}.related-table th:nth-child(1){width:20%}.related-table th:nth-child(2){width:20%}.related-table th:nth-child(3){width:38%}.related-table th:nth-child(4){width:22%}.safety-table th:nth-child(1){width:27%}.safety-table th:nth-child(2){width:16%}.safety-table th:nth-child(3){width:57%}.notice{background:var(--amber-soft);border-left:3px solid var(--amber);padding:5px 7px;margin-top:5px}.reference{border:1px solid var(--line);background:#f8faf9;padding:7px 8px;margin-top:7px;break-inside:avoid}.reference h2{font-size:9px;margin:0 0 4px}.reference p{font-size:7.2px;color:#46534f;margin:0;word-break:break-word}.reference .published{display:inline-block;color:var(--deep);font-weight:800;margin-top:3px}.disclaimer{font-size:6.5px;color:var(--muted);margin-top:4px}@page{size:A4;margin:8mm}@media print{.panel,.reference,.decision,.metrics{break-inside:avoid}section{break-inside:auto}}@media(max-width:720px){body{font-size:11px}.wrap{padding:15px}.grid,.grid.three,.metrics{grid-template-columns:1fr}.scroll{overflow:auto}.scroll table{min-width:720px}}
+  :root{--ink:#17211e;--deep:#0d4439;--muted:#62706b;--line:#d8e1dd;--green:#19745f;--green-soft:#edf5f2;--blue-soft:#edf3f7;--amber:#9a6410;--amber-soft:#fbf2df;--red:#9e453f;--red-soft:#f8ece9}*{box-sizing:border-box}body{margin:0;color:var(--ink);font-family:"Noto Sans KR","Malgun Gothic",sans-serif;line-height:1.34;background:#fff;font-size:9px}.wrap{width:100%;margin:0;padding:0}.topline{display:flex;justify-content:space-between;align-items:center;color:var(--green);font-size:7px;font-weight:800;letter-spacing:.08em}.date-chip{border:1px solid var(--line);padding:3px 6px;color:var(--ink);letter-spacing:0}h1{font-size:23px;line-height:1.12;margin:6px 0 2px}.subtitle{color:var(--muted);font-size:9px}.decision{display:grid;grid-template-columns:105px 1fr;border:1px solid var(--green);background:var(--green-soft);margin:9px 0 7px}.decision b,.decision div{padding:7px 9px}.decision b{color:var(--deep);border-right:1px solid #b8d2ca;font-size:10px}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:8px}.metric{border:1px solid var(--line);padding:5px 7px;min-height:43px}.metric span,.metric small{display:block;color:var(--muted);font-size:6.7px}.metric b{display:block;font-size:13px;margin:2px 0;color:var(--deep)}.metric.red{background:var(--red-soft)}.metric.amber{background:var(--amber-soft)}.metric.blue{background:var(--blue-soft)}section{border-top:1px solid var(--line);padding:8px 0}.title{display:flex;align-items:baseline;gap:6px;margin-bottom:5px;break-after:avoid}.title span{color:var(--green);font-size:7px;font-weight:800}.title h2{font-size:12px;margin:0}.lead{font-size:10px;font-weight:700;color:var(--deep);margin:0 0 6px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}.grid.three{grid-template-columns:repeat(3,1fr)}.panel{border:1px solid var(--line);padding:7px 8px;break-inside:avoid}.panel.good{background:var(--green-soft)}.panel.risk{background:var(--red-soft)}.panel h3{font-size:9px;margin:0 0 4px;color:var(--deep)}p{margin:2px 0 5px}ul{margin:0;padding-left:14px}li+li{margin-top:2px}a{color:var(--green);font-weight:800;text-decoration:none}dl{display:grid;grid-template-columns:76px 1fr;margin:0;border:1px solid var(--line)}dt,dd{padding:4px 6px;margin:0;border-bottom:1px solid var(--line)}dt{font-weight:800;background:#f6f9f7}dd{border-left:1px solid var(--line)}table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:7.4px}thead{display:table-header-group}tr{break-inside:avoid}th,td{border:1px solid var(--line);padding:3.5px 4.5px;text-align:left;vertical-align:top;word-break:break-word}th{background:#f0f6f3;color:var(--deep);font-size:6.8px}td small{display:block;color:var(--muted);font-size:6.3px;margin-top:2px}.groups th:nth-child(1){width:12%}.groups th:nth-child(2){width:20%}.groups th:nth-child(3){width:48%}.groups th:nth-child(4){width:20%}.studies th:nth-child(1){width:14%}.studies th:nth-child(2){width:26%}.studies th:nth-child(3){width:28%}.studies th:nth-child(4){width:20%}.studies th:nth-child(5){width:12%}.outcomes th:nth-child(1){width:12%}.outcomes th:nth-child(2){width:20%}.outcomes th:nth-child(3){width:38%}.outcomes th:nth-child(4){width:14%}.outcomes th:nth-child(5){width:16%}.related-table th:nth-child(1){width:20%}.related-table th:nth-child(2){width:20%}.related-table th:nth-child(3){width:38%}.related-table th:nth-child(4){width:22%}.safety-table th:nth-child(1){width:27%}.safety-table th:nth-child(2){width:16%}.safety-table th:nth-child(3){width:57%}.notice{background:var(--amber-soft);border-left:3px solid var(--amber);padding:5px 7px;margin-top:5px}.visual-grid{display:grid;grid-template-columns:1fr;gap:8px}.result-visual{margin:0;border:1px solid var(--line);padding:7px;background:#fff;break-inside:avoid;page-break-inside:avoid}.result-visual img{display:block;width:100%;height:auto;max-height:225mm;object-fit:contain;background:#fff}.visual-kicker{color:var(--green);font-size:6.5px;font-weight:800;letter-spacing:.08em;margin-bottom:4px}.result-visual figcaption{border-top:1px solid var(--line);padding-top:5px;margin-top:5px;font-size:7.2px;color:#46534f}.result-visual figcaption b{color:var(--deep);margin-right:3px}.result-visual figcaption small{display:block;margin-top:3px;color:var(--muted)}.result-visual figcaption a{display:inline-block;margin-top:3px}.reference{border:1px solid var(--line);background:#f8faf9;padding:7px 8px;margin-top:7px;break-inside:avoid}.reference h2{font-size:9px;margin:0 0 4px}.reference p{font-size:7.2px;color:#46534f;margin:0;word-break:break-word}.reference .published{display:inline-block;color:var(--deep);font-weight:800;margin-top:3px}.disclaimer{font-size:6.5px;color:var(--muted);margin-top:4px}@page{size:A4;margin:8mm}@media print{.panel,.reference,.decision,.metrics,.result-visual{break-inside:avoid}.visual-section{break-before:page}section{break-inside:auto}}@media(max-width:720px){body{font-size:11px}.wrap{padding:15px}.grid,.grid.three,.metrics{grid-template-columns:1fr}.scroll{overflow:auto}.scroll table{min-width:720px}}
   </style></head><body><main class="wrap">
   <header><div class="topline"><span>HEALTHARCHIVE · DAILY INGREDIENT REVIEW · ${escapeHtml(id)}</span><span class="date-chip">검토일 ${escapeHtml(date)}</span></div><h1>${escapeHtml(report.ingredient)}</h1><div class="subtitle"><i>${escapeHtml(report.scientificName)}</i> · ${escapeHtml(report.ingredientType)}</div><div class="decision"><b>${escapeHtml(report.verdict)}</b><div>${escapeHtml(report.keyDecision || report.summary)}</div></div><div class="metrics">${metric('기능성 근거', `${report.outcomeMatrix?.length || 0}개`, report.evidenceGrade, 'blue')}${metric('인체 직접성', `${report.humanEvidenceScore || 0}/5`, audit.sourceType || '원문 유형', 'red')}${metric('개발 준비도', `${report.developmentReadinessScore || 0}/5`, report.feasibility, 'amber')}${metric('근거 등급', report.grade || '-', `${source.pmcid || '원문 확인'}`)}</div></header>
   <section><div class="title"><span>01</span><h2>핵심 결론 및 시험설계</h2></div><p class="lead">${escapeHtml(report.summary)}</p><div class="grid"><dl><dt>기능 방향</dt><dd>${escapeHtml(report.functionality)}</dd><dt>시험대상</dt><dd>${escapeHtml(design.subjects || '확인 필요')}</dd><dt>시험모델</dt><dd>${escapeHtml(design.model || '확인 필요')}</dd></dl><dl><dt>용량</dt><dd>${escapeHtml(design.dose || report.intakeBasis || '확인 필요')}</dd><dt>기간</dt><dd>${escapeHtml(design.duration || '확인 필요')}</dd><dt>비교군</dt><dd>${escapeHtml(design.comparators || '확인 필요')}</dd></dl></div><div class="scroll"><table class="studies"><thead><tr><th>근거 유형</th><th>설계</th><th>대상·모델</th><th>용량</th><th>기간</th></tr></thead><tbody>${studyRows}</tbody></table></div><div class="scroll"><table class="groups"><thead><tr><th>군</th><th>원문 표기</th><th>정의</th><th>역할</th></tr></thead><tbody>${groupRows}</tbody></table></div></section>
   <section><div class="title"><span>02</span><h2>평가변수별 기능성 결과</h2></div><div class="scroll"><table class="outcomes"><thead><tr><th>영역</th><th>평가지표</th><th>확인 결과</th><th>통계</th><th>근거 위치</th></tr></thead><tbody>${outcomeRows}</tbody></table></div></section>
-  <section><div class="title"><span>03</span><h2>동일 시험원료 전임상 근거</h2></div><div class="scroll"><table class="related-table"><thead><tr><th>시험원료·제조</th><th>기능성·실험모델</th><th>대조군 대비 결과</th><th>Reference</th></tr></thead><tbody>${preclinicalRows}</tbody></table></div></section>
-  <section><div class="title"><span>04</span><h2>유사원료 추가자료</h2></div><div class="scroll"><table class="related-table"><thead><tr><th>원료·추출방법</th><th>기능성·실험모델</th><th>대조군 대비 결과</th><th>Reference</th></tr></thead><tbody>${similarRows}</tbody></table></div><div class="notice">유사원료 자료는 원재료 공통성과 개발 방향을 검토하기 위한 보조근거이며, 제조·추출방법이 다른 신청원료의 직접 기능성 근거로 대체할 수 없다.</div></section>
-  <section><div class="title"><span>05</span><h2>작용기전·해석 한계</h2></div><div class="grid"><div class="panel good"><h3>작용기전 및 바이오마커</h3>${listHtml(report.mechanisms)}</div><div class="panel risk"><h3>중대한 한계</h3>${listHtml(report.limitations)}</div></div>${report.inconsistencies?.length ? `<div class="notice"><b>원문 대조 필요</b>${listHtml(report.inconsistencies)}</div>` : ''}</section>
-  <section><div class="title"><span>06</span><h2>개발·규제 실행안</h2></div><div class="grid three"><div class="panel good"><h3>우선 실행</h3>${listHtml(report.developmentActions)}</div><div class="panel"><h3>표준화·규격</h3>${listHtml(report.specifications)}<h3>규제 전환</h3>${listHtml(report.regulatoryReview)}</div><div class="panel risk"><h3>사용 금지 주장</h3>${listHtml(report.noGoClaims)}<h3>자료 공백</h3>${listHtml(report.gaps)}</div></div></section>
-  <section><div class="title"><span>07</span><h2>안전성 검토</h2></div><div class="grid"><div class="panel risk"><h3>안전성 핵심</h3>${listHtml(report.safety)}</div><div class="panel"><h3>원문 주석</h3>${listHtml(report.sourceNotes)}</div></div><div class="scroll"><table class="safety-table"><thead><tr><th>DB·검색어</th><th>결과</th><th>확인 내용</th></tr></thead><tbody>${safetyRows}</tbody></table></div><div class="notice">‘검색 결과 없음’은 안전성 입증이 아니며 신청원료의 정체성·제조공정·강화성분 결합 안전성은 별도 자료로 확인한다.</div></section>
+  <section class="visual-section"><div class="title"><span>03</span><h2>주요 결과 Figure·Table</h2></div><div class="visual-grid">${resultVisualsHtml}</div></section>
+  <section><div class="title"><span>04</span><h2>동일 시험원료 전임상 근거</h2></div><div class="scroll"><table class="related-table"><thead><tr><th>시험원료·제조</th><th>기능성·실험모델</th><th>대조군 대비 결과</th><th>Reference</th></tr></thead><tbody>${preclinicalRows}</tbody></table></div></section>
+  <section><div class="title"><span>05</span><h2>유사원료 추가자료</h2></div><div class="scroll"><table class="related-table"><thead><tr><th>원료·추출방법</th><th>기능성·실험모델</th><th>대조군 대비 결과</th><th>Reference</th></tr></thead><tbody>${similarRows}</tbody></table></div><div class="notice">유사원료 자료는 원재료 공통성과 개발 방향을 검토하기 위한 보조근거이며, 제조·추출방법이 다른 신청원료의 직접 기능성 근거로 대체할 수 없다.</div></section>
+  <section><div class="title"><span>06</span><h2>작용기전·해석 한계</h2></div><div class="grid"><div class="panel good"><h3>작용기전 및 바이오마커</h3>${listHtml(report.mechanisms)}</div><div class="panel risk"><h3>중대한 한계</h3>${listHtml(report.limitations)}</div></div>${report.inconsistencies?.length ? `<div class="notice"><b>원문 대조 필요</b>${listHtml(report.inconsistencies)}</div>` : ''}</section>
+  <section><div class="title"><span>07</span><h2>개발·규제 실행안</h2></div><div class="grid three"><div class="panel good"><h3>우선 실행</h3>${listHtml(report.developmentActions)}</div><div class="panel"><h3>표준화·규격</h3>${listHtml(report.specifications)}<h3>규제 전환</h3>${listHtml(report.regulatoryReview)}</div><div class="panel risk"><h3>사용 금지 주장</h3>${listHtml(report.noGoClaims)}<h3>자료 공백</h3>${listHtml(report.gaps)}</div></div></section>
+  <section><div class="title"><span>08</span><h2>안전성 검토</h2></div><div class="grid"><div class="panel risk"><h3>안전성 핵심</h3>${listHtml(report.safety)}</div><div class="panel"><h3>원문 주석</h3>${listHtml(report.sourceNotes)}</div></div><div class="scroll"><table class="safety-table"><thead><tr><th>DB·검색어</th><th>결과</th><th>확인 내용</th></tr></thead><tbody>${safetyRows}</tbody></table></div><div class="notice">‘검색 결과 없음’은 안전성 입증이 아니며 신청원료의 정체성·제조공정·강화성분 결합 안전성은 별도 자료로 확인한다.</div></section>
   <section class="reference"><h2>문헌 Reference</h2><p>${citationParts.join('. ')}.${source.doi ? ` DOI: ${escapeHtml(source.doi)}.` : ''} ${source.pmcid ? `PMCID: ${escapeHtml(source.pmcid)}.` : ''}<br><span class="published">정확 게재일(First publication): ${escapeHtml(source.pubDate || '원문 확인 필요')}</span></p><div class="disclaimer">확보된 원문 PDF와 공개 서지정보를 기준으로 작성한 후보 선별 검토자료이며 건강기능식품 인정 신청자료를 대체하지 않는다.</div></section>
   </main></body></html>`;
 }
@@ -1339,26 +1705,53 @@ async function analyzePdf(env, candidate, pdfBuffer, onStage = async () => {}) {
   return normalizeAiReport(reportPayload, candidate, evidence);
 }
 
+async function renderReportPdf(env, html) {
+  let lastResponse = null;
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    lastResponse = await env.BROWSER.quickAction('pdf', {
+      html,
+      pdfOptions: {
+        format: 'a4',
+        landscape: false,
+        printBackground: true,
+        preferCSSPageSize: true,
+        scale: 1,
+      },
+    });
+    if (lastResponse?.ok) return lastResponse;
+    if (lastResponse?.status !== 429 || attempt === 3) break;
+    await new Promise(resolve => setTimeout(resolve, attempt * 10000));
+  }
+  throw new Error(`분석 PDF 생성 실패 (${lastResponse?.status || 'unknown'})`);
+}
+
 async function publishReport(env, report, pdfBuffer, reportDate = seoulDate()) {
   const manifest = await readJsonObject(env.PRIVATE_DATA, MANIFEST_KEY, { version: 1, updatedAt: null, reports: [] });
   const date = reportDate;
   const id = `${date.replace(/-/g, '')}-${slugify(report.ingredient)}-${report.source.pmcid.toLowerCase()}`;
   const prefix = `daily-reports/${id}`;
-  const html = reportHtml(report, id, date);
-  const rendered = await env.BROWSER.quickAction('pdf', {
-    html,
-    pdfOptions: {
-      format: 'a4',
-      landscape: false,
-      printBackground: true,
-      preferCSSPageSize: true,
-      scale: 1,
-    },
-  });
-  if (!rendered?.ok) throw new Error(`분석 PDF 생성 실패 (${rendered?.status || 'unknown'})`);
+  const visualAssets = await collectResultVisuals(env, report);
+  report.visualEvidenceVersion = VISUAL_EVIDENCE_VERSION;
+  report.resultVisuals = visualAssets.map((item, index) => ({
+    kind: item.kind,
+    key: item.key,
+    label: item.label,
+    legend: item.legend,
+    sourceUrl: item.sourceUrl,
+    evidenceLocations: item.evidenceLocations,
+    matchedEndpoints: item.matchedEndpoints,
+    storageKey: `${prefix}/visuals/${String(index + 1).padStart(2, '0')}-${item.kind}.${item.extension}`,
+  }));
+  const html = reportHtml(report, id, date, visualAssets);
+  const rendered = await renderReportPdf(env, html);
   const reportPdf = await rendered.arrayBuffer();
   const reportPdfKey = `${prefix}/report-${Date.now()}.pdf`;
   await Promise.all([
+    ...visualAssets.map((item, index) => env.PRIVATE_DATA.put(
+      `${prefix}/visuals/${String(index + 1).padStart(2, '0')}-${item.kind}.${item.extension}`,
+      item.buffer,
+      { httpMetadata: { contentType: item.contentType, cacheControl: 'private, no-store' } },
+    )),
     env.PRIVATE_DATA.put(`${prefix}/source.pdf`, pdfBuffer, {
       httpMetadata: { contentType: 'application/pdf', cacheControl: 'private, no-store' },
       customMetadata: { pmcid: report.source.pmcid, doi: report.source.doi || '' },
@@ -1394,7 +1787,9 @@ async function publishReport(env, report, pdfBuffer, reportDate = seoulDate()) {
     sourceTitle: report.source.title,
     sourcePmcid: report.source.pmcid,
     sourceDoi: report.source.doi,
-    reportVersion: 11,
+    reportVersion: 14,
+    visualEvidenceVersion: VISUAL_EVIDENCE_VERSION,
+    resultVisualCount: report.resultVisuals.length,
     reportPdfKey,
     preclinicalEvidenceCount: report.relatedEvidence?.preclinicalStudies?.length || 0,
     similarIngredientEvidenceCount: report.relatedEvidence?.similarIngredientStudies?.length || 0,
@@ -1433,11 +1828,29 @@ export async function runDailyReportAgent(env, options = {}) {
     const relatedBackfill = !options.pmcid && !options.reportDate && !missingReportDate
       ? sortReportsNewest(manifest.reports || []).find(item => Number(item.reportVersion || 0) < 10)
       : null;
-    const reportDate = missingReportDate || relatedBackfill?.date || '';
+    const visualBackfill = !options.pmcid && !options.reportDate && !missingReportDate && !relatedBackfill
+      ? sortReportsNewest(manifest.reports || []).find(item => Number(item.visualEvidenceVersion || 0) < VISUAL_EVIDENCE_VERSION)
+      : null;
+    const reportDate = missingReportDate || relatedBackfill?.date || visualBackfill?.date || '';
     if (!reportDate) {
-      const message = '전일·당일 보고서 발간 및 추가문헌 보강 완료';
+      const message = '전일·당일 보고서 발간, 추가문헌 및 주요 결과 시각자료 보강 완료';
       await setStatus(env, 'idle', { message });
       return { ok: true, skipped: true, reason: 'already-published' };
+    }
+    if (visualBackfill) {
+      await setStatus(env, 'running', { stage: 'visual-evidence', candidate: visualBackfill.sourcePmcid });
+      const prefix = `daily-reports/${visualBackfill.id}`;
+      const [report, sourceObject] = await Promise.all([
+        readJsonObject(env.PRIVATE_DATA, `${prefix}/report.json`, null),
+        env.PRIVATE_DATA.get(`${prefix}/source.pdf`),
+      ]);
+      if (!report || !sourceObject) throw new Error(`기존 보고서 시각자료 보강 원본 누락: ${visualBackfill.id}`);
+      const summary = await withTimeout(
+        publishReport(env, report, await sourceObject.arrayBuffer(), visualBackfill.date),
+        '주요 결과 Figure·Table 보강',
+      );
+      await setStatus(env, 'success', { reportId: summary.id, candidate: visualBackfill.sourcePmcid, stage: 'visual-evidence' });
+      return { ok: true, report: summary, backfill: 'visual-evidence' };
     }
     const published = new Set((manifest.reports || []).map(item => item.sourcePmcid));
     const rejectedPmcids = new Set(manifest.rejectedPmcids || []);
