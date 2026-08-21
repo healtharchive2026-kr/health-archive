@@ -7,7 +7,7 @@ const MAX_SOURCE_CHARS = 42000;
 const EVIDENCE_OUTPUT_TOKENS = 7000;
 const REPORT_OUTPUT_TOKENS = 7000;
 const AGENT_STEP_TIMEOUT_MS = 12 * 60 * 1000;
-const VISUAL_EVIDENCE_VERSION = 7;
+const VISUAL_EVIDENCE_VERSION = 8;
 const STATISTICS_EVIDENCE_VERSION = 1;
 const MAX_RESULT_VISUALS = 4;
 const MAX_VISUAL_BYTES = 8 * 1024 * 1024;
@@ -1351,6 +1351,7 @@ function evidencePrompt(candidate, sourceText) {
 
 추출 규칙:
 - 시험물질, 제조·처리 조건, 시험대상, 모델, 군 구성, 용량, 기간, 비교군, 무작위배정, 눈가림, 통계, 윤리승인을 구분한다.
+- studyDesign.statistics에는 연구 전체에서 사용한 통계모형·검정법만 한 번 기록하고 개별 p값을 나열하지 않는다.
 - extractionMethod에는 추출용매, 농도, 온도, 시간, 분획, 발효·건조 등 원문에서 확인되는 제조 차별점을 기록한다.
 - ingredientSearchTerms에는 동일 시험원료의 전임상 검색에 필요한 정확 원료명·균주명·추출물명을 최대 4개 기록한다.
 - rawMaterialSearchTerms에는 동일 원재료의 유사 추출물 검색에 필요한 학명, 영문명, 사용부위를 최대 4개 기록한다.
@@ -1361,6 +1362,7 @@ function evidencePrompt(candidate, sourceText) {
 - 원문 약어는 sourceCode에만 보존한다. 각 outcomeMatrix.result에는 원문 약어 대신 위 보고서 명칭만 사용한다.
 - 모든 주요 유효성·안전성 결과를 outcomeMatrix에 지표 단위로 기록한다. 방향, 유의성, F/t/CI/p 값을 원문 그대로 기록한다.
 - statistic에는 검정법과 F/t/CI/효과크기를, pValue에는 원문에 보고된 정확한 p값을 반드시 분리하여 기록한다.
+- result에는 군별 결과값·변화량·효과크기와 방향을 우선 기록하고 "원문 결과" 같은 접두어를 사용하지 않는다.
 - pValue는 "p = 0.023", "p < 0.001"처럼 수치와 부등호를 보존한다. 정확한 수치가 없으면 "원문 미보고"로 기록하며 임의 추정하지 않는다.
 - 결과가 유의하지 않으면 반드시 "유의하지 않음"으로 기록한다.
 - 저자가 명시한 한계와 원문 내부에서 수치·서술이 상충하는 부분을 각각 분리한다.
@@ -1391,6 +1393,7 @@ function reviewPrompt(candidate, evidence) {
 판정 원칙:
 - 보고서의 우선순위는 결론 → 확인된 기능성 결과 → 바이오마커·작용기전 → 개발 가능성 → 안전성·식약처 제출자료 공백 순이다.
 - 기능성 결과는 평가변수·시험군·방향·통계값이 한눈에 연결되도록 작성하고, 행동·주요 유효성 지표를 가장 먼저 배치한다.
+- 통계 검정법은 studyDesign.statistics에 한 번만 유지하고 outcomeMatrix.result에는 결과값·방향, pValue에는 p값만 기록한다.
 - 동일한 사실·한계·자료 공백은 보고서 전체에서 한 번만 기술한다. 의례적 서론, 같은 뜻의 반복 문장, 불필요한 수식어를 쓰지 않는다.
 - 확인된 원문 결과와 개발 판단에 직접 필요한 내용만 남기고, 각 목록은 짧은 키워드형 문장으로 작성한다.
 - 원문 사실과 분석자 판단을 문장 안에서 명확히 구분한다.
@@ -1633,6 +1636,35 @@ function listHtml(items, empty = '확인 필요') {
   return `<ul>${values.map(value => `<li>${escapeHtml(value)}</li>`).join('')}</ul>`;
 }
 
+function outcomeResultText(value) {
+  return cleanText(value, '확인 필요', 300)
+    .replace(/^원문\s*결과\s*[·:：-]?\s*/i, '')
+    .replace(/^원문\s*[·:：-]\s*/i, '')
+    .trim() || '확인 필요';
+}
+
+function statisticalDesignSummary(design, outcomes) {
+  const methodPattern = /(?:anova|ancova|wilcoxon|mann[ -]?whitney|t[ -]?test|chi[ -]?square|fisher|regression|mixed[ -]?(?:effect|model)|generalized estimating|kruskal|friedman|검정|분산분석|회귀|혼합모형)/i;
+  const candidates = [design?.statistics, ...(outcomes || []).map(item => item.statistic)]
+    .map(value => cleanText(value, '', 180))
+    .filter(value => value && methodPattern.test(value));
+  return [...new Set(candidates)].join(' · ') || '원문 통계분석 절 확인 필요';
+}
+
+function outcomeRowsHtml(outcomes) {
+  if (!(outcomes || []).length) return '<tr><td colspan="5">확인된 결과 없음</td></tr>';
+  return outcomes.map((item, index) => {
+    const domain = cleanText(item.domain, '확인 필요', 100);
+    const startsDomain = index === 0 || cleanText(outcomes[index - 1]?.domain, '', 100) !== domain;
+    let rowSpan = 1;
+    if (startsDomain) {
+      while (index + rowSpan < outcomes.length && cleanText(outcomes[index + rowSpan]?.domain, '', 100) === domain) rowSpan += 1;
+    }
+    const domainCell = startsDomain ? `<td class="domain-cell" rowspan="${rowSpan}">${escapeHtml(domain)}</td>` : '';
+    return `<tr>${domainCell}<td><b>${escapeHtml(item.endpoint)}</b></td><td>${escapeHtml(outcomeResultText(item.result))}</td><td><b class="p-value">${escapeHtml(item.pValue || '원문 미보고')}</b></td><td>${escapeHtml(item.evidenceLocation)}</td></tr>`;
+  }).join('');
+}
+
 function legacyReportHtml(report, id, date) {
   const studies = report.studies.length ? report.studies.map((study, index) => `
     <article class="study">
@@ -1714,8 +1746,8 @@ export function reportHtml(report, id, date, visualAssets = []) {
   const design = audit.studyDesign || {};
   const groupRows = (report.groupDefinitions || []).length ? report.groupDefinitions.map(item => `
     <tr><td><b>${escapeHtml(item.reportName)}</b></td><td>${escapeHtml(item.sourceCode)}</td><td>${escapeHtml(item.description)}</td><td>${escapeHtml(item.role)}</td></tr>`).join('') : '<tr><td colspan="4">확인 필요</td></tr>';
-  const outcomeRows = (report.outcomeMatrix || []).length ? report.outcomeMatrix.map(item => `
-    <tr><td>${escapeHtml(item.domain)}</td><td><b>${escapeHtml(item.endpoint)}</b></td><td>${escapeHtml(item.result)}</td><td>${escapeHtml(item.statistic)}</td><td><b class="p-value">${escapeHtml(item.pValue || '원문 미보고')}</b></td><td>${escapeHtml(item.evidenceLocation)}</td></tr>`).join('') : '<tr><td colspan="6">확인된 결과 없음</td></tr>';
+  const outcomeRows = outcomeRowsHtml(report.outcomeMatrix || []);
+  const statisticsSummary = statisticalDesignSummary(design, report.outcomeMatrix || []);
   const safetyGroups = new Map();
   (report.safetyDatabaseSearch || []).forEach(item => {
     const group = safetyGroups.get(item.database) || { queries: new Set(), statuses: new Set(), findings: new Set() };
@@ -1760,10 +1792,11 @@ export function reportHtml(report, id, date, visualAssets = []) {
   body{font-size:9.8px;line-height:1.28}h1{font-size:24px;margin:5px 0 1px}.subtitle{font-size:9.5px}.topline{font-size:7.4px}.decision{margin:6px 0 5px;grid-template-columns:112px 1fr}.decision b,.decision div{padding:6px 8px}.metrics{gap:3px;margin-bottom:5px}.metric{min-height:38px;padding:4px 6px}.metric span,.metric small{font-size:7px}.metric b{font-size:13.5px;margin:1px 0}section{padding:6px 0}.title{margin-bottom:4px}.title h2{font-size:13px}.title span{font-size:7.5px}.lead{font-size:10.5px;margin-bottom:4px}.grid{gap:4px}.panel{padding:5px 6px}.panel h3{font-size:9.6px}p{margin:1px 0 4px}li+li{margin-top:1px}dt,dd{padding:3.5px 5px}table{font-size:8px}th,td{padding:3px 4px}th{font-size:7.4px}td small{font-size:6.8px}.outcomes{font-size:7.8px}.visual-grid{gap:5px}.result-visual{border:0;border-top:1.5px solid var(--deep);padding:5px 0 4px}.result-visual img{max-height:215mm}.result-visual figcaption{font-size:8.2px;line-height:1.3;color:#26332f}.result-visual.table figcaption{border-top:0;border-bottom:1px solid var(--line);padding:0 0 5px;margin:0 0 4px}.result-visual.figure figcaption{padding-top:5px;margin-top:4px}.visual-title b{display:inline;color:var(--deep);font-size:9px;margin-right:4px}.visual-title span{color:#26332f}.result-visual figcaption small{font-size:7.2px;margin-top:2px}.result-visual figcaption a{font-size:7.2px;margin-top:2px}.reference{padding:5px 6px;margin-top:5px}.reference h2{font-size:9.6px}.reference p{font-size:7.7px}.disclaimer{font-size:7px}@page{size:A4;margin:7mm}@media print{.visual-section{break-before:auto}.result-visual{break-inside:avoid;page-break-inside:avoid}.title{break-after:avoid}}
   .safety-table{font-size:7.5px;line-height:1.18}.safety-table th,.safety-table td{padding:2.5px 4px}.safety-table td small{font-size:6.6px}.grid.three .panel{line-height:1.2}
   :root{--ink:#26312d;--deep:#174f43;--muted:#65736d;--line:#d4dfda;--green:#287965;--green-soft:#eef5f2;--blue-soft:#eef3f6;--amber-soft:#faf3e4;--red:#9a4b45;--red-soft:#f8eeec}*{letter-spacing:0}body{font-family:Pretendard,"Noto Sans KR","Noto Sans CJK KR","Apple SD Gothic Neo","Segoe UI","Malgun Gothic",Arial,sans-serif;font-size:10px;line-height:1.38;font-weight:400;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}h1{font-size:23.5px;line-height:1.2;font-weight:700}.topline{font-size:7.5px;font-weight:600}.subtitle{font-size:9.6px;line-height:1.35}.decision b{font-size:10.2px;font-weight:700}.decision div{font-weight:400}.metric b{font-size:13.2px;font-weight:650}.metric span,.metric small{font-size:7.1px}.title h2{font-size:12.8px;line-height:1.25;font-weight:700}.title span{font-size:7.6px;font-weight:700}.lead{font-size:10.4px;line-height:1.4;font-weight:600}.panel h3{font-size:9.7px;font-weight:650}dt,th{font-weight:650}table{font-size:8.1px;line-height:1.32}th{font-size:7.6px;line-height:1.25}.outcomes{font-size:7.9px}.p-value{font-weight:650}.visual-title b{font-size:9.1px;font-weight:700}.result-visual figcaption{font-size:8.25px;line-height:1.38}.result-visual figcaption small,.result-visual figcaption a{font-size:7.35px;line-height:1.35}.reference h2{font-size:9.8px;font-weight:700}.reference p{font-size:7.9px;line-height:1.4}.disclaimer{font-size:7.1px;line-height:1.35}a{font-weight:650}
+  .outcomes th:nth-child(1){width:11%}.outcomes th:nth-child(2){width:23%}.outcomes th:nth-child(3){width:34%}.outcomes th:nth-child(4){width:22%}.outcomes th:nth-child(5){width:10%}.outcomes .domain-cell{vertical-align:middle;background:#f3f7f5;color:var(--deep);font-weight:650;border-bottom-color:#b8cac3}
   </style></head><body><main class="wrap">
   <header><div class="topline"><span>HEALTHARCHIVE · DAILY INGREDIENT REVIEW · ${escapeHtml(id)}</span><span class="date-chip">검토일 ${escapeHtml(date)}</span></div><h1>${escapeHtml(report.ingredient)}</h1><div class="subtitle"><i>${escapeHtml(report.scientificName)}</i> · ${escapeHtml(report.ingredientType)}</div><div class="decision"><b>${escapeHtml(report.verdict)}</b><div>${escapeHtml(report.keyDecision || report.summary)}</div></div><div class="metrics">${metric('기능성 근거', `${report.outcomeMatrix?.length || 0}개`, report.evidenceGrade, 'blue')}${metric('인체 직접성', `${report.humanEvidenceScore || 0}/5`, audit.sourceType || '원문 유형', 'red')}${metric('개발 준비도', `${report.developmentReadinessScore || 0}/5`, report.feasibility, 'amber')}${metric('근거 등급', report.grade || '-', `${source.pmcid || '원문 확인'}`)}</div></header>
-  <section><div class="title"><span>01</span><h2>핵심 결론 및 시험설계</h2></div><p class="lead">${escapeHtml(report.summary)}</p><div class="grid"><dl><dt>기능 방향</dt><dd>${escapeHtml(report.functionality)}</dd><dt>시험대상</dt><dd>${escapeHtml(design.subjects || '확인 필요')}</dd><dt>시험모델</dt><dd>${escapeHtml(design.model || '확인 필요')}</dd></dl><dl><dt>용량</dt><dd>${escapeHtml(design.dose || report.intakeBasis || '확인 필요')}</dd><dt>기간</dt><dd>${escapeHtml(design.duration || '확인 필요')}</dd><dt>비교군</dt><dd>${escapeHtml(design.comparators || '확인 필요')}</dd></dl></div><div class="scroll"><table class="studies"><thead><tr><th>근거 유형</th><th>설계</th><th>대상·모델</th><th>용량</th><th>기간</th></tr></thead><tbody>${studyRows}</tbody></table></div><div class="scroll"><table class="groups"><thead><tr><th>군</th><th>원문 표기</th><th>정의</th><th>역할</th></tr></thead><tbody>${groupRows}</tbody></table></div></section>
-  <section><div class="title"><span>02</span><h2>평가변수별 기능성 결과</h2></div><div class="scroll"><table class="outcomes"><thead><tr><th>영역</th><th>평가지표</th><th>확인 결과</th><th>통계법·효과량</th><th>p값</th><th>근거 위치</th></tr></thead><tbody>${outcomeRows}</tbody></table></div></section>
+  <section><div class="title"><span>01</span><h2>핵심 결론 및 시험설계</h2></div><p class="lead">${escapeHtml(report.summary)}</p><div class="grid"><dl><dt>기능 방향</dt><dd>${escapeHtml(report.functionality)}</dd><dt>시험대상</dt><dd>${escapeHtml(design.subjects || '확인 필요')}</dd><dt>시험모델</dt><dd>${escapeHtml(design.model || '확인 필요')}</dd></dl><dl><dt>용량</dt><dd>${escapeHtml(design.dose || report.intakeBasis || '확인 필요')}</dd><dt>기간</dt><dd>${escapeHtml(design.duration || '확인 필요')}</dd><dt>비교군</dt><dd>${escapeHtml(design.comparators || '확인 필요')}</dd><dt>통계분석</dt><dd>${escapeHtml(statisticsSummary)}</dd></dl></div><div class="scroll"><table class="studies"><thead><tr><th>근거 유형</th><th>설계</th><th>대상·모델</th><th>용량</th><th>기간</th></tr></thead><tbody>${studyRows}</tbody></table></div><div class="scroll"><table class="groups"><thead><tr><th>군</th><th>원문 표기</th><th>정의</th><th>역할</th></tr></thead><tbody>${groupRows}</tbody></table></div></section>
+  <section><div class="title"><span>02</span><h2>평가변수별 기능성 결과</h2></div><div class="scroll"><table class="outcomes"><thead><tr><th>영역</th><th>평가지표</th><th>결과값</th><th>p값</th><th>근거 위치</th></tr></thead><tbody>${outcomeRows}</tbody></table></div></section>
   <section class="visual-section"><div class="title"><span>03</span><h2>주요 결과 Figure·Table</h2></div><div class="visual-grid">${resultVisualsHtml}</div></section>
   <section><div class="title"><span>04</span><h2>동일 시험원료 전임상 근거</h2></div><div class="scroll"><table class="related-table"><thead><tr><th>시험원료·제조</th><th>기능성·실험모델</th><th>대조군 대비 결과</th><th>Reference</th></tr></thead><tbody>${preclinicalRows}</tbody></table></div></section>
   <section><div class="title"><span>05</span><h2>유사원료 추가자료</h2></div><div class="scroll"><table class="related-table"><thead><tr><th>원료·추출방법</th><th>기능성·실험모델</th><th>대조군 대비 결과</th><th>Reference</th></tr></thead><tbody>${similarRows}</tbody></table></div><div class="notice">유사원료 자료는 원재료 공통성과 개발 방향을 검토하기 위한 보조근거이며, 제조·추출방법이 다른 신청원료의 직접 기능성 근거로 대체할 수 없다.</div></section>
@@ -1902,7 +1935,7 @@ async function publishReport(env, report, pdfBuffer, reportDate = seoulDate()) {
     sourceTitle: report.source.title,
     sourcePmcid: report.source.pmcid,
     sourceDoi: report.source.doi,
-    reportVersion: 18,
+    reportVersion: 19,
     visualEvidenceVersion: VISUAL_EVIDENCE_VERSION,
     statisticsEvidenceVersion: STATISTICS_EVIDENCE_VERSION,
     resultVisualCount: report.resultVisuals.length,
