@@ -1,7 +1,7 @@
 {
   "ingredients": {
-    "lastRun": "2026-08-20 18:17:41",
-    "lastSuccess": "2026-08-20 18:17:41",
+    "lastRun": "2026-08-21 10:59:40",
+    "lastSuccess": "2026-08-21 10:59:40",
     "timezone": "Asia/Seoul",
     "count": 844,
     "newCount": 0,
@@ -9,8 +9,8 @@
     "error": null
   },
   "minutes": {
-    "lastRun": "2026-08-20 18:17:44",
-    "lastSuccess": "2026-08-20 18:17:44",
+    "lastRun": "2026-08-21 10:59:42",
+    "lastSuccess": "2026-08-21 10:59:42",
     "timezone": "Asia/Seoul",
     "count": 37,
     "newCount": 0,
@@ -18,26 +18,26 @@
     "error": null
   },
   "products": {
-    "lastRun": "2026-08-20 18:19:07",
-    "lastSuccess": "2026-08-20 18:19:07",
+    "lastRun": "2026-08-21 11:00:44",
+    "lastSuccess": "2026-08-21 11:00:44",
     "timezone": "Asia/Seoul",
-    "count": 1324,
-    "newCount": 29,
+    "count": 1328,
+    "newCount": 4,
     "success": true,
     "error": null
   },
   "news": {
-    "lastRun": "2026-08-20 22:16:27",
-    "lastSuccess": "2026-08-20 22:16:27",
+    "lastRun": "2026-08-21 11:00:52",
+    "lastSuccess": "2026-08-21 11:00:52",
     "timezone": "Asia/Seoul",
-    "count": 25,
-    "newCount": 0,
+    "count": 26,
+    "newCount": 1,
     "success": true,
     "error": null
   },
   "news_mfds": {
-    "lastRun": "2026-08-20 22:16:38",
-    "lastSuccess": "2026-08-20 22:16:38",
+    "lastRun": "2026-08-21 11:01:04",
+    "lastSuccess": "2026-08-21 11:01:04",
     "timezone": "Asia/Seoul",
     "count": 25,
     "newCount": 0,
@@ -45,35 +45,35 @@
     "error": null
   },
   "news_nutraingredients": {
-    "lastRun": "2026-08-20 22:16:39",
-    "lastSuccess": "2026-08-20 22:16:39",
+    "lastRun": "2026-08-21 11:01:11",
+    "lastSuccess": "2026-08-21 11:01:11",
     "timezone": "Asia/Seoul",
-    "count": 244,
-    "newCount": 0,
+    "count": 249,
+    "newCount": 5,
     "success": true,
     "error": null
   },
   "news_supplysidesj": {
-    "lastRun": "2026-08-20 22:16:40",
-    "lastSuccess": "2026-08-20 22:16:40",
+    "lastRun": "2026-08-21 11:01:13",
+    "lastSuccess": "2026-08-21 11:01:13",
     "timezone": "Asia/Seoul",
-    "count": 89,
-    "newCount": 0,
+    "count": 90,
+    "newCount": 1,
     "success": true,
     "error": null
   },
   "news_nutritioninsight": {
-    "lastRun": "2026-08-20 22:16:41",
-    "lastSuccess": "2026-08-20 22:16:41",
+    "lastRun": "2026-08-21 11:01:19",
+    "lastSuccess": "2026-08-21 11:01:19",
     "timezone": "Asia/Seoul",
-    "count": 198,
-    "newCount": 0,
+    "count": 202,
+    "newCount": 4,
     "success": true,
     "error": null
   },
   "temp_approval": {
-    "lastRun": "2026-08-20 18:19:12",
-    "lastSuccess": "2026-08-20 18:19:12",
+    "lastRun": "2026-08-21 11:00:50",
+    "lastSuccess": "2026-08-21 11:00:50",
     "timezone": "Asia/Seoul",
     "count": 36,
     "newCount": 0,
@@ -81,26 +81,26 @@
     "error": null
   },
   "news_sciencedaily": {
-    "lastRun": "2026-08-20 18:19:28",
-    "lastSuccess": "2026-08-20 18:19:28",
+    "lastRun": "2026-08-21 11:01:21",
+    "lastSuccess": "2026-08-21 11:01:21",
     "timezone": "Asia/Seoul",
-    "count": 60,
-    "newCount": 0,
+    "count": 61,
+    "newCount": 1,
     "success": true,
     "error": null
   },
   "news_yakup": {
-    "lastRun": "2026-08-20 18:19:35",
-    "lastSuccess": "2026-08-20 18:19:35",
+    "lastRun": "2026-08-21 11:01:26",
+    "lastSuccess": "2026-08-21 11:01:26",
     "timezone": "Asia/Seoul",
-    "count": 87,
-    "newCount": 2,
+    "count": 88,
+    "newCount": 1,
     "success": true,
     "error": null
   },
   "papers": {
-    "lastRun": "2026-08-20 18:19:43",
-    "lastSuccess": "2026-08-20 18:19:43",
+    "lastRun": "2026-08-21 11:01:30",
+    "lastSuccess": "2026-08-21 11:01:30",
     "timezone": "Asia/Seoul",
     "count": 0,
     "newCount": 0,
@@ -108,8 +108,8 @@
     "error": null
   },
   "news_kfri": {
-    "lastRun": "2026-08-20 22:16:34",
-    "lastSuccess": "2026-08-20 22:16:34",
+    "lastRun": "2026-08-21 11:01:01",
+    "lastSuccess": "2026-08-21 11:01:01",
     "timezone": "Asia/Seoul",
     "count": 81,
     "newCount": 0,
