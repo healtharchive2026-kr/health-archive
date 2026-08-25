@@ -21,6 +21,7 @@ const INGREDIENT_SIGNAL = /\b(?:extract|powder|fraction|oil|juice|supplement|nut
 const INTERVENTION_SIGNAL = /\b(?:randomi[sz]ed|clinical trial|controlled trial|placebo|intervention|supplement(?:ation|ed)?|administer(?:ed|ing)?|oral(?:ly)?|ingest(?:ed|ion)?|dose|dosing|dietary|fed|feeding|gavage|efficacy|ameliorat(?:ed|es)|attenuat(?:ed|es)|improv(?:ed|es)|reduc(?:ed|es)|increas(?:ed|es))\b|인체적용|임상시험|동물시험|경구|섭취|투여|용량|대조군|시험군/i;
 const NON_INGREDIENT_TITLE = /\b(?:mobile application|smartphone|software|digital intervention|web[- ]based|app[- ]based|machine learning|artificial intelligence|remote sensing|plant survey|habitat(?: type)?|species identification|biodiversity|ecolog(?:y|ical)|agronom(?:y|ic)|crop yield|soil survey|questionnaire validation|survey tool|medical device)\b|모바일\s*앱|애플리케이션|소프트웨어|서식지|생태조사|종\s*식별|원격탐사/i;
 const NON_INGREDIENT_IDENTITY = /\b(?:application|app|software|device|platform|algorithm|questionnaire|survey|program|website|sensor)\b|애플리케이션|응용프로그램|소프트웨어|기기|플랫폼|알고리즘|설문|조사도구/i;
+const NON_INGREDIENT_MATERIAL = /\b(?:HPLC[- ]grade|analytical[- ]grade|laboratory reagent|assay reagent|chromatography solvent|mobile phase|acetonitrile|dimethyl sulfoxide|DMSO|formic acid|standard solution|assay kit)\b|분석용\s*(?:용매|시약)|실험실\s*시약|크로마토그래피\s*용매|이동상|표준용액|분석키트/i;
 const REVIEW_ARTICLE_SIGNAL = /\b(?:systematic review|meta-analysis|scoping review|narrative review|review protocol)\b|체계적\s*문헌고찰|메타분석|범위\s*문헌고찰/i;
 const UNAVAILABLE_INGREDIENT = /^(?:확인 필요|원료명 확인 필요|별도 조사 필요|해당 없음|없음|미확인|not available|not applicable)$/i;
 const BLOCKED_PUBLIC_TERMS = [
@@ -293,7 +294,10 @@ export function reviewCandidateMetadata(item) {
 
 function isConcreteIngredient(value) {
   const text = cleanText(value, '', 500);
-  return text.length >= 3 && !UNAVAILABLE_INGREDIENT.test(text) && !NON_INGREDIENT_IDENTITY.test(text);
+  return text.length >= 3
+    && !UNAVAILABLE_INGREDIENT.test(text)
+    && !NON_INGREDIENT_IDENTITY.test(text)
+    && !NON_INGREDIENT_MATERIAL.test(text);
 }
 
 export function reviewExtractedEvidence(candidate, evidence) {
@@ -309,6 +313,7 @@ export function reviewExtractedEvidence(candidate, evidence) {
   }
   if (!['인체적용시험', '동물시험'].includes(evidence?.sourceType)) reasons.push('인체적용시험 또는 동물시험이 아님');
   if (!isConcreteIngredient(evidence?.testArticle) || !isConcreteIngredient(evidence?.rawMaterial)) reasons.push('시험원료와 원재료 정체성 불충분');
+  if (NON_INGREDIENT_MATERIAL.test(cleanText(evidence?.rawMaterial, '', 600))) reasons.push('원재료 항목에 분석용 용매·시약이 기재됨');
   if (!INGREDIENT_SIGNAL.test(identity)) reasons.push('원문에서 추출물·보충제·천연물·균주 등 원료 형태 미확인');
   if (!INTERVENTION_SIGNAL.test(`${identity} ${design.dose || ''} ${design.groups || ''} ${design.comparators || ''}`)) reasons.push('원문에서 섭취·투여·용량·대조군 정보 미확인');
   if ((evidence?.groupDefinitions?.length || 0) < 2) reasons.push('비교 가능한 시험군 정의 부족');
@@ -331,6 +336,7 @@ export function reviewFinalReport(candidate, report) {
   if (!evidenceReview.passed) reasons.push(...evidenceReview.reasons);
   if (NON_INGREDIENT_TITLE.test(cleanText(candidate?.title, '', 600)) || NON_INGREDIENT_IDENTITY.test(identity)) reasons.push('최종 보고서 원료명이 비식품 대상에 해당');
   if (!isConcreteIngredient(report?.ingredient) || !isConcreteIngredient(report?.rawMaterial)) reasons.push('최종 보고서 원료·원재료 명칭 불충분');
+  if (NON_INGREDIENT_MATERIAL.test(cleanText(report?.rawMaterial, '', 600))) reasons.push('최종 보고서 원재료가 분석용 용매·시약으로 오인됨');
   if (!INGREDIENT_SIGNAL.test(identity)) reasons.push('최종 보고서에 건강기능식품 원료 형태 미확인');
   if (!functionality || UNAVAILABLE_INGREDIENT.test(functionality) || /별도\s*조사|관련\s*없음|기능성\s*미확인/i.test(functionality)) reasons.push('구체적 기능성 결과 미확인');
   if ((report?.outcomeMatrix?.length || 0) < 2) reasons.push('최종 기능성 결과표 부족');
@@ -1525,8 +1531,11 @@ function evidencePrompt(candidate, sourceText) {
 
 추출 규칙:
 - 시험물질, 제조·처리 조건, 시험대상, 모델, 군 구성, 용량, 기간, 비교군, 무작위배정, 눈가림, 통계, 윤리승인을 구분한다.
+- testArticle에는 시험대상에게 실제 섭취·경구투여한 완제품 또는 시험원료만 기록한다.
+- rawMaterial에는 시험원료의 식품·생물학적 기원 원재료(식물명·사용부위·미생물 균주·식품소재)만 기록한다. HPLC·LC-MS 분석용 용매, 시약, 표준물질, 이동상, 검체 전처리 물질은 절대 원재료로 기록하지 않으며 기원이 원문에 없으면 "확인 필요"로 기록한다.
+- manufacturing에는 섭취 시험원료의 실제 제조공정만 기록한다. 분석법의 검체 전처리·크로마토그래피 조건은 제외한다.
 - studyDesign.statistics에는 연구 전체에서 사용한 통계모형·검정법만 한 번 기록하고 개별 p값을 나열하지 않는다.
-- extractionMethod에는 추출용매, 농도, 온도, 시간, 분획, 발효·건조 등 원문에서 확인되는 제조 차별점을 기록한다.
+- extractionMethod에는 섭취 시험원료 제조에 사용된 추출용매, 농도, 온도, 시간, 분획, 발효·건조만 기록한다. 성분분석용 HPLC 이동상과 분석용 용매는 제외한다.
 - ingredientSearchTerms에는 동일 시험원료의 전임상 검색에 필요한 정확 원료명·균주명·추출물명을 최대 4개 기록한다.
 - rawMaterialSearchTerms에는 동일 원재료의 유사 추출물 검색에 필요한 학명, 영문명, 사용부위를 최대 4개 기록한다.
 - safetySearchTerms에는 안전성 DB에서 검색할 신청원료명, 학명·균주명, 원재료, 기능(지표)성분 및 관련물질을 서로 중복되지 않게 최대 5개 기록한다.

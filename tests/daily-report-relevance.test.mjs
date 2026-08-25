@@ -75,6 +75,18 @@ const reviewArticleCandidate = {
   publicationTypes: ['Review'],
 };
 
+const reagentEvidence = {
+  ...extractEvidence,
+  rawMaterial: 'HPLC-grade solvents including acetonitrile and DMSO',
+  manufacturing: 'chromatography mobile phase preparation',
+};
+
+const reagentReport = {
+  ...extractReport,
+  rawMaterial: 'HPLC-grade solvents',
+  evidenceAudit: reagentEvidence,
+};
+
 assert.equal(reviewCandidateMetadata(mobileSurveyCandidate).passed, false, '1차 검토에서 모바일 앱 논문을 차단해야 함');
 assert.equal(reviewExtractedEvidence(mobileSurveyCandidate, mobileSurveyEvidence).passed, false, '2차 검토에서 비식품 시험대상을 차단해야 함');
 assert.equal(reviewFinalReport(mobileSurveyCandidate, mobileSurveyReport).passed, false, '3차 검토에서 비원료 보고서를 차단해야 함');
@@ -86,5 +98,7 @@ assert.equal(reviewFinalReport(extractCandidate, extractReport).passed, true, '�
 assert.equal(runTripleIngredientReview(extractCandidate, extractReport).passed, true, '정상 원료 연구는 세 단계를 모두 통과해야 함');
 assert.equal(reviewCandidateMetadata(probioticCandidate).passed, true, '프로바이오틱스 인체적용시험도 후보로 통과해야 함');
 assert.equal(reviewCandidateMetadata(reviewArticleCandidate).passed, false, '문헌고찰은 원료 분석 후보에서 제외해야 함');
+assert.equal(reviewExtractedEvidence(extractCandidate, reagentEvidence).passed, false, '분석용 용매를 원재료로 오인한 증거는 차단해야 함');
+assert.equal(reviewFinalReport(extractCandidate, reagentReport).passed, false, '분석용 시약이 원재료인 최종 보고서는 차단해야 함');
 
-console.log('daily report relevance gates: 10 assertions passed');
+console.log('daily report relevance gates: 12 assertions passed');
