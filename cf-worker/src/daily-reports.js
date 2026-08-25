@@ -12,7 +12,17 @@ const VISUAL_EVIDENCE_VERSION = 10;
 const STATISTICS_EVIDENCE_VERSION = 1;
 const MAX_RESULT_VISUALS = 4;
 const MAX_VISUAL_BYTES = 8 * 1024 * 1024;
-const DISCOVERY_TERM = '(TITLE_ABS:"functional food" OR TITLE_ABS:nutraceutical OR TITLE_ABS:probiotic OR TITLE_ABS:botanical OR TITLE_ABS:"plant extract" OR TITLE_ABS:phytochemical)';
+const MAX_ANALYZED_CANDIDATES = 5;
+const DISCOVERY_INGREDIENT_TERM = '(TITLE_ABS:"functional food" OR TITLE_ABS:"functional ingredient" OR TITLE_ABS:"dietary supplement" OR TITLE_ABS:nutraceutical OR TITLE_ABS:probiotic OR TITLE_ABS:prebiotic OR TITLE_ABS:postbiotic OR TITLE_ABS:"natural product" OR TITLE_ABS:"plant extract" OR TITLE_ABS:"herbal extract" OR TITLE_ABS:phytochemical OR TITLE_ABS:polyphenol OR TITLE_ABS:flavonoid OR TITLE_ABS:polysaccharide OR TITLE_ABS:"bioactive peptide")';
+const DISCOVERY_INTERVENTION_TERM = '(TITLE_ABS:"clinical trial" OR TITLE_ABS:randomized OR TITLE_ABS:placebo OR TITLE_ABS:intervention OR TITLE_ABS:supplementation OR TITLE_ABS:administered OR TITLE_ABS:oral OR TITLE_ABS:efficacy OR TITLE_ABS:ameliorated OR TITLE_ABS:attenuated OR TITLE_ABS:improved)';
+const DISCOVERY_EXCLUSION_TERM = 'NOT (TITLE_ABS:"mobile application" OR TITLE_ABS:smartphone OR TITLE_ABS:software OR TITLE_ABS:"digital intervention" OR TITLE_ABS:"plant survey" OR TITLE_ABS:habitat OR TITLE_ABS:biodiversity OR TITLE_ABS:ecology OR TITLE_ABS:"remote sensing" OR TITLE_ABS:agronomy OR TITLE_ABS:"crop yield" OR TITLE:"systematic review" OR TITLE:"meta-analysis" OR TITLE:"scoping review" OR TITLE:"review protocol")';
+const DISCOVERY_TERM = `(${DISCOVERY_INGREDIENT_TERM} AND ${DISCOVERY_INTERVENTION_TERM}) ${DISCOVERY_EXCLUSION_TERM}`;
+const INGREDIENT_SIGNAL = /\b(?:extract|powder|fraction|oil|juice|supplement|nutraceutical|probiotic|prebiotic|postbiotic|synbiotic|ferment(?:ed|ation)?|polyphenol|flavonoid|polysaccharide|peptide|phytochemical|botanical|herbal|root|rhizome|seed|leaf|fruit|berry|mushroom|yeast|lactobacillus|bifidobacterium|saccharomyces|bacillus)\b|추출물|분말|분획|오일|주스|보충제|프로바이오틱|프리바이오틱|포스트바이오틱|발효|폴리페놀|플라보노이드|다당류|펩타이드|식물성|천연물|원료|균주/i;
+const INTERVENTION_SIGNAL = /\b(?:randomi[sz]ed|clinical trial|controlled trial|placebo|intervention|supplement(?:ation|ed)?|administer(?:ed|ing)?|oral(?:ly)?|ingest(?:ed|ion)?|dose|dosing|dietary|fed|feeding|gavage|efficacy|ameliorat(?:ed|es)|attenuat(?:ed|es)|improv(?:ed|es)|reduc(?:ed|es)|increas(?:ed|es))\b|인체적용|임상시험|동물시험|경구|섭취|투여|용량|대조군|시험군/i;
+const NON_INGREDIENT_TITLE = /\b(?:mobile application|smartphone|software|digital intervention|web[- ]based|app[- ]based|machine learning|artificial intelligence|remote sensing|plant survey|habitat(?: type)?|species identification|biodiversity|ecolog(?:y|ical)|agronom(?:y|ic)|crop yield|soil survey|questionnaire validation|survey tool|medical device)\b|모바일\s*앱|애플리케이션|소프트웨어|서식지|생태조사|종\s*식별|원격탐사/i;
+const NON_INGREDIENT_IDENTITY = /\b(?:application|app|software|device|platform|algorithm|questionnaire|survey|program|website|sensor)\b|애플리케이션|응용프로그램|소프트웨어|기기|플랫폼|알고리즘|설문|조사도구/i;
+const REVIEW_ARTICLE_SIGNAL = /\b(?:systematic review|meta-analysis|scoping review|narrative review|review protocol)\b|체계적\s*문헌고찰|메타분석|범위\s*문헌고찰/i;
+const UNAVAILABLE_INGREDIENT = /^(?:확인 필요|원료명 확인 필요|별도 조사 필요|해당 없음|없음|미확인|not available|not applicable)$/i;
 const BLOCKED_PUBLIC_TERMS = [
   '대외비', '사내한', '내부용', '내부 검토', 'confidential', 'do not distribute',
   '대원제약', '대원', 'daewon pharmaceutical',
@@ -247,10 +257,14 @@ function decodeTitle(value) {
 
 function ingredientCandidateScore(item) {
   const title = decodeTitle(item.title).toLowerCase();
-  const types = (item.pubTypeList?.pubType || []).join(' ').toLowerCase();
+  const abstract = cleanText(item.abstractText, '', 5000).toLowerCase();
+  const combined = `${title} ${abstract}`;
+  const types = (item.pubTypeList?.pubType || item.publicationTypes || []).join(' ').toLowerCase();
   let score = 0;
   if (/randomi[sz]ed|clinical trial|controlled trial/.test(`${title} ${types}`)) score += 10;
-  if (/extract|ingredient|postbiotic|ferment|fraction|supplement|polyphenol|peptide|polysaccharide|flavonoid|oil\b/.test(title)) score += 5;
+  if (INGREDIENT_SIGNAL.test(title)) score += 7;
+  else if (INGREDIENT_SIGNAL.test(abstract)) score += 4;
+  if (INTERVENTION_SIGNAL.test(combined)) score += 5;
   if (/probiotic/.test(title)) score += 2;
   if (/randomized controlled trial|clinical trial/.test(types)) score += 2;
   if (/research-article/.test(types)) score += 2;
@@ -258,7 +272,78 @@ function ingredientCandidateScore(item) {
   if (/review|meta-analysis|systematic review|scoping review/.test(types)) score -= 3;
   if (/phytochemical profiling|bioactive profiling|lc-ms|molecular docking|antimicrobial activity|in vitro/.test(title)) score -= 8;
   if (/\bindex\b|relationship|association|contamination|remediation|oncology|cancer|tumou?r|carcinoma|prostate|nematicid|antifungal|antibacterial/.test(title)) score -= 6;
+  if (NON_INGREDIENT_TITLE.test(title)) score -= 40;
   return score;
+}
+
+export function reviewCandidateMetadata(item) {
+  const title = decodeTitle(item?.title).toLowerCase();
+  const abstract = cleanText(item?.abstractText, '', 8000).toLowerCase();
+  const combined = `${title} ${abstract}`;
+  const types = (item?.pubTypeList?.pubType || item?.publicationTypes || []).join(' ').toLowerCase();
+  const reasons = [];
+  if (NON_INGREDIENT_TITLE.test(title)) reasons.push('제목이 앱·소프트웨어·생태·서식지 연구에 해당');
+  if (REVIEW_ARTICLE_SIGNAL.test(title) || /review|meta-analysis|systematic review|scoping review/.test(types)) reasons.push('원저 인체적용시험·동물시험이 아닌 문헌고찰');
+  if (!INGREDIENT_SIGNAL.test(combined)) reasons.push('제목·초록에서 섭취 가능한 원료 정체성 미확인');
+  if (!INTERVENTION_SIGNAL.test(combined)) reasons.push('제목·초록에서 섭취·투여 중재 연구 미확인');
+  const score = ingredientCandidateScore(item || {});
+  if (score < 7) reasons.push(`후보 적합도 점수 미달(${score})`);
+  return { stage: '1차 메타데이터 검토', passed: reasons.length === 0, score, reasons };
+}
+
+function isConcreteIngredient(value) {
+  const text = cleanText(value, '', 500);
+  return text.length >= 3 && !UNAVAILABLE_INGREDIENT.test(text) && !NON_INGREDIENT_IDENTITY.test(text);
+}
+
+export function reviewExtractedEvidence(candidate, evidence) {
+  const identity = [
+    evidence?.testArticle, evidence?.rawMaterial, evidence?.manufacturing, evidence?.extractionMethod,
+    ...(evidence?.ingredientSearchTerms || []), ...(evidence?.rawMaterialSearchTerms || []),
+  ].map(value => cleanText(value, '', 600)).filter(Boolean).join(' ');
+  const title = cleanText(candidate?.title, '', 600);
+  const design = evidence?.studyDesign || {};
+  const reasons = [];
+  if (NON_INGREDIENT_TITLE.test(title) || NON_INGREDIENT_IDENTITY.test(`${evidence?.testArticle || ''} ${evidence?.rawMaterial || ''}`)) {
+    reasons.push('원문 시험대상이 식품·건강기능식품 원료가 아닌 앱·기기·조사도구');
+  }
+  if (!['인체적용시험', '동물시험'].includes(evidence?.sourceType)) reasons.push('인체적용시험 또는 동물시험이 아님');
+  if (!isConcreteIngredient(evidence?.testArticle) || !isConcreteIngredient(evidence?.rawMaterial)) reasons.push('시험원료와 원재료 정체성 불충분');
+  if (!INGREDIENT_SIGNAL.test(identity)) reasons.push('원문에서 추출물·보충제·천연물·균주 등 원료 형태 미확인');
+  if (!INTERVENTION_SIGNAL.test(`${identity} ${design.dose || ''} ${design.groups || ''} ${design.comparators || ''}`)) reasons.push('원문에서 섭취·투여·용량·대조군 정보 미확인');
+  if ((evidence?.groupDefinitions?.length || 0) < 2) reasons.push('비교 가능한 시험군 정의 부족');
+  if ((evidence?.outcomeMatrix?.length || 0) < 2) reasons.push('기능성 평가결과 부족');
+  return { stage: '2차 원문 PDF 검토', passed: reasons.length === 0, reasons };
+}
+
+export function reviewFinalReport(candidate, report) {
+  const evidenceReview = reviewExtractedEvidence(candidate, report?.evidenceAudit || {});
+  const identity = [
+    report?.ingredient,
+    report?.rawMaterial,
+    report?.ingredientType,
+    report?.evidenceAudit?.testArticle,
+    report?.evidenceAudit?.manufacturing,
+    report?.evidenceAudit?.extractionMethod,
+  ].map(value => cleanText(value, '', 600)).filter(Boolean).join(' ');
+  const functionality = cleanText(report?.functionality, '', 300);
+  const reasons = [];
+  if (!evidenceReview.passed) reasons.push(...evidenceReview.reasons);
+  if (NON_INGREDIENT_TITLE.test(cleanText(candidate?.title, '', 600)) || NON_INGREDIENT_IDENTITY.test(identity)) reasons.push('최종 보고서 원료명이 비식품 대상에 해당');
+  if (!isConcreteIngredient(report?.ingredient) || !isConcreteIngredient(report?.rawMaterial)) reasons.push('최종 보고서 원료·원재료 명칭 불충분');
+  if (!INGREDIENT_SIGNAL.test(identity)) reasons.push('최종 보고서에 건강기능식품 원료 형태 미확인');
+  if (!functionality || UNAVAILABLE_INGREDIENT.test(functionality) || /별도\s*조사|관련\s*없음|기능성\s*미확인/i.test(functionality)) reasons.push('구체적 기능성 결과 미확인');
+  if ((report?.outcomeMatrix?.length || 0) < 2) reasons.push('최종 기능성 결과표 부족');
+  return { stage: '3차 발간 전 검토', passed: reasons.length === 0, reasons: [...new Set(reasons)] };
+}
+
+export function runTripleIngredientReview(candidate, report) {
+  const reviews = [
+    reviewCandidateMetadata(candidate || {}),
+    reviewExtractedEvidence(candidate || {}, report?.evidenceAudit || {}),
+    reviewFinalReport(candidate || {}, report || {}),
+  ];
+  return { passed: reviews.every(review => review.passed), reviews };
 }
 
 function isPublishableReport(report) {
@@ -270,11 +355,14 @@ function isPublishableReport(report) {
   const repeatedActions = new Set((report.developmentActions || []).map(item => cleanText(item).toLowerCase())).size;
   const studyType = report.evidenceAudit?.sourceType;
   const design = report.evidenceAudit?.studyDesign || {};
-  return ['인체적용시험', '동물시험'].includes(studyType)
+  const relevanceReview = runTripleIngredientReview(report.source || {}, report);
+  return relevanceReview.passed
+    && ['인체적용시험', '동물시험'].includes(studyType)
     && !/^(없음|해당 없음)$/i.test(cleanText(design.subjects, '없음'))
     && !/^(없음|해당 없음)$/i.test(cleanText(design.model, '없음'))
     && !unavailable(report.ingredient)
     && !unavailable(report.functionality)
+    && !/별도\s*조사|관련\s*없음|기능성\s*미확인/i.test(report.functionality)
     && hasKorean(report.functionality)
     && !genericFunctionality.test(report.functionality)
     && !unavailable(report.summary)
@@ -463,21 +551,25 @@ async function discoverCandidates(targetPmcid = '') {
   const ranked = (payload?.resultList?.result || []).map(item => {
     const links = item.fullTextUrlList?.fullTextUrl || [];
     const pdfUrl = links.find(link => link.documentStyle === 'pdf' && link.availabilityCode === 'OA')?.url || '';
-    return {
+    const candidate = {
       uid: item.id || item.pmcid,
       pmcid: item.pmcid || '',
       doi: item.doi || '',
       authors: cleanText(item.authorString, '저자 정보 원문 참조', 500),
       pdfUrl,
       title: cleanText(decodeTitle(item.title), '제목 확인 필요', 500),
+      abstractText: cleanText(item.abstractText, '', 8000),
       journal: cleanText(item.journalTitle, '저널 확인 필요', 200),
       pubDate: cleanText(item.firstPublicationDate, '발행일 확인 필요', 60),
       volume: cleanText(item.journalInfo?.volume, '', 40),
       issue: cleanText(item.journalInfo?.issue, '', 40),
       pages: cleanText(item.pageInfo, '', 60),
+      publicationTypes: item.pubTypeList?.pubType || [],
       candidateScore: ingredientCandidateScore(item),
     };
-  }).filter(item => item.pmcid && item.pdfUrl && (targetPmcid || item.candidateScore >= 2))
+    candidate.metadataReview = reviewCandidateMetadata(candidate);
+    return candidate;
+  }).filter(item => item.pmcid && item.pdfUrl && item.metadataReview.passed)
     .sort((a, b) => b.candidateScore - a.candidateScore || b.pubDate.localeCompare(a.pubDate));
   return [...new Map(ranked.map(item => [item.pmcid, item])).values()];
 }
@@ -2051,6 +2143,16 @@ async function analyzePdf(env, candidate, pdfBuffer, onStage = async () => {}) {
     temperature: 0,
   }, EVIDENCE_SCHEMA, '원문 증거 추출');
   const evidence = normalizeEvidence(evidencePayload);
+  const evidenceReview = reviewExtractedEvidence(candidate, evidence);
+  if (!evidenceReview.passed) {
+    const error = new Error(`2차 원문 적합성 검토 실패: ${evidenceReview.reasons.join(' · ')}`);
+    error.name = 'IngredientRelevanceError';
+    error.relevanceReview = {
+      metadata: candidate.metadataReview || reviewCandidateMetadata(candidate),
+      evidence: evidenceReview,
+    };
+    throw error;
+  }
   await onStage('safety-db');
   evidence.safetyDatabaseSearch = await searchSafetyDatabases(evidence.safetySearchTerms);
   await onStage('related-literature');
@@ -2174,6 +2276,21 @@ async function setStatus(env, status, detail = {}) {
   });
 }
 
+async function recordRejectedCandidate(env, manifest, rejectedPmcids, reportDate, candidate, reason, detail = {}) {
+  rejectedPmcids.add(candidate.pmcid);
+  await writeJsonObject(env.PRIVATE_DATA, `daily-reports/rejections/${reportDate}-${candidate.pmcid}.json`, {
+    rejectedAt: new Date().toISOString(),
+    reason,
+    candidate,
+    ...detail,
+  });
+  await writeJsonObject(env.PRIVATE_DATA, MANIFEST_KEY, {
+    ...manifest,
+    updatedAt: new Date().toISOString(),
+    rejectedPmcids: [...rejectedPmcids],
+  });
+}
+
 export async function runDailyReportAgent(env, options = {}) {
   if (!env.AI || !env.BROWSER || !env.PRIVATE_DATA) throw new Error('AI, Browser Run 또는 R2 바인딩이 없습니다.');
   const previous = await readJsonObject(env.PRIVATE_DATA, STATUS_KEY, {});
@@ -2241,27 +2358,38 @@ export async function runDailyReportAgent(env, options = {}) {
       await setStatus(env, 'running', { stage: 'source-pdf', candidate: candidate.pmcid });
       const source = await fetchOriginalPdf(candidate);
       if (!source) continue;
-      if (analyzed >= 3) break;
+      if (analyzed >= MAX_ANALYZED_CANDIDATES) break;
       analyzed += 1;
       await setStatus(env, 'running', { stage: 'ai-review', candidate: candidate.pmcid });
-      const report = await withTimeout(analyzePdf(env, candidate, source.buffer, stage => (
-        setStatus(env, 'running', { stage, candidate: candidate.pmcid })
-      )), 'AI 원문 검토');
-      if (!isPublishableReport(report)) {
+      let report;
+      try {
+        report = await withTimeout(analyzePdf(env, candidate, source.buffer, stage => (
+          setStatus(env, 'running', { stage, candidate: candidate.pmcid })
+        )), 'AI 원문 검토');
+      } catch (error) {
+        if (error?.name !== 'IngredientRelevanceError') throw error;
         rejected.push(candidate.pmcid);
-        rejectedPmcids.add(candidate.pmcid);
-        await writeJsonObject(env.PRIVATE_DATA, `daily-reports/rejections/${reportDate}-${candidate.pmcid}.json`, {
-          rejectedAt: new Date().toISOString(),
-          reason: '원료명 또는 기능성 근거 불충분',
-          report,
-        });
-        await writeJsonObject(env.PRIVATE_DATA, MANIFEST_KEY, {
-          ...manifest,
-          updatedAt: new Date().toISOString(),
-          rejectedPmcids: [...rejectedPmcids],
-        });
-        await setStatus(env, 'running', { stage: 'quality-gate', candidate: candidate.pmcid, message: '원료명 또는 기능성 근거 불충분' });
-        break;
+        await recordRejectedCandidate(
+          env, manifest, rejectedPmcids, reportDate, candidate,
+          cleanText(error.message, '2차 원문 적합성 검토 실패', 1000),
+          { relevanceReview: error.relevanceReview },
+        );
+        await setStatus(env, 'running', { stage: 'evidence-relevance-gate', candidate: candidate.pmcid, message: error.message });
+        continue;
+      }
+      const relevanceReview = runTripleIngredientReview(candidate, report);
+      report.relevanceReview = relevanceReview;
+      if (!relevanceReview.passed || !isPublishableReport(report)) {
+        rejected.push(candidate.pmcid);
+        const failedReviews = relevanceReview.reviews
+          .filter(review => !review.passed)
+          .flatMap(review => review.reasons.map(reason => `${review.stage}: ${reason}`));
+        const reason = failedReviews.length
+          ? failedReviews.join(' · ')
+          : '발간 품질 기준 미충족';
+        await recordRejectedCandidate(env, manifest, rejectedPmcids, reportDate, candidate, reason, { report, relevanceReview });
+        await setStatus(env, 'running', { stage: 'final-relevance-gate', candidate: candidate.pmcid, message: reason });
+        continue;
       }
       await setStatus(env, 'running', { stage: 'html-publish', candidate: candidate.pmcid });
       const summary = await withTimeout(publishReport(env, report, source.buffer, reportDate), '상세 HTML 보고서 발간');
