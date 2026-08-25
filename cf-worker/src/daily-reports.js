@@ -23,7 +23,11 @@ const INTERVENTION_SIGNAL = /\b(?:randomi[sz]ed|clinical trial|controlled trial|
 const NON_INGREDIENT_TITLE = /\b(?:mobile application|smartphone|software|digital intervention|web[- ]based|app[- ]based|machine learning|artificial intelligence|remote sensing|plant survey|habitat(?: type)?|species identification|biodiversity|ecolog(?:y|ical)|agronom(?:y|ic)|crop yield|soil survey|questionnaire validation|survey tool|medical device)\b|모바일\s*앱|애플리케이션|소프트웨어|서식지|생태조사|종\s*식별|원격탐사/i;
 const NON_INGREDIENT_IDENTITY = /\b(?:application|app|software|device|platform|algorithm|questionnaire|survey|program|website|sensor)\b|애플리케이션|응용프로그램|소프트웨어|기기|플랫폼|알고리즘|설문|조사도구/i;
 const NON_INGREDIENT_MATERIAL = /\b(?:HPLC[- ]grade|analytical[- ]grade|laboratory reagent|assay reagent|chromatography solvent|mobile phase|acetonitrile|dimethyl sulfoxide|DMSO|formic acid|standard solution|assay kit)\b|분석용\s*(?:용매|시약)|실험실\s*시약|크로마토그래피\s*용매|이동상|표준용액|분석키트/i;
+const LIVESTOCK_FEED_TITLE = /\b(?:broiler|poultry|laying hen|livestock|piglet|swine|cattle|dairy cow|goat|sheep|aquaculture|fish growth|animal feed|feed additive|feed conversion|carcass|growth performance|kitten|kittens|puppy|puppies|companion animal|pet food)\b|육계|가금|산란계|축산|가축|양돈|양계|사료\s*(?:첨가제|효율|요구율)|도체율|증체량|반려동물\s*사료/i;
+const ANIMAL_SUBJECT_SIGNAL = /\b(?:mouse|mice|murine|rat|rats|rodent|zebrafish|broiler|chick|chicken|poultry|piglet|swine|cattle|cow|goat|sheep|kitten|puppy|dog|canine|rabbit|hamster)\b|마우스|생쥐|랫드|흰쥐|제브라피시|육계|병아리|닭|돼지|소|염소|양|고양이|개|토끼|햄스터/i;
 const REVIEW_ARTICLE_SIGNAL = /\b(?:systematic review|meta-analysis|scoping review|narrative review|review protocol)\b|체계적\s*문헌고찰|메타분석|범위\s*문헌고찰/i;
+const FUNCTIONALITY_PLACEHOLDER = /^(?:기능성|효능|건강기능|검토 기능성|기능성 확인 필요|확인 필요)$/i;
+const PROMPT_LEAKAGE_SIGNAL = /(?:\d+자\s*이내|작성한다|기재한다|출력하지|최종\s*점검|현재\s*단계에서\s*할\s*일|보고서용|판정\s*원칙)/i;
 const UNAVAILABLE_INGREDIENT = /^(?:확인 필요|원료명 확인 필요|별도 조사 필요|해당 없음|없음|미확인|not available|not applicable)$/i;
 const BLOCKED_PUBLIC_TERMS = [
   '대외비', '사내한', '내부용', '내부 검토', 'confidential', 'do not distribute',
@@ -285,6 +289,7 @@ export function reviewCandidateMetadata(item) {
   const types = (item?.pubTypeList?.pubType || item?.publicationTypes || []).join(' ').toLowerCase();
   const reasons = [];
   if (NON_INGREDIENT_TITLE.test(title)) reasons.push('제목이 앱·소프트웨어·생태·서식지 연구에 해당');
+  if (LIVESTOCK_FEED_TITLE.test(title)) reasons.push('제목이 건강기능식품 원료 연구가 아닌 축산·사료·반려동물 영양 연구에 해당');
   if (REVIEW_ARTICLE_SIGNAL.test(title) || /review|meta-analysis|systematic review|scoping review/.test(types)) reasons.push('원저 인체적용시험·동물시험이 아닌 문헌고찰');
   if (!INGREDIENT_SIGNAL.test(combined)) reasons.push('제목·초록에서 섭취 가능한 원료 정체성 미확인');
   if (!INTERVENTION_SIGNAL.test(combined)) reasons.push('제목·초록에서 섭취·투여 중재 연구 미확인');
@@ -312,6 +317,7 @@ export function reviewExtractedEvidence(candidate, evidence) {
   if (NON_INGREDIENT_TITLE.test(title) || NON_INGREDIENT_IDENTITY.test(`${evidence?.testArticle || ''} ${evidence?.rawMaterial || ''}`)) {
     reasons.push('원문 시험대상이 식품·건강기능식품 원료가 아닌 앱·기기·조사도구');
   }
+  if (LIVESTOCK_FEED_TITLE.test(title)) reasons.push('축산·사료·반려동물의 성장·생산성 목적 연구');
   if (!['인체적용시험', '동물시험'].includes(evidence?.sourceType)) reasons.push('인체적용시험 또는 동물시험이 아님');
   if (!isConcreteIngredient(evidence?.testArticle) || !isConcreteIngredient(evidence?.rawMaterial)) reasons.push('시험원료와 원재료 정체성 불충분');
   if (NON_INGREDIENT_MATERIAL.test(cleanText(evidence?.rawMaterial, '', 600))) reasons.push('원재료 항목에 분석용 용매·시약이 기재됨');
@@ -339,7 +345,8 @@ export function reviewFinalReport(candidate, report) {
   if (!isConcreteIngredient(report?.ingredient) || !isConcreteIngredient(report?.rawMaterial)) reasons.push('최종 보고서 원료·원재료 명칭 불충분');
   if (NON_INGREDIENT_MATERIAL.test(cleanText(report?.rawMaterial, '', 600))) reasons.push('최종 보고서 원재료가 분석용 용매·시약으로 오인됨');
   if (!INGREDIENT_SIGNAL.test(identity)) reasons.push('최종 보고서에 건강기능식품 원료 형태 미확인');
-  if (!functionality || UNAVAILABLE_INGREDIENT.test(functionality) || /별도\s*조사|관련\s*없음|기능성\s*미확인/i.test(functionality)) reasons.push('구체적 기능성 결과 미확인');
+  if (!functionality || UNAVAILABLE_INGREDIENT.test(functionality) || FUNCTIONALITY_PLACEHOLDER.test(functionality) || /별도\s*조사|관련\s*없음|기능성\s*미확인/i.test(functionality)) reasons.push('구체적 기능성 결과 미확인');
+  if (PROMPT_LEAKAGE_SIGNAL.test(cleanText(report?.summary, '', 600)) || PROMPT_LEAKAGE_SIGNAL.test(cleanText(report?.keyDecision, '', 600))) reasons.push('AI 작성지시 문구가 최종 보고서에 잔존');
   if ((report?.outcomeMatrix?.length || 0) < 2) reasons.push('최종 기능성 결과표 부족');
   return { stage: '3차 발간 전 검토', passed: reasons.length === 0, reasons: [...new Set(reasons)] };
 }
@@ -356,7 +363,7 @@ export function runTripleIngredientReview(candidate, report) {
 function isPublishableReport(report) {
   const unavailable = value => !value || cleanText(value).toLowerCase() === '확인 필요';
   const hasKorean = value => /[가-힣]/.test(String(value || ''));
-  const genericFunctionality = /^(가능|불가능|높음|중간|낮음)$/;
+  const genericFunctionality = /^(가능|불가능|높음|중간|낮음|기능성|효능|건강기능|검토 기능성)$/;
   const decisionText = `${report.verdict || ''} ${report.keyDecision || ''} ${report.summary || ''}`;
   const databaseMentions = (decisionText.match(/Tox-Info|FDA GRAS|PubMed|PubChem|Health Canada|EFSA|Natural Medicines/gi) || []).length;
   const repeatedActions = new Set((report.developmentActions || []).map(item => cleanText(item).toLowerCase())).size;
@@ -373,6 +380,7 @@ function isPublishableReport(report) {
     && hasKorean(report.functionality)
     && !genericFunctionality.test(report.functionality)
     && !unavailable(report.summary)
+    && !PROMPT_LEAKAGE_SIGNAL.test(report.summary)
     && hasKorean(report.summary)
     && hasKorean(report.keyDecision)
     && report.summary.length >= 40
@@ -1691,9 +1699,10 @@ function normalizeEvidence(raw) {
   const design = evidence?.studyDesign || {};
   const groupDefinitions = normalizeGroupDefinitions(evidence?.groupDefinitions);
   let sourceType = cleanText(evidence?.sourceType);
-  if (sourceType === '기타' && /(helsinki|ethics committee|institutional review|\bIR[.B-]|randomi[sz]ed|double.?blind|placebo|임상시험|환자|참여자)/i.test(
-    `${design.ethics || ''} ${design.subjects || ''} ${design.model || ''} ${design.randomization || ''} ${design.blinding || ''} ${design.comparators || ''}`,
-  )) {
+  const studyContext = `${design.ethics || ''} ${design.subjects || ''} ${design.model || ''} ${design.randomization || ''} ${design.blinding || ''} ${design.comparators || ''}`;
+  if (ANIMAL_SUBJECT_SIGNAL.test(studyContext)) {
+    sourceType = '동물시험';
+  } else if (sourceType === '기타' && /(helsinki|ethics committee|institutional review|\bIR[.B-]|randomi[sz]ed|double.?blind|placebo|임상시험|환자|참여자)/i.test(studyContext)) {
     sourceType = '인체적용시험';
   }
   const outcomeMatrix = normalizeOutcomeMatrix(evidence?.outcomeMatrix).map(item => ({

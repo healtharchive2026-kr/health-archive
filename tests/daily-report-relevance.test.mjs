@@ -87,6 +87,31 @@ const reagentReport = {
   evidenceAudit: reagentEvidence,
 };
 
+const livestockCandidate = {
+  pmcid: 'PMC13310962',
+  title: 'Nutritional and Performance Effects of Partial Replacement of Maize With Cassava Root Meal in Broiler Diets',
+  abstractText: 'Four hundred broiler chicks were fed cassava root meal to evaluate feed conversion and carcass yield.',
+};
+
+const livestockEvidence = {
+  ...extractEvidence,
+  sourceType: '인체적용시험',
+  testArticle: 'cassava root meal',
+  rawMaterial: 'cassava root',
+  studyDesign: { subjects: '400 broiler chicks', model: 'Completely Randomized Design', dose: 'dietary replacement', groups: 'five feed groups', comparators: 'maize diet' },
+};
+
+const livestockReport = {
+  ...extractReport,
+  source: livestockCandidate,
+  ingredient: 'cassava root meal',
+  rawMaterial: 'cassava root',
+  ingredientType: '식품',
+  functionality: '기능성',
+  summary: '현재 단계에서 할 일 1개와 보류할 일 1개를 포함한 180자 이내의 의사결정 문장을 작성한다.',
+  evidenceAudit: livestockEvidence,
+};
+
 assert.equal(reviewCandidateMetadata(mobileSurveyCandidate).passed, false, '1차 검토에서 모바일 앱 논문을 차단해야 함');
 assert.equal(reviewExtractedEvidence(mobileSurveyCandidate, mobileSurveyEvidence).passed, false, '2차 검토에서 비식품 시험대상을 차단해야 함');
 assert.equal(reviewFinalReport(mobileSurveyCandidate, mobileSurveyReport).passed, false, '3차 검토에서 비원료 보고서를 차단해야 함');
@@ -100,5 +125,8 @@ assert.equal(reviewCandidateMetadata(probioticCandidate).passed, true, '프로�
 assert.equal(reviewCandidateMetadata(reviewArticleCandidate).passed, false, '문헌고찰은 원료 분석 후보에서 제외해야 함');
 assert.equal(reviewExtractedEvidence(extractCandidate, reagentEvidence).passed, false, '분석용 용매를 원재료로 오인한 증거는 차단해야 함');
 assert.equal(reviewFinalReport(extractCandidate, reagentReport).passed, false, '분석용 시약이 원재료인 최종 보고서는 차단해야 함');
+assert.equal(reviewCandidateMetadata(livestockCandidate).passed, false, '축산 사료·성장성 연구는 후보 단계에서 제외해야 함');
+assert.equal(reviewExtractedEvidence(livestockCandidate, livestockEvidence).passed, false, '육계 영양시험은 기능성 원료 동물모델로 인정하지 않아야 함');
+assert.equal(reviewFinalReport(livestockCandidate, livestockReport).passed, false, '기능성 자리표시자와 작성지시가 남은 보고서는 차단해야 함');
 
-console.log('daily report relevance gates: 12 assertions passed');
+console.log('daily report relevance gates: 15 assertions passed');
