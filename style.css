@@ -2375,22 +2375,33 @@ td.name{font-weight:600;}
 .daily-report-card-date{display:flex;flex-direction:column;justify-content:space-between;padding:18px 16px;background:#edf4f0;border-right:1px solid var(--border);}
 .daily-report-card-date strong{font-family:var(--mono);font-size:13px;}
 .daily-report-card-date span{color:var(--green);font-family:var(--mono);font-size:9px;font-weight:800;}
-.daily-report-card-main{min-width:0;padding:16px 0;}
-.daily-report-card-kicker{display:flex;flex-wrap:wrap;gap:7px 12px;align-items:center;margin-bottom:7px;color:var(--muted);font-size:10px;}
-.daily-report-card-kicker b{color:var(--green);font-weight:800;}
+.daily-report-card-main{min-width:0;padding:15px 0 16px;}
+.daily-report-card-kicker{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;margin-bottom:7px;color:var(--muted);font-size:10px;}
+.daily-evidence-tag,.daily-evidence-grade{display:inline-flex;min-height:22px;align-items:center;padding:2px 7px;border:1px solid var(--border);border-radius:4px;font-size:10px;font-weight:850;line-height:1;}
+.daily-evidence-tag.clinical{border-color:#9fc9b8;background:#eaf6f0;color:#125e49;}
+.daily-evidence-tag.animal{border-color:#d7bc8e;background:#fff7e8;color:#795113;}
+.daily-evidence-tag.other{background:#f4f6f5;color:#596861;}
+.daily-evidence-grade{color:#fff;background:#465b52;border-color:#465b52;}
+.daily-evidence-grade.grade-a{background:#176b55;border-color:#176b55;}
+.daily-evidence-grade.grade-b{background:#3d6578;border-color:#3d6578;}
+.daily-evidence-grade.grade-c{background:#80622c;border-color:#80622c;}
 .daily-report-card h3{margin:0;font-size:18px;line-height:1.35;}
 .daily-report-card h3 a{color:inherit;text-decoration:none;}
 .daily-report-card h3 a:hover,.daily-report-card h3 a:focus-visible{color:var(--green);text-decoration:underline;text-underline-offset:3px;}
 .daily-report-scientific{margin:4px 0 9px;color:var(--muted);font-size:11px;}
-.daily-report-summary{display:-webkit-box;margin:0 0 8px;color:#405149;font-size:12px;line-height:1.55;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;}
-.daily-report-card-main small{display:block;white-space:nowrap;color:#78867f;font-size:9px;text-overflow:ellipsis;overflow:hidden;}
+.daily-report-paper-title{margin:9px 0 2px;color:#263b33;font-size:12px;font-weight:800;line-height:1.45;}
+.daily-report-card-main .daily-report-paper-original{display:block;white-space:nowrap;color:#78867f;font-size:9px;text-overflow:ellipsis;overflow:hidden;}
+.daily-report-publication{display:flex;gap:8px;align-items:center;margin-top:5px;color:#687871;font-size:9px;}
+.daily-report-publication b{color:#405149;font-family:var(--mono);font-size:9px;}
+.daily-report-conclusions{display:grid;gap:3px;margin:9px 0 0;padding:8px 10px 8px 26px;border-top:1px solid #e2e9e5;background:#fafcfb;color:#405149;font-size:10px;line-height:1.35;}
+.daily-report-conclusions li{min-width:0;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;}
 .daily-report-card-actions{display:flex;flex-direction:column;justify-content:center;gap:7px;padding:14px;border-left:1px solid var(--border);background:#fafcfb;}
 .daily-report-card-actions span{margin-bottom:3px;color:#6e531b;font-size:10px;font-weight:800;line-height:1.4;}
 .daily-report-card-actions a{display:inline-flex;min-height:34px;align-items:center;justify-content:center;border:1px solid #b9d0c7;border-radius:6px;color:#176b55;font-size:11px;font-weight:800;text-decoration:none;}
 .daily-report-card-actions a:hover{border-color:#176b55;background:#edf6f2;}
 .daily-report-card-actions a.primary{border-color:#176b55;background:#176b55;color:#fff;}
 .daily-report-card-actions a.primary:hover{background:#0f5845;}
-@media(max-width:720px){.daily-report-toolbar{align-items:stretch;flex-wrap:wrap}.daily-report-search{order:3;max-width:none;flex-basis:100%}.daily-report-card{grid-template-columns:1fr}.daily-report-card-date{min-height:58px;flex-direction:row;padding:12px 14px;border-right:0;border-bottom:1px solid var(--border)}.daily-report-card-main{padding:4px 14px}.daily-report-card-actions{flex-direction:row;flex-wrap:wrap;padding:12px 14px;border-left:0;border-top:1px solid var(--border)}.daily-report-card-actions span{flex-basis:100%}.daily-report-card-actions a{flex:1}}
+@media(max-width:720px){.daily-report-toolbar{align-items:stretch;flex-wrap:wrap}.daily-report-search{order:3;max-width:none;flex-basis:100%}.daily-report-card{grid-template-columns:1fr}.daily-report-card-date{min-height:58px;flex-direction:row;padding:12px 14px;border-right:0;border-bottom:1px solid var(--border)}.daily-report-card-main{padding:12px 14px}.daily-report-paper-title{font-size:12px}.daily-report-conclusions{margin-left:-14px;margin-right:-14px;padding-left:30px}.daily-report-conclusions li{white-space:normal}.daily-report-card-actions{flex-direction:row;flex-wrap:wrap;padding:12px 14px;border-left:0;border-top:1px solid var(--border)}.daily-report-card-actions span{flex-basis:100%}.daily-report-card-actions a{flex:1}}
 .trial-detail-grid{
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));

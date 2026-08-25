@@ -4683,29 +4683,39 @@ function renderDailyReports() {
   const query = String(search?.value || '').trim().toLowerCase();
   const filtered = dailyReports.filter(item => [
     item.ingredient, item.scientificName, item.ingredientType, item.functionality,
-    item.verdict, item.summary, item.sourceTitle,
+    item.verdict, item.summary, item.sourceType, item.sourceTitle, item.sourceTitleKo,
+    ...(Array.isArray(item.conclusions) ? item.conclusions : []),
   ].some(value => String(value || '').toLowerCase().includes(query)));
   count.textContent = `${filtered.length.toLocaleString('ko-KR')}건`;
   if (!filtered.length) {
     list.innerHTML = `<div class="daily-report-empty"><span>REPORT ARCHIVE</span><strong>${query ? '검색 결과 없음' : '발간 대기 중'}</strong><p>${query ? '다른 원료명이나 기능성으로 검색해 주세요.' : '원문 PDF 확보와 검증을 완료한 보고서가 순차적으로 등록됩니다.'}</p></div>`;
     return;
   }
-  list.innerHTML = filtered.map(item => `
+  list.innerHTML = filtered.map(item => {
+    const sourceType = item.sourceType || '시험유형 확인 필요';
+    const sourceTypeClass = sourceType === '인체적용시험' ? 'clinical' : sourceType === '동물시험' ? 'animal' : 'other';
+    const grade = ['A', 'B', 'C'].includes(item.grade) ? item.grade : '-';
+    const gradeDescription = grade === 'A' ? '사람 대상 무작위 대조시험' : grade === 'B' ? '기타 사람 대상 근거' : grade === 'C' ? '동물·비임상 근거' : '근거등급 확인 필요';
+    const conclusions = (Array.isArray(item.conclusions) ? item.conclusions : []).slice(0, 3);
+    return `
     <article class="daily-report-card">
       <div class="daily-report-card-date"><strong>${escapeHtml(item.date || '-')}</strong><span>${escapeHtml(item.sourcePmcid || 'SOURCE')}</span></div>
       <div class="daily-report-card-main">
-        <div class="daily-report-card-kicker"><span>${escapeHtml(item.ingredientType || '원료 유형 확인 필요')}</span><b>근거 ${escapeHtml(item.evidenceGrade || '확인 필요')} · ${escapeHtml(item.grade || '-')}</b></div>
+        <div class="daily-report-card-kicker"><span class="daily-evidence-tag ${sourceTypeClass}">${escapeHtml(sourceType)}</span><b class="daily-evidence-grade grade-${escapeHtml(grade.toLowerCase())}" title="${escapeHtml(gradeDescription)}">근거 ${escapeHtml(grade)}</b><span>${escapeHtml(item.ingredientType || '원료 유형 확인 필요')}</span></div>
         <h3><a href="${escapeHtml(dailyReportDetailUrl(item))}" target="_blank" rel="noopener">${escapeHtml(item.ingredient || '원료명 확인 필요')}</a></h3>
         <p class="daily-report-scientific"><i>${escapeHtml(item.scientificName || '확인 필요')}</i> · ${escapeHtml(item.functionality || '기능성 확인 필요')}</p>
-        <p class="daily-report-summary">${escapeHtml(item.summary || '원문 근거 추가 검토 필요')}</p>
-        <small>${escapeHtml(item.sourceTitle || '원문 제목 확인 필요')}</small>
+        <p class="daily-report-paper-title">${escapeHtml(item.sourceTitleKo || '한글 번역명 확인 필요')}</p>
+        <small class="daily-report-paper-original">${escapeHtml(item.sourceTitle || '영문 논문명 확인 필요')}</small>
+        <div class="daily-report-publication"><span>${escapeHtml(item.sourceJournal || '저널 확인 필요')}</span><b>${escapeHtml(item.sourcePubDate || '게재일 확인 필요')}</b></div>
+        <ul class="daily-report-conclusions">${(conclusions.length ? conclusions : ['논문 결론 확인 필요']).map(value => `<li>${escapeHtml(value)}</li>`).join('')}</ul>
       </div>
       <div class="daily-report-card-actions">
         <span>${escapeHtml(item.verdict || '검토 필요')}</span>
         <a class="primary" href="${escapeHtml(dailyReportDetailUrl(item))}" target="_blank" rel="noopener">상세 보고서</a>
         <a href="${escapeHtml(item.sourcePdfUrl)}" target="_blank" rel="noopener">원문 PDF</a>
       </div>
-    </article>`).join('');
+    </article>`;
+  }).join('');
 }
 
 async function loadDailyReports() {

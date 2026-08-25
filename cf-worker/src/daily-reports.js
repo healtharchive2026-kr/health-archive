@@ -7,7 +7,7 @@ const MAX_SOURCE_CHARS = 42000;
 const EVIDENCE_OUTPUT_TOKENS = 7000;
 const REPORT_OUTPUT_TOKENS = 7000;
 const AGENT_STEP_TIMEOUT_MS = 12 * 60 * 1000;
-const REPORT_VERSION = 29;
+const REPORT_VERSION = 31;
 const VISUAL_EVIDENCE_VERSION = 14;
 const STATISTICS_EVIDENCE_VERSION = 3;
 const MAX_RESULT_VISUALS = 5;
@@ -197,6 +197,8 @@ const REPORT_SCHEMA = {
     novelty: { type: 'string' },
     feasibility: { type: 'string' },
     summary: { type: 'string' },
+    sourceTitleKo: { type: 'string' },
+    conclusions: { type: 'array', minItems: 3, maxItems: 3, items: { type: 'string' } },
     rawMaterial: { type: 'string' },
     intakeBasis: { type: 'string' },
     process: { type: 'string' },
@@ -242,7 +244,7 @@ const REPORT_SCHEMA = {
   required: [
     'ingredient', 'scientificName', 'ingredientType', 'functionality', 'verdict', 'keyDecision', 'grade',
     'evidenceGrade', 'evidenceMaturityScore', 'humanEvidenceScore', 'developmentReadinessScore',
-    'novelty', 'feasibility', 'summary', 'rawMaterial', 'intakeBasis',
+    'novelty', 'feasibility', 'summary', 'sourceTitleKo', 'conclusions', 'rawMaterial', 'intakeBasis',
     'process', 'specifications', 'safety', 'studies', 'mechanisms', 'marketReview',
     'outcomeMatrix', 'limitations', 'inconsistencies', 'developmentActions', 'noGoClaims',
     'regulatoryReview', 'gaps', 'sourceNotes',
@@ -1732,6 +1734,8 @@ function reviewPrompt(candidate, evidence) {
 - developmentActions는 치명적 불확실성을 먼저 제거하는 Gate 순서로 작성한다.
 - keyDecision은 현재 단계에서 할 일 1개와 보류할 일 1개를 포함한 180자 이내의 의사결정 문장으로 작성한다.
 - summary는 300자 이내로 기능성 신호, 차별 신호, 결정적 한계, 현재 개발판정을 각각 한 번만 포함한다.
+- sourceTitleKo는 영문 논문 제목을 의미가 빠지지 않도록 자연스러운 한국어 학술 제목으로 번역한다.
+- conclusions는 이 논문의 확인된 결론만 3개 항목으로 작성한다. 각 항목은 한 문장, 80자 이내로 하며 결과·한계·전환 가능성을 중복 없이 구분한다.
 - 회사 내부정보, 실명, 대외비 표현과 JSON 바깥의 설명은 출력하지 않는다.
 - 최종 점검 후 모든 사용자 노출 문자열이 한국어인지 확인한다.
 
@@ -1946,6 +1950,8 @@ function normalizeAiReport(raw, candidate, evidence) {
     novelty: cleanText(report.novelty),
     feasibility: cleanText(report.feasibility),
     summary,
+    sourceTitleKo: cleanText(report.sourceTitleKo, '한글 번역명 확인 필요', 320),
+    conclusions: cleanList(report.conclusions, 3),
     rawMaterial: cleanText(report.rawMaterial),
     intakeBasis: cleanText(report.intakeBasis),
     process: cleanText(report.process),
@@ -2129,6 +2135,105 @@ function applyVerifiedSourceCorrections(report) {
     noGoClaims: ['인체 수명 연장', '인체 항레트로바이러스제 부작용 예방·치료', 'Kaempferol의 건강기능식품 기능성 확정'],
     groupDefinitions: groups,
     evidenceAudit,
+  };
+}
+
+const VERIFIED_REPORT_PRESENTATION = {
+  PMC13319377: {
+    sourceType: '동물시험', grade: 'C', evidenceGrade: '낮음',
+    sourceJournal: 'Toxicology Reports', sourcePubDate: '2026-06-25',
+    sourceTitleKo: 'Moringa oleifera L. 유래 Kaempferol의 초파리 수명 연장 및 efavirenz 유도 기능적 노화 개선',
+    conclusions: [
+      'Kaempferol은 초파리 수명을 용량의존적으로 연장하고 운동·생식기능을 개선하였다.',
+      'EFV 유도 기능저하와 산화스트레스 지표를 완화했으나 원문 내 EFV 용량 표기가 충돌한다.',
+      '동물시험 근거로서 인체 기능성 확정을 위해 표준화·안전성·인체적용시험이 필요하다.',
+    ],
+  },
+  PMC13326673: {
+    sourceType: '동물시험', grade: 'C', evidenceGrade: '낮음',
+    sourceJournal: 'RSC Advances', sourcePubDate: '2026-07-02',
+    sourceTitleKo: '흑생강 메톡시플라본·호로파 사포닌·아연 메티오닌 복합제 Testolift의 제형화·특성 및 효능 평가',
+    conclusions: [
+      'InSitu360 복합화 제제에서 메톡시플라본·사포닌·아연의 안정적 함유와 분산성을 확인하였다.',
+      '42일 투여한 수컷 Sprague-Dawley 랫드에서 혈청 테스토스테론이 대조군 대비 증가하였다.',
+      '인체 유효성과 장기 안전성은 확인되지 않아 임상시험을 통한 전환 검증이 필요하다.',
+    ],
+  },
+  PMC13317281: {
+    sourceType: '동물시험', grade: 'C', evidenceGrade: '낮음',
+    sourceJournal: 'Animal Microbiome', sourcePubDate: '2026-06-29',
+    sourceTitleKo: '이유기 고양이에서 Saccharomyces cerevisiae var. boulardii CNCM I-1079가 분변·미생물군·면역에 미치는 영향',
+    conclusions: [
+      '7주 보충 전체기간의 분변 품질에는 명확한 군 효과가 확인되지 않았다.',
+      '주거 변경 시점에 분변 굳기와 일부 면역·미생물 지표의 변화가 관찰되었다.',
+      '어린 고양이 대상 동물시험으로 인체 장 건강 기능성의 직접 근거로 사용할 수 없다.',
+    ],
+  },
+  PMC9277669: {
+    sourceType: '인체적용시험', grade: 'A', evidenceGrade: '높음',
+    sourceJournal: "Journal of Alzheimer's Disease", sourcePubDate: '2022-05-07',
+    sourceTitleKo: '경도인지장애 의심 고령자에서 Bifidobacterium breve MCC1274의 인지기능 및 뇌 위축에 대한 효과: 24주 무작위 이중눈가림 위약대조시험',
+    conclusions: [
+      '24주 섭취 후 ADAS-Jcog 지남력 점수가 위약군 대비 유의적으로 개선되었다.',
+      '뇌 위축 진행 억제 경향이 관찰되었으나 전체 인지척도 효과는 일부 하위지표에 제한되었다.',
+      '무작위 이중눈가림 위약대조 인체시험으로 직접성은 높지만 독립 재현 연구가 필요하다.',
+    ],
+  },
+  PMC13288546: {
+    sourceType: '인체적용시험', grade: 'A', evidenceGrade: '높음',
+    sourceJournal: 'Journal of the International Society of Sports Nutrition', sourcePubDate: '2026-06-18',
+    sourceTitleKo: '운동성 열 스트레스에서 폴리페놀 풍부 사탕수수 추출물이 위장관 장벽 및 전신 염증 지표에 미치는 영향',
+    conclusions: [
+      '2주 섭취 후 운동 전 혈장 I-FABP와 운동 관련 위장관 증상 중증도가 위약군보다 낮았다.',
+      'IL-8 증가는 완화됐으나 직장온도와 생리적 부담지수는 위약군보다 높았다.',
+      '14명 교차시험의 제한적 신호로 다양한 대상자에서 유효성·안전성 재현이 필요하다.',
+    ],
+  },
+  PMC13281410: {
+    sourceType: '인체적용시험', grade: 'A', evidenceGrade: '높음',
+    sourceJournal: 'Health Science Reports', sourcePubDate: '2026-06-19',
+    sourceTitleKo: '비알코올성 지방간질환 환자의 우울·불안·스트레스에 대한 쇠비름 주정추출물의 효과: 무작위 이중눈가림 대조시험',
+    conclusions: [
+      '쇠비름 추출물 700 mg을 8주 섭취한 군에서 우울과 스트레스 점수가 위약군 대비 감소하였다.',
+      '불안 점수는 보정 전후 모두 군간 유의한 차이가 확인되지 않았다.',
+      'NAFLD 환자 70명 대상 단일시험으로 기능성 일반화를 위해 추가 재현 연구가 필요하다.',
+    ],
+  },
+  PMC13282309: {
+    sourceType: '동물시험', grade: 'C', evidenceGrade: '낮음',
+    sourceJournal: 'Molecular Neurobiology', sourcePubDate: '2026-06-19',
+    sourceTitleKo: '아셀렌산나트륨 강화 Lactobacillus reuteri LRE02 포스트바이오틱스의 마우스 항우울·항불안 유사 효과',
+    conclusions: [
+      '생균체와 사균체 모두 마우스에서 항우울 유사 행동과 코르티코스테론 감소를 나타냈다.',
+      '셀레늄 강화 사균체는 항불안 행동·항산화 반응·PI3K/Akt/mTOR 신호를 추가로 개선하였다.',
+      '건강한 수컷 마우스 급성 행동시험으로 임상적 우울·불안 개선을 확정할 수 없다.',
+    ],
+  },
+};
+
+function applyVerifiedReportPresentation(report) {
+  const pmcid = String(report?.source?.pmcid || '').toUpperCase();
+  const verified = VERIFIED_REPORT_PRESENTATION[pmcid];
+  if (!verified) {
+    return {
+      ...report,
+      sourceTitleKo: cleanText(report.sourceTitleKo, '한글 번역명 확인 필요', 320),
+      conclusions: cleanList(report.conclusions, 3),
+    };
+  }
+  return {
+    ...report,
+    sourceTitleKo: verified.sourceTitleKo,
+    conclusions: verified.conclusions,
+    grade: verified.grade,
+    evidenceGrade: verified.evidenceGrade,
+    source: {
+      ...(report.source || {}),
+      journal: verified.sourceJournal,
+      pubDate: verified.sourcePubDate,
+    },
+    humanEvidenceScore: verified.sourceType === '인체적용시험' ? Math.max(3, Number(report.humanEvidenceScore || 0)) : 0,
+    evidenceAudit: { ...(report.evidenceAudit || {}), sourceType: verified.sourceType },
   };
 }
 
@@ -2466,6 +2571,7 @@ export function reportHtml(report, id, date, visualAssets = []) {
     [source.volume, source.issue && `(${source.issue})`, source.pages && `:${source.pages}`].filter(Boolean).join(''),
   ].filter(Boolean).map(value => escapeHtml(value));
   const sourcePdfUrl = `https://api.healtharchive.kr/daily-reports/${encodeURIComponent(id)}/source.pdf`;
+  const conclusionsHtml = listHtml(report.conclusions, '논문 결론 확인 필요');
   return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>${escapeHtml(report.ingredient)} 기능성 개발 검토 | HealthArchive</title>
   <style>
   :root{--ink:#17211e;--deep:#0d4439;--muted:#62706b;--line:#d8e1dd;--green:#19745f;--green-soft:#edf5f2;--blue-soft:#edf3f7;--amber:#9a6410;--amber-soft:#fbf2df;--red:#9e453f;--red-soft:#f8ece9}*{box-sizing:border-box}body{margin:0;color:var(--ink);font-family:"Noto Sans KR","Malgun Gothic",sans-serif;line-height:1.34;background:#fff;font-size:9px}.wrap{width:100%;margin:0;padding:0}.topline{display:flex;justify-content:space-between;align-items:center;color:var(--green);font-size:7px;font-weight:800;letter-spacing:.08em}.date-chip{border:1px solid var(--line);padding:3px 6px;color:var(--ink);letter-spacing:0}h1{font-size:23px;line-height:1.12;margin:6px 0 2px}.subtitle{color:var(--muted);font-size:9px}.decision{display:grid;grid-template-columns:105px 1fr;border:1px solid var(--green);background:var(--green-soft);margin:9px 0 7px}.decision b,.decision div{padding:7px 9px}.decision b{color:var(--deep);border-right:1px solid #b8d2ca;font-size:10px}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:8px}.metric{border:1px solid var(--line);padding:5px 7px;min-height:43px}.metric span,.metric small{display:block;color:var(--muted);font-size:6.7px}.metric b{display:block;font-size:13px;margin:2px 0;color:var(--deep)}.metric.red{background:var(--red-soft)}.metric.amber{background:var(--amber-soft)}.metric.blue{background:var(--blue-soft)}section{border-top:1px solid var(--line);padding:8px 0}.title{display:flex;align-items:baseline;gap:6px;margin-bottom:5px;break-after:avoid}.title span{color:var(--green);font-size:7px;font-weight:800}.title h2{font-size:12px;margin:0}.lead{font-size:10px;font-weight:700;color:var(--deep);margin:0 0 6px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}.grid.three{grid-template-columns:repeat(3,1fr)}.panel{border:1px solid var(--line);padding:7px 8px;break-inside:avoid}.panel.good{background:var(--green-soft)}.panel.risk{background:var(--red-soft)}.panel h3{font-size:9px;margin:0 0 4px;color:var(--deep)}p{margin:2px 0 5px}ul{margin:0;padding-left:14px}li+li{margin-top:2px}a{color:var(--green);font-weight:800;text-decoration:none}dl{display:grid;grid-template-columns:76px 1fr;margin:0;border:1px solid var(--line)}dt,dd{padding:4px 6px;margin:0;border-bottom:1px solid var(--line)}dt{font-weight:800;background:#f6f9f7}dd{border-left:1px solid var(--line)}table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:7.4px}thead{display:table-header-group}tr{break-inside:avoid}th,td{border:1px solid var(--line);padding:3.5px 4.5px;text-align:left;vertical-align:top;word-break:break-word}th{background:#f0f6f3;color:var(--deep);font-size:6.8px}td small{display:block;color:var(--muted);font-size:6.3px;margin-top:2px}.groups th:nth-child(1){width:12%}.groups th:nth-child(2){width:20%}.groups th:nth-child(3){width:48%}.groups th:nth-child(4){width:20%}.studies th:nth-child(1){width:14%}.studies th:nth-child(2){width:26%}.studies th:nth-child(3){width:28%}.studies th:nth-child(4){width:20%}.studies th:nth-child(5){width:12%}.outcomes th:nth-child(1){width:10%}.outcomes th:nth-child(2){width:18%}.outcomes th:nth-child(3){width:29%}.outcomes th:nth-child(4){width:13%}.outcomes th:nth-child(5){width:17%}.outcomes th:nth-child(6){width:13%}.p-value{color:var(--red);font-variant-numeric:tabular-nums}.related-table th:nth-child(1){width:20%}.related-table th:nth-child(2){width:20%}.related-table th:nth-child(3){width:38%}.related-table th:nth-child(4){width:22%}.safety-table th:nth-child(1){width:27%}.safety-table th:nth-child(2){width:16%}.safety-table th:nth-child(3){width:57%}.notice{background:var(--amber-soft);border-left:3px solid var(--amber);padding:5px 7px;margin-top:5px}.visual-grid{display:grid;grid-template-columns:1fr;gap:8px}.result-visual{margin:0;border:1px solid var(--line);padding:7px;background:#fff;break-inside:avoid;page-break-inside:avoid}.result-visual img{display:block;width:100%;height:auto;max-height:225mm;object-fit:contain;background:#fff}.visual-kicker{color:var(--green);font-size:6.5px;font-weight:800;letter-spacing:.08em;margin-bottom:4px}.result-visual figcaption{border-top:1px solid var(--line);padding-top:5px;margin-top:5px;font-size:7.2px;color:#46534f}.result-visual figcaption b{color:var(--deep);margin-right:3px}.result-visual figcaption small{display:block;margin-top:3px;color:var(--muted)}.result-visual figcaption .visual-p-values{color:var(--red);font-weight:700}.result-visual figcaption a{display:inline-block;margin-top:3px}.reference{border:1px solid var(--line);background:#f8faf9;padding:7px 8px;margin-top:7px;break-inside:avoid}.reference h2{font-size:9px;margin:0 0 4px}.reference p{font-size:7.2px;color:#46534f;margin:0;word-break:break-word}.reference .published{display:inline-block;color:var(--deep);font-weight:800;margin-top:3px}.disclaimer{font-size:6.5px;color:var(--muted);margin-top:4px}@page{size:A4;margin:8mm}@media print{.panel,.reference,.decision,.metrics,.result-visual{break-inside:avoid}.visual-section{break-before:page}section{break-inside:auto}}@media(max-width:720px){body{font-size:11px}.wrap{padding:15px}.grid,.grid.three,.metrics{grid-template-columns:1fr}.scroll{overflow:auto}.scroll table{min-width:720px}}
@@ -2476,13 +2582,13 @@ export function reportHtml(report, id, date, visualAssets = []) {
   table th{text-align:center;vertical-align:middle}table td{vertical-align:middle;word-break:keep-all;overflow-wrap:anywhere}.outcomes .domain-cell{text-align:center}.outcomes .p-value,.outcomes .evidence-cell{text-align:center}.outcomes .evidence-cell{white-space:nowrap}.outcomes .endpoint-cell,.outcomes .result-cell{line-height:1.3}.result-values{display:grid;gap:3px}.result-values span{display:grid;grid-template-columns:minmax(58px,auto) 1fr;gap:7px;padding-bottom:3px;border-bottom:1px dotted var(--line)}.result-values b{color:#4c5c70}.result-direction{margin-top:5px;color:var(--deep);font-weight:750}.p-value-list{display:flex;flex-direction:column;align-items:center;gap:4px}.p-value-item{display:inline-flex;align-items:center;gap:4px;white-space:nowrap;line-height:1.25;border:1px solid var(--line);border-radius:3px;padding:2px 4px}.p-value-item em{font-style:normal;font-size:.82em;font-weight:800}.p-value-item.within{color:#315d82;background:#edf3fa;border-color:#adc5dc}.p-value-item.between{color:#176048;background:#edf7f2;border-color:#9ec8b8}.p-value-item.significant{font-weight:800;box-shadow:inset 3px 0 currentColor}.outcomes .significant-row .p-value{background:#f7faf9}.result-visual figcaption .visual-source{color:var(--deep)}
   :root{--ink:#182333;--deep:#17385f;--muted:#687587;--line:#cad3dd;--green:#17385f;--green-soft:#edf2f7;--blue-soft:#edf2f7;--amber:#a96600;--amber-soft:#fff7e7;--red:#a52929;--red-soft:#fff0ef}html{scroll-behavior:smooth}body{background:#edf1f4;color:var(--ink);font-size:14px;line-height:1.55}.report-shell{width:min(1180px,calc(100% - 40px));margin:28px auto;background:#fff;border-top:3px solid #142d4e;box-shadow:0 14px 44px rgba(24,43,67,.12)}.report-bar{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:14px 34px;border-bottom:1px solid #1b293b;font-family:ui-monospace,"SFMono-Regular",Consolas,monospace;font-size:11px;font-weight:700;letter-spacing:.12em}.report-actions{display:flex;align-items:center;gap:8px;letter-spacing:0}.report-actions a{display:inline-flex;min-height:34px;align-items:center;padding:0 12px;border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--deep);font-family:Pretendard,"Noto Sans KR",sans-serif;font-size:12px;text-decoration:none}.report-actions a.primary{border-color:var(--deep);background:var(--deep);color:#fff}.report-nav{position:sticky;top:0;z-index:10;display:flex;gap:2px;padding:8px 34px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.96);overflow-x:auto}.report-nav a{flex:0 0 auto;padding:6px 9px;border-radius:3px;color:#4c5c70;font-size:11px;font-weight:700;text-decoration:none}.report-nav a:hover,.report-nav a:focus-visible{background:var(--green-soft);color:var(--deep);outline:none}.wrap{width:100%;padding:28px 34px 34px}.report-identity{display:flex;align-items:flex-end;justify-content:space-between;gap:32px;margin-bottom:16px}.report-kicker{display:block;margin-bottom:3px;color:var(--deep);font-size:11px;font-weight:800}.report-identity h1{margin:0;font-size:32px;line-height:1.18}.report-source{text-align:right;color:var(--muted);font-family:ui-monospace,"SFMono-Regular",Consolas,monospace;font-size:12px}.report-source b{display:block;margin-top:4px;color:var(--deep);font-family:Pretendard,"Noto Sans KR",sans-serif;font-size:12px}.metrics{grid-template-columns:repeat(4,1fr);gap:0;margin:0 0 20px;border:1px solid #1b293b}.metric{min-height:80px;padding:12px 14px;border:0;border-right:1px solid var(--line);background:#f2f5f8}.metric:last-child{border-right:0;background:#213f68}.metric:last-child span,.metric:last-child small,.metric:last-child b{color:#fff}.metric span,.metric small{font-size:11px}.metric b{font-size:25px;line-height:1.15}.metric.red,.metric.amber,.metric.blue{background:#f2f5f8}section{padding:18px 0;border-top:0;scroll-margin-top:58px}.title{gap:9px;margin-bottom:10px;padding-bottom:7px;border-bottom:2px solid var(--deep)}.title span{font-size:11px}.title h2{font-size:19px}.lead{margin:0 0 12px;font-size:15px;line-height:1.65;color:var(--ink)}.grid{gap:14px}.grid.three{gap:12px}.panel{padding:14px 16px;border:1px solid var(--line);background:#fff}.panel.good{border-top:3px solid var(--deep);background:#fff}.panel.risk{border-top:3px solid var(--red);background:#fff}.panel h3{margin-bottom:7px;font-size:13px}p{margin:3px 0 8px}ul{padding-left:19px}li+li{margin-top:4px}dl{grid-template-columns:110px 1fr;border:0;border-top:2px solid #1b293b}dt,dd{padding:7px 9px;border-bottom:1px solid var(--line)}dt{background:#fff;color:#59677a}dd{border-left:0}table{font-size:12px;line-height:1.42}th,td{padding:8px 9px;border:0;border-bottom:1px solid var(--line)}th{background:#e9eef3;color:#3f4f63;font-size:11px;text-transform:none}.scroll{border-top:1px solid #1b293b}.scroll+.scroll{margin-top:12px}.outcomes{font-size:12px}.outcomes .domain-cell{background:#f4f7f9}.p-value-item.significant{border-color:#8eb8aa;background:#e5f2ed}.visual-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.result-visual{min-width:0;margin:0;padding:0;border:1px solid var(--line);background:#fff}.result-visual.table{grid-column:1/-1}.visual-frame{display:flex;min-height:260px;align-items:center;justify-content:center;padding:10px;background:#f7f8fa;border-bottom:1px solid var(--line)}.result-visual.table .visual-frame{min-height:360px}.result-visual img{width:100%;max-height:620px;object-fit:contain}.result-visual figcaption{margin:0;padding:11px 12px;border-top:0;font-size:11px;line-height:1.5}.result-visual.table figcaption{order:0;margin:0;padding:11px 12px;border-bottom:1px solid var(--line)}.result-visual.table{display:flex;flex-direction:column}.result-visual.table .visual-frame{order:1}.visual-title b{font-size:12px}.result-visual figcaption small,.result-visual figcaption a{font-size:10px}.notice{padding:9px 11px}.reference{margin-top:18px;padding:16px 0;border:0;border-top:2px solid #1b293b;background:#fff}.reference h2{font-size:16px}.reference p{font-size:12px}.disclaimer{font-size:10px}.report-footer{display:flex;justify-content:space-between;gap:18px;padding:14px 34px;border-top:1px solid var(--line);color:var(--muted);font-size:10px}.report-footer b{color:var(--deep)}@media(max-width:820px){body{font-size:13px;background:#fff}.report-shell{width:100%;margin:0;border-top-width:2px;box-shadow:none}.report-bar{align-items:flex-start;padding:12px 16px;letter-spacing:.06em}.report-bar>span{max-width:52%}.report-actions{flex-wrap:wrap;justify-content:flex-end}.report-nav{padding:7px 12px}.wrap{padding:22px 16px}.report-identity{align-items:flex-start;flex-direction:column;gap:8px}.report-identity h1{font-size:27px}.report-source{text-align:left}.metrics{grid-template-columns:repeat(2,1fr)}.metric:nth-child(2){border-right:0}.metric:nth-child(-n+2){border-bottom:1px solid var(--line)}.grid,.grid.three{grid-template-columns:1fr}.visual-grid{grid-template-columns:1fr}.scroll{overflow-x:auto}.scroll table{min-width:720px}.visual-frame,.result-visual.table .visual-frame{min-height:220px}.report-footer{flex-direction:column;padding:12px 16px}}@media print{body{background:#fff}.report-shell{width:100%;margin:0;box-shadow:none}.report-nav,.report-actions{display:none}.wrap{padding:8mm}.report-bar,.report-footer{padding-left:8mm;padding-right:8mm}.visual-grid{grid-template-columns:repeat(3,1fr)}}
   .result-visual.table .visual-frame{display:block;min-height:0;max-height:680px;overflow:auto;padding:0}.result-visual.table img{display:block;width:100%;max-height:none;object-fit:initial}@media(max-width:820px){.result-visual.table .visual-frame{min-height:0;max-height:72vh}}
-  .safety-table{font-size:11px;line-height:1.42}.safety-table th,.safety-table td{padding:8px 9px}.safety-pending{background:#fffaf0}
+  .safety-table{font-size:11px;line-height:1.42}.safety-table th,.safety-table td{padding:8px 9px}.safety-pending{background:#fffaf0}.paper-identity{margin:0 0 14px;padding:13px 15px;border-left:3px solid var(--deep);background:#f5f7f9}.paper-identity b{display:block;margin-bottom:4px;color:var(--deep);font-size:14px}.paper-identity span{display:block;color:var(--muted);font-size:11px}.conclusion-list{margin-top:12px}.conclusion-list li{font-weight:600}
   </style></head><body><div class="report-shell">
   <div class="report-bar"><span>HEALTHARCHIVE · DAILY INGREDIENT REVIEW</span><div class="report-actions"><a href="https://www.healtharchive.kr/#daily-reports">목록으로</a><a class="primary" href="${escapeHtml(sourcePdfUrl)}" target="_blank" rel="noopener">원문 PDF</a></div></div>
   <nav class="report-nav" aria-label="보고서 섹션"><a href="#design">01 시험설계</a><a href="#outcomes">02 기능성 결과</a><a href="#visuals">03 Figure·Table</a><a href="#preclinical">04 전임상</a><a href="#similar">05 유사원료</a><a href="#mechanism">06 작용기전</a><a href="#safety">07 안전성</a><a href="#reference">Reference</a></nav>
   <main class="wrap">
   <header><div class="report-identity"><div><span class="report-kicker">신청원료 검토</span><h1>${escapeHtml(report.ingredient)}</h1><div class="subtitle"><i>${escapeHtml(report.scientificName)}</i> · ${escapeHtml(report.ingredientType)}</div></div><div class="report-source">${escapeHtml(report.ingredientType)}<br>${escapeHtml(source.pmcid || '원문 확인 필요')}<b>${escapeHtml(report.verdict)}</b></div></div><div class="metrics">${metric('기능성 근거', `${report.outcomeMatrix?.length || 0}개`, report.evidenceGrade, 'blue')}${metric('인체 직접성', `${report.humanEvidenceScore || 0}/5`, audit.sourceType || '원문 유형', 'red')}${metric('개발 준비도', `${report.developmentReadinessScore || 0}/5`, report.feasibility, 'amber')}${metric('근거 등급', report.grade || '-', `${source.pmcid || '원문 확인'}`)}</div></header>
-  <section id="design"><div class="title"><span>01</span><h2>핵심 결론 및 시험설계</h2></div><p class="lead">${escapeHtml(report.summary)}</p><div class="grid"><dl><dt>기능 방향</dt><dd>${escapeHtml(report.functionality)}</dd><dt>시험대상</dt><dd>${escapeHtml(design.subjects || '확인 필요')}</dd><dt>시험모델</dt><dd>${escapeHtml(design.model || '확인 필요')}</dd></dl><dl><dt>기간</dt><dd>${escapeHtml(design.duration || '확인 필요')}</dd><dt>비교군</dt><dd>${escapeHtml(design.comparators || '확인 필요')}</dd><dt>통계분석</dt><dd>${escapeHtml(statisticsSummary)}</dd></dl></div><div class="scroll"><table class="studies"><thead><tr><th>근거 유형</th><th>설계</th><th>대상·모델</th><th>용량</th><th>기간</th></tr></thead><tbody>${studyRows}</tbody></table></div><div class="scroll"><table class="groups"><thead><tr><th>군</th><th>원문 표기</th><th>정의</th><th>투여량(섭취량)</th></tr></thead><tbody>${groupRows}</tbody></table></div></section>
+  <section id="design"><div class="title"><span>01</span><h2>핵심 결론 및 시험설계</h2></div><div class="paper-identity"><b>${escapeHtml(report.sourceTitleKo || '한글 번역명 확인 필요')}</b><span>${escapeHtml(source.title || '영문 논문명 확인 필요')} · ${escapeHtml(source.pubDate || '게재일 확인 필요')}</span></div><p class="lead">${escapeHtml(report.summary)}</p><div class="panel conclusion-list"><h3>이 논문의 결론</h3>${conclusionsHtml}</div><div class="grid"><dl><dt>기능 방향</dt><dd>${escapeHtml(report.functionality)}</dd><dt>시험대상</dt><dd>${escapeHtml(design.subjects || '확인 필요')}</dd><dt>시험모델</dt><dd>${escapeHtml(design.model || '확인 필요')}</dd></dl><dl><dt>기간</dt><dd>${escapeHtml(design.duration || '확인 필요')}</dd><dt>비교군</dt><dd>${escapeHtml(design.comparators || '확인 필요')}</dd><dt>통계분석</dt><dd>${escapeHtml(statisticsSummary)}</dd></dl></div><div class="scroll"><table class="studies"><thead><tr><th>근거 유형</th><th>설계</th><th>대상·모델</th><th>용량</th><th>기간</th></tr></thead><tbody>${studyRows}</tbody></table></div><div class="scroll"><table class="groups"><thead><tr><th>군</th><th>원문 표기</th><th>정의</th><th>투여량(섭취량)</th></tr></thead><tbody>${groupRows}</tbody></table></div></section>
   <section id="outcomes"><div class="title"><span>02</span><h2>평가변수별 기능성 결과</h2></div><div class="scroll"><table class="outcomes"><thead><tr><th>영역</th><th>평가지표</th><th>결과값</th><th>p값</th><th>근거 위치</th></tr></thead><tbody>${outcomeRows}</tbody></table></div></section>
   <section id="visuals" class="visual-section"><div class="title"><span>03</span><h2>주요 결과 Figure·Table</h2></div><div class="visual-grid">${resultVisualsHtml}</div></section>
   <section id="preclinical"><div class="title"><span>04</span><h2>동일 시험원료 전임상 근거</h2></div><div class="scroll"><table class="related-table"><thead><tr><th>시험원료·제조</th><th>기능성·실험모델</th><th>대조군 대비 결과</th><th>Reference</th></tr></thead><tbody>${preclinicalRows}</tbody></table></div></section>
@@ -2548,7 +2654,7 @@ async function analyzePdf(env, candidate, pdfBuffer, onStage = async () => {}) {
 }
 
 async function publishReport(env, report, pdfBuffer, reportDate = seoulDate()) {
-  report = applyVerifiedSourceCorrections(report);
+  report = applyVerifiedReportPresentation(applyVerifiedSourceCorrections(report));
   const manifest = await readJsonObject(env.PRIVATE_DATA, MANIFEST_KEY, { version: 1, updatedAt: null, reports: [] });
   const date = reportDate;
   const id = `${date.replace(/-/g, '')}-${slugify(report.ingredient)}-${report.source.pmcid.toLowerCase()}`;
@@ -2612,6 +2718,9 @@ async function publishReport(env, report, pdfBuffer, reportDate = seoulDate()) {
     humanEvidenceScore: report.humanEvidenceScore,
     developmentReadinessScore: report.developmentReadinessScore,
     summary: report.summary,
+    sourceType: report.evidenceAudit?.sourceType || '기타',
+    sourceTitleKo: report.sourceTitleKo,
+    conclusions: report.conclusions,
     sourceTitle: report.source.title,
     sourcePmcid: report.source.pmcid,
     sourceDoi: report.source.doi,
