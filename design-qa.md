@@ -19,4 +19,7 @@
 - Figure/Table: long source tables use a bounded internal scroll area instead of being scaled down.
 - Mobile (390 x 844): no page-level horizontal overflow; section navigation and wide evidence tables scroll independently.
 - Test visual dimensions: 768 x 2135, 1280 x 1038, and 1280 x 290.
+- Functional outcomes: Korean(English) endpoint labels, Korean comparison direction, p-values, and Figure/Table evidence labels render in aligned columns.
+- Safety: registry and automated database results remain visible at 11px; non-database safety details are grouped as `세부 확인 필요`.
+- Development/regulatory action section removed; navigation and section numbering verified.
 - Result: passed after visual comparison with the three-page reference PDF.
