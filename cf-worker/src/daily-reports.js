@@ -7,9 +7,9 @@ const MAX_SOURCE_CHARS = 42000;
 const EVIDENCE_OUTPUT_TOKENS = 7000;
 const REPORT_OUTPUT_TOKENS = 7000;
 const AGENT_STEP_TIMEOUT_MS = 12 * 60 * 1000;
-const REPORT_VERSION = 26;
-const VISUAL_EVIDENCE_VERSION = 12;
-const STATISTICS_EVIDENCE_VERSION = 2;
+const REPORT_VERSION = 29;
+const VISUAL_EVIDENCE_VERSION = 14;
+const STATISTICS_EVIDENCE_VERSION = 3;
 const MAX_RESULT_VISUALS = 5;
 const MAX_VISUAL_BYTES = 8 * 1024 * 1024;
 const MAX_ANALYZED_CANDIDATES = 5;
@@ -773,7 +773,7 @@ function outcomeVisualTokens(item) {
     ['불균등화효소', ['dismutase']],
     ['카탈레이스', ['catalase']],
     ['말론디알데히드', ['malondialdehyde']],
-    ['아세틸콜린에스터레이스', ['acetylcholinesterase']],
+    ['아세틸콜린에스터레이스', ['acetyl', 'cholinesterase', 'acetylcholinesterase']],
   ]);
   const tokens = outcomeSearchTokens(`${item?.endpoint || ''} ${item?.domain || ''}`);
   const expanded = [...tokens];
@@ -788,7 +788,7 @@ function outcomeVisualTokens(item) {
     if (token === 'gst') expanded.push('glutathione', 'transferase');
     if (token === 'cat') expanded.push('catalase');
     if (token === 'mda') expanded.push('malondialdehyde');
-    if (token === 'ache') expanded.push('acetylcholinesterase');
+    if (token === 'ache' || token === 'acetylcholinesterase') expanded.push('acetyl', 'cholinesterase', 'acetylcholinesterase');
   }
   return [...new Set(expanded.filter(token => token.length >= 3))];
 }
@@ -799,7 +799,7 @@ function visualOutcomeScore(record, item) {
   const distinctive = new Set([
     'survival', 'lifespan', 'longevity', 'mortality', 'climbing', 'geotaxis', 'offspring',
     'fecundity', 'thiol', 'glutathione', 'transferase', 'superoxide', 'dismutase', 'catalase',
-    'malondialdehyde', 'acetylcholinesterase', 'orientation', 'writing', 'depression', 'anxiety',
+    'malondialdehyde', 'acetyl', 'cholinesterase', 'acetylcholinesterase', 'orientation', 'writing', 'depression', 'anxiety',
   ]);
   return outcomeVisualTokens(item).reduce((score, token) => (
     score + (haystack.includes(token) ? (distinctive.has(token) ? 5 : 1) : 0)
@@ -1972,6 +1972,166 @@ function normalizeAiReport(raw, candidate, evidence) {
   };
 }
 
+function verifiedKaempferolOutcome({
+  domain, endpoint, testGroup, result, evidenceLocation,
+  controlGroup = '대조군', controlValue = '평균±SEM(n=5) · 원문 숫자 미제공',
+  testValue = '평균±SEM(n=5) · 원문 숫자 미제공', betweenGroupPValue = 'p < 0.05',
+  statistic = '일원분산분석 및 Tukey 사후검정',
+}) {
+  return {
+    domain,
+    endpoint,
+    tissue: '초파리 전신 균질액 또는 개체 수준',
+    controlGroup,
+    controlValue,
+    testGroup,
+    testValue,
+    result,
+    statistic,
+    withinGroupPValue: '원문 미보고',
+    betweenGroupPValue,
+    pValue: betweenGroupPValue,
+    evidenceLocation,
+  };
+}
+
+function applyVerifiedSourceCorrections(report) {
+  const sourceIdentity = `${report?.source?.pmcid || ''} ${report?.source?.doi || ''}`.toLowerCase();
+  if (!/pmc13319377|10\.1016\/j\.toxrep\.2026\.102301/.test(sourceIdentity)) return report;
+
+  const groups = [
+    { reportName: '대조군', sourceCode: 'Control (unexposed)', description: '표준 식이만 제공한 미노출 대조군', dose: 'Kaempferol 0 mg/10 g diet' },
+    { reportName: '시험군 1', sourceCode: 'Kaempferol 5 mg', description: 'Kaempferol 단독투여군', dose: '5 mg/10 g diet' },
+    { reportName: '시험군 2', sourceCode: 'Kaempferol 10 mg', description: 'Kaempferol 단독투여군', dose: '10 mg/10 g diet' },
+    { reportName: '시험군 3', sourceCode: 'Kaempferol 15 mg', description: 'Kaempferol 단독투여군', dose: '15 mg/10 g diet' },
+    { reportName: '시험군 4', sourceCode: 'Kaempferol 20 mg', description: 'Kaempferol 단독투여군', dose: '20 mg/10 g diet' },
+    { reportName: '시험군 5', sourceCode: 'EFV only', description: 'Efavirenz 유도군; 투여량은 원문 내 표기 불일치', dose: '5 mg/10 g diet(초록·Figure 범례) 또는 10 mg/10 g diet(Figure 6 캡션·결과 본문)' },
+    { reportName: '시험군 6', sourceCode: 'EFV + Kaempferol 10 mg', description: 'Efavirenz 유도 후 Kaempferol 병용군', dose: 'EFV 5 또는 10 mg + Kaempferol 10 mg/10 g diet(원문 EFV 용량 불일치)' },
+    { reportName: '시험군 7', sourceCode: 'EFV + Kaempferol 20 mg', description: 'Efavirenz 유도 후 Kaempferol 병용군', dose: 'EFV 5 또는 10 mg + Kaempferol 20 mg/10 g diet(원문 EFV 용량 불일치)' },
+  ];
+  const graphValues = '평균±SEM(n=5) · 원문 숫자 미제공';
+  const outcomes = [
+    verifiedKaempferolOutcome({
+      domain: '생존·수명', endpoint: '생존기간(Lifespan)', testGroup: '시험군 1~4',
+      controlValue: '최장 생존 50일',
+      testValue: '수명 연장률: 시험군 1 8%, 시험군 2 16%, 시험군 3 26%, 시험군 4 62%; 시험군 4 최장 생존 80일',
+      result: '대조군 대비 용량의존적 유의적 증가(군간 차이)', statistic: '로그순위 검정(Log-rank test)',
+      betweenGroupPValue: '각 시험군 p < 0.0001', evidenceLocation: 'Figure 3',
+    }),
+    verifiedKaempferolOutcome({
+      domain: '급성 생존', endpoint: '7일 생존율(7-day survival)', testGroup: '시험군 1~4',
+      result: '대조군 대비 유의한 차이 없음(군간 차이)', betweenGroupPValue: 'p > 0.05', evidenceLocation: 'Figure 4A',
+    }),
+    verifiedKaempferolOutcome({ domain: '운동기능', endpoint: '등반 수행능력(Negative geotaxis)', testGroup: '시험군 1~4', result: '대조군 대비 유의적 증가(군간 차이)', evidenceLocation: 'Figure 4B' }),
+    verifiedKaempferolOutcome({ domain: '생식기능', endpoint: '자손 출현율(Offspring emergence)', testGroup: '시험군 1~4', result: '대조군 대비 유의적 증가(군간 차이)', evidenceLocation: 'Figure 4C' }),
+    verifiedKaempferolOutcome({ domain: '신경전달 지표', endpoint: '아세틸콜린에스터레이스 활성(AChE activity)', testGroup: '시험군 1~4', result: '대조군 대비 유의한 차이 없음(군간 차이)', betweenGroupPValue: 'p > 0.05', evidenceLocation: 'Figure 5A' }),
+    verifiedKaempferolOutcome({ domain: '항산화 지표', endpoint: '총 티올 수준(T-SH)', testGroup: '시험군 2~4', result: '대조군 대비 유의적 증가(군간 차이); 시험군 1은 유의한 차이 없음', evidenceLocation: 'Figure 5B' }),
+    verifiedKaempferolOutcome({ domain: '항산화 지표', endpoint: '글루타티온 S-전이효소 활성(GST activity)', testGroup: '시험군 2~4', result: '대조군 대비 유의적 증가(군간 차이); 시험군 1은 유의한 차이 없음', evidenceLocation: 'Figure 5C' }),
+    verifiedKaempferolOutcome({ domain: '항산화 지표', endpoint: '초과산화물 불균등화효소 활성(SOD activity)', testGroup: '시험군 1~4', result: '대조군 대비 유의적 증가(군간 차이)', evidenceLocation: 'Figure 5D' }),
+    verifiedKaempferolOutcome({ domain: '항산화 지표', endpoint: '카탈레이스 활성(CAT activity)', testGroup: '시험군 2~4', result: '대조군 대비 유의적 증가(군간 차이); 시험군 1은 유의한 차이 없음', evidenceLocation: 'Figure 5E' }),
+    verifiedKaempferolOutcome({ domain: '산화손상 지표', endpoint: '말론디알데히드 수준(MDA level)', testGroup: '시험군 2~4', result: '대조군 대비 유의적 감소(군간 차이); 시험군 1은 유의한 차이 없음', evidenceLocation: 'Figure 5F' }),
+    verifiedKaempferolOutcome({ domain: 'EFV 유도 생존저하', endpoint: '7일 생존율(7-day survival)', controlGroup: '시험군 5(EFV 단독군)', controlValue: graphValues, testGroup: '시험군 6~7', testValue: graphValues, result: 'EFV 단독군 대비 유의적 증가(군간 차이)', betweenGroupPValue: '# p < 0.05', evidenceLocation: 'Figure 6A' }),
+    verifiedKaempferolOutcome({ domain: 'EFV 유도 운동기능 저하', endpoint: '등반 수행능력(Negative geotaxis)', controlGroup: '시험군 5(EFV 단독군)', controlValue: graphValues, testGroup: '시험군 6~7', testValue: graphValues, result: 'EFV 단독군 대비 유의적 개선(군간 차이)', betweenGroupPValue: '# p < 0.05', evidenceLocation: 'Figure 6B' }),
+    verifiedKaempferolOutcome({ domain: 'EFV 유도 생식기능 저하', endpoint: '자손 출현율(Offspring emergence)', controlGroup: '시험군 5(EFV 단독군)', controlValue: graphValues, testGroup: '시험군 6~7', testValue: graphValues, result: 'EFV 단독군 대비 유의적 증가(군간 차이)', betweenGroupPValue: '# p < 0.05', evidenceLocation: 'Figure 6C' }),
+    verifiedKaempferolOutcome({ domain: 'EFV 유도 신경전달 저하', endpoint: '아세틸콜린에스터레이스 활성(AChE activity)', controlGroup: '시험군 5(EFV 단독군)', controlValue: graphValues, testGroup: '시험군 6~7', testValue: graphValues, result: 'EFV 단독군 대비 유의적 증가(군간 차이)', betweenGroupPValue: '# p < 0.05', evidenceLocation: 'Figure 7A' }),
+    verifiedKaempferolOutcome({ domain: 'EFV 유도 항산화 저하', endpoint: '총 티올 수준(T-SH)', controlGroup: '시험군 5(EFV 단독군)', controlValue: graphValues, testGroup: '시험군 6~7', testValue: graphValues, result: 'EFV 단독군 대비 유의적 증가(군간 차이)', betweenGroupPValue: '# p < 0.05', evidenceLocation: 'Figure 7B' }),
+    verifiedKaempferolOutcome({ domain: 'EFV 유도 항산화 저하', endpoint: '글루타티온 S-전이효소 활성(GST activity)', controlGroup: '시험군 5(EFV 단독군)', controlValue: graphValues, testGroup: '시험군 6~7', testValue: graphValues, result: 'EFV 단독군 대비 유의적 증가(군간 차이)', betweenGroupPValue: '# p < 0.05', evidenceLocation: 'Figure 7C' }),
+    verifiedKaempferolOutcome({ domain: 'EFV 유도 항산화 저하', endpoint: '초과산화물 불균등화효소 활성(SOD activity)', controlGroup: '시험군 5(EFV 단독군)', controlValue: graphValues, testGroup: '시험군 6~7', testValue: graphValues, result: 'EFV 단독군 대비 유의적 증가(군간 차이)', betweenGroupPValue: '# p < 0.05', evidenceLocation: 'Figure 7D' }),
+    verifiedKaempferolOutcome({ domain: 'EFV 유도 항산화 저하', endpoint: '카탈레이스 활성(CAT activity)', controlGroup: '시험군 5(EFV 단독군)', controlValue: graphValues, testGroup: '시험군 6~7', testValue: graphValues, result: 'EFV 단독군 대비 유의적 증가(군간 차이)', betweenGroupPValue: '# p < 0.05', evidenceLocation: 'Figure 7E' }),
+    verifiedKaempferolOutcome({ domain: 'EFV 유도 지질과산화', endpoint: '말론디알데히드 수준(MDA level)', controlGroup: '시험군 5(EFV 단독군)', controlValue: graphValues, testGroup: '시험군 6~7', testValue: graphValues, result: 'EFV 단독군 대비 유의적 감소(군간 차이)', betweenGroupPValue: '# p < 0.05', evidenceLocation: 'Figure 7F' }),
+  ];
+  const studyDesign = {
+    subjects: 'Harwich strain Drosophila melanogaster, 24~72시간령, 군당 50마리, 5개 독립 반복',
+    model: '정상 초파리 단독투여 모델 및 efavirenz 유도 기능적 노화 모델',
+    groups: groups.map(item => `${item.reportName}(${item.sourceCode})`).join(', '),
+    dose: 'Kaempferol 5·10·15·20 mg/10 g diet; EFV 병용시험의 EFV 용량은 원문 내 5 mg와 10 mg 표기가 충돌',
+    duration: '주요 평가 7일; 자손 출현 14일; 수명시험은 최종 개체 사망까지',
+    comparators: '미노출 대조군 및 efavirenz 단독군',
+    randomization: '원문 미보고',
+    blinding: '원문 미보고',
+    statistics: '일원분산분석(One-way ANOVA) 및 Tukey 사후검정; 생존곡선 로그순위 검정 및 Bonferroni 보정',
+    ethics: '초파리 시험의 윤리승인 번호 원문 미보고',
+  };
+  const inconsistencies = [
+    'Efavirenz 용량이 초록·Figure 6/7 범례에서는 5 mg/10 g diet, Figure 6 캡션과 결과 본문 일부에서는 10 mg/10 g diet로 기재되어 일치하지 않는다.',
+    'Figure 7 캡션에는 Kaempferol 50 mg/10 g diet로 기재되어 있으나 Figure 범례와 결과 본문은 10 및 20 mg/10 g diet로 제시한다.',
+    'Figure 4~7은 Mean±SEM과 유의성 기호만 제시하며 막대별 정확한 평균·SEM·정확 p값은 숫자로 보고하지 않는다.',
+  ];
+  const source = {
+    ...report.source,
+    journal: 'Toxicology Reports',
+    pubDate: '2026-06-25',
+    volume: '17',
+    pages: '102301',
+  };
+  const evidenceAudit = {
+    ...(report.evidenceAudit || {}),
+    sourceType: '동물시험',
+    testArticle: 'Moringa oleifera 잎에서 분리한 Kaempferol',
+    rawMaterial: 'Moringa oleifera leaf',
+    manufacturing: '석유에테르 탈지 후 80% 메탄올 추출, 물로 희석, 에틸아세테이트 분획 및 실온 건조',
+    extractionMethod: '석유에테르 탈지 · 80% 메탄올 추출 · 에틸아세테이트 분획',
+    studyDesign,
+    groupDefinitions: groups,
+    outcomeMatrix: outcomes,
+    internalInconsistencies: inconsistencies,
+    sourceNotes: ['원문 PDF의 Methods, Results 및 Figure 3~7을 직접 대조하여 교정함.'],
+  };
+  return {
+    ...report,
+    source,
+    ingredient: 'Kaempferol',
+    scientificName: 'Kaempferol',
+    ingredientType: 'Moringa oleifera 잎 유래 분리 플라보노이드',
+    functionality: '초파리의 수명·운동기능·생식기능 및 항산화 지표 개선; efavirenz 유도 기능적 노화 완화',
+    verdict: '전임상 탐색 후보 · 인체적용 근거 부재',
+    keyDecision: '초파리 전임상 신호는 확인되었으나 EFV 용량 불일치와 인체적용 근거 부재로 개발 타당성 확정 불가',
+    grade: 'C',
+    evidenceGrade: '낮음',
+    evidenceMaturityScore: 2,
+    humanEvidenceScore: 0,
+    developmentReadinessScore: 1,
+    novelty: 'Kaempferol 단일성분의 efavirenz 유도 기능적 노화 완화 전임상 근거',
+    feasibility: '추가 원료표준화·독성·인체적용 검증 필요',
+    summary: 'Moringa oleifera 잎에서 분리한 Kaempferol은 초파리에서 수명을 용량의존적으로 연장하고 운동·생식 및 항산화 지표를 개선하였다. EFV 유도 기능저하도 완화했으나 EFV 투여량 표기가 원문 내부에서 충돌하며, 인체적용 근거와 정량 원료규격은 없다.',
+    rawMaterial: 'Moringa oleifera L. 잎',
+    intakeBasis: '초파리 혼합식이 투여 근거만 확인; 인체 섭취근거 원문 미제시',
+    process: '석유에테르 탈지 → 80% 메탄올 추출 → 물 희석 → 에틸아세테이트 분획 → 실온 건조 → TLC 및 1H-NMR 확인',
+    specifications: [
+      '황색 결정성 분말; TLC 및 1H-NMR로 Kaempferol 동정',
+      'Kaempferol 함량·순도·지표성분 정량 규격 원문 미보고',
+      '제조 배치 간 재현성 및 잔류용매 규격 원문 미보고',
+    ],
+    safety: [
+      '7일 LC50: 338.60 mg/10 g diet(Figure 2)',
+      '350 mg/10 g diet 이상에서 생존율 40% 이하의 치사성 관찰',
+      '5~20 mg/10 g diet에서 7일 생존율은 미노출 대조군과 유의한 차이 없음(Figure 4A)',
+      '인체 안전성 자료 원문 미제시',
+    ],
+    studies: [
+      { kind: '동물시험', design: 'Kaempferol 단독 용량반응 시험', subjects: studyDesign.subjects, dose: '5·10·15·20 mg/10 g diet', duration: '7일; 수명시험은 최종 사망까지; 자손 출현 14일', outcomes: '수명, 생존, 등반 수행능력, 자손 출현, AChE, T-SH, GST, SOD, CAT, MDA', safety: '5~20 mg/10 g diet에서 7일 생존율 차이 없음', evidenceLocation: 'Figures 3~5' },
+      { kind: '동물시험', design: 'Efavirenz 유도 기능적 노화 병용시험', subjects: studyDesign.subjects, dose: 'Kaempferol 10·20 mg/10 g diet; EFV 용량 원문 불일치', duration: '7일', outcomes: 'EFV 유도 생존·운동·생식 저하 및 산화스트레스 지표 완화', safety: '병용 안전성의 별도 독성평가 원문 미보고', evidenceLocation: 'Figures 6~7' },
+    ],
+    mechanisms: [
+      'Nrf2-ARE 경로 활성화를 통한 항산화 방어 증가(저자 제안 기전)',
+      'T-SH, GST, SOD 및 CAT 증가와 MDA 감소',
+      'AChE 활성 회복과 운동·생식기능 개선의 연계 가능성',
+    ],
+    outcomeMatrix: outcomes,
+    limitations: [
+      'Harwich strain 초파리 단일 동물모델 연구이며 인체적용시험이 아니다.',
+      'EFV 투여량과 Figure 7의 Kaempferol 투여량에 원문 내부 불일치가 있다.',
+      'Figure 4~7의 정확한 평균·SEM·개별 p값이 숫자로 제공되지 않았다.',
+      'Kaempferol 정량 순도와 배치 규격이 보고되지 않았다.',
+    ],
+    inconsistencies,
+    developmentActions: [],
+    noGoClaims: ['인체 수명 연장', '인체 항레트로바이러스제 부작용 예방·치료', 'Kaempferol의 건강기능식품 기능성 확정'],
+    groupDefinitions: groups,
+    evidenceAudit,
+  };
+}
+
 function listHtml(items, empty = '확인 필요') {
   const values = items?.length ? items : [empty];
   return `<ul>${values.map(value => `<li>${escapeHtml(value)}</li>`).join('')}</ul>`;
@@ -2092,7 +2252,9 @@ function outcomeResultDisplay(value, significant = false) {
   if (!raw || raw === '확인 필요' || /^(?:p|f|t)\s*[=(<]/i.test(raw)) return '세부 확인 필요';
   const within = /기준선|군내|within|baseline|pre[- ]?(?:to|vs)/i.test(raw);
   const between = /대조군|시험군|군간|placebo|control|between|compared|versus/i.test(raw);
-  const comparison = within ? '기준선 대비' : '대조군 대비';
+  const comparison = within ? '기준선 대비'
+    : /(?:EFV|efavirenz)(?:\s*단독군)?\s*대비/i.test(raw) ? 'EFV 단독군 대비'
+      : '대조군 대비';
   const comparisonType = within ? '군내 변화' : '군간 차이';
   if (/유의한?\s*차이\s*없|통계적\s*차이\s*없|no (?:statistically )?significant difference/i.test(raw)) {
     return `${between && /시험군/.test(raw) ? raw.replace(/통계적\s*/g, '').replace(/없음.*$/i, '없음') : '대조군 대비 차이 없음'}(군간 차이)`;
@@ -2386,6 +2548,7 @@ async function analyzePdf(env, candidate, pdfBuffer, onStage = async () => {}) {
 }
 
 async function publishReport(env, report, pdfBuffer, reportDate = seoulDate()) {
+  report = applyVerifiedSourceCorrections(report);
   const manifest = await readJsonObject(env.PRIVATE_DATA, MANIFEST_KEY, { version: 1, updatedAt: null, reports: [] });
   const date = reportDate;
   const id = `${date.replace(/-/g, '')}-${slugify(report.ingredient)}-${report.source.pmcid.toLowerCase()}`;
@@ -2401,7 +2564,7 @@ async function publishReport(env, report, pdfBuffer, reportDate = seoulDate()) {
       ...item,
       filename,
       storageKey: `${prefix}/visuals/${filename}`,
-      assetUrl: `https://api.healtharchive.kr/daily-reports/${encodeURIComponent(id)}/visuals/${encodeURIComponent(filename)}`,
+      assetUrl: `https://api.healtharchive.kr/daily-reports/${encodeURIComponent(id)}/visuals/${encodeURIComponent(filename)}?v=${VISUAL_EVIDENCE_VERSION}`,
     };
   });
   report.visualEvidenceVersion = VISUAL_EVIDENCE_VERSION;
