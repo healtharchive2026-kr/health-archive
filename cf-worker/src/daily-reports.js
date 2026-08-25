@@ -13,6 +13,7 @@ const STATISTICS_EVIDENCE_VERSION = 1;
 const MAX_RESULT_VISUALS = 4;
 const MAX_VISUAL_BYTES = 8 * 1024 * 1024;
 const MAX_ANALYZED_CANDIDATES = 5;
+const MAX_RELATED_SOURCE_PDFS = 1;
 const DISCOVERY_INGREDIENT_TERM = '(TITLE_ABS:"functional food" OR TITLE_ABS:"functional ingredient" OR TITLE_ABS:"dietary supplement" OR TITLE_ABS:nutraceutical OR TITLE_ABS:probiotic OR TITLE_ABS:prebiotic OR TITLE_ABS:postbiotic OR TITLE_ABS:"natural product" OR TITLE_ABS:"plant extract" OR TITLE_ABS:"herbal extract" OR TITLE_ABS:phytochemical OR TITLE_ABS:polyphenol OR TITLE_ABS:flavonoid OR TITLE_ABS:polysaccharide OR TITLE_ABS:"bioactive peptide")';
 const DISCOVERY_INTERVENTION_TERM = '(TITLE_ABS:"clinical trial" OR TITLE_ABS:randomized OR TITLE_ABS:placebo OR TITLE_ABS:intervention OR TITLE_ABS:supplementation OR TITLE_ABS:administered OR TITLE_ABS:oral OR TITLE_ABS:efficacy OR TITLE_ABS:ameliorated OR TITLE_ABS:attenuated OR TITLE_ABS:improved)';
 const DISCOVERY_EXCLUSION_TERM = 'NOT (TITLE_ABS:"mobile application" OR TITLE_ABS:smartphone OR TITLE_ABS:software OR TITLE_ABS:"digital intervention" OR TITLE_ABS:"plant survey" OR TITLE_ABS:habitat OR TITLE_ABS:biodiversity OR TITLE_ABS:ecology OR TITLE_ABS:"remote sensing" OR TITLE_ABS:agronomy OR TITLE_ABS:"crop yield" OR TITLE:"systematic review" OR TITLE:"meta-analysis" OR TITLE:"scoping review" OR TITLE:"review protocol")';
@@ -1315,8 +1316,8 @@ async function collectRelatedEvidence(env, candidate, evidence) {
   const sourceCache = new Map();
   const hydratePool = async pool => {
     const selected = [];
-    for (const relatedCandidate of pool.slice(0, 6)) {
-      if (selected.length >= 3) break;
+    for (const relatedCandidate of pool.slice(0, 3)) {
+      if (selected.length >= MAX_RELATED_SOURCE_PDFS) break;
       let source = sourceCache.get(relatedCandidate.pmcid);
       if (source === undefined) {
         const pdf = await fetchOriginalPdf(relatedCandidate);
