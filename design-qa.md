@@ -23,3 +23,15 @@
 - Safety: registry and automated database results remain visible at 11px; non-database safety details are grouped as `세부 확인 필요`.
 - Development/regulatory action section removed; navigation and section numbering verified.
 - Result: passed after visual comparison with the three-page reference PDF.
+
+## Public Home And Service Story
+
+- Source specification: `C:\Users\225170\Downloads\healtharchive-redesign-spec.md`
+- Public home: 86svh photographic hero, four-cell service strip, five module cards, access CTA, and public footer.
+- Service story: `/about/` with Origin, Validation, Intelligence, and a three-stage sticky development flow.
+- Desktop 1280 x 900: five module cards on one row, simplified public header, no horizontal overflow.
+- Tablet 1024 x 800 and 768 x 900: module cards shift to three and two columns without text clipping.
+- Mobile 390 x 844: single-column cards, compact hero actions, one-column story chapters, no page-level horizontal overflow.
+- Motion: hero parallax, staggered reveal, and sticky card transitions verified; reduced-motion fallback included.
+- Functional check: both public start buttons open the existing account dialog; authenticated workspace markup and navigation remain unchanged.
+- Result: passed.

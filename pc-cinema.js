@@ -27,15 +27,41 @@
       frames.forEach(frame => frame.classList.add('is-visible'));
     }
 
-    root.querySelector('[data-cinema-start]')?.addEventListener('click', () => {
-      const workspace = document.getElementById('workspace-start');
-      if (document.body.classList.contains('site-authenticated')) {
-        workspace?.scrollIntoView({behavior: reducedMotion ? 'auto' : 'smooth', block: 'start'});
-        return;
-      }
-      sessionStorage.setItem('ha-enter-workspace-after-login', '1');
-      if (typeof window.openProtectedAccountModal === 'function') window.openProtectedAccountModal();
-      else document.getElementById('account-trigger')?.click();
+    const opening = root.querySelector('.pc-cinema-opening');
+    if (opening && !reducedMotion) {
+      let scheduled = false;
+      const updateOpeningMotion = () => {
+        scheduled = false;
+        const rect = opening.getBoundingClientRect();
+        const progress = Math.min(1, Math.max(0, -rect.top / Math.max(rect.height, 1)));
+        root.style.setProperty('--hero-shift', `${progress * rect.height * 0.18}px`);
+        root.style.setProperty('--hero-scale', String(1 + progress * 0.08));
+        root.style.setProperty('--hero-copy-shift', `${progress * 80}px`);
+        root.style.setProperty('--hero-copy-scale', String(1 - progress * 0.05));
+        root.style.setProperty('--hero-copy-opacity', String(1 - Math.min(1, progress / 0.75) * 0.95));
+      };
+      const scheduleOpeningMotion = () => {
+        if (scheduled) return;
+        scheduled = true;
+        window.requestAnimationFrame(updateOpeningMotion);
+      };
+      updateOpeningMotion();
+      window.addEventListener('scroll', scheduleOpeningMotion, {passive: true});
+      window.addEventListener('resize', scheduleOpeningMotion, {passive: true});
+      window.setInterval(scheduleOpeningMotion, 90);
+    }
+
+    root.querySelectorAll('[data-cinema-start]').forEach(button => {
+      button.addEventListener('click', () => {
+        const workspace = document.getElementById('workspace-start');
+        if (document.body.classList.contains('site-authenticated')) {
+          workspace?.scrollIntoView({behavior: reducedMotion ? 'auto' : 'smooth', block: 'start'});
+          return;
+        }
+        sessionStorage.setItem('ha-enter-workspace-after-login', '1');
+        if (typeof window.openProtectedAccountModal === 'function') window.openProtectedAccountModal();
+        else document.getElementById('account-trigger')?.click();
+      });
     });
   }
 

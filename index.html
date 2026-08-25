@@ -56,9 +56,9 @@
 <link rel="icon" href="data:,">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
-<link rel="preload" as="image" href="assets/cinema-overview.jpg" fetchpriority="high">
-<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
-<link rel="stylesheet" href="style.css?v=20260730-chapters1">
+<link rel="preload" as="image" href="assets/pc-landscape-bg.jpg" fetchpriority="high">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.css">
+<link rel="stylesheet" href="style.css?v=20260825-redesign1">
 <link rel="stylesheet" href="simon.css?v=20260730-adminlock1">
 </head>
 <body>
@@ -141,55 +141,67 @@
 <main class="container" id="main-content">
 
   <section id="home" class="tab-section active">
-    <div class="pc-cinema" aria-label="HealthArchive 소개">
+    <div class="pc-cinema pc-public-home" aria-label="HealthArchive 소개">
       <section class="pc-cinema-opening">
-        <img src="assets/pc-landscape-bg.jpg" alt="푸른 산과 자연 풍경" class="pc-cinema-opening-media">
+        <img src="assets/pc-landscape-bg.jpg" alt="건강기능식품 원료의 출발점을 상징하는 푸른 산과 자연 풍경" class="pc-cinema-opening-media">
         <div class="pc-cinema-opening-shade" aria-hidden="true"></div>
         <div class="pc-cinema-opening-copy">
           <span>Nature · Food · Evidence</span>
           <h1>자연의 가능성을<br><b>근거의 언어로.</b></h1>
           <p>HealthArchive는 원료의 시작부터 규제 판단까지, 흩어진 정보를 하나의 개발 흐름으로 연결합니다.</p>
+          <div class="pc-cinema-opening-actions">
+            <button type="button" class="pc-public-button pc-public-button-primary" data-cinema-start>HealthArchive 시작하기 <i aria-hidden="true">→</i></button>
+            <a class="pc-public-button pc-public-button-secondary" href="about/">서비스 살펴보기 <i aria-hidden="true">↗</i></a>
+          </div>
         </div>
-        <div class="pc-cinema-scroll" aria-hidden="true"><span>Scroll to discover</span><i>↓</i></div>
+        <div class="pc-cinema-scroll" aria-hidden="true"><span>아래로 스크롤</span><i>↓</i></div>
       </section>
 
-      <div class="pc-cinema-journey" aria-label="원료 개발 여정">
-        <section class="pc-cinema-scene cinema-origin" data-cinema-scene>
-          <div class="pc-cinema-scene-copy"><span>01 / Origin</span><h2>원료의 시작은<br>자연을 읽는 일.</h2><p>식용 근거와 유래, 제조 공정과 기능성 가능성을 함께 살펴 개발할 수 있는 원료인지 첫 질문을 세웁니다.</p></div>
-          <div class="pc-cinema-scene-media cinema-media-origin"><img src="assets/pc-nature-hero.jpg" alt="식물과 과일에서 얻은 자연 유래 추출물"><img src="assets/pc-origin.jpg" alt="양치식물과 자연석으로 표현한 원료의 기원"></div>
-        </section>
-        <section class="pc-cinema-scene cinema-validation" data-cinema-scene>
-          <div class="pc-cinema-scene-media cinema-media-validation"><img src="assets/pc-lab.jpg" alt="시험관을 분석하는 실험 장면"><img src="assets/pc-clinical.jpg" alt="검체를 확인하는 연구자"></div>
-          <div class="pc-cinema-scene-copy"><span>02 / Validation</span><h2>가능성은 실험을 거쳐<br>근거가 됩니다.</h2><p>안전성, 작용기전, 전임상과 인체적용시험의 평가변수를 연결해 제출 가능한 증거의 구조를 설계합니다.</p></div>
-        </section>
-        <section class="pc-cinema-scene cinema-intelligence" data-cinema-scene>
-          <div class="pc-cinema-scene-copy"><span>03 / Intelligence</span><h2>데이터를 연결하고,<br>판단을 준비합니다.</h2><p>원료 DB, 회의록, 법령과 가이드라인을 하나의 흐름으로 묶어 다음 개발 결정을 더 빠르고 명확하게 만듭니다.</p></div>
-          <div class="pc-cinema-scene-media cinema-media-intelligence"><img src="assets/pc-data.jpg" alt="구조화된 데이터베이스 이미지"><img src="assets/pc-regulatory.jpg" alt="규제와 개발 방향을 논의하는 회의 장면"></div>
-        </section>
-      </div>
+      <section class="pc-public-stats" aria-label="HealthArchive 서비스 현황">
+        <div><strong>5</strong><span>개발 모듈</span></div>
+        <div><strong>58</strong><span>연결 데이터베이스</span></div>
+        <div><strong>6</strong><span>뉴스 출처</span></div>
+        <div><strong>Daily</strong><span>매일 갱신</span></div>
+      </section>
 
       <section class="pc-cinema-preview" data-cinema-scene aria-labelledby="cinema-preview-title">
         <div class="pc-cinema-preview-head">
           <span>Inside HealthArchive</span>
-          <h2 id="cinema-preview-title">개발의 다음 질문을 위한<br>실무 도구를 한곳에.</h2>
-          <p>로그인 후 아래 데이터베이스와 검토 도구를 하나의 개발 흐름으로 사용할 수 있습니다.</p>
+          <h2 id="cinema-preview-title"><strong>개발의 다음 질문을 위한</strong><br><span>실무 도구를 한곳에.</span></h2>
+          <p>로그인 후 데이터베이스와 검토 도구를 하나의 원료 개발 흐름으로 사용할 수 있습니다.</p>
         </div>
         <div class="pc-cinema-preview-grid" aria-label="제공 기능 미리보기">
-          <article><em>01</em><h3>개발검토</h3><ul><li>원료 Pre-Check</li><li>개발방향 매핑</li><li>원료 개발 가이드</li><li>화이트스페이스맵</li></ul></article>
-          <article><em>02</em><h3>원료·제품 DB</h3><ul><li>개별·고시형 원료</li><li>식품원료목록</li><li>한시적 인정 원료</li><li>안전성·반입차단</li><li>제품 적용 현황</li></ul></article>
-          <article><em>03</em><h3>규제·인허가</h3><ul><li>법령·공전·가이드라인</li><li>해외 인허가</li><li>심의 관련</li><li>건기식 심의 회의록</li><li>GMO 회의록</li></ul></article>
-          <article><em>04</em><h3>연구설계</h3><ul><li>기능성별 원료 비교</li><li>기능성별 프로토콜</li><li>임상정보 DB</li><li>Daily 원료 보고서</li></ul></article>
-          <article><em>05</em><h3>시장·동향</h3><ul><li>시장현황</li><li>인정 통계</li><li>건기식 R&amp;D 과제</li><li>식품 뉴스</li><li>학회·박람회</li></ul></article>
+          <article>
+            <span class="pc-module-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg></span><em>01</em><h3>개발검토</h3><ul><li>원료 Pre-Check</li><li>개발방향 매핑</li><li>원료 개발 가이드</li><li>화이트스페이스맵</li></ul>
+          </article>
+          <article>
+            <span class="pc-module-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg></span><em>02</em><h3>원료·제품 DB</h3><ul><li>개별·고시형 원료</li><li>식품원료목록</li><li>한시적 인정 원료</li><li>안전성·제품 현황</li></ul>
+          </article>
+          <article>
+            <span class="pc-module-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></span><em>03</em><h3>규제·인허가</h3><ul><li>법령·공전·가이드라인</li><li>국내·해외 인허가</li><li>심의 정보</li><li>위원회 회의록</li></ul>
+          </article>
+          <article>
+            <span class="pc-module-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 3h6M10 9 6 19a2 2 0 0 0 2 3h8a2 2 0 0 0 2-3L14 9V3"/><path d="M8.5 15h7"/></svg></span><em>04</em><h3>연구설계</h3><ul><li>기능성별 원료 비교</li><li>기능성별 프로토콜</li><li>임상정보 DB</li><li>Daily 원료 보고서</li></ul>
+          </article>
+          <article>
+            <span class="pc-module-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><em>05</em><h3>시장·동향</h3><ul><li>시장·인정 통계</li><li>건기식 R&amp;D 과제</li><li>식품 뉴스</li><li>학회·박람회</li></ul>
+          </article>
         </div>
         <p class="pc-cinema-preview-note"><a href="ingredient-development/">건강기능식품 원료 개발 실무 가이드</a> · <a href="insights/">주간 제품·규제·R&amp;D 브리프</a> · <a href="en/" lang="en">Global ingredient development</a> · 실제 검색과 상세 자료 열람은 로그인 후 제공됩니다.</p>
       </section>
 
-      <section class="pc-cinema-enter" data-cinema-scene>
+      <section class="pc-cinema-enter" id="cta" data-cinema-scene>
         <span>From evidence to action</span>
-        <h2>이제, 개발자의 작업 공간으로.</h2>
+        <h2><strong>이제,</strong><br><span>개발자의 작업 공간으로.</span></h2>
         <button type="button" data-cinema-start>HealthArchive 시작하기 <i aria-hidden="true">→</i></button>
-        <p class="pc-cinema-enter-limit">초기 서비스 50명 한정 <span aria-hidden="true">|</span> 현재 <strong id="approved-member-count">-</strong>명</p>
+        <p class="pc-cinema-enter-limit">초기 서비스 50명 한정 <span aria-hidden="true">·</span> 신청 즉시 승인</p>
       </section>
+
+      <footer class="pc-public-footer">
+        <a class="pc-public-footer-brand" href="#home" data-goto="home"><img src="assets/logo-icon-transparent.png" alt=""><span>Health<b>Archive</b></span></a>
+        <nav aria-label="공개 자료"><a href="about/">서비스 소개</a><a href="ingredient-development/">원료 개발 가이드</a><a href="insights/">주간 브리프</a><a href="privacy.html">개인정보처리방침</a></nav>
+        <p>© 2026 HealthArchive. 건강기능식품 원료 개발 실무 아카이브.</p>
+      </footer>
     </div>
 
     <div class="hero hero-dark" id="workspace-start">
@@ -2605,7 +2617,7 @@
 <script src="market.js?v=20260721-access-market1"></script>
 <script src="app.js?v=20260806-visitor1"></script>
 <script src="simon.js?v=20260730-adminlock1"></script>
-<script src="pc-cinema.js?v=20260714-cinema-restore1"></script>
+<script src="pc-cinema.js?v=20260825-redesign1"></script>
 <script src="feedback.js?v=20260714-api1"></script>
 </body>
 </html>
