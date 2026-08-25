@@ -19,16 +19,16 @@ Daily 원료 보고서는 별도 PC나 로컬 작업 스케줄러 없이 Cloudfl
 13. 검증: 인체적용시험 또는 동물시험, 대상·모델 정보, 시험군 정의 2개 이상, 실제 DB 조회결과 4개 이상, 결과지표 2개 이상, 한계 2개 이상, 개발조치 2개 이상, 비식별화 적용
 14. 결과 시각자료: Europe PMC full-text XML의 Figure·Table과 PMC 원문 이미지를 평가변수의 근거 위치·키워드에 맞춰 최대 4개 선별
 15. 이미지 생성: 원문 Figure는 논문 제공 원본 이미지를 사용하고 Table은 PMC 원문 화면 캡처를 우선하며, 캡처 실패 시에만 선명한 SVG로 재구성
-16. PDF 생성: Cloudflare Browser Run, 각 시각자료에 원문 label·legend·연결 평가변수·원문 위치 표시
+16. HTML 생성: 원료별 독립 상세 페이지, 섹션 내비게이션, 원문 label·legend·연결 평가변수·원문 위치 표시
 17. 저장: R2 `daily-reports/<report-id>/`
-18. 제공: 공개 요약 목록과 로그인 전용 분석 PDF·원문 PDF
+18. 제공: 공개 요약 목록과 로그인 전용 상세 HTML·원문 PDF
 
-분석 PDF는 A4 규격의 압축형 레이아웃으로 생성하며 강제 쪽 나눔을 두지 않는다. 한글 우선 산세리프 서체와 400·600·700 단계의 글자 굵기를 사용하고, 제목·본문·표·범례별 크기와 행간을 구분한다. 표 헤더와 수치·근거 열은 가운데 정렬하고 한글 어절과 수치 표현이 셀 경계에서 부자연스럽게 분리되지 않도록 한다. Table 제목·legend는 표 위에, Figure legend는 그림 아래에 배치하고 원문 표 구조·헤더·행 구분을 보존한다. 보고서 말미에는 저자·논문명·저널·권호·쪽수·DOI·PMCID와 정확 게재일을 포함한 문헌 Reference를 표시한다.
+상세 HTML은 첨부된 보고서 재구성안의 네이비 선형 레이아웃과 정보 위계를 적용한다. 데스크톱과 모바일에서 반응형으로 동작하며 섹션 내비게이션, 가로 스크롤 표, 원문 시각자료 확대 보기를 제공한다. 표 헤더와 수치·근거 열은 가운데 정렬하고 한글 어절과 수치 표현이 셀 경계에서 부자연스럽게 분리되지 않도록 한다. Table 제목·legend는 표 위에, Figure legend는 그림 아래에 배치하고 원문 표 구조·헤더·행 구분을 보존한다. 보고서 말미에는 저자·논문명·저널·권호·쪽수·DOI·PMCID와 정확 게재일을 포함한 문헌 Reference를 표시한다.
 
 ## 공개 범위
 
 - 공개: 발간일, 원료명, 원료 유형, 검토 기능성, 근거 등급, 요약, 원문 논문명
-- 로그인 전용: 분석 PDF, 원문 PDF, 상세 HTML
+- 로그인 전용: 상세 HTML, 고해상도 Figure·Table, 원문 PDF
 - 비공개: 보고서 JSON과 품질 게이트 탈락 초안·사유
 
 ## 원문 확보 원칙
@@ -64,26 +64,27 @@ daily-reports/
   rejections/
     <date>-<pmcid>.json
   <report-id>/
-    report.pdf
     source.pdf
     report.html
     report.json
     evidence.json
     visuals/
       01-figure.jpg
-      02-table.svg
+      02-table.png
 ```
 
 ## API
 
 - `GET /daily-reports`: 공개 요약 목록
-- `GET /daily-reports/<id>/report.pdf`: 로그인 전용 분석 PDF
+- `GET /daily-reports/<id>`: 로그인 전용 상세 HTML
+- `GET /daily-reports/<id>/visuals/<file>`: 로그인 전용 고해상도 Figure·Table
 - `GET /daily-reports/<id>/source.pdf`: 로그인 전용 원문 PDF
 - `GET /admin/daily-reports/status`: 관리자 실행 상태
 - `POST /admin/daily-reports/run`: 관리자 수동 실행
 - `POST /admin/daily-reports/run?force=1`: 실행 잠금 무시 후 재실행
 - `POST /admin/daily-reports/run?force=1&pmcid=PMC...`: 공개 원문 PMCID 지정 발간
 - `POST /admin/daily-reports/run?date=YYYY-MM-DD`: 누락 발간일 지정 백필
+- `POST /admin/daily-reports/run?html=1`: 기존 보고서를 상세 HTML 형식으로 한 건씩 전환
 
 수동 실행은 관리자 로그인 세션 또는 `PROTECTED_UPDATE_TOKEN` Bearer 인증이 필요하다.
 일반 자동 실행은 전일과 당일 중 보고서가 없는 가장 이른 날짜를 먼저 채운다.
@@ -93,7 +94,7 @@ AI 구조화 응답이 올바른 JSON이 아니면 동일 단계에서 한 번 �
 
 ## 상태 값
 
-- `running`: 후보 탐색·원문 확보·AI 검토·PDF 발간 진행 중
+- `running`: 후보 탐색·원문 확보·AI 검토·HTML 발간 진행 중
 - `success`: 신규 보고서 발간 완료
 - `idle`: 신규 공개 원문 PDF가 없거나 발간 품질 기준을 충족한 후보 없음
 - `failed`: 자동화 실패. `status.json`의 `error`와 Worker 로그 확인

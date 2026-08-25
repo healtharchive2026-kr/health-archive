@@ -1,35 +1,22 @@
 # Design QA
 
+## Food Ingredient DB Navigation
+
 - Source visual truth: `C:/Users/kimsi/AppData/Local/Temp/codex-clipboard-6c7d2e39-f7de-4c8d-90b0-03aeedb08d3a.png`
 - Desktop implementation: `C:/Users/kimsi/Documents/Codex/2026-07-01/new-chat/work/health-archive/.audit/2026-07-12-dbnav/01-desktop-ingredients.png`
 - Mobile implementation: `C:/Users/kimsi/Documents/Codex/2026-07-01/new-chat/work/health-archive/.audit/2026-07-12-dbnav/02-mobile-ingredients.png`
 - Desktop viewport/state: 1084 x 1135, `ingredients` section active
 - Mobile viewport/state: 390 x 844 and 320 x 700, `ingredients` section active
-
-## Evidence
-
-- The three requested database groups fill the reference image's marked top-tab area.
-- The active item uses a solid blue treatment; inactive items use a lighter blue surface.
-- All six database screens preserve the same group structure and show one active item.
-- Mobile navigation stacks into three stable rows without clipped labels or page-level horizontal overflow.
-
-## Interaction Tests
-
 - Verified transitions: `ingredients` -> `temp-approval` -> `foodraw` -> `gmo-ingredients` -> `blocked` -> `safety-db`.
-- Verified the active section and active tab after every transition.
-- Console warnings and errors: none.
+- Result: passed.
 
-## Findings
+## Daily Report HTML
 
-- No P0, P1, or P2 findings.
-- Fixed an existing mobile layout constraint so only the wide data table scrolls horizontally.
-
-## Comparison History
-
-- Initial: three small tabs occupied only the left side of the reference navigation area.
-- Implementation: reorganized the six views into three blue grouped controls across the full content width.
-- Post-fix: confirmed desktop hierarchy, mobile wrapping, text fit, and navigation behavior.
-
-## Final Result
-
-final result: passed
+- Reference: `C:\Users\225170\Downloads\보고서 디자인 재구성.pdf`
+- White report canvas with navy rules, compact uppercase header, four evidence metrics, numbered sections, dense evidence tables, and a Figure/Table gallery.
+- Sticky section navigation, report-list link, source PDF link, and native-resolution Figure/Table links verified.
+- Desktop: header, metrics, section rules, tables, and actions render without overlap.
+- Figure/Table: long source tables use a bounded internal scroll area instead of being scaled down.
+- Mobile (390 x 844): no page-level horizontal overflow; section navigation and wide evidence tables scroll independently.
+- Test visual dimensions: 768 x 2135, 1280 x 1038, and 1280 x 290.
+- Result: passed after visual comparison with the three-page reference PDF.

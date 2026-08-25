@@ -7,6 +7,7 @@ const MAX_SOURCE_CHARS = 42000;
 const EVIDENCE_OUTPUT_TOKENS = 7000;
 const REPORT_OUTPUT_TOKENS = 7000;
 const AGENT_STEP_TIMEOUT_MS = 12 * 60 * 1000;
+const REPORT_VERSION = 21;
 const VISUAL_EVIDENCE_VERSION = 10;
 const STATISTICS_EVIDENCE_VERSION = 1;
 const MAX_RESULT_VISUALS = 4;
@@ -689,15 +690,6 @@ export function selectResultVisualRecords(records, report) {
   return selected;
 }
 
-function bufferToDataUri(buffer, contentType) {
-  const bytes = new Uint8Array(buffer);
-  let binary = '';
-  for (let offset = 0; offset < bytes.length; offset += 0x8000) {
-    binary += String.fromCharCode(...bytes.subarray(offset, offset + 0x8000));
-  }
-  return `data:${contentType};base64,${btoa(binary)}`;
-}
-
 function svgText(value) {
   return String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
@@ -900,7 +892,7 @@ async function capturePublishedTable(env, record) {
   const response = await env.BROWSER.quickAction('screenshot', {
     url: record.sourceUrl,
     selector: `[id="${cssAttributeValue(record.id)}"]`,
-    viewport: { width: 1440, height: 1800 },
+    viewport: { width: 1920, height: 2400 },
     screenshotOptions: {
       type: 'png',
       captureBeyondViewport: true,
@@ -975,7 +967,6 @@ async function collectResultVisuals(env, report) {
       visuals.push({
         ...record,
         ...image,
-        imageDataUri: bufferToDataUri(image.buffer, image.contentType),
       });
     } catch {
       // A single inaccessible asset must not block the daily report.
@@ -1831,7 +1822,8 @@ export function reportHtml(report, id, date, visualAssets = []) {
       ${item.matchedPValues?.length ? `<small class="visual-p-values">연결 p값 · ${escapeHtml(item.matchedPValues.join(' / '))}</small>` : ''}
       <small class="visual-source">수록 방식 · ${escapeHtml(item.captureMethod || '원문 시각자료')}</small>
       <a href="${escapeHtml(item.sourceUrl)}">원문 위치</a></figcaption>`;
-    const image = `<img src="${item.imageDataUri}" alt="${escapeHtml(`${item.label} ${item.legend}`)}">`;
+    const imageUrl = item.assetUrl || item.imageDataUri || '';
+    const image = `<a class="visual-frame" href="${escapeHtml(imageUrl)}" target="_blank" rel="noopener" aria-label="${escapeHtml(`${item.label} 원본 크게 보기`)}"><img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(`${item.label} ${item.legend}`)}" loading="lazy" decoding="async"></a>`;
     return `<figure class="result-visual ${item.kind}">${item.kind === 'table' ? `${caption}${image}` : `${image}${caption}`}</figure>`;
   }).join('') : '<div class="notice">평가변수와 직접 연결되는 원문 Figure·Table 이미지를 자동 확보하지 못함. 원본 PDF의 근거 위치 확인 필요.</div>';
   const citationParts = [
@@ -1840,7 +1832,8 @@ export function reportHtml(report, id, date, visualAssets = []) {
     source.journal || '저널 확인 필요',
     [source.volume, source.issue && `(${source.issue})`, source.pages && `:${source.pages}`].filter(Boolean).join(''),
   ].filter(Boolean).map(value => escapeHtml(value));
-  return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(report.ingredient)} 기능성 개발 검토</title>
+  const sourcePdfUrl = `https://api.healtharchive.kr/daily-reports/${encodeURIComponent(id)}/source.pdf`;
+  return `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>${escapeHtml(report.ingredient)} 기능성 개발 검토 | HealthArchive</title>
   <style>
   :root{--ink:#17211e;--deep:#0d4439;--muted:#62706b;--line:#d8e1dd;--green:#19745f;--green-soft:#edf5f2;--blue-soft:#edf3f7;--amber:#9a6410;--amber-soft:#fbf2df;--red:#9e453f;--red-soft:#f8ece9}*{box-sizing:border-box}body{margin:0;color:var(--ink);font-family:"Noto Sans KR","Malgun Gothic",sans-serif;line-height:1.34;background:#fff;font-size:9px}.wrap{width:100%;margin:0;padding:0}.topline{display:flex;justify-content:space-between;align-items:center;color:var(--green);font-size:7px;font-weight:800;letter-spacing:.08em}.date-chip{border:1px solid var(--line);padding:3px 6px;color:var(--ink);letter-spacing:0}h1{font-size:23px;line-height:1.12;margin:6px 0 2px}.subtitle{color:var(--muted);font-size:9px}.decision{display:grid;grid-template-columns:105px 1fr;border:1px solid var(--green);background:var(--green-soft);margin:9px 0 7px}.decision b,.decision div{padding:7px 9px}.decision b{color:var(--deep);border-right:1px solid #b8d2ca;font-size:10px}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:8px}.metric{border:1px solid var(--line);padding:5px 7px;min-height:43px}.metric span,.metric small{display:block;color:var(--muted);font-size:6.7px}.metric b{display:block;font-size:13px;margin:2px 0;color:var(--deep)}.metric.red{background:var(--red-soft)}.metric.amber{background:var(--amber-soft)}.metric.blue{background:var(--blue-soft)}section{border-top:1px solid var(--line);padding:8px 0}.title{display:flex;align-items:baseline;gap:6px;margin-bottom:5px;break-after:avoid}.title span{color:var(--green);font-size:7px;font-weight:800}.title h2{font-size:12px;margin:0}.lead{font-size:10px;font-weight:700;color:var(--deep);margin:0 0 6px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}.grid.three{grid-template-columns:repeat(3,1fr)}.panel{border:1px solid var(--line);padding:7px 8px;break-inside:avoid}.panel.good{background:var(--green-soft)}.panel.risk{background:var(--red-soft)}.panel h3{font-size:9px;margin:0 0 4px;color:var(--deep)}p{margin:2px 0 5px}ul{margin:0;padding-left:14px}li+li{margin-top:2px}a{color:var(--green);font-weight:800;text-decoration:none}dl{display:grid;grid-template-columns:76px 1fr;margin:0;border:1px solid var(--line)}dt,dd{padding:4px 6px;margin:0;border-bottom:1px solid var(--line)}dt{font-weight:800;background:#f6f9f7}dd{border-left:1px solid var(--line)}table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:7.4px}thead{display:table-header-group}tr{break-inside:avoid}th,td{border:1px solid var(--line);padding:3.5px 4.5px;text-align:left;vertical-align:top;word-break:break-word}th{background:#f0f6f3;color:var(--deep);font-size:6.8px}td small{display:block;color:var(--muted);font-size:6.3px;margin-top:2px}.groups th:nth-child(1){width:12%}.groups th:nth-child(2){width:20%}.groups th:nth-child(3){width:48%}.groups th:nth-child(4){width:20%}.studies th:nth-child(1){width:14%}.studies th:nth-child(2){width:26%}.studies th:nth-child(3){width:28%}.studies th:nth-child(4){width:20%}.studies th:nth-child(5){width:12%}.outcomes th:nth-child(1){width:10%}.outcomes th:nth-child(2){width:18%}.outcomes th:nth-child(3){width:29%}.outcomes th:nth-child(4){width:13%}.outcomes th:nth-child(5){width:17%}.outcomes th:nth-child(6){width:13%}.p-value{color:var(--red);font-variant-numeric:tabular-nums}.related-table th:nth-child(1){width:20%}.related-table th:nth-child(2){width:20%}.related-table th:nth-child(3){width:38%}.related-table th:nth-child(4){width:22%}.safety-table th:nth-child(1){width:27%}.safety-table th:nth-child(2){width:16%}.safety-table th:nth-child(3){width:57%}.notice{background:var(--amber-soft);border-left:3px solid var(--amber);padding:5px 7px;margin-top:5px}.visual-grid{display:grid;grid-template-columns:1fr;gap:8px}.result-visual{margin:0;border:1px solid var(--line);padding:7px;background:#fff;break-inside:avoid;page-break-inside:avoid}.result-visual img{display:block;width:100%;height:auto;max-height:225mm;object-fit:contain;background:#fff}.visual-kicker{color:var(--green);font-size:6.5px;font-weight:800;letter-spacing:.08em;margin-bottom:4px}.result-visual figcaption{border-top:1px solid var(--line);padding-top:5px;margin-top:5px;font-size:7.2px;color:#46534f}.result-visual figcaption b{color:var(--deep);margin-right:3px}.result-visual figcaption small{display:block;margin-top:3px;color:var(--muted)}.result-visual figcaption .visual-p-values{color:var(--red);font-weight:700}.result-visual figcaption a{display:inline-block;margin-top:3px}.reference{border:1px solid var(--line);background:#f8faf9;padding:7px 8px;margin-top:7px;break-inside:avoid}.reference h2{font-size:9px;margin:0 0 4px}.reference p{font-size:7.2px;color:#46534f;margin:0;word-break:break-word}.reference .published{display:inline-block;color:var(--deep);font-weight:800;margin-top:3px}.disclaimer{font-size:6.5px;color:var(--muted);margin-top:4px}@page{size:A4;margin:8mm}@media print{.panel,.reference,.decision,.metrics,.result-visual{break-inside:avoid}.visual-section{break-before:page}section{break-inside:auto}}@media(max-width:720px){body{font-size:11px}.wrap{padding:15px}.grid,.grid.three,.metrics{grid-template-columns:1fr}.scroll{overflow:auto}.scroll table{min-width:720px}}
   body{font-size:9.8px;line-height:1.28}h1{font-size:24px;margin:5px 0 1px}.subtitle{font-size:9.5px}.topline{font-size:7.4px}.decision{margin:6px 0 5px;grid-template-columns:112px 1fr}.decision b,.decision div{padding:6px 8px}.metrics{gap:3px;margin-bottom:5px}.metric{min-height:38px;padding:4px 6px}.metric span,.metric small{font-size:7px}.metric b{font-size:13.5px;margin:1px 0}section{padding:6px 0}.title{margin-bottom:4px}.title h2{font-size:13px}.title span{font-size:7.5px}.lead{font-size:10.5px;margin-bottom:4px}.grid{gap:4px}.panel{padding:5px 6px}.panel h3{font-size:9.6px}p{margin:1px 0 4px}li+li{margin-top:1px}dt,dd{padding:3.5px 5px}table{font-size:8px}th,td{padding:3px 4px}th{font-size:7.4px}td small{font-size:6.8px}.outcomes{font-size:7.8px}.visual-grid{gap:5px}.result-visual{border:0;border-top:1.5px solid var(--deep);padding:5px 0 4px}.result-visual img{max-height:215mm}.result-visual figcaption{font-size:8.2px;line-height:1.3;color:#26332f}.result-visual.table figcaption{border-top:0;border-bottom:1px solid var(--line);padding:0 0 5px;margin:0 0 4px}.result-visual.figure figcaption{padding-top:5px;margin-top:4px}.visual-title b{display:inline;color:var(--deep);font-size:9px;margin-right:4px}.visual-title span{color:#26332f}.result-visual figcaption small{font-size:7.2px;margin-top:2px}.result-visual figcaption a{font-size:7.2px;margin-top:2px}.reference{padding:5px 6px;margin-top:5px}.reference h2{font-size:9.6px}.reference p{font-size:7.7px}.disclaimer{font-size:7px}@page{size:A4;margin:7mm}@media print{.visual-section{break-before:auto}.result-visual{break-inside:avoid;page-break-inside:avoid}.title{break-after:avoid}}
@@ -1848,18 +1841,23 @@ export function reportHtml(report, id, date, visualAssets = []) {
   :root{--ink:#26312d;--deep:#174f43;--muted:#65736d;--line:#d4dfda;--green:#287965;--green-soft:#eef5f2;--blue-soft:#eef3f6;--amber-soft:#faf3e4;--red:#9a4b45;--red-soft:#f8eeec}*{letter-spacing:0}body{font-family:Pretendard,"Noto Sans KR","Noto Sans CJK KR","Apple SD Gothic Neo","Segoe UI","Malgun Gothic",Arial,sans-serif;font-size:10px;line-height:1.38;font-weight:400;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}h1{font-size:23.5px;line-height:1.2;font-weight:700}.topline{font-size:7.5px;font-weight:600}.subtitle{font-size:9.6px;line-height:1.35}.decision b{font-size:10.2px;font-weight:700}.decision div{font-weight:400}.metric b{font-size:13.2px;font-weight:650}.metric span,.metric small{font-size:7.1px}.title h2{font-size:12.8px;line-height:1.25;font-weight:700}.title span{font-size:7.6px;font-weight:700}.lead{font-size:10.4px;line-height:1.4;font-weight:600}.panel h3{font-size:9.7px;font-weight:650}dt,th{font-weight:650}table{font-size:8.1px;line-height:1.32}th{font-size:7.6px;line-height:1.25}.outcomes{font-size:7.9px}.p-value{font-weight:650}.visual-title b{font-size:9.1px;font-weight:700}.result-visual figcaption{font-size:8.25px;line-height:1.38}.result-visual figcaption small,.result-visual figcaption a{font-size:7.35px;line-height:1.35}.reference h2{font-size:9.8px;font-weight:700}.reference p{font-size:7.9px;line-height:1.4}.disclaimer{font-size:7.1px;line-height:1.35}a{font-weight:650}
   .outcomes th:nth-child(1){width:11%}.outcomes th:nth-child(2){width:23%}.outcomes th:nth-child(3){width:34%}.outcomes th:nth-child(4){width:22%}.outcomes th:nth-child(5){width:10%}.outcomes .domain-cell{vertical-align:middle;background:#f3f7f5;color:var(--deep);font-weight:650;border-bottom-color:#b8cac3}
   table th{text-align:center;vertical-align:middle}table td{vertical-align:middle;word-break:keep-all;overflow-wrap:anywhere}.outcomes .domain-cell{text-align:center}.outcomes .p-value,.outcomes .evidence-cell{text-align:center}.outcomes .evidence-cell{white-space:nowrap}.outcomes .endpoint-cell,.outcomes .result-cell{line-height:1.3}.p-value-list{display:flex;flex-direction:column;align-items:center;gap:2px}.p-value-item{display:inline-block;white-space:nowrap;line-height:1.25}.p-value-item.significant{color:var(--deep);background:#dcefe7;border:1px solid #92c2b1;border-radius:3px;padding:1px 4px;font-weight:750}.outcomes .significant-row .p-value{background:#f3faf7}.result-visual figcaption .visual-source{color:var(--deep)}
-  </style></head><body><main class="wrap">
-  <header><div class="topline"><span>HEALTHARCHIVE · DAILY INGREDIENT REVIEW · ${escapeHtml(id)}</span><span class="date-chip">검토일 ${escapeHtml(date)}</span></div><h1>${escapeHtml(report.ingredient)}</h1><div class="subtitle"><i>${escapeHtml(report.scientificName)}</i> · ${escapeHtml(report.ingredientType)}</div><div class="decision"><b>${escapeHtml(report.verdict)}</b><div>${escapeHtml(report.keyDecision || report.summary)}</div></div><div class="metrics">${metric('기능성 근거', `${report.outcomeMatrix?.length || 0}개`, report.evidenceGrade, 'blue')}${metric('인체 직접성', `${report.humanEvidenceScore || 0}/5`, audit.sourceType || '원문 유형', 'red')}${metric('개발 준비도', `${report.developmentReadinessScore || 0}/5`, report.feasibility, 'amber')}${metric('근거 등급', report.grade || '-', `${source.pmcid || '원문 확인'}`)}</div></header>
-  <section><div class="title"><span>01</span><h2>핵심 결론 및 시험설계</h2></div><p class="lead">${escapeHtml(report.summary)}</p><div class="grid"><dl><dt>기능 방향</dt><dd>${escapeHtml(report.functionality)}</dd><dt>시험대상</dt><dd>${escapeHtml(design.subjects || '확인 필요')}</dd><dt>시험모델</dt><dd>${escapeHtml(design.model || '확인 필요')}</dd></dl><dl><dt>용량</dt><dd>${escapeHtml(design.dose || report.intakeBasis || '확인 필요')}</dd><dt>기간</dt><dd>${escapeHtml(design.duration || '확인 필요')}</dd><dt>비교군</dt><dd>${escapeHtml(design.comparators || '확인 필요')}</dd><dt>통계분석</dt><dd>${escapeHtml(statisticsSummary)}</dd></dl></div><div class="scroll"><table class="studies"><thead><tr><th>근거 유형</th><th>설계</th><th>대상·모델</th><th>용량</th><th>기간</th></tr></thead><tbody>${studyRows}</tbody></table></div><div class="scroll"><table class="groups"><thead><tr><th>군</th><th>원문 표기</th><th>정의</th><th>역할</th></tr></thead><tbody>${groupRows}</tbody></table></div></section>
-  <section><div class="title"><span>02</span><h2>평가변수별 기능성 결과</h2></div><div class="scroll"><table class="outcomes"><thead><tr><th>영역</th><th>평가지표</th><th>결과값</th><th>p값</th><th>근거 위치</th></tr></thead><tbody>${outcomeRows}</tbody></table></div></section>
-  <section class="visual-section"><div class="title"><span>03</span><h2>주요 결과 Figure·Table</h2></div><div class="visual-grid">${resultVisualsHtml}</div></section>
-  <section><div class="title"><span>04</span><h2>동일 시험원료 전임상 근거</h2></div><div class="scroll"><table class="related-table"><thead><tr><th>시험원료·제조</th><th>기능성·실험모델</th><th>대조군 대비 결과</th><th>Reference</th></tr></thead><tbody>${preclinicalRows}</tbody></table></div></section>
-  <section><div class="title"><span>05</span><h2>유사원료 추가자료</h2></div><div class="scroll"><table class="related-table"><thead><tr><th>원료·추출방법</th><th>기능성·실험모델</th><th>대조군 대비 결과</th><th>Reference</th></tr></thead><tbody>${similarRows}</tbody></table></div><div class="notice">유사원료 자료는 원재료 공통성과 개발 방향을 검토하기 위한 보조근거이며, 제조·추출방법이 다른 신청원료의 직접 기능성 근거로 대체할 수 없다.</div></section>
-  <section><div class="title"><span>06</span><h2>작용기전·해석 한계</h2></div><div class="grid"><div class="panel good"><h3>작용기전 및 바이오마커</h3>${listHtml(report.mechanisms)}</div><div class="panel risk"><h3>중대한 한계</h3>${listHtml(report.limitations)}</div></div>${report.inconsistencies?.length ? `<div class="notice"><b>원문 대조 필요</b>${listHtml(report.inconsistencies)}</div>` : ''}</section>
-  <section><div class="title"><span>07</span><h2>개발·규제 실행안</h2></div><div class="grid three"><div class="panel good"><h3>우선 실행</h3>${listHtml(report.developmentActions)}</div><div class="panel"><h3>표준화·규격</h3>${listHtml(report.specifications)}<h3>규제 전환</h3>${listHtml(report.regulatoryReview)}</div><div class="panel risk"><h3>사용 금지 주장</h3>${listHtml(report.noGoClaims)}<h3>자료 공백</h3>${listHtml(report.gaps)}</div></div></section>
-  <section><div class="title"><span>08</span><h2>안전성 검토</h2></div><div class="grid"><div class="panel risk"><h3>안전성 핵심</h3>${listHtml(report.safety)}</div><div class="panel"><h3>원문 주석</h3>${listHtml(report.sourceNotes)}</div></div><div class="scroll"><table class="safety-table"><thead><tr><th>DB·검색어</th><th>결과</th><th>확인 내용</th></tr></thead><tbody>${safetyRows}</tbody></table></div><div class="notice">‘검색 결과 없음’은 안전성 입증이 아니며 신청원료의 정체성·제조공정·강화성분 결합 안전성은 별도 자료로 확인한다.</div></section>
-  <section class="reference"><h2>문헌 Reference</h2><p>${citationParts.join('. ')}.${source.doi ? ` DOI: ${escapeHtml(source.doi)}.` : ''} ${source.pmcid ? `PMCID: ${escapeHtml(source.pmcid)}.` : ''}<br><span class="published">정확 게재일(First publication): ${escapeHtml(source.pubDate || '원문 확인 필요')}</span></p><div class="disclaimer">확보된 원문 PDF와 공개 서지정보를 기준으로 작성한 후보 선별 검토자료이며 건강기능식품 인정 신청자료를 대체하지 않는다.</div></section>
-  </main></body></html>`;
+  :root{--ink:#182333;--deep:#17385f;--muted:#687587;--line:#cad3dd;--green:#17385f;--green-soft:#edf2f7;--blue-soft:#edf2f7;--amber:#a96600;--amber-soft:#fff7e7;--red:#a52929;--red-soft:#fff0ef}html{scroll-behavior:smooth}body{background:#edf1f4;color:var(--ink);font-size:14px;line-height:1.55}.report-shell{width:min(1180px,calc(100% - 40px));margin:28px auto;background:#fff;border-top:3px solid #142d4e;box-shadow:0 14px 44px rgba(24,43,67,.12)}.report-bar{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:14px 34px;border-bottom:1px solid #1b293b;font-family:ui-monospace,"SFMono-Regular",Consolas,monospace;font-size:11px;font-weight:700;letter-spacing:.12em}.report-actions{display:flex;align-items:center;gap:8px;letter-spacing:0}.report-actions a{display:inline-flex;min-height:34px;align-items:center;padding:0 12px;border:1px solid var(--line);border-radius:4px;background:#fff;color:var(--deep);font-family:Pretendard,"Noto Sans KR",sans-serif;font-size:12px;text-decoration:none}.report-actions a.primary{border-color:var(--deep);background:var(--deep);color:#fff}.report-nav{position:sticky;top:0;z-index:10;display:flex;gap:2px;padding:8px 34px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.96);overflow-x:auto}.report-nav a{flex:0 0 auto;padding:6px 9px;border-radius:3px;color:#4c5c70;font-size:11px;font-weight:700;text-decoration:none}.report-nav a:hover,.report-nav a:focus-visible{background:var(--green-soft);color:var(--deep);outline:none}.wrap{width:100%;padding:28px 34px 34px}.report-identity{display:flex;align-items:flex-end;justify-content:space-between;gap:32px;margin-bottom:16px}.report-kicker{display:block;margin-bottom:3px;color:var(--deep);font-size:11px;font-weight:800}.report-identity h1{margin:0;font-size:32px;line-height:1.18}.report-source{text-align:right;color:var(--muted);font-family:ui-monospace,"SFMono-Regular",Consolas,monospace;font-size:12px}.report-source b{display:block;margin-top:4px;color:var(--deep);font-family:Pretendard,"Noto Sans KR",sans-serif;font-size:12px}.metrics{grid-template-columns:repeat(4,1fr);gap:0;margin:0 0 20px;border:1px solid #1b293b}.metric{min-height:80px;padding:12px 14px;border:0;border-right:1px solid var(--line);background:#f2f5f8}.metric:last-child{border-right:0;background:#213f68}.metric:last-child span,.metric:last-child small,.metric:last-child b{color:#fff}.metric span,.metric small{font-size:11px}.metric b{font-size:25px;line-height:1.15}.metric.red,.metric.amber,.metric.blue{background:#f2f5f8}section{padding:18px 0;border-top:0;scroll-margin-top:58px}.title{gap:9px;margin-bottom:10px;padding-bottom:7px;border-bottom:2px solid var(--deep)}.title span{font-size:11px}.title h2{font-size:19px}.lead{margin:0 0 12px;font-size:15px;line-height:1.65;color:var(--ink)}.grid{gap:14px}.grid.three{gap:12px}.panel{padding:14px 16px;border:1px solid var(--line);background:#fff}.panel.good{border-top:3px solid var(--deep);background:#fff}.panel.risk{border-top:3px solid var(--red);background:#fff}.panel h3{margin-bottom:7px;font-size:13px}p{margin:3px 0 8px}ul{padding-left:19px}li+li{margin-top:4px}dl{grid-template-columns:110px 1fr;border:0;border-top:2px solid #1b293b}dt,dd{padding:7px 9px;border-bottom:1px solid var(--line)}dt{background:#fff;color:#59677a}dd{border-left:0}table{font-size:12px;line-height:1.42}th,td{padding:8px 9px;border:0;border-bottom:1px solid var(--line)}th{background:#e9eef3;color:#3f4f63;font-size:11px;text-transform:none}.scroll{border-top:1px solid #1b293b}.scroll+.scroll{margin-top:12px}.outcomes{font-size:12px}.outcomes .domain-cell{background:#f4f7f9}.p-value-item.significant{border-color:#8eb8aa;background:#e5f2ed}.visual-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.result-visual{min-width:0;margin:0;padding:0;border:1px solid var(--line);background:#fff}.result-visual.table{grid-column:1/-1}.visual-frame{display:flex;min-height:260px;align-items:center;justify-content:center;padding:10px;background:#f7f8fa;border-bottom:1px solid var(--line)}.result-visual.table .visual-frame{min-height:360px}.result-visual img{width:100%;max-height:620px;object-fit:contain}.result-visual figcaption{margin:0;padding:11px 12px;border-top:0;font-size:11px;line-height:1.5}.result-visual.table figcaption{order:0;margin:0;padding:11px 12px;border-bottom:1px solid var(--line)}.result-visual.table{display:flex;flex-direction:column}.result-visual.table .visual-frame{order:1}.visual-title b{font-size:12px}.result-visual figcaption small,.result-visual figcaption a{font-size:10px}.notice{padding:9px 11px}.reference{margin-top:18px;padding:16px 0;border:0;border-top:2px solid #1b293b;background:#fff}.reference h2{font-size:16px}.reference p{font-size:12px}.disclaimer{font-size:10px}.report-footer{display:flex;justify-content:space-between;gap:18px;padding:14px 34px;border-top:1px solid var(--line);color:var(--muted);font-size:10px}.report-footer b{color:var(--deep)}@media(max-width:820px){body{font-size:13px;background:#fff}.report-shell{width:100%;margin:0;border-top-width:2px;box-shadow:none}.report-bar{align-items:flex-start;padding:12px 16px;letter-spacing:.06em}.report-bar>span{max-width:52%}.report-actions{flex-wrap:wrap;justify-content:flex-end}.report-nav{padding:7px 12px}.wrap{padding:22px 16px}.report-identity{align-items:flex-start;flex-direction:column;gap:8px}.report-identity h1{font-size:27px}.report-source{text-align:left}.metrics{grid-template-columns:repeat(2,1fr)}.metric:nth-child(2){border-right:0}.metric:nth-child(-n+2){border-bottom:1px solid var(--line)}.grid,.grid.three{grid-template-columns:1fr}.visual-grid{grid-template-columns:1fr}.scroll{overflow-x:auto}.scroll table{min-width:720px}.visual-frame,.result-visual.table .visual-frame{min-height:220px}.report-footer{flex-direction:column;padding:12px 16px}}@media print{body{background:#fff}.report-shell{width:100%;margin:0;box-shadow:none}.report-nav,.report-actions{display:none}.wrap{padding:8mm}.report-bar,.report-footer{padding-left:8mm;padding-right:8mm}.visual-grid{grid-template-columns:repeat(3,1fr)}}
+  .result-visual.table .visual-frame{display:block;min-height:0;max-height:680px;overflow:auto;padding:0}.result-visual.table img{display:block;width:100%;max-height:none;object-fit:initial}@media(max-width:820px){.result-visual.table .visual-frame{min-height:0;max-height:72vh}}
+  </style></head><body><div class="report-shell">
+  <div class="report-bar"><span>HEALTHARCHIVE · DAILY INGREDIENT REVIEW</span><div class="report-actions"><a href="https://www.healtharchive.kr/#daily-reports">목록으로</a><a class="primary" href="${escapeHtml(sourcePdfUrl)}" target="_blank" rel="noopener">원문 PDF</a></div></div>
+  <nav class="report-nav" aria-label="보고서 섹션"><a href="#design">01 시험설계</a><a href="#outcomes">02 기능성 결과</a><a href="#visuals">03 Figure·Table</a><a href="#preclinical">04 전임상</a><a href="#similar">05 유사원료</a><a href="#mechanism">06 작용기전</a><a href="#actions">07 실행안</a><a href="#safety">08 안전성</a><a href="#reference">Reference</a></nav>
+  <main class="wrap">
+  <header><div class="report-identity"><div><span class="report-kicker">신청원료 검토</span><h1>${escapeHtml(report.ingredient)}</h1><div class="subtitle"><i>${escapeHtml(report.scientificName)}</i> · ${escapeHtml(report.ingredientType)}</div></div><div class="report-source">${escapeHtml(report.ingredientType)}<br>${escapeHtml(source.pmcid || '원문 확인 필요')}<b>${escapeHtml(report.verdict)}</b></div></div><div class="metrics">${metric('기능성 근거', `${report.outcomeMatrix?.length || 0}개`, report.evidenceGrade, 'blue')}${metric('인체 직접성', `${report.humanEvidenceScore || 0}/5`, audit.sourceType || '원문 유형', 'red')}${metric('개발 준비도', `${report.developmentReadinessScore || 0}/5`, report.feasibility, 'amber')}${metric('근거 등급', report.grade || '-', `${source.pmcid || '원문 확인'}`)}</div></header>
+  <section id="design"><div class="title"><span>01</span><h2>핵심 결론 및 시험설계</h2></div><p class="lead">${escapeHtml(report.summary)}</p><div class="grid"><dl><dt>기능 방향</dt><dd>${escapeHtml(report.functionality)}</dd><dt>시험대상</dt><dd>${escapeHtml(design.subjects || '확인 필요')}</dd><dt>시험모델</dt><dd>${escapeHtml(design.model || '확인 필요')}</dd></dl><dl><dt>용량</dt><dd>${escapeHtml(design.dose || report.intakeBasis || '확인 필요')}</dd><dt>기간</dt><dd>${escapeHtml(design.duration || '확인 필요')}</dd><dt>비교군</dt><dd>${escapeHtml(design.comparators || '확인 필요')}</dd><dt>통계분석</dt><dd>${escapeHtml(statisticsSummary)}</dd></dl></div><div class="scroll"><table class="studies"><thead><tr><th>근거 유형</th><th>설계</th><th>대상·모델</th><th>용량</th><th>기간</th></tr></thead><tbody>${studyRows}</tbody></table></div><div class="scroll"><table class="groups"><thead><tr><th>군</th><th>원문 표기</th><th>정의</th><th>역할</th></tr></thead><tbody>${groupRows}</tbody></table></div></section>
+  <section id="outcomes"><div class="title"><span>02</span><h2>평가변수별 기능성 결과</h2></div><div class="scroll"><table class="outcomes"><thead><tr><th>영역</th><th>평가지표</th><th>결과값</th><th>p값</th><th>근거 위치</th></tr></thead><tbody>${outcomeRows}</tbody></table></div></section>
+  <section id="visuals" class="visual-section"><div class="title"><span>03</span><h2>주요 결과 Figure·Table</h2></div><div class="visual-grid">${resultVisualsHtml}</div></section>
+  <section id="preclinical"><div class="title"><span>04</span><h2>동일 시험원료 전임상 근거</h2></div><div class="scroll"><table class="related-table"><thead><tr><th>시험원료·제조</th><th>기능성·실험모델</th><th>대조군 대비 결과</th><th>Reference</th></tr></thead><tbody>${preclinicalRows}</tbody></table></div></section>
+  <section id="similar"><div class="title"><span>05</span><h2>유사원료 추가자료</h2></div><div class="scroll"><table class="related-table"><thead><tr><th>원료·추출방법</th><th>기능성·실험모델</th><th>대조군 대비 결과</th><th>Reference</th></tr></thead><tbody>${similarRows}</tbody></table></div><div class="notice">유사원료 자료는 원재료 공통성과 개발 방향을 검토하기 위한 보조근거이며, 제조·추출방법이 다른 신청원료의 직접 기능성 근거로 대체할 수 없다.</div></section>
+  <section id="mechanism"><div class="title"><span>06</span><h2>작용기전·해석 한계</h2></div><div class="grid"><div class="panel good"><h3>작용기전 및 바이오마커</h3>${listHtml(report.mechanisms)}</div><div class="panel risk"><h3>중대한 한계</h3>${listHtml(report.limitations)}</div></div>${report.inconsistencies?.length ? `<div class="notice"><b>원문 대조 필요</b>${listHtml(report.inconsistencies)}</div>` : ''}</section>
+  <section id="actions"><div class="title"><span>07</span><h2>개발·규제 실행안</h2></div><div class="grid three"><div class="panel good"><h3>우선 실행</h3>${listHtml(report.developmentActions)}</div><div class="panel"><h3>표준화·규격</h3>${listHtml(report.specifications)}<h3>규제 전환</h3>${listHtml(report.regulatoryReview)}</div><div class="panel risk"><h3>사용 금지 주장</h3>${listHtml(report.noGoClaims)}<h3>자료 공백</h3>${listHtml(report.gaps)}</div></div></section>
+  <section id="safety"><div class="title"><span>08</span><h2>안전성 검토</h2></div><div class="grid"><div class="panel risk"><h3>안전성 핵심</h3>${listHtml(report.safety)}</div><div class="panel"><h3>원문 주석</h3>${listHtml(report.sourceNotes)}</div></div><div class="scroll"><table class="safety-table"><thead><tr><th>DB·검색어</th><th>결과</th><th>확인 내용</th></tr></thead><tbody>${safetyRows}</tbody></table></div><div class="notice">‘검색 결과 없음’은 안전성 입증이 아니며 신청원료의 정체성·제조공정·강화성분 결합 안전성은 별도 자료로 확인한다.</div></section>
+  <section id="reference" class="reference"><h2>문헌 Reference</h2><p>${citationParts.join('. ')}.${source.doi ? ` DOI: ${escapeHtml(source.doi)}.` : ''} ${source.pmcid ? `PMCID: ${escapeHtml(source.pmcid)}.` : ''}<br><span class="published">정확 게재일(First publication): ${escapeHtml(source.pubDate || '원문 확인 필요')}</span></p><div class="disclaimer">확보된 원문 PDF와 공개 서지정보를 기준으로 작성한 후보 선별 검토자료이며 건강기능식품 인정 신청자료를 대체하지 않는다.</div></section>
+  </main><footer class="report-footer"><span>확보된 원문 PDF와 공개 서지정보를 기준으로 작성한 후보 선별 검토자료</span><b>검토일 ${escapeHtml(date)}</b></footer></div></body></html>`;
 }
 
 async function analyzePdf(env, candidate, pdfBuffer, onStage = async () => {}) {
@@ -1906,32 +1904,20 @@ async function analyzePdf(env, candidate, pdfBuffer, onStage = async () => {}) {
   return normalizeAiReport(reportPayload, candidate, evidence);
 }
 
-async function renderReportPdf(env, html) {
-  let lastResponse = null;
-  for (let attempt = 1; attempt <= 3; attempt += 1) {
-    lastResponse = await env.BROWSER.quickAction('pdf', {
-      html,
-      pdfOptions: {
-        format: 'a4',
-        landscape: false,
-        printBackground: true,
-        preferCSSPageSize: true,
-        scale: 1,
-      },
-    });
-    if (lastResponse?.ok) return lastResponse;
-    if (lastResponse?.status !== 429 || attempt === 3) break;
-    await new Promise(resolve => setTimeout(resolve, attempt * 10000));
-  }
-  throw new Error(`분석 PDF 생성 실패 (${lastResponse?.status || 'unknown'})`);
-}
-
 async function publishReport(env, report, pdfBuffer, reportDate = seoulDate()) {
   const manifest = await readJsonObject(env.PRIVATE_DATA, MANIFEST_KEY, { version: 1, updatedAt: null, reports: [] });
   const date = reportDate;
   const id = `${date.replace(/-/g, '')}-${slugify(report.ingredient)}-${report.source.pmcid.toLowerCase()}`;
   const prefix = `daily-reports/${id}`;
-  const visualAssets = await collectResultVisuals(env, report);
+  const visualAssets = (await collectResultVisuals(env, report)).map((item, index) => {
+    const filename = `${String(index + 1).padStart(2, '0')}-${item.kind}.${item.extension}`;
+    return {
+      ...item,
+      filename,
+      storageKey: `${prefix}/visuals/${filename}`,
+      assetUrl: `https://api.healtharchive.kr/daily-reports/${encodeURIComponent(id)}/visuals/${encodeURIComponent(filename)}`,
+    };
+  });
   report.visualEvidenceVersion = VISUAL_EVIDENCE_VERSION;
   report.resultVisuals = visualAssets.map((item, index) => ({
     kind: item.kind,
@@ -1943,31 +1929,20 @@ async function publishReport(env, report, pdfBuffer, reportDate = seoulDate()) {
     matchedEndpoints: item.matchedEndpoints,
     matchedPValues: item.matchedPValues,
     captureMethod: item.captureMethod,
-    storageKey: `${prefix}/visuals/${String(index + 1).padStart(2, '0')}-${item.kind}.${item.extension}`,
+    storageKey: item.storageKey,
+    assetUrl: item.assetUrl,
   }));
   report.statisticsEvidenceVersion = STATISTICS_EVIDENCE_VERSION;
   const html = reportHtml(report, id, date, visualAssets);
-  const rendered = await renderReportPdf(env, html);
-  const reportPdf = await rendered.arrayBuffer();
-  const reportPdfKey = `${prefix}/report-${Date.now()}.pdf`;
   await Promise.all([
-    ...visualAssets.map((item, index) => env.PRIVATE_DATA.put(
-      `${prefix}/visuals/${String(index + 1).padStart(2, '0')}-${item.kind}.${item.extension}`,
+    ...visualAssets.map(item => env.PRIVATE_DATA.put(
+      item.storageKey,
       item.buffer,
-      { httpMetadata: { contentType: item.contentType, cacheControl: 'private, no-store' } },
+      { httpMetadata: { contentType: item.contentType, cacheControl: 'private, max-age=86400' } },
     )),
     env.PRIVATE_DATA.put(`${prefix}/source.pdf`, pdfBuffer, {
       httpMetadata: { contentType: 'application/pdf', cacheControl: 'private, no-store' },
       customMetadata: { pmcid: report.source.pmcid, doi: report.source.doi || '' },
-    }),
-    env.PRIVATE_DATA.put(`${prefix}/report.pdf`, reportPdf, {
-      httpMetadata: { contentType: 'application/pdf', cacheControl: 'private, no-store' },
-    }),
-    env.PRIVATE_DATA.put(`${prefix}/report-compact.pdf`, reportPdf, {
-      httpMetadata: { contentType: 'application/pdf', cacheControl: 'private, no-store' },
-    }),
-    env.PRIVATE_DATA.put(reportPdfKey, reportPdf, {
-      httpMetadata: { contentType: 'application/pdf', cacheControl: 'private, no-store' },
     }),
     env.PRIVATE_DATA.put(`${prefix}/report.html`, html, {
       httpMetadata: { contentType: 'text/html; charset=utf-8', cacheControl: 'private, no-store' },
@@ -1991,14 +1966,15 @@ async function publishReport(env, report, pdfBuffer, reportDate = seoulDate()) {
     sourceTitle: report.source.title,
     sourcePmcid: report.source.pmcid,
     sourceDoi: report.source.doi,
-    reportVersion: 20,
+    reportVersion: REPORT_VERSION,
     visualEvidenceVersion: VISUAL_EVIDENCE_VERSION,
     statisticsEvidenceVersion: STATISTICS_EVIDENCE_VERSION,
     resultVisualCount: report.resultVisuals.length,
-    reportPdfKey,
     preclinicalEvidenceCount: report.relatedEvidence?.preclinicalStudies?.length || 0,
     similarIngredientEvidenceCount: report.relatedEvidence?.similarIngredientStudies?.length || 0,
-    reportUrl: `https://api.healtharchive.kr/daily-reports/${encodeURIComponent(id)}/report.pdf`,
+    reportFormat: 'html',
+    detailUrl: `https://api.healtharchive.kr/daily-reports/${encodeURIComponent(id)}`,
+    reportUrl: `https://api.healtharchive.kr/daily-reports/${encodeURIComponent(id)}`,
     sourcePdfUrl: `https://api.healtharchive.kr/daily-reports/${encodeURIComponent(id)}/source.pdf`,
   };
   summary.publishedAt = new Date().toISOString();
@@ -2029,18 +2005,36 @@ export async function runDailyReportAgent(env, options = {}) {
   await setStatus(env, 'running', { stage: 'discovery' });
   try {
     const manifest = await readJsonObject(env.PRIVATE_DATA, MANIFEST_KEY, { reports: [] });
-    const missingReportDate = reportDateForRun(manifest, options.reportDate || '');
-    const relatedBackfill = !options.pmcid && !options.reportDate && !missingReportDate
-      ? sortReportsNewest(manifest.reports || []).find(item => Number(item.reportVersion || 0) < 10)
+    const missingReportDate = options.htmlBackfill ? '' : reportDateForRun(manifest, options.reportDate || '');
+    const htmlBackfill = !options.pmcid && !options.reportDate && (options.htmlBackfill || !missingReportDate)
+      ? sortReportsNewest(manifest.reports || []).find(item => Number(item.reportVersion || 0) < REPORT_VERSION || item.reportFormat !== 'html')
       : null;
-    const visualBackfill = !options.pmcid && !options.reportDate && !missingReportDate && !relatedBackfill
+    const relatedBackfill = !options.pmcid && !options.reportDate && !missingReportDate
+      && !htmlBackfill ? sortReportsNewest(manifest.reports || []).find(item => Number(item.reportVersion || 0) < 10)
+      : null;
+    const visualBackfill = !options.pmcid && !options.reportDate && !missingReportDate && !htmlBackfill && !relatedBackfill
       ? sortReportsNewest(manifest.reports || []).find(item => Number(item.visualEvidenceVersion || 0) < VISUAL_EVIDENCE_VERSION)
       : null;
-    const reportDate = missingReportDate || relatedBackfill?.date || visualBackfill?.date || '';
+    const reportDate = missingReportDate || htmlBackfill?.date || relatedBackfill?.date || visualBackfill?.date || '';
     if (!reportDate) {
       const message = '전일·당일 보고서 발간, 추가문헌 및 주요 결과 시각자료 보강 완료';
       await setStatus(env, 'idle', { message });
       return { ok: true, skipped: true, reason: 'already-published' };
+    }
+    if (htmlBackfill) {
+      await setStatus(env, 'running', { stage: 'html-report', candidate: htmlBackfill.sourcePmcid });
+      const prefix = `daily-reports/${htmlBackfill.id}`;
+      const [report, sourceObject] = await Promise.all([
+        readJsonObject(env.PRIVATE_DATA, `${prefix}/report.json`, null),
+        env.PRIVATE_DATA.get(`${prefix}/source.pdf`),
+      ]);
+      if (!report || !sourceObject) throw new Error(`기존 HTML 보고서 전환 원본 누락: ${htmlBackfill.id}`);
+      const summary = await withTimeout(
+        publishReport(env, report, await sourceObject.arrayBuffer(), htmlBackfill.date),
+        '상세 HTML 보고서 발간',
+      );
+      await setStatus(env, 'success', { reportId: summary.id, candidate: htmlBackfill.sourcePmcid, stage: 'html-report' });
+      return { ok: true, report: summary, backfill: 'html-report' };
     }
     if (visualBackfill) {
       await setStatus(env, 'running', { stage: 'visual-evidence', candidate: visualBackfill.sourcePmcid });
@@ -2091,8 +2085,8 @@ export async function runDailyReportAgent(env, options = {}) {
         await setStatus(env, 'running', { stage: 'quality-gate', candidate: candidate.pmcid, message: '원료명 또는 기능성 근거 불충분' });
         break;
       }
-      await setStatus(env, 'running', { stage: 'pdf-publish', candidate: candidate.pmcid });
-      const summary = await withTimeout(publishReport(env, report, source.buffer, reportDate), '보고서 PDF 발간');
+      await setStatus(env, 'running', { stage: 'html-publish', candidate: candidate.pmcid });
+      const summary = await withTimeout(publishReport(env, report, source.buffer, reportDate), '상세 HTML 보고서 발간');
       await setStatus(env, 'success', { reportId: summary.id, candidate: candidate.pmcid });
       return { ok: true, report: summary };
     }
@@ -2118,11 +2112,30 @@ export async function handleDailyReports(request, env, url, origin, deps) {
     return deps.json({ ...manifest, reports: sortReportsNewest(manifest.reports || []) }, 200, origin);
   }
 
-  const fileMatch = url.pathname.match(/^\/daily-reports\/([a-z0-9가-힣-]+)\/(report\.pdf|source\.pdf|report\.html)$/i);
-  if (fileMatch && request.method === 'GET') {
+  const visualMatch = url.pathname.match(/^\/daily-reports\/([a-z0-9가-힣-]+)\/visuals\/([a-z0-9._-]+)$/i);
+  if (visualMatch && request.method === 'GET') {
     const session = await deps.readAuthorizedSession(request, env);
     if (!session) return deps.authJson({ error: '인증이 필요합니다.' }, 401, origin);
-    const [, id, filename] = fileMatch;
+    const [, id, filename] = visualMatch;
+    const object = await env.PRIVATE_DATA.get(`daily-reports/${id}/visuals/${filename}`);
+    if (!object) return deps.authJson({ error: '시각자료를 찾을 수 없습니다.' }, 404, origin);
+    return new Response(object.body, {
+      headers: {
+        'Content-Type': object.httpMetadata?.contentType || 'application/octet-stream',
+        'Cache-Control': 'private, max-age=86400',
+        'X-Content-Type-Options': 'nosniff',
+        ...deps.corsHeaders(origin),
+      },
+    });
+  }
+
+  const detailMatch = url.pathname.match(/^\/daily-reports\/([a-z0-9가-힣-]+)\/?$/i);
+  const fileMatch = url.pathname.match(/^\/daily-reports\/([a-z0-9가-힣-]+)\/(report\.pdf|source\.pdf|report\.html)$/i);
+  if ((detailMatch || fileMatch) && request.method === 'GET') {
+    const session = await deps.readAuthorizedSession(request, env);
+    if (!session) return deps.authJson({ error: '인증이 필요합니다.' }, 401, origin);
+    const id = detailMatch?.[1] || fileMatch[1];
+    const filename = detailMatch ? 'report.html' : fileMatch[2];
     const compactKey = filename === 'report.pdf' ? `daily-reports/${id}/report-compact.pdf` : '';
     const manifest = filename === 'report.pdf'
       ? await readJsonObject(env.PRIVATE_DATA, MANIFEST_KEY, { reports: [] })
@@ -2133,12 +2146,17 @@ export async function handleDailyReports(request, env, url, origin, deps) {
       || await env.PRIVATE_DATA.get(`daily-reports/${id}/${filename}`);
     if (!object) return deps.authJson({ error: '보고서를 찾을 수 없습니다.' }, 404, origin);
     const isHtml = filename.endsWith('.html');
+    const securityHeaders = isHtml ? {
+      'Content-Security-Policy': "default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'self' https://www.healtharchive.kr; form-action 'none'",
+      'Referrer-Policy': 'strict-origin-when-cross-origin',
+    } : {};
     return new Response(object.body, {
       headers: {
         'Content-Type': isHtml ? 'text/html; charset=utf-8' : 'application/pdf',
         'Content-Disposition': contentDisposition(`HealthArchive_${id}_${filename}`, isHtml),
         'Cache-Control': 'private, no-store',
         'X-Content-Type-Options': 'nosniff',
+        ...securityHeaders,
         ...deps.corsHeaders(origin),
       },
     });
@@ -2169,6 +2187,7 @@ export async function handleDailyReports(request, env, url, origin, deps) {
       force: url.searchParams.get('force') === '1',
       pmcid,
       reportDate,
+      htmlBackfill: url.searchParams.get('html') === '1',
     });
     return deps.authJson(result, 200, origin);
   }

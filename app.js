@@ -4671,6 +4671,10 @@ function newsSourceRows(source) {
 
 let dailyReports = [];
 
+function dailyReportDetailUrl(item) {
+  return item.detailUrl || (item.id ? `${PROTECTED_AUTH_API}/daily-reports/${encodeURIComponent(item.id)}` : item.reportUrl || '');
+}
+
 function renderDailyReports() {
   const list = document.getElementById('daily-report-list');
   const count = document.querySelector('.daily-report-count');
@@ -4691,14 +4695,14 @@ function renderDailyReports() {
       <div class="daily-report-card-date"><strong>${escapeHtml(item.date || '-')}</strong><span>${escapeHtml(item.sourcePmcid || 'SOURCE')}</span></div>
       <div class="daily-report-card-main">
         <div class="daily-report-card-kicker"><span>${escapeHtml(item.ingredientType || '원료 유형 확인 필요')}</span><b>근거 ${escapeHtml(item.evidenceGrade || '확인 필요')} · ${escapeHtml(item.grade || '-')}</b></div>
-        <h3>${escapeHtml(item.ingredient || '원료명 확인 필요')}</h3>
+        <h3><a href="${escapeHtml(dailyReportDetailUrl(item))}" target="_blank" rel="noopener">${escapeHtml(item.ingredient || '원료명 확인 필요')}</a></h3>
         <p class="daily-report-scientific"><i>${escapeHtml(item.scientificName || '확인 필요')}</i> · ${escapeHtml(item.functionality || '기능성 확인 필요')}</p>
         <p class="daily-report-summary">${escapeHtml(item.summary || '원문 근거 추가 검토 필요')}</p>
         <small>${escapeHtml(item.sourceTitle || '원문 제목 확인 필요')}</small>
       </div>
       <div class="daily-report-card-actions">
         <span>${escapeHtml(item.verdict || '검토 필요')}</span>
-        <a href="${escapeHtml(item.reportUrl)}" target="_blank" rel="noopener">분석 PDF</a>
+        <a class="primary" href="${escapeHtml(dailyReportDetailUrl(item))}" target="_blank" rel="noopener">상세 보고서</a>
         <a href="${escapeHtml(item.sourcePdfUrl)}" target="_blank" rel="noopener">원문 PDF</a>
       </div>
     </article>`).join('');
