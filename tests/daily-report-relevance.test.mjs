@@ -112,6 +112,22 @@ const livestockReport = {
   evidenceAudit: livestockEvidence,
 };
 
+const wholeFruitCandidate = {
+  pmcid: 'PMC13317759',
+  title: 'Tucum-do-Cerrado consumption promoted healthier adipose tissue expansion in high-fat diet-induced obesity rats',
+  abstractText: 'Rats consumed freeze-dried fruit pulp powder during a high-fat dietary intervention.',
+};
+
+const wholeFruitEvidence = {
+  ...extractEvidence,
+  sourceType: '동물시험',
+  testArticle: 'freeze-dried Tucum-do-Cerrado fruit pulp powder',
+  rawMaterial: 'Bactris setosa fruit pulp',
+  manufacturing: 'fruit pulp was freeze-dried and powdered',
+  extractionMethod: 'freeze-dried whole fruit pulp',
+  studyDesign: { subjects: 'Wistar rats', model: 'high-fat diet-induced obesity', dose: 'fruit pulp powder in diet', groups: 'control and intervention groups', comparators: 'high-fat diet control' },
+};
+
 assert.equal(reviewCandidateMetadata(mobileSurveyCandidate).passed, false, '1차 검토에서 모바일 앱 논문을 차단해야 함');
 assert.equal(reviewExtractedEvidence(mobileSurveyCandidate, mobileSurveyEvidence).passed, false, '2차 검토에서 비식품 시험대상을 차단해야 함');
 assert.equal(reviewFinalReport(mobileSurveyCandidate, mobileSurveyReport).passed, false, '3차 검토에서 비원료 보고서를 차단해야 함');
@@ -128,5 +144,7 @@ assert.equal(reviewFinalReport(extractCandidate, reagentReport).passed, false, '
 assert.equal(reviewCandidateMetadata(livestockCandidate).passed, false, '축산 사료·성장성 연구는 후보 단계에서 제외해야 함');
 assert.equal(reviewExtractedEvidence(livestockCandidate, livestockEvidence).passed, false, '육계 영양시험은 기능성 원료 동물모델로 인정하지 않아야 함');
 assert.equal(reviewFinalReport(livestockCandidate, livestockReport).passed, false, '기능성 자리표시자와 작성지시가 남은 보고서는 차단해야 함');
+assert.equal(reviewCandidateMetadata(wholeFruitCandidate).passed, true, '기능성 동물모델의 과육 섭취 연구는 후보로 통과해야 함');
+assert.equal(reviewExtractedEvidence(wholeFruitCandidate, wholeFruitEvidence).passed, true, '과육·퓨레 등 섭취형 천연물은 원료로 인정해야 함');
 
-console.log('daily report relevance gates: 15 assertions passed');
+console.log('daily report relevance gates: 17 assertions passed');
