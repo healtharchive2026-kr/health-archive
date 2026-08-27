@@ -153,6 +153,20 @@
     return new Date().toLocaleDateString('sv-SE', {timeZone: 'Asia/Seoul'}).slice(2).replace(/-/g, '.');
   }
 
+  function saveHistory(result) {
+    if (!result?.query) return;
+    try {
+      const key = 'ha-mobile-verdict-history';
+      const existing = JSON.parse(localStorage.getItem(key) || '[]');
+      const rows = Array.isArray(existing) ? existing : [];
+      const next = [{query: result.query, verdict: result.verdict, date: resultDate()}, ...rows.filter(item => item.query !== result.query)].slice(0, 8);
+      localStorage.setItem(key, JSON.stringify(next));
+      document.dispatchEvent(new CustomEvent('healtharchive:verdict-history'));
+    } catch (_error) {
+      // Private browsing can disable persistent storage; the verdict still works.
+    }
+  }
+
   function render(output, result) {
     if (!result) {
       output.innerHTML = '';
@@ -201,7 +215,9 @@
 
     form.addEventListener('submit', event => {
       event.preventDefault();
-      render(output, judge(input.value));
+      const result = judge(input.value);
+      render(output, result);
+      saveHistory(result);
       input.blur();
     });
   }

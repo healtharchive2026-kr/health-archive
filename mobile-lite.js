@@ -19,9 +19,12 @@
     .slice()
     .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
   const protocols = window.BIOMARKER_PROTOCOLS || {};
+  const mobileDigest = window.MOBILE_DIGEST_DATA || {products: [], minutes: [], news: [], claims: []};
   const categoryNames = [...new Set(individualIngredients.map(item => item.category).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ko'));
   const AUTH_API = 'https://api.healtharchive.kr';
-  const publicViews = new Set(['home']);
+  const publicViews = new Set(['home', 'verdict']);
+  const databaseViews = new Set(['database', 'ingredient', 'safety', 'protocol', 'compare']);
+  const localPreview = location.hostname === '127.0.0.1' || location.hostname === 'localhost';
   let authState = null;
   let authCheck = null;
   const usageTimes = new Map();
@@ -47,14 +50,14 @@
     authCheck = fetch(`${AUTH_API}/auth/status`, {credentials: 'include', cache: 'no-store'})
       .then(response => response.ok ? response.json() : {authenticated: false})
       .then(result => {
-        authState = result.authenticated === true;
+        authState = localPreview || result.authenticated === true;
         renderAuthState(authState);
         return authState;
       })
       .catch(() => {
-        authState = false;
-        renderAuthState(false);
-        return false;
+        authState = localPreview;
+        renderAuthState(authState);
+        return authState;
       })
       .finally(() => { authCheck = null; });
     return authCheck;
@@ -95,8 +98,9 @@
       return false;
     }
     document.body.classList.toggle('is-home', target === 'home');
+    const navTarget = databaseViews.has(target) ? 'database' : target;
     document.querySelectorAll('[data-lite-tab]').forEach(button => {
-      button.classList.toggle('active', button.dataset.liteTab === target);
+      button.classList.toggle('active', button.dataset.liteTab === navTarget);
     });
     document.querySelectorAll('[data-lite-view]').forEach(view => {
       const active = view.dataset.liteView === target;
@@ -120,15 +124,11 @@
     const initial = location.hash.replace('#', '');
     const pending = sessionStorage.getItem('ha-mobile-login-target');
     getAuthStatus(true).then(authenticated => {
-      const enterWorkspace = authenticated && sessionStorage.getItem('ha-mobile-enter-after-login') === '1';
       const target = authenticated && pending && validViews.has(pending)
         ? pending
         : (validViews.has(initial) ? initial : 'home');
       if (authenticated && pending) sessionStorage.removeItem('ha-mobile-login-target');
-      if (enterWorkspace) sessionStorage.removeItem('ha-mobile-enter-after-login');
-      activateView(enterWorkspace ? 'home' : target, {initial: true}).then(() => {
-        if (enterWorkspace) window.requestAnimationFrame(() => document.getElementById('mobile-tools')?.scrollIntoView({behavior: 'smooth', block: 'start'}));
-      });
+      activateView(target, {initial: true});
     });
   }
 
@@ -220,41 +220,116 @@
     document.getElementById('home-food-count').textContent = foodIngredients.length.toLocaleString('ko-KR');
     document.getElementById('home-blocked-count').textContent = assignedBlocked.length.toLocaleString('ko-KR');
     document.getElementById('home-protocol-count').textContent = Object.keys(protocols).length.toLocaleString('ko-KR');
-    const heroIngredientCount = document.getElementById('hero-ingredient-count');
-    const heroFoodCount = document.getElementById('hero-food-count');
-    const heroProtocolCount = document.getElementById('hero-protocol-count');
-    if (heroIngredientCount) heroIngredientCount.textContent = (individualIngredients.length + temporaryIngredients.length).toLocaleString('ko-KR');
-    if (heroFoodCount) heroFoodCount.textContent = foodIngredients.length.toLocaleString('ko-KR');
-    if (heroProtocolCount) heroProtocolCount.textContent = Object.keys(protocols).length.toLocaleString('ko-KR');
+    document.getElementById('home-total-ingredient-count').textContent = (individualIngredients.length + temporaryIngredients.length).toLocaleString('ko-KR');
+    document.getElementById('hub-individual-count').textContent = (individualIngredients.length + temporaryIngredients.length).toLocaleString('ko-KR');
+    document.getElementById('hub-food-count').textContent = foodIngredients.length.toLocaleString('ko-KR');
+    document.getElementById('hub-protocol-count').textContent = Object.keys(protocols).length.toLocaleString('ko-KR');
+
+    const newestIngredients = individualIngredients.slice(0, 2);
+    const newestBlocked = assignedBlocked.slice(0, 1);
+    const updateFeed = document.getElementById('lite-update-feed');
+    updateFeed.innerHTML = [
+      ...newestIngredients.map(item => ({
+        title: item.name,
+        tag: item.noticeConverted === true ? '고시 전환' : '개별인정',
+        body: [item.company, item.efficacy].filter(Boolean).join(' · '),
+        meta: item.noticeNo || item.year || '최근 인정'
+      })),
+      ...newestBlocked.map(item => ({
+        title: item.nk || item.ne || '반입차단 원료', tag: '반입차단',
+        body: item.alias ? `이명 ${item.alias}` : '국내 반입차단 목록 신규·변경 항목', meta: item.date || '최근 갱신'
+      }))
+    ].map(item => `<article class="lite-update-card"><div class="lite-update-card-head"><strong>${esc(item.title)}</strong><em>${esc(item.tag)}</em></div><p>${esc(item.body || '상세 자료에서 확인')}</p><small>${esc(item.meta)}</small></article>`).join('');
+
+    const products = Array.isArray(mobileDigest.products) ? mobileDigest.products.slice(0, 4) : [];
+    document.getElementById('lite-home-products').innerHTML = products.map(item => `<div class="lite-compact-row"><div><strong>${esc(item.name)}</strong><p>${esc(item.company)} · ${esc(item.claim)}</p></div><em>${esc(shortDate(item.date))}</em></div>`).join('') || '<div class="lite-empty">갱신된 제품이 없습니다.</div>';
+
+    const minutes = Array.isArray(mobileDigest.minutes) ? mobileDigest.minutes.slice(0, 3) : [];
+    document.getElementById('lite-home-minutes').innerHTML = minutes.map(item => `<div class="lite-compact-row"><div><strong>${esc(item.name)}</strong><p>${esc(item.date)}</p></div><em>${esc(item.tag)}</em></div>`).join('') || '<div class="lite-empty">최근 회의록이 없습니다.</div>';
+
+    const claims = Array.isArray(mobileDigest.claims) ? mobileDigest.claims.slice(0, 5) : [];
+    const maxClaim = Math.max(1, ...claims.map(item => Number(item.count) || 0));
+    document.getElementById('lite-home-claims').innerHTML = claims.map(item => `<div class="lite-claim-row"><div><b>${esc(item.name)}</b><span>${Number(item.count || 0).toLocaleString('ko-KR')}건</span></div><div class="lite-claim-track"><i style="width:${Math.round((Number(item.count || 0) / maxClaim) * 100)}%"></i></div></div>`).join('') || '<div class="lite-empty">분포 데이터가 없습니다.</div>';
+
+    const news = Array.isArray(mobileDigest.news) ? mobileDigest.news.slice(0, 6) : [];
+    document.getElementById('lite-home-news').innerHTML = news.map(item => {
+      const body = `<strong>${esc(item.title)}</strong><span>${esc(sourceName(item.source))} · ${esc(shortDate(item.date))}</span>`;
+      return item.link ? `<a class="lite-news-row" href="${esc(item.link)}" target="_blank" rel="noopener">${body}</a>` : `<div class="lite-news-row">${body}</div>`;
+    }).join('') || '<div class="lite-empty">갱신된 뉴스가 없습니다.</div>';
+
+    const generatedAt = mobileDigest.generatedAt ? new Date(mobileDigest.generatedAt) : null;
+    if (generatedAt && !Number.isNaN(generatedAt.getTime())) {
+      document.getElementById('lite-digest-date').textContent = generatedAt.toLocaleDateString('ko-KR', {month: 'numeric', day: 'numeric', timeZone: 'Asia/Seoul'}) + ' 갱신';
+    }
   }
 
-  function setupCinemaHome() {
-    const startButton = document.querySelector('[data-mobile-cinema-start]');
-    const tools = document.getElementById('mobile-tools');
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    startButton?.addEventListener('click', () => {
-      if (authState === true) {
-        tools?.scrollIntoView({behavior: reducedMotion ? 'auto' : 'smooth', block: 'start'});
-        return;
-      }
-      sessionStorage.setItem('ha-mobile-enter-after-login', '1');
-      openAccountModal();
-    });
+  function shortDate(value) {
+    const text = String(value || '-');
+    const match = text.match(/(\d{4})[-.](\d{2})[-.](\d{2})/);
+    return match ? `${match[2]}.${match[3]}` : text.slice(0, 10);
+  }
 
-    const sections = [...document.querySelectorAll('.reveal-on-scroll, [data-mobile-cinema-frame]')];
-    if (!('IntersectionObserver' in window) || reducedMotion) {
-      sections.forEach(section => section.classList.add('is-revealed'));
-      document.querySelectorAll('[data-mobile-cinema-frame]').forEach(frame => frame.classList.add('is-visible'));
-      return;
+  function sourceName(value) {
+    const names = {
+      kfri: '한국식품연구원', mfds: '식약처', nutraingredients: 'NutraIngredients',
+      supplysidesj: 'SupplySide SJ', nutritioninsight: 'Nutrition Insight', foodjournal: '식품저널'
+    };
+    const key = norm(value).replace(/[^a-z]/g, '');
+    return names[key] || String(value || '공식 자료');
+  }
+
+  function openVerdict(query) {
+    activateView('verdict').then(opened => {
+      if (!opened) return;
+      const input = document.getElementById('lite-verdict-input');
+      if (input) input.value = String(query || '').trim();
+      if (input?.value) document.getElementById('lite-verdict-form')?.requestSubmit();
+      else input?.focus();
+    });
+  }
+
+  function setupAppHome() {
+    const form = document.getElementById('lite-home-search');
+    const input = document.getElementById('lite-home-search-input');
+    form?.addEventListener('submit', event => {
+      event.preventDefault();
+      openVerdict(input?.value);
+    });
+    document.querySelectorAll('[data-verdict-query]').forEach(button => {
+      button.addEventListener('click', () => openVerdict(button.dataset.verdictQuery));
+    });
+  }
+
+  function verdictHistory() {
+    try {
+      const value = JSON.parse(localStorage.getItem('ha-mobile-verdict-history') || '[]');
+      return Array.isArray(value) ? value.slice(0, 8) : [];
+    } catch (_error) {
+      return [];
     }
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (!entry.isIntersecting) return;
-        entry.target.classList.add('is-revealed', 'is-visible');
-        if (!entry.target.matches('[data-mobile-cinema-frame]')) observer.unobserve(entry.target);
-      });
-    }, {threshold: 0.18});
-    sections.forEach(section => observer.observe(section));
+  }
+
+  function setupWork() {
+    const list = document.getElementById('lite-recent-verdicts');
+    const clear = document.getElementById('lite-work-clear');
+    const accountOpen = document.getElementById('lite-work-account-open');
+    const accountStatus = document.getElementById('lite-work-account-status');
+
+    const render = () => {
+      const rows = verdictHistory();
+      list.innerHTML = rows.length ? rows.map(item => `<button type="button" class="lite-recent-row" data-work-query="${esc(item.query)}"><i aria-hidden="true"></i><strong>${esc(item.query)}</strong><small>${esc(item.date || '')}</small></button>`).join('') : '<div class="lite-empty">최근 판정 기록이 없습니다.</div>';
+      list.querySelectorAll('[data-work-query]').forEach(button => button.addEventListener('click', () => openVerdict(button.dataset.workQuery)));
+    };
+    accountOpen?.addEventListener('click', openAccountModal);
+    clear?.addEventListener('click', () => {
+      localStorage.removeItem('ha-mobile-verdict-history');
+      render();
+    });
+    document.addEventListener('healtharchive:verdict-history', render);
+    getAuthStatus(false).then(authenticated => {
+      if (accountStatus) accountStatus.textContent = authenticated ? '승인 계정' : '로그인 필요';
+    });
+    render();
   }
 
   function addCategoryOptions(select, includePlaceholder) {
@@ -451,14 +526,7 @@
       const items = selectedItems();
       selectedCount.textContent = `${items.length} / 3 선택`;
       if (!items.length) { output.innerHTML = ''; return; }
-      const rows = [
-        ['원료명', item => `<strong>${esc(item.name)}</strong>`],
-        ['업체', item => esc(item.company || '-')],
-        ['인정번호', item => esc(item.noticeNo || '-')],
-        ['일일섭취량', item => esc(item.dailyIntake || '-')],
-        ['기능성', item => esc(item.efficacy || '-')]
-      ];
-      output.innerHTML = `<table class="lite-compare-table"><tbody>${rows.map(([label, getter]) => `<tr><th>${label}</th>${items.map(item => `<td>${getter(item)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+      output.innerHTML = `<div class="lite-compare-cards">${items.map((item, index) => `<article><span>선택 ${index + 1}</span><h2>${esc(item.name)}</h2><dl><div><dt>업체</dt><dd>${esc(item.company || '-')}</dd></div><div><dt>인정번호</dt><dd>${esc(item.noticeNo || '-')}</dd></div><div><dt>일일섭취량</dt><dd>${esc(item.dailyIntake || '-')}</dd></div><div><dt>기능성</dt><dd>${esc(item.efficacy || '-')}</dd></div></dl></article>`).join('')}</div>`;
     }
     function renderOptions() {
       const categoryValue = category.value;
@@ -489,9 +557,10 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     setupHome();
-    setupCinemaHome();
+    setupAppHome();
     setupMobileAccount();
     setupNavigation();
+    setupWork();
     setupIngredientSearch();
     setupSafetySearch();
     setupProtocols();

@@ -35,3 +35,18 @@
 - Motion: hero parallax, staggered reveal, and sticky card transitions verified; reduced-motion fallback included.
 - Functional check: both public start buttons open the existing account dialog; authenticated workspace markup and navigation remain unchanged.
 - Result: passed.
+
+## Mobile App Prototype Import
+
+- Source: `HealthArchive Mobile App.dc.html` from the supplied Claude Design export.
+- Target: `mobile-lite.html` at 390 x 844 CSS px.
+- Comparison: `C:/Users/225170/AppData/Local/Temp/healtharchive-mobile-comparison.png`.
+- Visual match: deep-green app header, paper background, serif display title, compact data cards, image-backed task grid, and four-item bottom navigation.
+- Adaptation: the design-canvas device frame and layout switcher were excluded; production data and authentication replace prototype demo values.
+- Home digest: 3 updates, 4 products, 3 minutes, 5 claim rows, and 6 news rows rendered.
+- Pre-Check: `감태` returned four evidence records without login.
+- Protected data hub and My Work navigation passed in local preview mode.
+- Viewport: `clientWidth 375`, `scrollWidth 375`; no horizontal overflow.
+- Browser console: no errors or warnings during tested flows.
+
+final result: passed
