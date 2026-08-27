@@ -1,10 +1,10 @@
-const CACHE_NAME = 'healtharchive-runtime-20260827-mobile-app5';
+const CACHE_NAME = 'healtharchive-runtime-20260827-summary1';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/style.css?v=20260730-chapters1',
+  '/style.css?v=20260827-summary1',
   '/simon.css?v=20260730-adminlock1',
-  '/app.js?v=20260806-visitor1',
+  '/app.js?v=20260827-summary1',
   '/simon.js?v=20260730-adminlock1',
   '/section-visuals.js?v=20260730-chapters1',
   '/pc-cinema.js?v=20260714-cinema-restore1',
@@ -32,6 +32,7 @@ const CORE_ASSETS = [
   '/assets/pc-data.jpg',
   '/assets/pc-regulatory.jpg',
   '/data/ingredients.js?v=20260722-runtimefix1',
+  '/data/ingredient_function_summaries.js?v=20260827-summary1',
   '/data/temp_approval.js?v=20260722-runtimefix1',
   '/data/food_ingredients.js?v=20260722-runtimefix1',
   '/data/blocked_ingredients.js?v=20260722-runtimefix1',

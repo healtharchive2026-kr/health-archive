@@ -57,3 +57,14 @@
 - Browser console: no errors or warnings during tested flows.
 
 final result: passed
+
+## Ingredient Function Summary PDF
+
+- Target: `제2026-6호` Weissella confusa WIKIM51 프로바이오틱스(Wilac D001).
+- PDF validation: 9 pages, not encrypted, 2,686,051 bytes; notice number, ingredient, function, and intake information match the ingredient database row.
+- R2 object: `function-summaries/제2026-6호.pdf`, HTTP 200 with `application/pdf` and matching content length.
+- Desktop 1440 x 900: seven headers and one filtered result rendered; consumer report and function summary links are both visible.
+- Layout: table and viewport container are both 1,214 px wide; no table-level or page-level horizontal overflow.
+- Rows without a function summary render `자료 준비 중` without a broken link.
+- Visual capture: `audit-screenshots/ingredient-summary-2026-6-desktop.png`.
+- Result: passed.

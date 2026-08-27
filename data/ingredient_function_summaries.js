@@ -1,0 +1,3 @@
+var INGREDIENT_FUNCTION_SUMMARIES = {
+  "제2026-6호": "제2026-6호.pdf"
+};

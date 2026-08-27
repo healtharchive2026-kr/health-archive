@@ -58,7 +58,7 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="preload" as="image" href="assets/pc-landscape-bg.jpg" fetchpriority="high">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.css">
-<link rel="stylesheet" href="style.css?v=20260825-dailyreport1">
+<link rel="stylesheet" href="style.css?v=20260827-summary1">
 <link rel="stylesheet" href="simon.css?v=20260730-adminlock1">
 </head>
 <body>
@@ -1259,7 +1259,7 @@
       <div class="db-hub-group"><span class="db-hub-label">안전성</span><div class="db-hub-links"><a href="#safety-db" data-goto="safety-db" class="db-hub-link">안전성 DB 검색기</a></div></div>
     </nav>
     <div class="db-page-head">
-      <div><span class="db-page-eyebrow">인정 원료 데이터베이스</span><h2>개별인정/고시형 원료</h2><p>인정번호, 원료명, 업체, 기능성 및 소비자 리포트를 한 화면에서 조회합니다.</p></div>
+      <div><span class="db-page-eyebrow">인정 원료 데이터베이스</span><h2>개별인정/고시형 원료</h2><p>인정번호, 원료명, 업체, 기능성 및 근거 자료를 한 화면에서 조회합니다.</p></div>
       <span class="db-source-badge">식품안전나라 · 인정 현황</span>
     </div>
     <div class="year-layout">
@@ -1278,9 +1278,10 @@
               <col class="ingredient-col-efficacy">
               <col class="ingredient-col-intake">
               <col class="ingredient-col-report">
+              <col class="ingredient-col-summary">
             </colgroup>
             <thead>
-              <tr><th>고시번호</th><th>원료명</th><th>회사</th><th>기능성</th><th>섭취량</th><th>소비자리포트</th></tr>
+              <tr><th>고시번호</th><th>원료명</th><th>회사</th><th>기능성</th><th>섭취량</th><th>소비자리포트</th><th>기능성 요약자료</th></tr>
             </thead>
             <tbody></tbody>
           </table>
@@ -2602,6 +2603,7 @@
 </div>
 
 <script src="data/ingredients.js?v=20260722-runtimefix1"></script>
+<script src="data/ingredient_function_summaries.js?v=20260827-summary1"></script>
 <script src="data/minutes.js?v=20260722-runtimefix1"></script>
 <script src="data/guidelines.js?v=20260629-glossary"></script>
 <script src="data/biomarker_protocols.js?v=20260711-terms1"></script>
@@ -2615,7 +2617,7 @@
 <script src="data/daily_quotes.js"></script>
 <script src="section-visuals.js?v=20260730-chapters1"></script>
 <script src="market.js?v=20260721-access-market1"></script>
-<script src="app.js?v=20260825-dailyreport1"></script>
+<script src="app.js?v=20260827-summary1"></script>
 <script src="simon.js?v=20260730-adminlock1"></script>
 <script src="pc-cinema.js?v=20260825-redesign1"></script>
 <script src="feedback.js?v=20260714-api1"></script>

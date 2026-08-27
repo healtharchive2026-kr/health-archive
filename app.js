@@ -2994,6 +2994,20 @@ function ingredientReportLinkHtml(row, label, className = 'report-link') {
   return `<a class="${className}" href="${escapeHtml(href)}" target="_blank" rel="noopener">${escapeHtml(label)}</a>`;
 }
 
+function ingredientSummaryHref(row) {
+  const summaries = typeof INGREDIENT_FUNCTION_SUMMARIES !== 'undefined'
+    ? INGREDIENT_FUNCTION_SUMMARIES
+    : {};
+  const file = row.functionSummary || summaries[row.noticeNo];
+  return file ? pdfHref('function-summaries/' + file) : '';
+}
+
+function ingredientSummaryLinkHtml(row, label = 'PDF 보기') {
+  const href = ingredientSummaryHref(row);
+  if (!href) return '';
+  return `<a class="report-link summary-report-link" href="${escapeHtml(href)}" target="_blank" rel="noopener">${escapeHtml(label)}</a>`;
+}
+
 function reportCellHtml(r) {
   if (isMergedIngredientRow(r)) {
     const rowsWithReports = mergedRows(r).filter(row => ingredientReportHref(row));
@@ -3017,6 +3031,26 @@ function reportCellHtml(r) {
     : '<span class="report-none">리포트 미발행</span>';
 }
 
+function summaryCellHtml(r) {
+  const rowsWithSummaries = mergedRows(r).filter(row => ingredientSummaryHref(row));
+  const seen = new Set();
+  const links = rowsWithSummaries
+    .filter(row => {
+      const key = ingredientSummaryHref(row);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .map(row => ingredientSummaryLinkHtml(
+      row,
+      isMergedIngredientRow(r) ? row.noticeNo || 'PDF 보기' : 'PDF 보기'
+    ));
+
+  return links.length
+    ? `<div class="report-link-list">${links.join('')}</div>`
+    : '<span class="report-none">자료 준비 중</span>';
+}
+
 function renderIngredients(list) {
   const tbody = document.querySelector('#ingredient-table tbody');
   const displayList = mergeConvertedIngredientRows(list);
@@ -3030,6 +3064,7 @@ function renderIngredients(list) {
       <td class="ingredient-efficacy">${lines}</td>
       <td class="ingredient-intake">${escapeHtml(r.dailyIntake || '-')}</td>
       <td class="ingredient-report">${reportCellHtml(r)}</td>
+      <td class="ingredient-summary">${summaryCellHtml(r)}</td>
     </tr>
   `;
   }).join('');

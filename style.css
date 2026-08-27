@@ -2116,13 +2116,14 @@ td.name{font-weight:600;}
   flex:1;min-width:0;line-height:1.45;word-break:keep-all;overflow-wrap:anywhere;
 }
 .ingredient-name-line .ing-cmp-btn{flex:0 0 20px;margin:0;}
-#ingredient-table{min-width:1080px;table-layout:fixed;font-size:13px;}
-#ingredient-table .ingredient-col-notice{width:108px;}
-#ingredient-table .ingredient-col-name{width:268px;}
-#ingredient-table .ingredient-col-company{width:145px;}
-#ingredient-table .ingredient-col-efficacy{width:215px;}
-#ingredient-table .ingredient-col-intake{width:220px;}
-#ingredient-table .ingredient-col-report{width:124px;}
+#ingredient-table{min-width:980px;table-layout:fixed;font-size:13px;}
+#ingredient-table .ingredient-col-notice{width:9%;}
+#ingredient-table .ingredient-col-name{width:23%;}
+#ingredient-table .ingredient-col-company{width:12%;}
+#ingredient-table .ingredient-col-efficacy{width:17%;}
+#ingredient-table .ingredient-col-intake{width:11%;}
+#ingredient-table .ingredient-col-report{width:13%;}
+#ingredient-table .ingredient-col-summary{width:15%;}
 #ingredient-table thead th{padding:11px 14px;font-size:12px;line-height:1.35;white-space:nowrap;}
 #ingredient-table tbody td{padding:13px 14px;line-height:1.5;vertical-align:top;}
 #ingredient-table td.name{font-weight:650;}
@@ -2131,7 +2132,8 @@ td.name{font-weight:600;}
 #ingredient-table .ingredient-intake{word-break:keep-all;overflow-wrap:anywhere;}
 #ingredient-table .ingredient-company{color:#34443c;}
 #ingredient-table .ingredient-intake{font-variant-numeric:tabular-nums;}
-#ingredient-table .ingredient-report{text-align:left;}
+#ingredient-table .ingredient-report,
+#ingredient-table .ingredient-summary{text-align:left;}
 .efficacy-line{padding:0;line-height:1.5;word-break:keep-all;overflow-wrap:anywhere;}
 .efficacy-line:not(:last-child){border-bottom:1px dashed var(--border);margin-bottom:6px;padding-bottom:6px;}
 .ing-cell{max-width:560px;}
@@ -3743,10 +3745,7 @@ body:not(.site-authenticated) .nav-link:not([data-tab="home"]):hover{opacity:.85
   .toolbar input{max-width:none;width:100%;}
   .table-wrap{max-height:72vh;border-radius:10px;}
   .table-wrap table,.market-table-wrap table,.foodraw-table-wrap table{min-width:760px;font-size:13px;}
-  #ingredient-table{min-width:980px;font-size:12.5px;}
-  #ingredient-table .ingredient-col-name{width:245px;}
-  #ingredient-table .ingredient-col-efficacy{width:200px;}
-  #ingredient-table .ingredient-col-intake{width:185px;}
+  #ingredient-table{min-width:900px;font-size:12.5px;}
   .table-wrap thead th,.table-wrap tbody td{padding:9px 10px;}
   .biomarker-card-list{grid-template-columns:1fr;}
   .biomarker-detail-panel{padding:16px;}
