@@ -20,6 +20,9 @@ s.textContent = `
 .d1-inline-tags{display:flex;flex-wrap:wrap;gap:.25rem;margin-top:.25rem}
 .d1-inline-tag{font-size:.65rem;background:rgba(217,139,50,.1);color:#a06820;border-radius:4px;padding:.1rem .35rem;cursor:default;white-space:nowrap}
 .market-data-note{font-size:.7rem;color:#8a9690;margin:.25rem 0 0;font-style:italic}
+.d1-search-results{margin-top:1.2rem;padding:1rem 1.2rem;background:rgba(37,111,91,.03);border:1px solid rgba(37,111,91,.1);border-radius:10px}
+.d1-search-results .d1-section-head{margin-bottom:.6rem}
+.d1-search-match-cat{font-size:.72rem;color:#5b8a7a;font-weight:600;margin:.6rem 0 .3rem;text-transform:uppercase;letter-spacing:.04em}
 `;
 document.head.appendChild(s);
 })();
@@ -607,4 +610,53 @@ function renderMarketItems() {
   }).join('') || '<tr><td colspan="8"><div class="market-empty">일치하는 품목이 없습니다.</div></td></tr>';
   document.getElementById('market-item-count').textContent = `${rows.length}개 중 ${shown.length}개 표시`;
   document.getElementById('market-item-more').hidden = shown.length >= rows.length;
+
+  let d1Container = document.getElementById('d1-search-results');
+  if (!d1Container) {
+    d1Container = document.createElement('div');
+    d1Container.id = 'd1-search-results';
+    const foot = document.getElementById('market-table-foot');
+    foot?.parentElement?.insertBefore(d1Container, foot.nextSibling);
+  }
+  if (marketItemQuery && d1Categories) {
+    const q = marketItemQuery;
+    const matchedIngs = [];
+    d1Categories.forEach(cat => {
+      (cat.ingredients || []).forEach(ing => {
+        if (ing.name.toLowerCase().includes(q)) {
+          matchedIngs.push({ cat: cat.name, name: ing.name, s23: ing.sales_2023, s24: ing.sales_2024, s25: ing.sales_2025 });
+        }
+      });
+    });
+    if (matchedIngs.length) {
+      const maxVal = Math.max(...matchedIngs.map(i => i.s25 || 0), 1);
+      matchedIngs.sort((a, b) => (b.s25 || 0) - (a.s25 || 0));
+      let html = `<div class="d1-search-results">
+        <div class="d1-section-head">
+          <span class="sec-title">MATCHED INDIVIDUAL INGREDIENTS</span>
+          <h4>검색된 개별인정 원료 매출</h4>
+        </div>
+        <table class="d1-table">
+          <thead><tr><th>원료명</th><th>기능성</th><th>2023</th><th>2024</th><th>2025</th><th>전년비</th></tr></thead><tbody>`;
+      matchedIngs.forEach(ing => {
+        const g = marketGrowth(ing.s25, ing.s24);
+        const barW = ing.s25 != null && maxVal > 0 ? (ing.s25 / maxVal * 100) : 0;
+        html += `<tr>
+          <td>${marketEscape(ing.name)}</td>
+          <td><span class="d1-inline-tag">${marketEscape(ing.cat)}</span></td>
+          <td class="num">${ing.s23 != null ? marketNumber(ing.s23) : '-'}</td>
+          <td class="num">${ing.s24 != null ? marketNumber(ing.s24) : '-'}</td>
+          <td class="num"><i class="d1-bar" style="width:${barW}%"></i><strong>${ing.s25 != null ? marketNumber(ing.s25) : '-'}</strong></td>
+          <td class="num">${marketGrowthHtml(g)}</td>
+        </tr>`;
+      });
+      html += '</tbody></table>';
+      html += `<p class="market-data-note">단위: 억원 · 개별인정 원료 총매출 기준</p></div>`;
+      d1Container.innerHTML = html;
+    } else {
+      d1Container.innerHTML = '';
+    }
+  } else {
+    d1Container.innerHTML = '';
+  }
 }
