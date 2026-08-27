@@ -1,4 +1,4 @@
-const CACHE_NAME = 'healtharchive-runtime-20260827-mobile-app4';
+const CACHE_NAME = 'healtharchive-runtime-20260827-mobile-app5';
 const CORE_ASSETS = [
   '/',
   '/index.html',
@@ -12,10 +12,10 @@ const CORE_ASSETS = [
   '/mobile-lite.html',
   '/privacy.html',
   '/terms.html',
-  '/mobile-lite.css?v=20260827-app4',
+  '/mobile-lite.css?v=20260827-app5',
   '/mobile-verdict.css?v=20260827-app1',
   '/mobile-verdict.js?v=20260827-app1',
-  '/mobile-lite.js?v=20260827-app4',
+  '/mobile-lite.js?v=20260827-app5',
   '/assets/logo-icon.png',
   '/assets/logo-icon-transparent.png',
   '/assets/leaf-badge.png',

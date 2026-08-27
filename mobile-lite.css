@@ -57,6 +57,7 @@ button{cursor:pointer;}
 
 /* App prototype import · 2026-08-27 */
 .lite-header{height:64px;padding:0 14px;border-color:var(--border);background:rgba(255,255,255,.96);box-sizing:border-box}
+.lite-header-main{display:flex;align-items:center;min-width:0;gap:5px}.lite-back-button{display:flex;align-items:center;justify-content:center;flex:none;width:34px;height:34px;padding:0;border:0;border-radius:8px;background:transparent;color:var(--text);font-size:20px;line-height:1}.lite-back-button[hidden]{display:none}.is-home .lite-back-button{color:#fff}.lite-back-button:active{background:rgba(37,111,91,.1)}.is-home .lite-back-button:active{background:rgba(255,255,255,.1)}
 .lite-brand{gap:7px;color:var(--green);font-size:15px;font-weight:500}.lite-brand img{width:27px;height:27px;border-radius:7px}.lite-brand b{font-weight:800}.lite-brand em{display:none}
 .lite-header-actions{gap:5px}.lite-data-status{display:flex;align-items:center;gap:5px;padding:4px 7px;border-radius:99px;background:var(--green-soft);color:var(--green);font:700 9px/1 ui-monospace,Menlo,monospace}.lite-data-status i{width:5px;height:5px;border-radius:50%;background:var(--green)}
 .lite-full-link,.lite-account-trigger{height:34px;padding:0 9px;border-color:rgba(18,33,28,.1);border-radius:8px;background:#fff;color:var(--muted);font-size:10.5px}

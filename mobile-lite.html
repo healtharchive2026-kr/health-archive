@@ -14,14 +14,17 @@
 <link rel="alternate" media="only screen and (min-width: 761px)" href="https://www.healtharchive.kr/">
 <title>HealthArchive Mobile</title>
 <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="mobile-lite.css?v=20260827-app4">
+  <link rel="stylesheet" href="mobile-lite.css?v=20260827-app5">
 <link rel="stylesheet" href="mobile-verdict.css?v=20260827-app1">
 </head>
 <body class="is-home">
 <header class="lite-header">
-  <button type="button" class="lite-brand" data-lite-tab="home" aria-label="모바일 홈으로 이동">
-    <img src="assets/logo-icon-transparent.png" alt=""><span>Health<b>Archive</b></span><em>Mobile</em>
-  </button>
+  <div class="lite-header-main">
+    <button type="button" class="lite-back-button" id="lite-back-button" aria-label="이전 화면으로 돌아가기" hidden>←</button>
+    <button type="button" class="lite-brand" data-lite-tab="home" aria-label="모바일 홈으로 이동">
+      <img src="assets/logo-icon-transparent.png" alt=""><span>Health<b>Archive</b></span><em>Mobile</em>
+    </button>
+  </div>
   <div class="lite-header-actions">
     <span class="lite-data-status" id="lite-data-status"><i aria-hidden="true"></i>LIVE</span>
     <button type="button" class="lite-account-trigger" id="lite-account-trigger">로그인</button>
@@ -284,6 +287,6 @@
 <script src="data/minutes.js?v=20260827-app4"></script>
 <script src="data/mobile_digest.js?v=20260827-app4"></script>
 <script src="mobile-verdict.js?v=20260827-app1"></script>
-<script src="mobile-lite.js?v=20260827-app4"></script>
+<script src="mobile-lite.js?v=20260827-app5"></script>
 </body>
 </html>

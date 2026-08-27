@@ -30,6 +30,7 @@
   const localPreview = location.hostname === '127.0.0.1' || location.hostname === 'localhost';
   let authState = null;
   let authCheck = null;
+  let activeView = 'home';
   const usageTimes = new Map();
 
   function renderAuthState(authenticated) {
@@ -101,6 +102,7 @@
       return false;
     }
     document.body.classList.toggle('is-home', target === 'home');
+    const previousView = activeView;
     const navTarget = databaseViews.has(target) ? 'database' : target;
     document.querySelectorAll('[data-lite-tab]').forEach(button => {
       button.classList.toggle('active', button.dataset.liteTab === navTarget);
@@ -110,14 +112,23 @@
       view.hidden = !active;
       view.classList.toggle('active', active);
     });
+    activeView = target;
+    const backButton = document.getElementById('lite-back-button');
+    if (backButton) backButton.hidden = target === 'home';
     window.scrollTo({top: 0, behavior: 'auto'});
-    history.replaceState(null, '', '#' + target);
+    if (options?.historyMode !== 'none') {
+      const currentDepth = Number(history.state?.haDepth || 0);
+      const state = {haView: target, haDepth: options?.initial || options?.historyMode === 'replace' ? currentDepth : currentDepth + 1};
+      if (options?.initial || options?.historyMode === 'replace') history.replaceState(state, '', '#' + target);
+      else if (target !== previousView) history.pushState(state, '', '#' + target);
+    }
     trackUsage(target);
     return true;
   }
 
   function setupNavigation() {
     const validViews = new Set([...document.querySelectorAll('[data-lite-view]')].map(view => view.dataset.liteView));
+    const backButton = document.getElementById('lite-back-button');
     document.querySelectorAll('[data-lite-tab]').forEach(button => {
       button.addEventListener('click', () => activateView(button.dataset.liteTab));
     });
@@ -132,6 +143,14 @@
         : (validViews.has(initial) ? initial : 'home');
       if (authenticated && pending) sessionStorage.removeItem('ha-mobile-login-target');
       activateView(target, {initial: true});
+    });
+    backButton?.addEventListener('click', () => {
+      if (Number(history.state?.haDepth || 0) > 0) history.back();
+      else activateView('home', {historyMode: 'replace'});
+    });
+    window.addEventListener('popstate', event => {
+      const target = event.state?.haView || location.hash.replace('#', '') || 'home';
+      activateView(validViews.has(target) ? target : 'home', {historyMode: 'none'});
     });
   }
 

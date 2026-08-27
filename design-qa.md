@@ -49,6 +49,8 @@
 - Search handoff: protocol result opened the filtered protocol view; minute searches prioritize the matching ingredient in each result summary.
 - News: dedicated bottom tab rendered 48 recent articles with all six source filters (3 domestic, 3 international).
 - Committee minutes: dedicated searchable view returned three `감태` meetings with working R2 PDF links.
+- Back navigation: `Home -> Data -> Committee minutes` returned to Data and then Home in order; browser/device Back returned News to Home; a directly opened detail view safely returned Home.
+- Back control: visible on non-home views, hidden on Home, and verified at 390 x 844 without header collision or horizontal overflow.
 - Pre-Check: `감태` returned four evidence records without login.
 - Protected data hub and My Work navigation passed in local preview mode.
 - Viewport: `clientWidth 375`, `scrollWidth 375`; no horizontal overflow.
