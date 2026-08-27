@@ -615,8 +615,8 @@ function renderMarketItems() {
   if (!d1Container) {
     d1Container = document.createElement('div');
     d1Container.id = 'd1-search-results';
-    const foot = document.getElementById('market-table-foot');
-    foot?.parentElement?.insertBefore(d1Container, foot.nextSibling);
+    const foot = document.querySelector('.market-item-card .market-table-foot');
+    foot?.parentElement?.appendChild(d1Container);
   }
   if (marketItemQuery && d1Categories) {
     const q = marketItemQuery;
