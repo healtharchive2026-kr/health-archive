@@ -1,4 +1,31 @@
+(() => {
+const s = document.createElement('style');
+s.textContent = `
+.d1-ingredient-section{margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid rgba(37,111,91,.12)}
+.d1-section-head{margin-bottom:.75rem}
+.d1-section-head .sec-title{display:block;font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:#5b8a7a;margin-bottom:.15rem}
+.d1-section-head h4{font-size:.95rem;font-weight:700;color:var(--text,#131c22);margin:0}
+.d1-meta-row{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.6rem}
+.d1-meta-tag{font-size:.78rem;background:rgba(37,111,91,.07);border-radius:6px;padding:.35rem .6rem;color:var(--text,#131c22);line-height:1.4}
+.d1-meta-tag span{font-weight:600;color:#256f5b;margin-right:.3rem}
+.d1-note{font-size:.75rem;color:#66756f;margin:0 0 .6rem;line-height:1.45}
+.d1-table{width:100%;border-collapse:collapse;font-size:.8rem;margin-bottom:.5rem}
+.d1-table thead{border-bottom:2px solid rgba(37,111,91,.18)}
+.d1-table th{font-weight:600;text-align:left;padding:.45rem .4rem;color:#256f5b;font-size:.72rem;text-transform:uppercase;letter-spacing:.04em}
+.d1-table td{padding:.4rem;border-bottom:1px solid rgba(37,111,91,.06);vertical-align:middle}
+.d1-table td.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.d1-table td strong{position:relative;z-index:1}
+.d1-bar{display:block;position:absolute;left:0;top:0;bottom:0;background:rgba(37,111,91,.08);border-radius:3px;pointer-events:none}
+.d1-table td:nth-child(4){position:relative}
+.d1-inline-tags{display:flex;flex-wrap:wrap;gap:.25rem;margin-top:.25rem}
+.d1-inline-tag{font-size:.65rem;background:rgba(217,139,50,.1);color:#a06820;border-radius:4px;padding:.1rem .35rem;cursor:default;white-space:nowrap}
+.market-data-note{font-size:.7rem;color:#8a9690;margin:.25rem 0 0;font-style:italic}
+`;
+document.head.appendChild(s);
+})();
+
 const MARKET_DB_URL = 'data/hff_db.json?v=20260720-production-sales1';
+const MARKET_D1_URL = 'https://api.healtharchive.kr/public/market/all';
 const MARKET_COLORS = {
   gosi: '#1d5d4c',
   individual: '#d98b32',
@@ -53,15 +80,17 @@ let marketItemLimit = 50;
 let marketCharts = {};
 const marketItemCategoryCache = new Map();
 
+let d1Categories = null;
+
 function initMarketTab() {
   if (marketInitPromise) return marketInitPromise;
-  marketInitPromise = fetch(MARKET_DB_URL)
-    .then(response => {
-      if (!response.ok) throw new Error(`시장 DB 응답 오류 (${response.status})`);
-      return response.json();
-    })
-    .then(data => {
+  marketInitPromise = Promise.all([
+    fetch(MARKET_DB_URL).then(r => { if (!r.ok) throw new Error(`시장 DB 응답 오류 (${r.status})`); return r.json(); }),
+    fetch(MARKET_D1_URL).then(r => r.ok ? r.json() : null).catch(() => null)
+  ])
+    .then(([data, d1]) => {
       marketDb = data;
+      if (d1 && d1.categories) d1Categories = d1.categories;
       marketYear = String(data.meta?.years?.at(-1) || '2025');
       setupMarketControls();
       renderMarketDashboard();
@@ -223,10 +252,14 @@ function marketItemCategories(itemName) {
     .filter(([name]) => cacheKey.includes(name))
     .flatMap(([, categories]) => categories);
   const records = Array.isArray(window.INGREDIENTS_DATA) ? window.INGREDIENTS_DATA : [];
-  const categories = [...new Set([...standardCategories, ...records
+  const dbCategories = records
     .filter(record => marketNamesMatch(itemName, record.name))
     .map(record => canonicalMarketFunction(record.category))
-    .filter(Boolean)])];
+    .filter(Boolean);
+  const d1Cats = d1Categories ? d1Categories
+    .filter(cat => cat.ingredients?.some(ing => marketNamesMatch(itemName, ing.name)))
+    .map(cat => cat.name) : [];
+  const categories = [...new Set([...standardCategories, ...dbCategories, ...d1Cats])];
   marketItemCategoryCache.set(cacheKey, categories);
   return categories;
 }
@@ -458,6 +491,12 @@ function renderMarketFunctions() {
   });
 }
 
+function d1FindCategory(funcName) {
+  if (!d1Categories) return null;
+  const canonical = canonicalMarketFunction(funcName);
+  return d1Categories.find(c => c.name === funcName || canonicalMarketFunction(c.name) === canonical) || null;
+}
+
 function renderMarketRelated() {
   const target = canonicalMarketFunction(marketFunction);
   const matched = marketItems()
@@ -466,18 +505,69 @@ function renderMarketRelated() {
   document.getElementById('market-related-title').textContent = marketFunction ? `${marketFunction} 연결 품목` : '연결 품목';
   document.getElementById('market-related-count').textContent = `${matched.length}개`;
   document.getElementById('market-related-intro').textContent = `${marketYear}년 품목 실적과 인정원료 DB의 기능성·원료명을 교차 연결한 결과입니다.`;
-  document.getElementById('market-related-list').innerHTML = matched.length ? matched.slice(0, 12).map((item, index) => `
-    <div class="market-related-row">
-      <span>${index + 1}</span>
-      <div><strong>${marketEscape(item.name)}</strong><small>${item.type} · 내수 ${marketNumber(item.domestic)} · 수출 ${marketNumber(item.exportSales)}</small></div>
-      <b>${marketNumber(item.sales)}<small>억원</small></b>
-    </div>`).join('') : '<div class="market-empty"><strong>직접 연결되는 품목이 없습니다.</strong><span>기능성별 통계와 품목별 통계의 명칭 연결이 확인되는 경우에만 표시합니다.</span></div>';
+
+  let html = '';
+  if (matched.length) {
+    html += matched.slice(0, 12).map((item, index) => `
+      <div class="market-related-row">
+        <span>${index + 1}</span>
+        <div><strong>${marketEscape(item.name)}</strong><small>${item.type} · 내수 ${marketNumber(item.domestic)} · 수출 ${marketNumber(item.exportSales)}</small></div>
+        <b>${marketNumber(item.sales)}<small>억원</small></b>
+      </div>`).join('');
+  } else {
+    html += '<div class="market-empty"><strong>직접 연결되는 품목이 없습니다.</strong><span>기능성별 통계와 품목별 통계의 명칭 연결이 확인되는 경우에만 표시합니다.</span></div>';
+  }
+
+  const d1Cat = d1FindCategory(marketFunction);
+  if (d1Cat && d1Cat.ingredients && d1Cat.ingredients.length > 0) {
+    const ings = [...d1Cat.ingredients].sort((a, b) => (b.sales_2025 || 0) - (a.sales_2025 || 0));
+    const maxIng = Math.max(...ings.map(i => i.sales_2025 || 0), 1);
+    html += `<div class="d1-ingredient-section">
+      <div class="d1-section-head">
+        <span class="sec-title">INDIVIDUAL INGREDIENT SALES</span>
+        <h4>개별인정 원료별 매출</h4>
+      </div>`;
+    if (d1Cat.biomarkers || d1Cat.marketing) {
+      html += '<div class="d1-meta-row">';
+      if (d1Cat.biomarkers) html += `<div class="d1-meta-tag"><span>바이오마커</span> ${marketEscape(d1Cat.biomarkers)}</div>`;
+      if (d1Cat.marketing) html += `<div class="d1-meta-tag"><span>마케팅</span> ${marketEscape(d1Cat.marketing)}</div>`;
+      html += '</div>';
+    }
+    if (d1Cat.note) html += `<p class="d1-note">${marketEscape(d1Cat.note)}</p>`;
+    html += `<table class="d1-table">
+      <thead><tr><th>원료명</th><th>2023</th><th>2024</th><th>2025</th><th>전년비</th></tr></thead><tbody>`;
+    ings.forEach(ing => {
+      const g = marketGrowth(ing.sales_2025, ing.sales_2024);
+      const barW = ing.sales_2025 != null && maxIng > 0 ? (ing.sales_2025 / maxIng * 100) : 0;
+      html += `<tr>
+        <td>${marketEscape(ing.name)}</td>
+        <td class="num">${ing.sales_2023 != null ? marketNumber(ing.sales_2023) : '-'}</td>
+        <td class="num">${ing.sales_2024 != null ? marketNumber(ing.sales_2024) : '-'}</td>
+        <td class="num"><i class="d1-bar" style="width:${barW}%"></i><strong>${ing.sales_2025 != null ? marketNumber(ing.sales_2025) : '-'}</strong></td>
+        <td class="num">${marketGrowthHtml(g)}</td>
+      </tr>`;
+    });
+    html += '</tbody></table>';
+    html += `<p class="market-data-note">단위: 억원. 원료 총매출 기준(복수 기능성 합산), 기능성별 매출합계와 다를 수 있음.</p>`;
+    html += '</div>';
+  }
+
+  document.getElementById('market-related-list').innerHTML = html;
 }
 
 function renderMarketItems() {
   let rows = marketItems();
   if (marketItemQuery) {
-    rows = rows.filter(item => `${item.name} ${item.categories.join(' ')}`.toLowerCase().includes(marketItemQuery));
+    const q = marketItemQuery;
+    rows = rows.filter(item => {
+      if (`${item.name} ${item.categories.join(' ')}`.toLowerCase().includes(q)) return true;
+      if (d1Categories) {
+        return d1Categories.some(cat =>
+          cat.ingredients?.some(ing => ing.name.toLowerCase().includes(q) && marketNamesMatch(item.name, ing.name))
+        );
+      }
+      return false;
+    });
   }
   const sorters = {
     sales: (a, b) => b.sales - a.sales,
@@ -488,17 +578,33 @@ function renderMarketItems() {
   rows.sort(sorters[marketItemSort] || sorters.sales);
   const shown = rows.slice(0, marketItemLimit);
   document.getElementById('market-item-summary').textContent = `${marketYear}년 ${marketType} 품목별 총매출·내수·수출 실적`;
-  document.getElementById('market-item-body').innerHTML = shown.map((item, index) => `
-    <tr>
+  document.getElementById('market-item-body').innerHTML = shown.map((item, index) => {
+    let d1Sales = '';
+    if (d1Categories) {
+      const matchedCats = d1Categories.filter(cat =>
+        cat.ingredients?.some(ing => marketNamesMatch(item.name, ing.name))
+      );
+      if (matchedCats.length) {
+        const ingData = matchedCats.flatMap(cat =>
+          cat.ingredients.filter(ing => marketNamesMatch(item.name, ing.name))
+            .map(ing => ({ func: cat.name, s23: ing.sales_2023, s24: ing.sales_2024, s25: ing.sales_2025 }))
+        );
+        d1Sales = ingData.map(d =>
+          `<span class="d1-inline-tag" title="${marketEscape(d.func)}: ${d.s23 ?? '-'}→${d.s24 ?? '-'}→${d.s25 ?? '-'}억">${marketEscape(d.func)}</span>`
+        ).join('');
+      }
+    }
+    return `<tr>
       <td>${index + 1}</td>
-      <td><strong>${marketEscape(item.name)}</strong></td>
+      <td><strong>${marketEscape(item.name)}</strong>${d1Sales ? `<div class="d1-inline-tags">${d1Sales}</div>` : ''}</td>
       <td><span class="market-type-badge" data-type="${item.type}">${item.type}</span></td>
       <td><div class="market-function-tags">${item.categories.length ? item.categories.slice(0, 3).map(category => `<span>${marketEscape(category)}</span>`).join('') : '<i>-</i>'}</div></td>
       <td><strong>${marketNumber(item.sales)}</strong></td>
       <td>${marketNumber(item.domestic)}</td>
       <td>${marketNumber(item.exportSales)}</td>
       <td>${marketGrowthHtml(item.growth)}</td>
-    </tr>`).join('') || '<tr><td colspan="8"><div class="market-empty">일치하는 품목이 없습니다.</div></td></tr>';
+    </tr>`;
+  }).join('') || '<tr><td colspan="8"><div class="market-empty">일치하는 품목이 없습니다.</div></td></tr>';
   document.getElementById('market-item-count').textContent = `${rows.length}개 중 ${shown.length}개 표시`;
   document.getElementById('market-item-more').hidden = shown.length >= rows.length;
 }
