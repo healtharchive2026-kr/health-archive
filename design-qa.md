@@ -36,14 +36,19 @@
 - Functional check: both public start buttons open the existing account dialog; authenticated workspace markup and navigation remain unchanged.
 - Result: passed.
 
-## Mobile App Prototype Import
+## Mobile App Prototype Import And Information Architecture
 
 - Source: `HealthArchive Mobile App.dc.html` from the supplied Claude Design export.
 - Target: `mobile-lite.html` at 390 x 844 CSS px.
-- Comparison: `C:/Users/225170/AppData/Local/Temp/healtharchive-mobile-comparison.png`.
-- Visual match: deep-green app header, paper background, serif display title, compact data cards, image-backed task grid, and four-item bottom navigation.
+- Source comparison: `C:/Users/225170/AppData/Local/Temp/healtharchive-mobile-comparison.png`.
+- Latest home capture: `C:/Users/225170/AppData/Local/Temp/healtharchive-mobile-app4-home.png`.
+- Visual match: deep-green app header, paper background, serif display title, compact data cards, image-backed six-item task grid, and five-item bottom navigation.
 - Adaptation: the design-canvas device frame and layout switcher were excluded; production data and authentication replace prototype demo values.
-- Home digest: 3 updates, 4 products, 3 minutes, 5 claim rows, and 6 news rows rendered.
+- Home: quick-search examples, claim distribution, and news feed removed; 3 updates, 6 service shortcuts, 4 products, and 3 recent minutes rendered.
+- Unified search: `감태` returned 6 grouped results across recognized ingredients, food ingredients, and committee minutes; `피부 건강` returned ingredient and protocol groups.
+- Search handoff: protocol result opened the filtered protocol view; minute searches prioritize the matching ingredient in each result summary.
+- News: dedicated bottom tab rendered 48 recent articles with all six source filters (3 domestic, 3 international).
+- Committee minutes: dedicated searchable view returned three `감태` meetings with working R2 PDF links.
 - Pre-Check: `감태` returned four evidence records without login.
 - Protected data hub and My Work navigation passed in local preview mode.
 - Viewport: `clientWidth 375`, `scrollWidth 375`; no horizontal overflow.

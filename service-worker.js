@@ -1,4 +1,4 @@
-const CACHE_NAME = 'healtharchive-runtime-20260827-mobile-app2';
+const CACHE_NAME = 'healtharchive-runtime-20260827-mobile-app4';
 const CORE_ASSETS = [
   '/',
   '/index.html',
@@ -12,10 +12,10 @@ const CORE_ASSETS = [
   '/mobile-lite.html',
   '/privacy.html',
   '/terms.html',
-  '/mobile-lite.css?v=20260827-app2',
+  '/mobile-lite.css?v=20260827-app4',
   '/mobile-verdict.css?v=20260827-app1',
   '/mobile-verdict.js?v=20260827-app1',
-  '/mobile-lite.js?v=20260827-app2',
+  '/mobile-lite.js?v=20260827-app4',
   '/assets/logo-icon.png',
   '/assets/logo-icon-transparent.png',
   '/assets/leaf-badge.png',
@@ -38,8 +38,8 @@ const CORE_ASSETS = [
   '/data/gmo_ingredients.js?v=20260722-runtimefix1',
   '/data/guidelines.js?v=20260629-glossary',
   '/data/biomarker_protocols.js?v=20260711-terms1',
-  '/data/mobile_digest.js?v=20260827-app1',
-  '/data/minutes.js?v=20260722-runtimefix1',
+  '/data/mobile_digest.js?v=20260827-app4',
+  '/data/minutes.js?v=20260827-app4',
   '/data/status.js?v=20260722-runtimefix1',
   '/data/hff_db.json?v=20260720-production-sales1',
   '/market.js?v=20260721-access-market1'

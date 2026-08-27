@@ -19,11 +19,14 @@
     .slice()
     .sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
   const protocols = window.BIOMARKER_PROTOCOLS || {};
-  const mobileDigest = window.MOBILE_DIGEST_DATA || {products: [], minutes: [], news: [], claims: []};
+  const minutes = (Array.isArray(window.MINUTES_DATA) ? window.MINUTES_DATA : [])
+    .slice()
+    .sort((a, b) => (Number(b.year) - Number(a.year)) || (Number(b.meetingNo) - Number(a.meetingNo)));
+  const mobileDigest = window.MOBILE_DIGEST_DATA || {products: [], minutes: [], news: []};
   const categoryNames = [...new Set(individualIngredients.map(item => item.category).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ko'));
   const AUTH_API = 'https://api.healtharchive.kr';
   const publicViews = new Set(['home', 'verdict']);
-  const databaseViews = new Set(['database', 'ingredient', 'safety', 'protocol', 'compare']);
+  const databaseViews = new Set(['database', 'ingredient', 'safety', 'protocol', 'compare', 'minutes', 'search']);
   const localPreview = location.hostname === '127.0.0.1' || location.hostname === 'localhost';
   let authState = null;
   let authCheck = null;
@@ -247,16 +250,6 @@
     const minutes = Array.isArray(mobileDigest.minutes) ? mobileDigest.minutes.slice(0, 3) : [];
     document.getElementById('lite-home-minutes').innerHTML = minutes.map(item => `<div class="lite-compact-row"><div><strong>${esc(item.name)}</strong><p>${esc(item.date)}</p></div><em>${esc(item.tag)}</em></div>`).join('') || '<div class="lite-empty">최근 회의록이 없습니다.</div>';
 
-    const claims = Array.isArray(mobileDigest.claims) ? mobileDigest.claims.slice(0, 5) : [];
-    const maxClaim = Math.max(1, ...claims.map(item => Number(item.count) || 0));
-    document.getElementById('lite-home-claims').innerHTML = claims.map(item => `<div class="lite-claim-row"><div><b>${esc(item.name)}</b><span>${Number(item.count || 0).toLocaleString('ko-KR')}건</span></div><div class="lite-claim-track"><i style="width:${Math.round((Number(item.count || 0) / maxClaim) * 100)}%"></i></div></div>`).join('') || '<div class="lite-empty">분포 데이터가 없습니다.</div>';
-
-    const news = Array.isArray(mobileDigest.news) ? mobileDigest.news.slice(0, 6) : [];
-    document.getElementById('lite-home-news').innerHTML = news.map(item => {
-      const body = `<strong>${esc(item.title)}</strong><span>${esc(sourceName(item.source))} · ${esc(shortDate(item.date))}</span>`;
-      return item.link ? `<a class="lite-news-row" href="${esc(item.link)}" target="_blank" rel="noopener">${body}</a>` : `<div class="lite-news-row">${body}</div>`;
-    }).join('') || '<div class="lite-empty">갱신된 뉴스가 없습니다.</div>';
-
     const generatedAt = mobileDigest.generatedAt ? new Date(mobileDigest.generatedAt) : null;
     if (generatedAt && !Number.isNaN(generatedAt.getTime())) {
       document.getElementById('lite-digest-date').textContent = generatedAt.toLocaleDateString('ko-KR', {month: 'numeric', day: 'numeric', timeZone: 'Asia/Seoul'}) + ' 갱신';
@@ -278,6 +271,14 @@
     return names[key] || String(value || '공식 자료');
   }
 
+  function minuteIngredientSummary(item, query, limit) {
+    const ingredients = Array.isArray(item.ingredients) ? item.ingredients : [];
+    const matched = query ? ingredients.filter(name => norm(name).includes(query)) : [];
+    const ordered = [...matched, ...ingredients.filter(name => !matched.includes(name))];
+    const visible = ordered.slice(0, limit);
+    return `${visible.join(', ') || '대상 원료 정보 없음'}${ingredients.length > visible.length ? ` 외 ${ingredients.length - visible.length}건` : ''}`;
+  }
+
   function openVerdict(query) {
     activateView('verdict').then(opened => {
       if (!opened) return;
@@ -293,11 +294,131 @@
     const input = document.getElementById('lite-home-search-input');
     form?.addEventListener('submit', event => {
       event.preventDefault();
-      openVerdict(input?.value);
+      const query = String(input?.value || '').trim();
+      if (!query) { input?.focus(); return; }
+      activateView('search').then(opened => {
+        if (!opened) return;
+        const unifiedInput = document.getElementById('lite-unified-input');
+        if (unifiedInput) unifiedInput.value = query;
+        document.getElementById('lite-unified-form')?.requestSubmit();
+      });
     });
-    document.querySelectorAll('[data-verdict-query]').forEach(button => {
-      button.addEventListener('click', () => openVerdict(button.dataset.verdictQuery));
-    });
+  }
+
+  function setupUnifiedSearch() {
+    const form = document.getElementById('lite-unified-form');
+    const input = document.getElementById('lite-unified-input');
+    const count = document.getElementById('lite-unified-count');
+    const output = document.getElementById('lite-unified-results');
+    const newsRows = Array.isArray(mobileDigest.news) ? mobileDigest.news : [];
+
+    const includes = (values, query) => norm(values.filter(Boolean).join(' ')).includes(query);
+    const resultButton = item => `<button type="button" class="lite-unified-row" data-search-type="${esc(item.type)}" data-search-query="${esc(item.query || item.title)}"><em>${esc(item.label)}</em><strong>${esc(item.title)}</strong><small>${esc(item.detail || '')}</small><b aria-hidden="true">›</b></button>`;
+
+    function bindResults() {
+      output.querySelectorAll('[data-search-type]').forEach(button => button.addEventListener('click', async () => {
+        const type = button.dataset.searchType;
+        const query = button.dataset.searchQuery || '';
+        const target = type === 'individual' || type === 'temporary' ? 'ingredient'
+          : type === 'food' || type === 'blocked' ? 'safety'
+          : type === 'protocol' ? 'protocol'
+          : type === 'minute' ? 'minutes'
+          : type === 'news' ? 'news' : 'database';
+        if (!(await activateView(target))) return;
+        if (type === 'individual' || type === 'temporary') {
+          document.querySelector(`[data-ingredient-mode="${type}"]`)?.click();
+        } else if (type === 'food' || type === 'blocked') {
+          document.querySelector(`[data-safety-mode="${type}"]`)?.click();
+        }
+        const inputMap = {ingredient: 'lite-ingredient-search', safety: 'lite-safety-search', protocol: 'lite-protocol-search', minutes: 'lite-minutes-search', news: 'lite-news-search'};
+        const targetInput = document.getElementById(inputMap[target]);
+        if (targetInput) {
+          targetInput.value = query;
+          targetInput.dispatchEvent(new Event('input', {bubbles: true}));
+        }
+      }));
+    }
+
+    function render() {
+      const query = norm(input.value);
+      if (!query) {
+        count.textContent = '0건';
+        output.innerHTML = '<div class="lite-empty">검색어를 입력하면 자료 유형별 결과를 보여줍니다.</div>';
+        return;
+      }
+      const groups = [];
+      const ingredientRows = individualIngredients.filter(item => includes([item.name, item.company, item.efficacy, item.category, item.scientificName], query)).slice(0, 8)
+        .map(item => ({type: 'individual', label: '개별인정 원료', title: item.name, detail: [item.noticeNo, item.efficacy].filter(Boolean).join(' · '), query: item.name}));
+      const temporaryRows = temporaryIngredients.filter(item => includes([item.name, item.company, item.certNo], query)).slice(0, 5)
+        .map(item => ({type: 'temporary', label: '한시적 인정', title: item.name, detail: [item.certNo, item.company].filter(Boolean).join(' · '), query: item.name}));
+      const foodRows = foodIngredients.filter(item => includes([item.n, item.a, item.s, item.p, item.c, item.d], query)).slice(0, 8)
+        .map(item => ({type: 'food', label: '식품원료 DB', title: item.n, detail: [item.s, item.p, item.t].filter(Boolean).join(' · '), query: item.n}));
+      const blockedRows = blockedIngredients.filter(item => includes([item.nk, item.ne, item.alias], query)).slice(0, 4)
+        .map(item => ({type: 'blocked', label: '반입차단 원료', title: item.nk || item.ne, detail: [item.ne, item.t, item.date].filter(Boolean).join(' · '), query: item.nk || item.ne}));
+      const protocolRows = Object.keys(protocols).filter(name => includes([name, JSON.stringify(protocols[name])], query)).slice(0, 8)
+        .map(name => ({type: 'protocol', label: '기능성 프로토콜', title: name, detail: '평가변수 · 시험모델 · 작용기전', query: name}));
+      const minuteRows = minutes.filter(item => includes([item.meetingName, item.year, ...(item.ingredients || [])], query)).slice(0, 8)
+        .map(item => ({type: 'minute', label: '심의회의록', title: item.meetingName, detail: `${item.year || '-'} · ${minuteIngredientSummary(item, query, 3)}`, query: query}));
+      const matchingNews = newsRows.filter(item => includes([item.title, sourceName(item.source)], query)).slice(0, 8)
+        .map(item => ({type: 'news', label: '식품 뉴스', title: item.title, detail: `${sourceName(item.source)} · ${shortDate(item.date)}`, query: query}));
+      if (ingredientRows.length || temporaryRows.length) groups.push({title: '인정원료', rows: [...ingredientRows, ...temporaryRows]});
+      if (foodRows.length || blockedRows.length) groups.push({title: '식품원료·안전성', rows: [...foodRows, ...blockedRows]});
+      if (protocolRows.length) groups.push({title: '기능성 프로토콜', rows: protocolRows});
+      if (minuteRows.length) groups.push({title: '심의회의록', rows: minuteRows});
+      if (matchingNews.length) groups.push({title: '식품 뉴스', rows: matchingNews});
+      const total = groups.reduce((sum, group) => sum + group.rows.length, 0);
+      count.textContent = `${total.toLocaleString('ko-KR')}건`;
+      output.innerHTML = groups.length ? groups.map(group => `<section><h2>${esc(group.title)} <span>${group.rows.length}</span></h2><div>${group.rows.map(resultButton).join('')}</div></section>`).join('') : '<div class="lite-empty">일치하는 자료가 없습니다.</div>';
+      bindResults();
+    }
+
+    form?.addEventListener('submit', event => { event.preventDefault(); render(); });
+    input?.addEventListener('search', render);
+  }
+
+  function setupMinutes() {
+    const search = document.getElementById('lite-minutes-search');
+    const count = document.getElementById('lite-minutes-count');
+    const list = document.getElementById('lite-minutes-list');
+    function render() {
+      const query = norm(search.value);
+      const rows = minutes.filter(item => !query || norm([item.meetingName, item.year, ...(item.ingredients || [])].join(' ')).includes(query));
+      count.textContent = `${rows.length.toLocaleString('ko-KR')}건`;
+      list.innerHTML = rows.map(item => {
+        const body = `<div><em>${esc(item.year || '-')}</em><strong>${esc(item.meetingName || '-')}</strong><p>${esc(minuteIngredientSummary(item, query, 5))}</p></div>`;
+        return item.pdf ? `<a class="lite-minute-row" href="https://assets.healtharchive.kr/minutes-pdfs/${encodeURIComponent(item.pdf)}" target="_blank" rel="noopener">${body}<b>PDF</b></a>` : `<article class="lite-minute-row">${body}<b>자료 없음</b></article>`;
+      }).join('') || '<div class="lite-empty">검색 결과가 없습니다.</div>';
+    }
+    search?.addEventListener('input', render);
+    render();
+  }
+
+  function setupNews() {
+    const search = document.getElementById('lite-news-search');
+    const filters = document.getElementById('lite-news-filters');
+    const count = document.getElementById('lite-news-count');
+    const list = document.getElementById('lite-news-list');
+    const updated = document.getElementById('lite-news-updated');
+    const rows = Array.isArray(mobileDigest.news) ? mobileDigest.news : [];
+    const sources = [...new Set(rows.map(item => sourceName(item.source)))];
+    let activeSource = '전체';
+
+    function render() {
+      const query = norm(search.value);
+      const visible = rows.filter(item => (activeSource === '전체' || sourceName(item.source) === activeSource) && (!query || norm([item.title, sourceName(item.source)].join(' ')).includes(query)));
+      count.textContent = `${visible.length.toLocaleString('ko-KR')}건`;
+      list.innerHTML = visible.map(item => {
+        const body = `<strong>${esc(item.title)}</strong><span>${esc(sourceName(item.source))} · ${esc(shortDate(item.date))}</span>`;
+        return item.link ? `<a class="lite-news-row" href="${esc(item.link)}" target="_blank" rel="noopener">${body}</a>` : `<div class="lite-news-row">${body}</div>`;
+      }).join('') || '<div class="lite-empty">검색 결과가 없습니다.</div>';
+      filters.querySelectorAll('button').forEach(button => button.classList.toggle('active', button.dataset.newsSource === activeSource));
+    }
+    filters.innerHTML = ['전체', ...sources].map(source => `<button type="button" data-news-source="${esc(source)}">${esc(source)}</button>`).join('');
+    filters.querySelectorAll('button').forEach(button => button.addEventListener('click', () => { activeSource = button.dataset.newsSource; render(); }));
+    search?.addEventListener('input', render);
+    const generatedAt = mobileDigest.generatedAt ? new Date(mobileDigest.generatedAt) : null;
+    if (generatedAt && !Number.isNaN(generatedAt.getTime())) updated.textContent = `${generatedAt.toLocaleDateString('ko-KR', {month: 'numeric', day: 'numeric', timeZone: 'Asia/Seoul'})} 갱신`;
+    render();
   }
 
   function verdictHistory() {
@@ -558,16 +679,19 @@
   document.addEventListener('DOMContentLoaded', () => {
     setupHome();
     setupAppHome();
+    setupUnifiedSearch();
     setupMobileAccount();
     setupNavigation();
     setupWork();
+    setupMinutes();
+    setupNews();
     setupIngredientSearch();
     setupSafetySearch();
     setupProtocols();
     setupCompare();
   });
 
-  if ('serviceWorker' in navigator) {
+  if ('serviceWorker' in navigator && !localPreview) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/service-worker.js').catch(() => undefined);
     });

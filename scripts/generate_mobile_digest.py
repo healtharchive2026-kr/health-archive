@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 import re
-from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -94,6 +93,7 @@ def compact_news() -> list[dict]:
     merged: list[dict] = []
     seen: set[str] = set()
     for filename in NEWS_FILES:
+        source_rows: list[dict] = []
         for item in load_json(DATA / filename):
             key = str(item.get("link") or item.get("title") or "").strip()
             if not key or key in seen:
@@ -102,7 +102,9 @@ def compact_news() -> list[dict]:
             if any(term in title.lower() for term in NEWS_EXCLUDES):
                 continue
             seen.add(key)
-            merged.append({**item, "source": item.get("source") or NEWS_SOURCES[filename]})
+            source_rows.append({**item, "source": item.get("source") or NEWS_SOURCES[filename]})
+        source_rows.sort(key=lambda item: str(item.get("pubDate") or item.get("date") or ""), reverse=True)
+        merged.extend(source_rows[:8])
     merged.sort(key=lambda item: str(item.get("pubDate") or item.get("date") or ""), reverse=True)
     return [
         {
@@ -111,15 +113,8 @@ def compact_news() -> list[dict]:
             "date": item.get("pubDate") or item.get("date") or "-",
             "link": item.get("link") or "",
         }
-        for item in merged[:12]
+        for item in merged
     ]
-
-
-def claim_distribution() -> list[dict]:
-    ingredients = load_js_array(DATA / "ingredients.js", "INGREDIENTS_DATA")
-    counts = Counter(str(item.get("category") or "").strip() for item in ingredients)
-    counts.pop("", None)
-    return [{"name": name, "count": count} for name, count in counts.most_common(5)]
 
 
 def main() -> None:
@@ -127,7 +122,6 @@ def main() -> None:
         "products": compact_products(),
         "minutes": compact_minutes(),
         "news": compact_news(),
-        "claims": claim_distribution(),
     }
     generated_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
     existing = load_js_object(OUTPUT, "MOBILE_DIGEST_DATA")
