@@ -505,6 +505,22 @@ function translateReportLabel(value, translations) {
 function reportDateForRun(manifest, requestedDate = '') {
   if (/^\d{4}-\d{2}-\d{2}$/.test(requestedDate)) return requestedDate;
   const publishedDates = new Set((manifest.reports || []).map(item => item.date));
+  const latestPublishedDate = [...publishedDates]
+    .filter(date => /^\d{4}-\d{2}-\d{2}$/.test(date))
+    .sort()
+    .at(-1);
+  if (latestPublishedDate) {
+    const cursor = new Date(`${latestPublishedDate}T00:00:00+09:00`);
+    const today = seoulDate();
+    for (let offset = 1; offset <= 14; offset += 1) {
+      cursor.setUTCDate(cursor.getUTCDate() + 1);
+      const date = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit',
+      }).format(cursor);
+      if (date > today) break;
+      if (!publishedDates.has(date)) return date;
+    }
+  }
   return [seoulDate(-1), seoulDate()].find(date => !publishedDates.has(date)) || '';
 }
 
@@ -572,7 +588,9 @@ async function discoverCandidates(targetPmcid = '') {
   search.searchParams.set('query', query);
   search.searchParams.set('format', 'json');
   search.searchParams.set('resultType', 'core');
-  search.searchParams.set('pageSize', targetPmcid ? '1' : '25');
+  // A larger pool prevents previously published or rejected papers from
+  // occupying every discovery slot and stopping subsequent daily reports.
+  search.searchParams.set('pageSize', targetPmcid ? '1' : '100');
   if (!targetPmcid) search.searchParams.set('sort', 'FIRST_PDATE_D desc');
   const headers = { 'User-Agent': 'HealthArchive/1.0 (healtharchive2026@gmail.com)' };
   const payload = await fetchJsonWithRetry(search, { headers }, 'Europe PMC 검색 실패');

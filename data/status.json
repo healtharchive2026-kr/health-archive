@@ -36,13 +36,13 @@
     "error": null
   },
   "news_mfds": {
-    "lastRun": "2026-08-31 14:48:19",
-    "lastSuccess": "2026-08-31 14:43:03",
+    "lastRun": "2026-08-31 16:36:43",
+    "lastSuccess": "2026-08-31 16:36:43",
     "timezone": "Asia/Seoul",
     "count": 29,
     "newCount": 0,
-    "success": false,
-    "error": "update_news_mfds.py failed; the last successful dataset was preserved"
+    "success": true,
+    "error": null
   },
   "news_nutraingredients": {
     "lastRun": "2026-08-31 14:48:21",

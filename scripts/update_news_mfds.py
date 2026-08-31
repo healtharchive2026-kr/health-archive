@@ -10,7 +10,10 @@ import sys
 import time
 import urllib.parse
 import urllib.request
+import xml.etree.ElementTree as ET
 from datetime import datetime
+from email.utils import parsedate_to_datetime
+from zoneinfo import ZoneInfo
 from bs4 import BeautifulSoup
 from _status import touch
 
@@ -20,6 +23,7 @@ JS_FILE = os.path.join(BASE_DIR, 'data', 'news_mfds.js')
 LOG_FILE = os.path.join(BASE_DIR, 'scripts', 'update_log.txt')
 
 LIST_URL = 'https://www.mfds.go.kr/brd/m_99/list.do'
+RSS_URL = 'https://www.mfds.go.kr/www/rss/brd.do?brdId=ntc0021'
 SITE_ROOT = 'https://www.mfds.go.kr'
 MAX_KEEP = None  # Retain the complete collected history.
 KEYWORDS = ['건강기능식품', '건기식', '식품', '수입식품', '해외직구식품', '영양', '기능성', '원료']
@@ -71,6 +75,39 @@ def matches(title):
     return any(kw in title for kw in KEYWORDS)
 
 
+def rss_items(xml):
+    root = ET.fromstring(xml)
+    items = []
+    for item in root.findall('.//item'):
+        title = re.sub(r'\s+', ' ', item.findtext('title', '')).strip()
+        link = normalize_url(item.findtext('link', '').strip())
+        if not title or not link:
+            continue
+        pub_date = item.findtext('pubDate', '').strip()
+        try:
+            published = parsedate_to_datetime(pub_date).astimezone(ZoneInfo('Asia/Seoul')).strftime('%Y-%m-%d %H:%M:%S')
+        except (TypeError, ValueError):
+            published = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        items.append((title, link, published))
+    if not items:
+        raise ValueError('MFDS RSS returned no items')
+    return items
+
+
+def html_items(html):
+    soup = BeautifulSoup(html, 'html.parser')
+    items = []
+    published = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    for anchor in soup.select('a[href*="view.do?seq="]'):
+        title = re.sub(r'\s+', ' ', anchor.get_text(' ', strip=True)).strip()
+        link = normalize_url(anchor.get('href', ''))
+        if title and link:
+            items.append((title, link, published))
+    if not items:
+        raise ValueError('MFDS HTML list returned no items')
+    return items
+
+
 def main():
     if not os.path.exists(DATA_FILE):
         with open(DATA_FILE, 'w', encoding='utf-8') as f:
@@ -82,22 +119,24 @@ def main():
     known = {n.get('seq') or n.get('link') for n in news}
 
     try:
-        html = get(LIST_URL)
-    except Exception as e:
-        log(f'ERROR fetching MFDS list: {e}')
-        sys.exit(1)
+        items = rss_items(get(RSS_URL))
+        log('MFDS source: official RSS')
+    except Exception as rss_error:
+        log(f'WARN MFDS RSS failed, falling back to HTML: {rss_error}')
+        try:
+            items = html_items(get(LIST_URL))
+            log('MFDS source: HTML fallback')
+        except Exception as html_error:
+            log(f'ERROR fetching MFDS sources: RSS={rss_error}; HTML={html_error}')
+            sys.exit(1)
 
-    soup = BeautifulSoup(html, 'html.parser')
     new_count = 0
     seen = set()
-    today = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-    for a in soup.select('a[href*="view.do?seq="]'):
-        title = re.sub(r'\s+', ' ', a.get_text(' ', strip=True)).strip()
+    for title, link, pub_date in items:
         if not title or not matches(title):
             continue
 
-        link = normalize_url(a.get('href', ''))
         seq = extract_seq(link)
         key = seq or link
         if key in seen or key in known:
@@ -108,7 +147,7 @@ def main():
             'seq': seq,
             'title': title,
             'link': link,
-            'pubDate': today,
+            'pubDate': pub_date,
             'source': 'mfds',
         })
         known.add(key)
