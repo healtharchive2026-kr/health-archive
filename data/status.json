@@ -27,8 +27,8 @@
     "error": null
   },
   "news": {
-    "lastRun": "2026-09-01 14:23:43",
-    "lastSuccess": "2026-09-01 14:23:43",
+    "lastRun": "2026-09-01 22:33:03",
+    "lastSuccess": "2026-09-01 22:33:03",
     "timezone": "Asia/Seoul",
     "count": 31,
     "newCount": 0,
@@ -36,26 +36,26 @@
     "error": null
   },
   "news_mfds": {
-    "lastRun": "2026-09-01 14:23:54",
-    "lastSuccess": "2026-09-01 14:23:54",
+    "lastRun": "2026-09-01 22:33:15",
+    "lastSuccess": "2026-09-01 22:33:15",
     "timezone": "Asia/Seoul",
     "count": 30,
-    "newCount": 1,
-    "success": true,
-    "error": null
-  },
-  "news_nutraingredients": {
-    "lastRun": "2026-09-01 14:23:54",
-    "lastSuccess": "2026-09-01 14:23:54",
-    "timezone": "Asia/Seoul",
-    "count": 289,
     "newCount": 0,
     "success": true,
     "error": null
   },
+  "news_nutraingredients": {
+    "lastRun": "2026-09-01 22:33:17",
+    "lastSuccess": "2026-09-01 22:33:17",
+    "timezone": "Asia/Seoul",
+    "count": 292,
+    "newCount": 3,
+    "success": true,
+    "error": null
+  },
   "news_supplysidesj": {
-    "lastRun": "2026-09-01 14:23:55",
-    "lastSuccess": "2026-09-01 14:23:55",
+    "lastRun": "2026-09-01 22:33:19",
+    "lastSuccess": "2026-09-01 22:33:19",
     "timezone": "Asia/Seoul",
     "count": 103,
     "newCount": 0,
@@ -63,11 +63,11 @@
     "error": null
   },
   "news_nutritioninsight": {
-    "lastRun": "2026-09-01 14:23:56",
-    "lastSuccess": "2026-09-01 14:23:56",
+    "lastRun": "2026-09-01 22:33:20",
+    "lastSuccess": "2026-09-01 22:33:20",
     "timezone": "Asia/Seoul",
-    "count": 231,
-    "newCount": 0,
+    "count": 235,
+    "newCount": 4,
     "success": true,
     "error": null
   },
@@ -108,11 +108,11 @@
     "error": null
   },
   "news_kfri": {
-    "lastRun": "2026-09-01 14:23:51",
-    "lastSuccess": "2026-09-01 14:23:51",
+    "lastRun": "2026-09-01 22:33:13",
+    "lastSuccess": "2026-09-01 22:33:13",
     "timezone": "Asia/Seoul",
-    "count": 81,
-    "newCount": 0,
+    "count": 82,
+    "newCount": 1,
     "success": true,
     "error": null
   }
