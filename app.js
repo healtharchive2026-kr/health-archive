@@ -262,8 +262,9 @@ function setupFunctionSummaryIntro() {
   if (!overlay || window.location.hostname === 'localhost') return;
 
   const closeButton = document.getElementById('function-summary-intro-close');
-  const confirmButton = document.getElementById('function-summary-intro-confirm');
   const exampleButton = document.getElementById('function-summary-intro-example');
+  const hideTodayButton = document.getElementById('function-summary-intro-hide-today');
+  const hideWeekButton = document.getElementById('function-summary-intro-hide-week');
   const visual = document.getElementById('function-summary-intro-visual');
   const storageKey = 'ha-function-summary-intro-v1';
   let previousFocus = null;
@@ -271,12 +272,16 @@ function setupFunctionSummaryIntro() {
   function close() {
     overlay.classList.remove('active');
     document.body.classList.remove('function-summary-intro-open');
-    localStorage.setItem(storageKey, 'seen');
     previousFocus?.focus?.();
   }
 
+  function hideUntil(timestamp) {
+    localStorage.setItem(storageKey, String(timestamp));
+    close();
+  }
+
   function open() {
-    if (localStorage.getItem(storageKey) === 'seen') return;
+    if (Number(localStorage.getItem(storageKey) || 0) > Date.now()) return;
     const generalIntro = document.getElementById('intro-modal-overlay');
     if (generalIntro?.classList.contains('active')) {
       window.addEventListener('ha-intro-modal-closed', open, { once: true });
@@ -290,7 +295,12 @@ function setupFunctionSummaryIntro() {
   }
 
   closeButton?.addEventListener('click', close);
-  confirmButton?.addEventListener('click', close);
+  hideTodayButton?.addEventListener('click', () => {
+    const tomorrow = new Date();
+    tomorrow.setHours(24, 0, 0, 0);
+    hideUntil(tomorrow.getTime());
+  });
+  hideWeekButton?.addEventListener('click', () => hideUntil(Date.now() + (7 * 24 * 60 * 60 * 1000)));
   exampleButton?.addEventListener('click', async () => {
     close();
     const opened = await window.navigateTo?.('ingredients');
