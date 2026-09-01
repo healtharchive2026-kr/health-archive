@@ -23,6 +23,8 @@
     .slice()
     .sort((a, b) => (Number(b.year) - Number(a.year)) || (Number(b.meetingNo) - Number(a.meetingNo)));
   const mobileDigest = window.MOBILE_DIGEST_DATA || {products: [], minutes: [], news: []};
+  const SUMMARY_ASSET_BASE = 'https://assets.healtharchive.kr/function-summaries/';
+  const SUMMARY_ASSET_VERSION = '20260901';
   const categoryNames = [...new Set(individualIngredients.map(item => item.category).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ko'));
   const AUTH_API = 'https://api.healtharchive.kr';
   const publicViews = new Set(['home', 'verdict']);
@@ -477,6 +479,17 @@
     if (!includePlaceholder) select.value = 'all';
   }
 
+  function functionSummaryEntry(item) {
+    const summaries = window.INGREDIENT_FUNCTION_SUMMARIES || {};
+    const value = item.functionSummary || summaries[item.noticeNo];
+    if (!value) return null;
+    return typeof value === 'string' ? {summary: value, evidence: []} : value;
+  }
+
+  function functionSummaryUrl(file) {
+    return `${SUMMARY_ASSET_BASE}${String(file).split('/').map(encodeURIComponent).join('/')}?v=${SUMMARY_ASSET_VERSION}`;
+  }
+
   function setupIngredientSearch() {
     const modeButtons = [...document.querySelectorAll('[data-ingredient-mode]')];
     const filter = document.getElementById('lite-ingredient-filter');
@@ -491,11 +504,14 @@
     addCategoryOptions(category, false);
 
     function individualCard(item) {
+      const summary = functionSummaryEntry(item);
+      const summaryLinks = summary?.summary ? `<div class="lite-ing-evidence"><a href="${esc(functionSummaryUrl(summary.summary))}" target="_blank" rel="noopener">요약 PDF</a>${(summary.evidence || []).map(evidence => `<a class="lite-ing-evidence-tag" href="${esc(functionSummaryUrl(evidence.file))}" target="_blank" rel="noopener">${esc(evidence.label)}</a>`).join('')}</div>` : '';
       return `<article class="lite-ing-card">
         <div class="lite-ing-top"><strong>${esc(item.name)}</strong><span class="lite-badge">${esc(item.category || '미분류')}</span></div>
         <p class="lite-ing-company">${esc(item.company || '-')} · ${esc(item.noticeNo || '-')}</p>
         <p class="lite-ing-efficacy">${esc(item.efficacy || '-')}</p>
         <div class="lite-ing-meta"><span>일일섭취량 ${esc(item.dailyIntake || '-')}</span><span>개별인정 원료</span></div>
+        ${summaryLinks}
       </article>`;
     }
 

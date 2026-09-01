@@ -2995,17 +2995,33 @@ function ingredientReportLinkHtml(row, label, className = 'report-link') {
 }
 
 function ingredientSummaryHref(row) {
+  const summary = ingredientSummaryRecord(row);
+  return summary?.summary ? functionSummaryPdfHref(summary.summary) : '';
+}
+
+function ingredientSummaryRecord(row) {
   const summaries = typeof INGREDIENT_FUNCTION_SUMMARIES !== 'undefined'
     ? INGREDIENT_FUNCTION_SUMMARIES
     : {};
-  const file = row.functionSummary || summaries[row.noticeNo];
-  return file ? pdfHref('function-summaries/' + file) : '';
+  const value = row.functionSummary || summaries[row.noticeNo];
+  if (!value) return null;
+  return typeof value === 'string' ? { summary: value, evidence: [] } : value;
 }
 
 function ingredientSummaryLinkHtml(row, label = 'PDF 보기') {
   const href = ingredientSummaryHref(row);
   if (!href) return '';
   return `<a class="report-link summary-report-link" href="${escapeHtml(href)}" target="_blank" rel="noopener">${escapeHtml(label)}</a>`;
+}
+
+function ingredientEvidenceLinksHtml(row, className = 'evidence-tag') {
+  const summary = ingredientSummaryRecord(row);
+  const evidence = Array.isArray(summary?.evidence) ? summary.evidence : [];
+  return evidence.map(item => {
+    if (!item?.file || !item?.label) return '';
+    const href = functionSummaryPdfHref(item.file);
+    return `<a class="${className}" href="${escapeHtml(href)}" target="_blank" rel="noopener">${escapeHtml(item.label)}</a>`;
+  }).join('');
 }
 
 function reportCellHtml(r) {
@@ -3041,13 +3057,17 @@ function summaryCellHtml(r) {
       seen.add(key);
       return true;
     })
-    .map(row => ingredientSummaryLinkHtml(
-      row,
-      isMergedIngredientRow(r) ? row.noticeNo || 'PDF 보기' : 'PDF 보기'
-    ));
+    .map(row => {
+      const title = ingredientSummaryLinkHtml(
+        row,
+        isMergedIngredientRow(r) ? `${row.noticeNo || '기능성'} 요약` : '요약 PDF'
+      );
+      const evidence = ingredientEvidenceLinksHtml(row);
+      return `<div class="function-summary-item">${title}<div class="evidence-tags">${evidence}</div></div>`;
+    });
 
   return links.length
-    ? `<div class="report-link-list">${links.join('')}</div>`
+    ? `<div class="function-summary-list">${links.join('')}</div>`
     : '<span class="report-none">자료 준비 중</span>';
 }
 
@@ -3171,6 +3191,15 @@ function openIngredientDetail(r) {
       }</div></div>`
     : '';
 
+  const summaryRows = mergedRows(r).filter(row => ingredientSummaryHref(row));
+  const summariesHtml = summaryRows.length
+    ? `<div class="ingx-section ingx-function-summary"><h4>기능성 요약자료</h4><div class="ingx-summary-list">${summaryRows.map(row => `
+        <div class="ingx-summary-row">
+          ${ingredientSummaryLinkHtml(row, `${row.noticeNo || '기능성'} 요약 PDF`, 'ingx-report-link')}
+          <div class="ingx-evidence-tags">${ingredientEvidenceLinksHtml(row, 'ingx-evidence-tag')}</div>
+        </div>`).join('')}</div></div>`
+    : '';
+
   const minutesHtml = relMinutes.length
     ? `<div class="ingx-section"><h4>관련 심의 회의록 <span class="ingx-cnt">${relMinutes.length}</span></h4><div class="ingx-minute-list">${
         relMinutes.slice(0, 12).map(m => `
@@ -3207,6 +3236,7 @@ function openIngredientDetail(r) {
       <ul class="ingx-eff-list">${effLines.map(l => `<li>${escapeHtml(l)}</li>`).join('')}</ul>
     </div>
     ${reportHtml}
+    ${summariesHtml}
     ${minutesHtml}
     ${similarHtml}
     <div class="ingx-actions">${links.join('')}</div>
@@ -3931,8 +3961,13 @@ function renderCompareTable() {
 
 // PDF는 GitHub Pages 대신 Cloudflare R2 공개 버킷에서 제공한다.
 const R2_BASE = 'https://assets.healtharchive.kr';
+const FUNCTION_SUMMARY_ASSET_VERSION = '20260901';
 function pdfHref(relPath) {
-  return R2_BASE + '/' + relPath;
+  return R2_BASE + '/' + String(relPath).split('/').map(encodeURIComponent).join('/');
+}
+
+function functionSummaryPdfHref(file) {
+  return `${pdfHref('function-summaries/' + file)}?v=${FUNCTION_SUMMARY_ASSET_VERSION}`;
 }
 
 function escapeHtml(s) {
