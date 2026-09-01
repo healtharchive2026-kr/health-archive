@@ -230,6 +230,7 @@ function setupIntroModal() {
     overlay.classList.remove('active');
     document.body.classList.remove('intro-modal-open');
     sessionStorage.setItem(SESSION_KEY, '1');
+    window.dispatchEvent(new Event('ha-intro-modal-closed'));
     if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus();
   }
 
@@ -251,6 +252,60 @@ function setupIntroModal() {
       document.body.classList.add('intro-modal-open');
       window.setTimeout(() => confirmBtn.focus(), 0);
     }
+  });
+}
+
+// ---------- 로그인 후 신규 서비스 안내 ----------
+
+function setupFunctionSummaryIntro() {
+  const overlay = document.getElementById('function-summary-intro-overlay');
+  if (!overlay || window.location.hostname === 'localhost') return;
+
+  const closeButton = document.getElementById('function-summary-intro-close');
+  const confirmButton = document.getElementById('function-summary-intro-confirm');
+  const exampleButton = document.getElementById('function-summary-intro-example');
+  const visual = document.getElementById('function-summary-intro-visual');
+  const storageKey = 'ha-function-summary-intro-v1';
+  let previousFocus = null;
+
+  function close() {
+    overlay.classList.remove('active');
+    document.body.classList.remove('function-summary-intro-open');
+    localStorage.setItem(storageKey, 'seen');
+    previousFocus?.focus?.();
+  }
+
+  function open() {
+    if (localStorage.getItem(storageKey) === 'seen') return;
+    const generalIntro = document.getElementById('intro-modal-overlay');
+    if (generalIntro?.classList.contains('active')) {
+      window.addEventListener('ha-intro-modal-closed', open, { once: true });
+      return;
+    }
+    previousFocus = document.activeElement;
+    if (visual && !visual.getAttribute('src')) visual.src = visual.dataset.src || '';
+    overlay.classList.add('active');
+    document.body.classList.add('function-summary-intro-open');
+    window.setTimeout(() => exampleButton?.focus(), 0);
+  }
+
+  closeButton?.addEventListener('click', close);
+  confirmButton?.addEventListener('click', close);
+  exampleButton?.addEventListener('click', async () => {
+    close();
+    const opened = await window.navigateTo?.('ingredients');
+    if (opened !== false) {
+      routeHeroSearch('ingredients', 'BN-202M');
+      history.replaceState(null, '', '#ingredients');
+    }
+  });
+  overlay.addEventListener('click', event => { if (event.target === overlay) close(); });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && overlay.classList.contains('active')) close();
+  });
+
+  protectedAuthStatus().then(authenticated => {
+    if (authenticated) window.setTimeout(open, 700);
   });
 }
 
@@ -5732,5 +5787,6 @@ document.addEventListener('DOMContentLoaded', () => {
   runStartupTask('renderDataFreshness', renderDataFreshness);
   runStartupTask('setupVisitorCounter', setupVisitorCounter);
   runStartupTask('setupIntroModal', setupIntroModal);
+  runStartupTask('setupFunctionSummaryIntro', setupFunctionSummaryIntro);
   appDataReady.then(() => { setupGlobalSearch(); renderHomeDashboard(); });
 });
