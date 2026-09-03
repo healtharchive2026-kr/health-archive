@@ -4522,7 +4522,10 @@ async function loadDailyReports() {
     search.addEventListener('input', renderDailyReports);
   }
   try {
-    const response = await fetch(`${PROTECTED_AUTH_API}/daily-reports`, { cache: 'no-store' });
+    const response = await fetch(`${PROTECTED_AUTH_API}/daily-reports`, {
+      credentials: 'include',
+      cache: 'no-store',
+    });
     if (!response.ok) throw new Error(`Daily report API ${response.status}`);
     const payload = await response.json();
     dailyReports = (Array.isArray(payload.reports) ? payload.reports : []).slice().sort((a, b) => (
