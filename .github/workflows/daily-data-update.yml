@@ -110,6 +110,13 @@ jobs:
             failed_scripts+=("scripts/generate_mobile_digest.py")
           fi
 
+          python scripts/build_recent_news.py
+          code=$?
+          if [ "$code" -ne 0 ]; then
+            echo "::warning::scripts/build_recent_news.py failed with exit code ${code}"
+            failed_scripts+=("scripts/build_recent_news.py")
+          fi
+
           failed_names="$(IFS=,; echo "${failed_scripts[*]}")"
           echo "failed_count=${#failed_scripts[@]}" >> "$GITHUB_OUTPUT"
           echo "failed_names=${failed_names}" >> "$GITHUB_OUTPUT"

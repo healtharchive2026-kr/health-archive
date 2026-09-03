@@ -98,6 +98,7 @@ const ASSISTANT_SEARCH_LIMIT = 5;
 const ASSISTANT_WINDOW_SECONDS = 24 * 60 * 60;
 const AUTH_COOKIE = 'ha_protected_session';
 const PROTECTED_DATA_KEYS = new Set(['radar-log', 'demand-trends', 'overseas-regulatory', 'funding-opportunities']);
+const PUBLIC_DATA_KEYS = new Set(['demand-trends', 'overseas-regulatory']);
 const ADMIN_PROTECTED_DATA_KEYS = new Set();
 const ACCESS_LOGIN_PATH = '/auth/access/exchange';
 const USAGE_EVENTS = new Set(['tab_view', 'protected_login', 'assistant_search']);
@@ -514,9 +515,13 @@ async function handleAccessRequest(request, env, origin) {
 
 async function handleUsageEvent(request, env, origin) {
   if (request.method !== 'POST') return null;
+  const now = Math.floor(Date.now() / 1000);
   const session = await readAuthorizedSession(request, env);
-  if (!session) return json({ error: '인증이 필요합니다.' }, 401, origin);
-  if (!session.userKey) return new Response(null, { status: 204, headers: corsHeaders(origin) });
+  // 비로그인 이용도 기능 사용 통계에 포함하되, 원시 IP는 저장하지 않는다.
+  // 일일 회전값을 섞어 장기적인 방문자 추적을 제한한다.
+  const address = request.headers.get('CF-Connecting-IP') || 'unknown';
+  const userKey = session?.userKey
+    || await hmac(env.AUTH_SECRET, `anonymous:${Math.floor(now / 86400)}:${address}`);
   let body;
   try {
     body = await request.json();
@@ -526,23 +531,24 @@ async function handleUsageEvent(request, env, origin) {
   const eventName = cleanFormValue(body.event, 40);
   const target = cleanFormValue(body.target, 80);
   if (!USAGE_EVENTS.has(eventName) || !target) return json({ error: '허용되지 않은 이벤트입니다.' }, 400, origin);
-  const consent = await env.DB.prepare(
-    `SELECT analytics_consent FROM access_requests
-     WHERE user_key = ? ORDER BY created_at DESC, id DESC LIMIT 1`
-  ).bind(session.userKey).first();
-  if (Number(consent?.analytics_consent || 0) !== 1) {
-    return new Response(null, { status: 204, headers: corsHeaders(origin) });
+  if (session?.userKey) {
+    const consent = await env.DB.prepare(
+      `SELECT analytics_consent FROM access_requests
+       WHERE user_key = ? ORDER BY created_at DESC, id DESC LIMIT 1`
+    ).bind(session.userKey).first();
+    if (Number(consent?.analytics_consent || 0) !== 1) {
+      return new Response(null, { status: 204, headers: corsHeaders(origin) });
+    }
   }
-  const now = Math.floor(Date.now() / 1000);
   const recent = await env.DB.prepare(
     `SELECT id FROM usage_events
      WHERE user_key = ? AND event_name = ? AND target = ? AND created_at >= ?
      LIMIT 1`
-  ).bind(session.userKey, eventName, target, now - 10).first();
+  ).bind(userKey, eventName, target, now - 10).first();
   if (recent) return new Response(null, { status: 204, headers: corsHeaders(origin) });
   await env.DB.prepare(
     'INSERT INTO usage_events (user_key, event_name, target, created_at) VALUES (?, ?, ?, ?)'
-  ).bind(session.userKey, eventName, target, now).run();
+  ).bind(userKey, eventName, target, now).run();
   return new Response(null, { status: 204, headers: corsHeaders(origin) });
 }
 
@@ -780,10 +786,10 @@ async function handleProtectedData(request, env, url, origin) {
   const key = match[1];
   if (!PROTECTED_DATA_KEYS.has(key)) return authJson({ error: 'Not found' }, 404, origin);
   const session = await readAuthorizedSession(request, env);
-  if (!session) {
+  if (!PUBLIC_DATA_KEYS.has(key) && !session) {
     return authJson({ error: '인증이 필요합니다.' }, 401, origin);
   }
-  if (ADMIN_PROTECTED_DATA_KEYS.has(key) && !session.admin) {
+  if (ADMIN_PROTECTED_DATA_KEYS.has(key) && !session?.admin) {
     return authJson({ error: '이 자료를 볼 권한이 없습니다.' }, 403, origin);
   }
   const object = await env.PRIVATE_DATA.get(`protected/${key}.json`);

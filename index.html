@@ -58,7 +58,7 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link rel="preload" as="image" href="assets/pc-landscape-bg.jpg" fetchpriority="high">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.css">
-<link rel="stylesheet" href="style.css?v=20260827-summary1">
+<link rel="stylesheet" href="style.css?v=20260901-perf1">
 <link rel="stylesheet" href="simon.css?v=20260730-adminlock1">
 </head>
 <body>
@@ -223,40 +223,13 @@
               <span class="hua-icon" aria-hidden="true">☆</span>
               <span><strong>즐겨찾기 추가</strong><small>이 페이지 빠르게 열기</small></span>
             </button>
-            <a class="hero-utility-action" href="https://m.healtharchive.kr/">
-              <span class="hua-icon hua-mobile" aria-hidden="true">M</span>
-              <span><strong>모바일 버전</strong><small>핵심 기능만 빠르게</small></span>
-            </a>
           </div>
           <p class="hero-utility-status" id="home-bookmark-status" aria-live="polite"></p>
-          <div class="daily-quote-card" id="daily-quote"></div>
-          <div class="hero-stats-row home-legacy">
-            <a class="hero-stat-chip" data-goto="ingredients">
-              <span class="hsc-num">0</span>
-              <span class="hsc-label">개별인정</span>
-            </a>
-            <a class="hero-stat-chip" data-goto="ingredients">
-              <span class="hsc-num">0</span>
-              <span class="hsc-label">고시형</span>
-            </a>
-            <a class="hero-stat-chip" data-goto="minutes">
-              <span class="hsc-num">0</span>
-              <span class="hsc-label">회의록</span>
-            </a>
-          </div>
+          <p class="daily-quote-card"><strong>오늘의 한마디</strong> : 관계가 쌓이면 운처럼 보이는 실력이 된다.</p>
         </div>
-      </div>
-
-      <div class="hero-freshness home-legacy" id="hero-freshness" role="status" aria-live="polite">
-        <span class="freshness-state"><span class="freshness-dot" aria-hidden="true"></span><strong>데이터 동기화 확인 중</strong></span>
-        <span class="freshness-summary" id="freshness-summary">최신 자료 상태를 불러오고 있습니다.</span>
       </div>
 
       <div class="hero-search-board">
-        <div class="hero-search-copy home-legacy">
-          <span>통합 검색</span>
-          <strong>전체 자료에서 한 번에 찾기</strong>
-        </div>
         <div class="global-search-shell">
           <form class="global-search-form" id="global-search-form">
             <span class="hsr-icon">⌕</span>
@@ -278,8 +251,6 @@
           <a class="home-command-item" data-goto="ingredients"><span>02</span><strong>인정원료 DB</strong><small>개별·고시형·한시적 원료</small></a>
           <a class="home-command-item" data-goto="safety-db"><span>03</span><strong>안전성 DB</strong><small>식품원료·차단성분 대조</small></a>
           <a class="home-command-item" data-goto="biomarkers"><span>04</span><strong>기능성별 프로토콜</strong><small>대상자·평가변수·시험모델</small></a>
-          <a class="home-command-item" data-goto="laws"><span>05</span><strong>법령·가이드라인</strong><small>공전·심의·공식 기준</small></a>
-          <a class="home-command-item" data-goto="overseas-approval"><span>06</span><strong>해외 인허가</strong><small>국가별 인허가·신고 경로</small></a>
         </div>
       </section>
 
@@ -301,38 +272,6 @@
         <a data-goto="news"><strong>6</strong><span>뉴스 출처</span></a>
       </div>
 
-      <div class="ops-board home-legacy" id="ops-board">
-        <section class="ops-card ops-card-primary">
-          <div class="ops-card-head">
-            <span>Start</span>
-            <h3>원료 바로 점검</h3>
-          </div>
-          <form class="ops-precheck-form" id="home-precheck-form">
-            <input type="text" id="home-precheck-input" autocomplete="off" placeholder="원재료명 입력">
-            <button type="submit">Pre-Check</button>
-          </form>
-          <p>입력 즉시 원료 Pre-Check 탭에서 인정 이력·식품원료·차단성분·해외 안전성 자료를 대조합니다.</p>
-        </section>
-        <section class="ops-card">
-          <div class="ops-card-head">
-            <span>Watchlist</span>
-            <h3>관심 원료</h3>
-          </div>
-          <div class="ops-watch-add">
-            <input type="text" id="home-watch-input" autocomplete="off" placeholder="관심 원료 추가">
-            <button type="button" id="home-watch-add">추가</button>
-          </div>
-          <div class="ops-chip-list" id="home-watch-list"></div>
-        </section>
-        <section class="ops-card">
-          <div class="ops-card-head">
-            <span>Recent</span>
-            <h3>최근 접근</h3>
-          </div>
-          <div class="ops-recent-list" id="home-recent-list"></div>
-        </section>
-      </div>
-
       <div class="hero-section-head hero-menu-head">
         <span>최근 업데이트</span>
       </div>
@@ -342,164 +281,17 @@
           <div class="hdc-body" id="dash-recent-ingredients"><div class="hdc-loading">불러오는 중…</div></div>
         </div>
         <div class="home-dash-card">
-          <div class="hdc-head"><h3>기능성 분포 Top</h3><a class="hdc-more" data-goto="compare">비교 →</a></div>
-          <div class="hdc-body" id="dash-category-dist"><div class="hdc-loading">불러오는 중…</div></div>
-        </div>
-        <div class="home-dash-card">
-          <div class="hdc-head"><h3>최근 심의 회의록</h3><a class="hdc-more" data-goto="minutes">더보기 →</a></div>
-          <div class="hdc-body" id="dash-recent-minutes"><div class="hdc-loading">불러오는 중…</div></div>
-        </div>
-        <div class="home-dash-card">
           <div class="hdc-head"><h3>오늘·어제 신규 제품</h3><a class="hdc-more" data-goto="products">전체 DB →</a></div>
           <div class="hdc-body" id="dash-recent-products"><div class="hdc-loading">불러오는 중…</div></div>
         </div>
       </div>
 
-      <details class="home-news-directory" open>
+      <details class="home-news-directory">
         <summary><span>최근 3일 뉴스</span><small>국내·해외 6개 출처 통합</small></summary>
         <div class="home-news-list" id="hero-news-list"></div>
         <div class="home-news-foot"><a data-goto="news">전체 뉴스 보기 →</a></div>
       </details>
 
-      <div class="home-flow home-legacy">
-        <a class="home-flow-step" data-goto="precheck">
-          <span class="home-flow-num">01</span>
-          <strong>원료 Pre-Check</strong>
-          <span>개발 가능성 1차 점검</span>
-        </a>
-        <a class="home-flow-step" data-goto="devmap">
-          <span class="home-flow-num">02</span>
-          <strong>개발방향 매핑</strong>
-          <span>트랙·게이트 선별</span>
-        </a>
-        <a class="home-flow-step" data-goto="material-dev" data-devtab="individual-dev">
-          <span class="home-flow-num">03</span>
-          <strong>원료 개발</strong>
-          <span>제출자료 패키지 설계</span>
-        </a>
-        <a class="home-flow-step" data-goto="ingredients">
-          <span class="home-flow-num">04</span>
-          <strong>원료 DB</strong>
-          <span>인정·식품원료·안전성 대조</span>
-        </a>
-        <a class="home-flow-step" data-goto="laws">
-          <span class="home-flow-num">05</span>
-          <strong>규제자료</strong>
-          <span>회의록·가이드라인 확인</span>
-        </a>
-        <a class="home-flow-step" data-goto="compare">
-          <span class="home-flow-num">06</span>
-          <strong>연구설계</strong>
-          <span>기능성·프로토콜·임상 검토</span>
-        </a>
-        <a class="home-flow-step" data-goto="products">
-          <span class="home-flow-num">07</span>
-          <strong>시장동향</strong>
-          <span>제품·시장·뉴스 확인</span>
-        </a>
-      </div>
-
-      <div class="hero-section-head hero-menu-head home-legacy">
-        <span>전체 메뉴</span>
-      </div>
-      <div class="hero-categories home-legacy">
-        <div class="hero-cat">
-          <div class="hero-cat-header">
-            <span class="hero-cat-icon">01</span>
-            <span class="hero-cat-label">개발검토</span>
-          </div>
-          <div class="hero-cat-cards">
-            <a class="nav-card" data-goto="precheck"><span class="nav-card-icon">점검</span><span class="nav-card-title">원료 Pre-Check</span><span class="nav-card-desc">개발 가능성 1차 점검</span></a>
-            <a class="nav-card" data-goto="devmap"><span class="nav-card-icon">매핑</span><span class="nav-card-title">개발방향 매핑</span><span class="nav-card-desc">트랙·게이트 선별</span></a>
-            <a class="nav-card" data-goto="material-dev" data-devtab="individual-dev"><span class="nav-card-icon">개별</span><span class="nav-card-title">개별인정원료 개발</span><span class="nav-card-desc">제출자료·첨부서류 체크</span></a>
-            <a class="nav-card" data-goto="material-dev" data-devtab="temporary-dev"><span class="nav-card-icon">한시</span><span class="nav-card-title">한시적 인정 원료 개발</span><span class="nav-card-desc">식품원료 인정자료 정리</span></a>
-            <a class="nav-card" data-goto="whitespace"><span class="nav-card-icon">기회</span><span class="nav-card-title">화이트스페이스맵</span><span class="nav-card-desc">기능성 수요·인정 공백 분석</span></a>
-          </div>
-        </div>
-
-        <div class="hero-cat">
-          <div class="hero-cat-header">
-            <span class="hero-cat-icon">02</span>
-            <span class="hero-cat-label">원료 DB</span>
-          </div>
-          <div class="hero-cat-cards">
-            <a class="nav-card" data-goto="ingredients"><span class="nav-card-icon">원료</span><span class="nav-card-title">개별·고시형 원료</span><span class="nav-card-desc">인정 현황·전환 이력</span></a>
-            <a class="nav-card" data-goto="foodraw"><span class="nav-card-icon">식품</span><span class="nav-card-title">식품원료목록</span><span class="nav-card-desc">별표 원료 검색</span></a>
-            <a class="nav-card" data-goto="temp-approval"><span class="nav-card-icon">한시</span><span class="nav-card-title">한시적 인정 원료 현황</span><span class="nav-card-desc">인정·사용 조건 확인</span></a>
-            <a class="nav-card" data-goto="safety-db"><span class="nav-card-icon">안전</span><span class="nav-card-title">안전성 DB 검색기</span><span class="nav-card-desc">내장 9종·외부 49종</span></a>
-            <a class="nav-card" data-goto="blocked"><span class="nav-card-icon">차단</span><span class="nav-card-title">해외직구 차단 원료</span><span class="nav-card-desc">반입차단 원료·성분 목록</span></a>
-            <a class="nav-card" data-goto="gmo-ingredients"><span class="nav-card-icon">GMO</span><span class="nav-card-title">유전자재조합식품 원료</span><span class="nav-card-desc">심사 대상 원료·성분</span></a>
-          </div>
-        </div>
-
-        <div class="hero-cat">
-          <div class="hero-cat-header">
-            <span class="hero-cat-icon">03</span>
-            <span class="hero-cat-label">규제자료</span>
-          </div>
-          <div class="hero-cat-cards">
-            <a class="nav-card" data-goto="laws"><span class="nav-card-icon">법령</span><span class="nav-card-title">법령·공전·가이드라인</span><span class="nav-card-desc">작성 기준·공식 자료</span></a>
-            <a class="nav-card" data-goto="overseas-approval"><span class="nav-card-icon">해외</span><span class="nav-card-title">해외 인허가·신고</span><span class="nav-card-desc">미국·EU·일본 규제 경로</span></a>
-            <a class="nav-card" data-goto="nifds"><span class="nav-card-icon">심의</span><span class="nav-card-title">심의 관련</span><span class="nav-card-desc">위원 명단·담당부서</span></a>
-            <a class="nav-card" data-goto="minutes"><span class="nav-card-icon">건기식</span><span class="nav-card-title">건기식 심의 회의록</span><span class="nav-card-desc">회차별 대상 원료</span></a>
-            <a class="nav-card" data-goto="gmo-minutes"><span class="nav-card-icon">GMO</span><span class="nav-card-title">유전자재조합식품 회의록</span><span class="nav-card-desc">안전성심사 회의 안내·결과</span></a>
-          </div>
-        </div>
-
-        <div class="hero-cat">
-          <div class="hero-cat-header">
-            <span class="hero-cat-icon">04</span>
-            <span class="hero-cat-label">연구설계</span>
-          </div>
-          <div class="hero-cat-cards">
-            <a class="nav-card" data-goto="compare"><span class="nav-card-icon">비교</span><span class="nav-card-title">기능성별 비교</span><span class="nav-card-desc">카테고리별 정렬 보기</span></a>
-            <a class="nav-card" data-goto="biomarkers"><span class="nav-card-icon">지표</span><span class="nav-card-title">기능성별 프로토콜</span><span class="nav-card-desc">대상자·시험모델</span></a>
-            <a class="nav-card" data-goto="trials"><span class="nav-card-icon">임상</span><span class="nav-card-title">임상정보 데이터베이스</span><span class="nav-card-desc">NCT·기관·평가변수</span></a>
-            <a class="nav-card" data-goto="daily-reports"><span class="nav-card-icon">WEB</span><span class="nav-card-title">Daily 원료 보고서</span><span class="nav-card-desc">원료별 상세 검토 아카이브</span></a>
-          </div>
-        </div>
-
-        <div class="hero-cat">
-          <div class="hero-cat-header">
-            <span class="hero-cat-icon">05</span>
-            <span class="hero-cat-label">시장동향</span>
-          </div>
-          <div class="hero-cat-cards">
-            <a class="nav-card" data-goto="products"><span class="nav-card-icon">제품</span><span class="nav-card-title">신규 등록 제품</span><span class="nav-card-desc">최근 신고 목록</span></a>
-            <a class="nav-card" data-goto="market"><span class="nav-card-icon">시장</span><span class="nav-card-title">시장현황</span><span class="nav-card-desc">매출·기능성 추이</span></a>
-            <a class="nav-card" data-goto="stats"><span class="nav-card-icon">통계</span><span class="nav-card-title">인정 통계</span><span class="nav-card-desc">연도·기능성 인정 흐름</span></a>
-            <a class="nav-card" data-goto="funding"><span class="nav-card-icon">R&amp;D</span><span class="nav-card-title">건기식 R&amp;D 과제</span><span class="nav-card-desc">국책·지역 지원과제 추적</span></a>
-            <a class="nav-card" data-goto="news"><span class="nav-card-icon">뉴스</span><span class="nav-card-title">식품 뉴스</span><span class="nav-card-desc">업계 동향 기사</span></a>
-            <a class="nav-card" data-goto="events"><span class="nav-card-icon">일정</span><span class="nav-card-title">학회/박람회</span><span class="nav-card-desc">국내외 주요 일정</span></a>
-          </div>
-        </div>
-      </div>
-
-      <div class="hero-grid home-legacy">
-        <div class="hero-news-card">
-          <div class="hero-news-head">
-            <h3>최신 뉴스 (Recent News)</h3>
-            <a class="hero-news-more" data-goto="news">더보기 →</a>
-          </div>
-          <div class="hero-news-list"></div>
-        </div>
-        <div class="hero-law-card">
-          <h3>법령/공전 바로가기</h3>
-          <div class="hero-law-buttons">
-            <a class="law-quick-btn" target="_blank" rel="noopener" href="https://www.law.go.kr/LSW/lsSc.do?section=&menuId=1&subMenuId=15&tabMenuId=81&eventGubun=060101&query=건강기능식품에 관한 법률">건강기능식품법</a>
-            <a class="law-quick-btn" target="_blank" rel="noopener" href="https://www.law.go.kr/LSW/lsSc.do?section=&menuId=1&subMenuId=15&tabMenuId=81&eventGubun=060101&query=식품위생법">식품위생법</a>
-            <a class="law-quick-btn" target="_blank" rel="noopener" href="https://various.foodsafetykorea.go.kr/fsd/#/ext/Document/FC">식품공전</a>
-            <a class="law-quick-btn" target="_blank" rel="noopener" href="https://various.foodsafetykorea.go.kr/fsd/#/ext/Document/FF">건강기능식품공전</a>
-          </div>
-          <div class="hero-guide-block">
-            <h3>가이드라인 바로가기</h3>
-            <div class="hero-law-buttons">
-              <a class="law-quick-btn" data-goto="laws" data-lawtab="general-guideline">일반가이드라인</a>
-              <a class="law-quick-btn" data-goto="laws" data-lawtab="functional-guideline">기능성 가이드라인</a>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   </section>
 
@@ -2427,7 +2219,7 @@
       </div>
     </div>
     <div class="function-summary-intro-art" aria-hidden="true">
-      <img id="function-summary-intro-visual" data-src="assets/function-summary-intro.png" alt="" decoding="async">
+      <img id="function-summary-intro-visual" data-src="assets/function-summary-intro.webp" alt="" decoding="async">
       <span class="function-summary-intro-art-caption">Ingredient evidence, made usable.</span>
     </div>
   </section>
@@ -2631,21 +2423,12 @@
 </div>
 
 <script src="data/ingredients.js?v=20260722-runtimefix1"></script>
-<script src="data/ingredient_function_summaries.js?v=20260901-summary2"></script>
 <script src="data/minutes.js?v=20260722-runtimefix1"></script>
-<script src="data/guidelines.js?v=20260629-glossary"></script>
-<script src="data/biomarker_protocols.js?v=20260711-terms1"></script>
-<script src="data/news.js?v=20260722-runtimefix1"></script>
-<script src="data/news_kfri.js?v=20260722-runtimefix1"></script>
-<script src="data/news_mfds.js?v=20260722-runtimefix1"></script>
-<script src="data/news_nutraingredients.js?v=20260722-runtimefix1"></script>
-<script src="data/news_supplysidesj.js?v=20260722-runtimefix1"></script>
-<script src="data/news_nutritioninsight.js?v=20260722-runtimefix1"></script>
+<script src="data/products_recent.js?v=20260901-perf1"></script>
+<script src="data/news_recent.js?v=20260901-perf1"></script>
 <script src="data/status.js?v=20260722-runtimefix1"></script>
-<script src="data/daily_quotes.js"></script>
 <script src="section-visuals.js?v=20260730-chapters1"></script>
-<script src="market.js?v=20260827-d1-ingredient3"></script>
-<script src="app.js?v=20260827-summary1"></script>
+<script src="app.js?v=20260901-perf1"></script>
 <script src="simon.js?v=20260730-adminlock1"></script>
 <script src="pc-cinema.js?v=20260825-redesign1"></script>
 <script src="feedback.js?v=20260714-api1"></script>

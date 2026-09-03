@@ -11,13 +11,14 @@ let precheckLastQuery = '';
 let precheckSafetyCache = null;
 const scriptLoadPromises = new Map();
 const tabInitPromises = new Map();
-const HOME_WATCH_KEY = 'ha_home_watchlist';
-const HOME_RECENT_KEY = 'ha_home_recent';
-
 const TAB_SCRIPT_DEPS = {
-  market: ['libs/chart.umd.js'],
+  market: ['libs/chart.umd.js', 'market.js?v=20260901-perf1'],
   funding: ['funding.js?v=20260716-member-access1'],
   stats: ['libs/chart.umd.js'],
+  ingredients: ['data/ingredient_function_summaries.js?v=20260901-summary2'],
+  compare: ['data/biomarker_protocols.js?v=20260711-terms1'],
+  biomarkers: ['data/biomarker_protocols.js?v=20260711-terms1'],
+  laws: ['data/guidelines.js?v=20260629-glossary'],
   products: ['data/products.js?v=20260722-runtimefix1'],
   foodraw: ['data/food_ingredients.js?v=20260722-runtimefix1'],
   'temp-approval': ['data/temp_approval.js?v=20260722-runtimefix1'],
@@ -31,7 +32,9 @@ const WS_DATA_KEY = 'demand-trends';
 
 const GLOBAL_SEARCH_SCRIPT_DEPS = [
   'data/products.js?v=20260722-runtimefix1',
-  'data/food_ingredients.js?v=20260722-runtimefix1'
+  'data/food_ingredients.js?v=20260722-runtimefix1',
+  'data/biomarker_protocols.js?v=20260711-terms1',
+  'data/ingredient_function_summaries.js?v=20260901-summary2'
 ];
 
 const PRECHECK_DATA_DEPS = [
@@ -183,13 +186,14 @@ function renderHeroNews() {
   // 오늘을 포함한 최근 3일치만 표시 (뉴스 출처 전체 통합)
   const cutoffKey = seoulDateKey(-2);
 
+  const recentFeed = (typeof NEWS_RECENT_DATA !== 'undefined') ? NEWS_RECENT_DATA : allNews();
   const seen = new Set();
-  const list = allNews().filter(n => {
+  const list = recentFeed.filter(n => {
     const key = n.link || n.title;
     if ((n.pubDate || '').slice(0, 10) < cutoffKey || seen.has(key)) return false;
     seen.add(key);
     return true;
-  });
+  }).slice(0, 8);
 
   if (!list.length) {
     el.innerHTML = '<div class="hero-news-empty">최근 3일간 수집된 뉴스가 없습니다.</div>';
@@ -319,26 +323,6 @@ function setupFunctionSummaryIntro() {
   });
 }
 
-function renderDataFreshness() {
-  const container = document.getElementById('hero-freshness');
-  const summary = document.getElementById('freshness-summary');
-  if (!container || !summary || typeof STATUS_DATA === 'undefined') return;
-
-  const core = ['ingredients', 'minutes', 'products', 'news_mfds']
-    .map(key => STATUS_DATA[key])
-    .filter(Boolean);
-  const timestamps = core.map(item => item.lastRun).filter(Boolean).sort();
-  const latest = timestamps[timestamps.length - 1] || '';
-  const latestLabel = latest ? latest.replace(/-/g, '.').slice(0, 16) : '확인 불가';
-  const ingredientCount = Number(STATUS_DATA.ingredients?.count || 0).toLocaleString();
-  const productCount = Number(STATUS_DATA.products?.count || 0).toLocaleString();
-  const minuteCount = Number(STATUS_DATA.minutes?.count || 0).toLocaleString();
-
-  container.querySelector('strong').textContent = '자동 업데이트 정상';
-  summary.textContent = `최근 확인 ${latestLabel} · 원료 ${ingredientCount} · 제품 ${productCount} · 회의록 ${minuteCount}`;
-  container.classList.add('is-ready');
-}
-
 // ---------- 방문자 카운터 (Cloudflare Worker + D1) ----------
 
 const VISITOR_COUNTER_API = 'https://api.healtharchive.kr/visitors';
@@ -362,18 +346,6 @@ async function setupVisitorCounter() {
     totalEl.textContent = '-';
     todayEl.textContent = '-';
   }
-}
-
-function renderDailyQuote() {
-  const el = document.getElementById('daily-quote');
-  const quotes = (typeof DAILY_QUOTES !== 'undefined') ? DAILY_QUOTES : [];
-  if (!el || !quotes.length) return;
-  const today = new Date();
-  const start = Date.UTC(today.getFullYear(), 0, 0);
-  const now = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
-  const dayOfYear = Math.floor((now - start) / 86400000);
-  const quote = quotes[(dayOfYear - 1) % quotes.length];
-  el.innerHTML = `<span><span class="daily-quote-label">오늘의 한마디 : </span><span class="daily-quote-text">${escapeHtml(quote.text)}</span></span>`;
 }
 
 function setupHomeUtilityActions() {
@@ -985,21 +957,6 @@ function registerServiceWorker() {
   });
 }
 
-// ---------- 홈 데이터 대시보드 ----------
-
-function homeReadList(key) {
-  try {
-    const value = JSON.parse(localStorage.getItem(key) || '[]');
-    return Array.isArray(value) ? value : [];
-  } catch (e) {
-    return [];
-  }
-}
-
-function homeWriteList(key, value) {
-  try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
-}
-
 function runHomePrecheck(query) {
   const q = String(query || '').trim();
   if (!q) return;
@@ -1013,104 +970,6 @@ function runHomePrecheck(query) {
     if (typeof form.requestSubmit === 'function') form.requestSubmit();
     else form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
   }, 80);
-}
-
-function addHomeWatchItem(raw) {
-  const name = String(raw || '').trim();
-  if (!name) return;
-  const current = homeReadList(HOME_WATCH_KEY);
-  const next = [name, ...current.filter(x => x !== name)].slice(0, 12);
-  homeWriteList(HOME_WATCH_KEY, next);
-}
-
-function removeHomeWatchItem(name) {
-  homeWriteList(HOME_WATCH_KEY, homeReadList(HOME_WATCH_KEY).filter(x => x !== name));
-}
-
-function recordHomeRecent(tab) {
-  if (!tab || tab === 'home') return;
-  const title = HOME_TAB_LABELS[tab] || tab;
-  const current = homeReadList(HOME_RECENT_KEY);
-  const next = [{ tab, title, at: Date.now() }, ...current.filter(x => x.tab !== tab)].slice(0, 6);
-  homeWriteList(HOME_RECENT_KEY, next);
-  renderHomeRecentList();
-}
-
-function renderHomeWatchList() {
-  const el = document.getElementById('home-watch-list');
-  if (!el) return;
-  const items = homeReadList(HOME_WATCH_KEY);
-  if (!items.length) {
-    el.innerHTML = '<div class="ops-empty">관심 원료를 저장하면 홈에서 바로 다시 점검할 수 있습니다.</div>';
-    return;
-  }
-  el.innerHTML = items.map(name =>
-    '<button type="button" class="ops-chip" data-watch="' + escapeHtml(name) + '">' +
-      '<span>' + escapeHtml(name) + '</span>' +
-      '<span class="ops-chip-x" data-remove-watch="' + escapeHtml(name) + '">×</span>' +
-    '</button>'
-  ).join('');
-  el.querySelectorAll('[data-watch]').forEach(btn => {
-    btn.addEventListener('click', () => runHomePrecheck(btn.dataset.watch));
-  });
-  el.querySelectorAll('[data-remove-watch]').forEach(btn => {
-    btn.addEventListener('click', e => {
-      e.stopPropagation();
-      removeHomeWatchItem(btn.dataset.removeWatch);
-      renderHomeWatchList();
-    });
-  });
-}
-
-function renderHomeRecentList() {
-  const el = document.getElementById('home-recent-list');
-  if (!el) return;
-  const items = homeReadList(HOME_RECENT_KEY).slice(0, 4);
-  if (!items.length) {
-    el.innerHTML = '<div class="ops-empty">탭을 열면 최근 접근 항목이 여기에 표시됩니다.</div>';
-    return;
-  }
-  el.innerHTML = items.map(item =>
-    '<button type="button" class="ops-recent-item" data-recent-tab="' + escapeHtml(item.tab) + '">' +
-      '<strong>' + escapeHtml(item.title || item.tab) + '</strong>' +
-      '<span>열기</span>' +
-    '</button>'
-  ).join('');
-  el.querySelectorAll('[data-recent-tab]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      if (typeof navigateTo === 'function') navigateTo(btn.dataset.recentTab);
-      history.replaceState(null, '', '#' + btn.dataset.recentTab);
-    });
-  });
-}
-
-function setupHomeOpsPanel() {
-  const form = document.getElementById('home-precheck-form');
-  const input = document.getElementById('home-precheck-input');
-  const watchInput = document.getElementById('home-watch-input');
-  const watchBtn = document.getElementById('home-watch-add');
-
-  if (form && input) {
-    form.addEventListener('submit', e => {
-      e.preventDefault();
-      runHomePrecheck(input.value);
-    });
-  }
-  if (watchInput && watchBtn) {
-    watchBtn.addEventListener('click', () => {
-      addHomeWatchItem(watchInput.value);
-      watchInput.value = '';
-      renderHomeWatchList();
-    });
-    watchInput.addEventListener('keydown', e => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        watchBtn.click();
-      }
-    });
-  }
-  renderHomeWatchList();
-  renderHomeRecentList();
 }
 
 function renderHomeDashboard() {
@@ -1129,220 +988,28 @@ function renderHomeDashboard() {
       '</button>'
       ).join('');
       ingEl.querySelectorAll('.dash-ing-row').forEach(btn =>
-        btn.addEventListener('click', () => openIngredientDetail(current[+btn.dataset.i])));
+        btn.addEventListener('click', () => {
+          loadScripts(TAB_SCRIPT_DEPS.ingredients)
+            .then(() => openIngredientDetail(current[+btn.dataset.i]));
+        }));
     }
   }
 
-  // 기능성 분포 Top
-  const catEl = document.getElementById('dash-category-dist');
-  if (catEl && typeof ingredients !== 'undefined' && ingredients.length) {
-    const counts = new Map();
-    ingredients.forEach(r => { const c = r.category; if (c) counts.set(c, (counts.get(c) || 0) + 1); });
-    const sorted = Array.from(counts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 6);
-    const max = sorted.length ? sorted[0][1] : 1;
-    catEl.innerHTML = sorted.map(([cat, n]) =>
-      '<button type="button" class="dash-cat-row" data-cat="' + escapeHtml(cat) + '">' +
-        '<span class="dash-cat-name">' + escapeHtml(cat) + '</span>' +
-        '<span class="dash-cat-bar"><span class="dash-cat-fill" style="width:' + Math.round(n / max * 100) + '%"></span></span>' +
-        '<span class="dash-cat-num">' + n + '</span>' +
-      '</button>'
-    ).join('');
-    catEl.querySelectorAll('.dash-cat-row').forEach(btn =>
-      btn.addEventListener('click', () => {
-        navigateTo('compare');
-        if (typeof selectCategoryCard === 'function') { try { selectCategoryCard(btn.dataset.cat); } catch (e) {} }
-        history.replaceState(null, '', '#compare');
-      }));
-  }
-
-  // 최근 심의 회의록
-  const minEl = document.getElementById('dash-recent-minutes');
-  if (minEl && typeof minutes !== 'undefined' && minutes.length) {
-    const top = minutes.slice(0, 4);
-    minEl.innerHTML = top.map(m =>
-      '<div class="dash-min-row">' +
-        '<span class="dash-min-name">' + escapeHtml(m.meetingName) + '</span>' +
-        (m.pdf
-          ? '<a class="dash-min-link" href="' + escapeHtml(pdfHref('minutes-pdfs/' + m.pdf)) + '" target="_blank" rel="noopener">PDF ↗</a>'
-          : '<span class="dash-min-year">' + escapeHtml(m.year || '') + '</span>') +
-      '</div>'
-    ).join('');
-  }
-
-  // 한국 시간 기준 오늘·어제 신규 제품 (products.js 지연 로드)
+  // 자동 업데이트가 만든 소형 최신 제품 피드만 사용한다.
   const prodEl = document.getElementById('dash-recent-products');
   if (prodEl) {
-    loadScripts(TAB_SCRIPT_DEPS.products).then(() => {
-      const products = (typeof PRODUCTS_DATA !== 'undefined') ? PRODUCTS_DATA.slice() : [];
-      products.sort((a, b) => (b.reportDate || '').localeCompare(a.reportDate || ''));
-      const visibleDates = new Set([seoulDateKey(0), seoulDateKey(-1)]);
-      const recent = products.filter(p => visibleDates.has(p.reportDate));
-      if (!recent.length) { prodEl.innerHTML = '<div class="hdc-loading">오늘·어제 등록된 제품이 없습니다.</div>'; return; }
-      prodEl.innerHTML = recent.map(p =>
+    const products = (typeof PRODUCTS_RECENT_DATA !== 'undefined') ? PRODUCTS_RECENT_DATA.slice(0, 8) : [];
+    if (!products.length) {
+      prodEl.innerHTML = '<div class="hdc-loading">최신 등록 제품이 없습니다.</div>';
+    } else {
+      prodEl.innerHTML = products.map(p =>
         '<div class="dash-prod-row">' +
           '<span class="dash-prod-name">' + escapeHtml(p.name) + '</span>' +
           '<span class="dash-prod-meta">' + escapeHtml((p.company || '').slice(0, 14)) + ' · ' + escapeHtml(fmtProductDate(p.reportDate)) + '</span>' +
         '</div>'
       ).join('');
-    }).catch(() => { prodEl.innerHTML = '<div class="hdc-loading">불러오지 못했습니다</div>'; });
+    }
   }
-}
-
-// ---------- Legacy analysis helpers ----------
-
-function insightNorm(s) {
-  return String(s || '').toLowerCase().replace(/\s+/g, '').replace(/[()·ㆍ\-_]/g, '');
-}
-
-function insightCategoryCounts() {
-  const counts = new Map();
-  ingredients.forEach(r => {
-    const c = r.category || '미분류';
-    counts.set(c, (counts.get(c) || 0) + 1);
-  });
-  return counts;
-}
-
-function insightListHtml(items) {
-  return (items || []).filter(Boolean).slice(0, 4).map(x => '<li>' + escapeHtml(x) + '</li>').join('');
-}
-
-function renderInsightPackages() {
-  const el = document.getElementById('insight-package-grid');
-  if (!el) return;
-  const protocols = (typeof BIOMARKER_PROTOCOLS !== 'undefined') ? BIOMARKER_PROTOCOLS : {};
-  const counts = insightCategoryCounts();
-  const names = Object.keys(protocols)
-    .sort((a, b) => (counts.get(b) || 0) - (counts.get(a) || 0))
-    .slice(0, 8);
-
-  el.innerHTML = names.map(name => {
-    const p = protocols[name] || {};
-    const clinical = p.clinical || {};
-    const pre = p.preclinical || {};
-    return `<article class="insight-package-card">
-      <div class="insight-package-head">
-        <strong>${escapeHtml(name)}</strong>
-        <span>${counts.get(name) || 0}건</span>
-      </div>
-      <div class="insight-mini-grid">
-        <div><span>대상자</span><ul>${insightListHtml(clinical.subjects)}</ul></div>
-        <div><span>바이오마커</span><ul>${insightListHtml([...(clinical.primaryBiomarkers || []), ...(clinical.secondaryBiomarkers || [])])}</ul></div>
-        <div><span>전임상</span><ul>${insightListHtml(pre.animalModels)}</ul></div>
-        <div><span>작용기전</span><ul>${insightListHtml(p.mechanisms)}</ul></div>
-      </div>
-      <button type="button" class="insight-link-btn" data-insight-go="biomarkers" data-query="${escapeHtml(name)}">프로토콜 보기</button>
-    </article>`;
-  }).join('') || '<div class="insight-empty">기능성 프로토콜 데이터를 불러오지 못했습니다.</div>';
-}
-
-function renderInsightMinutes() {
-  const el = document.getElementById('insight-minutes');
-  if (!el) return;
-  const byIngredient = new Map();
-  minutes.forEach(m => (m.ingredients || []).forEach(name => {
-    if (!name) return;
-    byIngredient.set(name, (byIngredient.get(name) || 0) + 1);
-  }));
-  const top = Array.from(byIngredient.entries()).sort((a, b) => b[1] - a[1]).slice(0, 5);
-  const recent = minutes.slice(0, 3);
-  el.innerHTML = `
-    <div class="insight-kpi-row">
-      <div><strong>${minutes.length}</strong><span>총 회의록</span></div>
-      <div><strong>${top.length ? top[0][1] : 0}</strong><span>최다 반복 언급</span></div>
-    </div>
-    <div class="insight-rank-list">
-      ${top.map(([name, n]) => `<button type="button" data-insight-timeline="${escapeHtml(name)}"><strong>${escapeHtml(name)}</strong><span>${n}회</span></button>`).join('') || '<p class="insight-empty">원료 언급 데이터를 찾지 못했습니다.</p>'}
-    </div>
-    <div class="insight-note-list">
-      ${recent.map(m => `<a href="${m.pdf ? escapeHtml(pdfHref('minutes-pdfs/' + m.pdf)) : '#'}" target="_blank" rel="noopener">${escapeHtml(m.meetingName || '')}<span>${escapeHtml(m.year || '')}</span></a>`).join('')}
-    </div>`;
-}
-
-function insightRelatedMinutes(q) {
-  const nq = insightNorm(q);
-  if (!nq) return [];
-  return minutes.filter(m => (m.ingredients || []).some(name => {
-    const nn = insightNorm(name);
-    return nn.includes(nq) || nq.includes(nn);
-  })).slice(0, 5);
-}
-
-function insightRelatedProducts(q, products) {
-  const nq = insightNorm(q);
-  if (!nq) return [];
-  return (products || []).filter(p => {
-    const hay = insightNorm([p.name, p.efficacy, p.company].join(' '));
-    return hay.includes(nq);
-  }).slice(0, 5);
-}
-
-function renderInsightTimeline(q) {
-  const el = document.getElementById('insight-timeline');
-  if (!el) return;
-  const query = String(q || '').trim();
-  if (!query) {
-    el.innerHTML = '<div class="insight-empty">원료명을 입력하면 인정 이력, 회의록 언급, 신규 제품 매칭을 시간순으로 보여줍니다.</div>';
-    return;
-  }
-  const nq = insightNorm(query);
-  const ing = ingredients.filter(r => {
-    const hay = insightNorm([r.name, r.company, r.category, r.efficacy].join(' '));
-    return hay.includes(nq);
-  }).slice(0, 8);
-  const mins = insightRelatedMinutes(query);
-  loadScripts(TAB_SCRIPT_DEPS.products).then(() => {
-    const products = (typeof PRODUCTS_DATA !== 'undefined') ? PRODUCTS_DATA : [];
-    const prods = insightRelatedProducts(query, products);
-    const rows = [
-      ...ing.map(r => ({ type: '인정', date: r.approvalDate || r.year || '', title: r.name, meta: [r.noticeNo, r.category].filter(Boolean).join(' · ') })),
-      ...mins.map(m => ({ type: '회의', date: m.year || '', title: m.meetingName, meta: (m.ingredients || []).slice(0, 3).join(', '), pdf: m.pdf })),
-      ...prods.map(p => ({ type: '제품', date: p.reportDate || '', title: p.name, meta: [p.company, p.efficacy].filter(Boolean).join(' · ') }))
-    ].sort((a, b) => String(b.date).localeCompare(String(a.date))).slice(0, 14);
-    el.innerHTML = rows.length ? rows.map(r => `
-      <div class="insight-timeline-row">
-        <span class="insight-timeline-type">${escapeHtml(r.type)}</span>
-        <div><strong>${escapeHtml(r.title || '')}</strong><p>${escapeHtml(r.meta || '')}</p></div>
-        <span class="insight-timeline-date">${escapeHtml(String(r.date || ''))}</span>
-      </div>`).join('') : '<div class="insight-empty">매칭되는 규제 타임라인을 찾지 못했습니다.</div>';
-  });
-}
-
-function renderInsightMarket() {
-  const el = document.getElementById('insight-market');
-  if (!el) return;
-  const counts = Array.from(insightCategoryCounts().entries()).sort((a, b) => b[1] - a[1]).slice(0, 6);
-  loadScripts(TAB_SCRIPT_DEPS.products).then(() => {
-    const products = (typeof PRODUCTS_DATA !== 'undefined') ? PRODUCTS_DATA : [];
-    el.innerHTML = counts.map(([cat, n]) => {
-      const np = insightNorm(cat);
-      const productCount = products.filter(p => insightNorm(p.efficacy).includes(np)).length;
-      const pressure = n >= 40 || productCount >= 80 ? '경쟁 높음' : (n >= 15 || productCount >= 30 ? '검토 필요' : '진입 여지');
-      const tone = pressure === '경쟁 높음' ? 'danger' : (pressure === '검토 필요' ? 'watch' : 'ok');
-      return `<div class="insight-market-row ${tone}">
-        <div><strong>${escapeHtml(cat)}</strong><span>인정 ${n}건 · 제품 ${productCount}건</span></div>
-        <em>${pressure}</em>
-      </div>`;
-    }).join('');
-  });
-}
-
-function renderInsightTemplates() {
-  const el = document.getElementById('insight-templates');
-  if (!el) return;
-  const templates = [
-    ['원료 검토서', '원재료명 / 제조공정 / 규격 / 섭취량 / 기존 인정 이력 / 안전성 이슈 / 개발 판단'],
-    ['기능성 근거 요약서', '기능성 / 작용기전 / 인체시험 / 전임상 / 바이오마커 / 근거수준 / 보완자료'],
-    ['안전성 체크리스트', '식용 이력 / 독성 / 알레르기 / 상호작용 / 취약군 / 해외 차단·이상사례'],
-    ['인체시험 설계 검토표', '대상자 / 선정·제외기준 / 섭취량 / 기간 / 1차 평가지표 / 통계계획'],
-    ['회의록 보완 대응표', '보완 사유 / 관련 자료 / 추가 시험 / 문헌 보강 / 담당자 / 완료일'],
-    ['시장 진입성 검토표', '기능성 포화도 / 경쟁 제품 / 차별 포인트 / 가격·제형 / 표시문구 리스크']
-  ];
-  el.innerHTML = templates.map(([title, body]) => `
-    <article class="insight-template-card">
-      <strong>${escapeHtml(title)}</strong>
-      <p>${escapeHtml(body)}</p>
-    </article>`).join('');
 }
 
 // ---------- 인정 통계 ----------
@@ -1974,7 +1641,7 @@ function setupProtectedAccountUi() {
 
 const usageEventTimes = new Map();
 function trackUsage(eventName, target) {
-  if (protectedAuthState !== true || !target) return;
+  if (!target) return;
   const key = `${eventName}:${target}`;
   const now = Date.now();
   if (now - (usageEventTimes.get(key) || 0) < 10000) return;
@@ -1990,8 +1657,6 @@ function trackUsage(eventName, target) {
 
 async function protectedLockAll() {
   await protectedAuthLogout();
-  wsShowLocked();
-  overseasShowLocked();
 }
 
 const WS_ORIGIN_ORDER = ['식물성', '동물성', '미생물(발효)', '정제·합성물', '복합·기타'];
@@ -2225,10 +1890,6 @@ async function wsLock() {
 }
 
 async function initWhitespaceTab() {
-  if (!(await protectedAuthStatus())) {
-    wsShowLocked();
-    return;
-  }
   wsUnlock();
 }
 
@@ -2913,6 +2574,9 @@ function initTabContent(tab) {
           break;
         case 'news':
           setupNews();
+          break;
+        case 'daily-reports':
+          loadDailyReports();
           break;
         case 'products':
           setupProducts();
@@ -3672,10 +3336,6 @@ function renderIngredient360(data) {
 async function openIngredient360(query, seedRecord) {
   const q = String(query || seedRecord?.name || '').trim();
   if (!q) return;
-  if (!(await protectedAuthStatus())) {
-    openProtectedAccountModal();
-    return;
-  }
   const overlay = document.getElementById('i360-overlay');
   const body = document.getElementById('i360-body');
   if (!overlay || !body) return;
@@ -4047,9 +3707,12 @@ function setupTabs() {
   const menuToggle = document.querySelector('.mobile-menu-toggle');
   const mainNav = document.getElementById('main-nav');
   const navGroups = Array.from(document.querySelectorAll('.nav-group'));
-  const publicTabs = new Set(['home', 'precheck']);
-  const adminOnlyTabs = new Set();
-  const strictAdminTabs = new Set();
+  const adminOnlyTabs = new Set(['daily-reports']);
+  const strictAdminTabs = new Set(['daily-reports']);
+  const publicTabs = new Set(
+    Array.from(sections, section => section.id)
+      .filter(tab => tab && !adminOnlyTabs.has(tab))
+  );
 
   document.querySelectorAll('a[data-goto]:not([href])').forEach(link => {
     link.setAttribute('href', '#' + link.dataset.goto);
@@ -4076,7 +3739,6 @@ function setupTabs() {
     // 시장현황 차트는 탭이 보일 때(레이아웃 확정 후) 처음 한 번만 그린다.
     // (display:none 상태에서 그리면 Chart.js가 크기를 0으로 계산함)
     initTabContent(tab);
-    recordHomeRecent(tab);
     trackUsage('tab_view', tab);
     document.body.classList.remove('mobile-nav-open');
     closeNavGroups();
@@ -5643,10 +5305,6 @@ function overseasShowUnlocked() {
 }
 
 async function initOverseasTab() {
-  if (!(await protectedAuthStatus())) {
-    overseasShowLocked();
-    return;
-  }
   try {
     await loadOverseasProtectedData();
     overseasShowUnlocked();
@@ -5782,7 +5440,6 @@ document.addEventListener('DOMContentLoaded', () => {
   setupCommandPalette();
   setupProtectedAccountUi();
   loadApprovedMemberCount();
-  setupHomeOpsPanel();
   setupIngredientDetail();
   setupIngredient360();
   setupCompareTray();
@@ -5790,11 +5447,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupOverseasGate();
   registerServiceWorker();
   runStartupTask('renderHeroNews', renderHeroNews);
-  runStartupTask('refreshNewsSources', () => refreshNewsSources().then(renderHeroNews));
-  runStartupTask('renderDailyQuote', renderDailyQuote);
-  runStartupTask('loadDailyReports', loadDailyReports);
   runStartupTask('setupHomeUtilityActions', setupHomeUtilityActions);
-  runStartupTask('renderDataFreshness', renderDataFreshness);
   runStartupTask('setupVisitorCounter', setupVisitorCounter);
   runStartupTask('setupIntroModal', setupIntroModal);
   runStartupTask('setupFunctionSummaryIntro', setupFunctionSummaryIntro);

@@ -21,6 +21,7 @@ from _radar import record_new
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_FILE = os.path.join(BASE_DIR, 'data', 'products.json')
 JS_FILE = os.path.join(BASE_DIR, 'data', 'products.js')
+RECENT_JS_FILE = os.path.join(BASE_DIR, 'data', 'products_recent.js')
 ARCHIVE_FILE = os.path.join(BASE_DIR, 'data', 'products_archive.json')
 INGREDIENTS_FILE = os.path.join(BASE_DIR, 'data', 'ingredients.json')
 LOG_FILE = os.path.join(BASE_DIR, 'scripts', 'update_log.txt')
@@ -56,6 +57,22 @@ def write_products(products):
     with open(JS_FILE, 'w', encoding='utf-8') as f:
         f.write('var PRODUCTS_DATA = ')
         json.dump(products, f, ensure_ascii=False, separators=(',', ':'))
+        f.write(';\n')
+
+    recent_dates = sorted({p.get('reportDate') for p in products if p.get('reportDate')}, reverse=True)[:2]
+    recent = [
+        {
+            'id': p.get('id', ''),
+            'name': p.get('name', ''),
+            'company': p.get('company', ''),
+            'reportDate': p.get('reportDate', ''),
+        }
+        for p in products
+        if p.get('reportDate') in recent_dates
+    ][:40]
+    with open(RECENT_JS_FILE, 'w', encoding='utf-8') as f:
+        f.write('var PRODUCTS_RECENT_DATA = ')
+        json.dump(recent, f, ensure_ascii=False, separators=(',', ':'))
         f.write(';\n')
 
 

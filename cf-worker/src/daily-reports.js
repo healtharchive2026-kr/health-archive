@@ -2910,6 +2910,8 @@ function contentDisposition(filename, inline = false) {
 
 export async function handleDailyReports(request, env, url, origin, deps) {
   if (url.pathname === '/daily-reports' && request.method === 'GET') {
+    const session = await deps.readAuthorizedSession(request, env);
+    if (!session?.admin) return deps.authJson({ error: '관리자 권한이 필요합니다.' }, 403, origin);
     const manifest = await readJsonObject(env.PRIVATE_DATA, MANIFEST_KEY, { version: 1, updatedAt: null, reports: [] });
     return deps.json({ ...manifest, reports: sortReportsNewest(manifest.reports || []) }, 200, origin);
   }
@@ -2917,7 +2919,7 @@ export async function handleDailyReports(request, env, url, origin, deps) {
   const visualMatch = url.pathname.match(/^\/daily-reports\/([a-z0-9가-힣-]+)\/visuals\/([a-z0-9._-]+)$/i);
   if (visualMatch && request.method === 'GET') {
     const session = await deps.readAuthorizedSession(request, env);
-    if (!session) return deps.authJson({ error: '인증이 필요합니다.' }, 401, origin);
+    if (!session?.admin) return deps.authJson({ error: '관리자 권한이 필요합니다.' }, 403, origin);
     const [, id, filename] = visualMatch;
     const object = await env.PRIVATE_DATA.get(`daily-reports/${id}/visuals/${filename}`);
     if (!object) return deps.authJson({ error: '시각자료를 찾을 수 없습니다.' }, 404, origin);
@@ -2935,7 +2937,7 @@ export async function handleDailyReports(request, env, url, origin, deps) {
   const fileMatch = url.pathname.match(/^\/daily-reports\/([a-z0-9가-힣-]+)\/(report\.pdf|source\.pdf|report\.html)$/i);
   if ((detailMatch || fileMatch) && request.method === 'GET') {
     const session = await deps.readAuthorizedSession(request, env);
-    if (!session) return deps.authJson({ error: '인증이 필요합니다.' }, 401, origin);
+    if (!session?.admin) return deps.authJson({ error: '관리자 권한이 필요합니다.' }, 403, origin);
     const id = detailMatch?.[1] || fileMatch[1];
     const filename = detailMatch ? 'report.html' : fileMatch[2];
     const compactKey = filename === 'report.pdf' ? `daily-reports/${id}/report-compact.pdf` : '';
