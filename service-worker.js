@@ -1,10 +1,10 @@
-const CACHE_NAME = 'healtharchive-runtime-20260903-public4';
+const CACHE_NAME = 'healtharchive-runtime-20260903-market1';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/style.css?v=20260903-public4',
+  '/style.css?v=20260903-market1',
   '/simon.css?v=20260730-adminlock1',
-  '/app.js?v=20260903-public2',
+  '/app.js?v=20260903-market1',
   '/simon.js?v=20260730-adminlock1',
   '/section-visuals.js?v=20260730-chapters1',
   '/pc-cinema.js?v=20260903-public3',

@@ -830,6 +830,29 @@ async function handleGuidelineDownload(request, env, url, origin) {
   });
 }
 
+async function handleMarketReport(request, env, url, origin) {
+  const match = url.pathname.match(/^\/market-reports\/(202[1-5])\.pdf$/);
+  if (!match || (request.method !== 'GET' && request.method !== 'HEAD')) return null;
+
+  const year = match[1];
+  const key = `market-reports/${year}.pdf`;
+  const object = request.method === 'HEAD'
+    ? await env.PRIVATE_DATA.head(key)
+    : await env.PRIVATE_DATA.get(key);
+  if (!object) return new Response('Not found', { status: 404 });
+
+  const headers = new Headers({
+    'Content-Type': 'application/pdf',
+    'Content-Length': String(object.size),
+    'Content-Disposition': `inline; filename="MFDS_production_${year}.pdf"`,
+    'Cache-Control': 'public, max-age=86400',
+    'X-Content-Type-Options': 'nosniff',
+    ...corsHeaders(origin),
+  });
+  if (object.httpEtag) headers.set('ETag', object.httpEtag);
+  return new Response(request.method === 'HEAD' ? null : object.body, { headers });
+}
+
 function zipDosTime(date) {
   const value = date instanceof Date && !Number.isNaN(date.getTime()) ? date : new Date();
   const year = Math.max(1980, value.getUTCFullYear());
@@ -1103,6 +1126,9 @@ export default {
 
     const guidelineDownloadResponse = await handleGuidelineDownload(request, env, url, origin);
     if (guidelineDownloadResponse) return guidelineDownloadResponse;
+
+    const marketReportResponse = await handleMarketReport(request, env, url, origin);
+    if (marketReportResponse) return marketReportResponse;
 
     if (url.pathname.startsWith('/auth/')) {
       const authResponse = await handleAuth(request, env, url, origin);

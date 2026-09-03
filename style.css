@@ -3873,3 +3873,153 @@ body:not(.site-authenticated):has(#home.active>.pc-cinema:not(.is-workspace-ente
   .pc-public-home *,.pc-public-home *::before,.pc-public-home *::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important;}
   .pc-public-home .pc-cinema-opening-media,.pc-public-home .pc-cinema-opening-copy{transform:none!important;opacity:1!important;}
 }
+/* Production and sales explorer */
+.market-explorer-title-row{align-items:flex-start;gap:28px;margin-bottom:18px;}
+.market-explorer-eyebrow{display:block;margin-bottom:6px;color:var(--green);font-family:var(--mono);font-size:10px;font-weight:800;letter-spacing:0;}
+.market-report-library{flex:0 0 auto;min-width:330px;padding:13px 15px;border:1px solid var(--border);border-radius:7px;background:#fff;}
+.market-report-library>strong{display:block;margin-bottom:9px;color:var(--text);font-size:11px;}
+.market-report-library>div{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;}
+.market-report-library a{display:flex;height:32px;align-items:center;justify-content:center;border:1px solid #cfd9d4;border-radius:5px;color:var(--green);font-family:var(--mono);font-size:10px;font-weight:800;text-decoration:none;}
+.market-report-library a:hover{border-color:var(--green);background:var(--green-light);}
+.market-report-library small{display:block;margin-top:7px;color:var(--muted);font-size:9px;text-align:right;}
+.market-explorer{--market-ink:#12322a;--market-muted:#687770;--market-line:#d9e0dc;--market-paper:#f6f8f6;--market-standard:#3b5b8c;--market-standard-soft:#e8edf6;--market-individual:#a96824;--market-individual-soft:#f7ebdb;color:var(--market-ink);}
+.market-explorer-block{padding:26px 0;border-top:1px solid var(--market-line);}
+.market-explorer-block:first-child{border-top:0;}
+.market-explorer-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:14px;}
+.market-explorer-head>div>span{display:block;margin-bottom:4px;color:var(--green);font-family:var(--mono);font-size:9px;font-weight:800;letter-spacing:0;}
+.market-explorer-head h3{margin:0;color:var(--text);font-size:17px;line-height:1.35;}
+.market-explorer-head p{max-width:590px;margin:0;color:var(--market-muted);font-size:11px;text-align:right;}
+.market-explorer-search{position:relative;display:grid;grid-template-columns:24px minmax(0,1fr) auto;align-items:center;height:52px;padding:0 14px;border:1px solid #bfd1c9;border-radius:7px;background:#fff;box-shadow:0 8px 26px rgba(21,67,52,.06);}
+.market-explorer-search>span{color:var(--green);font-size:17px;}
+.market-explorer-search input{width:100%;height:100%;border:0;outline:0;background:transparent;color:var(--text);font:600 13px/1.4 inherit;}
+.market-explorer-search kbd{padding:3px 7px;border:1px solid var(--market-line);border-radius:4px;background:var(--market-paper);color:var(--market-muted);font:700 9px/1.2 inherit;}
+.market-explorer-suggest{position:absolute;z-index:12;top:calc(100% + 5px);right:0;left:0;max-height:360px;overflow:auto;border:1px solid var(--market-line);border-radius:7px;background:#fff;box-shadow:0 14px 34px rgba(18,50,42,.13);}
+.market-explorer-suggest[hidden]{display:none;}
+.market-explorer-suggest button{display:flex;width:100%;min-height:43px;align-items:center;justify-content:space-between;gap:14px;padding:8px 13px;border:0;border-bottom:1px solid #edf1ef;background:#fff;color:var(--text);font:600 11px/1.4 inherit;text-align:left;cursor:pointer;}
+.market-explorer-suggest button:hover,.market-explorer-suggest button.active{background:#f3f7f5;}
+.market-explorer-suggest button>span{display:flex;min-width:0;align-items:center;gap:7px;}
+.market-explorer-suggest small{color:var(--market-muted);font-family:var(--mono);font-size:9px;white-space:nowrap;}
+.market-explorer-results{display:grid;gap:10px;margin-top:12px;}
+.market-explorer-empty{display:grid;gap:5px;padding:26px 14px;color:var(--market-muted);font-size:11px;text-align:center;}
+.market-explorer-empty strong{color:var(--text);font-size:12px;}
+.market-explorer-result-card{padding:15px 17px;border:1px solid var(--market-line);border-radius:7px;background:#fff;}
+.market-explorer-result-card>header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:12px;}
+.market-explorer-result-card>header>div{display:flex;align-items:center;gap:8px;min-width:0;}
+.market-explorer-result-card h4{margin:0;color:var(--text);font-size:15px;line-height:1.35;}
+.market-explorer-result-card>header small{color:var(--market-muted);font-size:9px;white-space:nowrap;}
+.market-explorer-tag{display:inline-flex;min-height:20px;align-items:center;padding:0 6px;border-radius:4px;background:#eaf1ed;color:var(--green);font-size:8px;font-style:normal;font-weight:800;white-space:nowrap;}
+.market-explorer-tag.standard{background:var(--market-standard-soft);color:var(--market-standard);}
+.market-explorer-tag.individual{background:var(--market-individual-soft);color:var(--market-individual);}
+.market-explorer-year-grid{display:grid;grid-template-columns:minmax(65px,.55fr) repeat(3,minmax(90px,1fr));gap:0;border-top:1px solid var(--market-line);border-left:1px solid var(--market-line);font-variant-numeric:tabular-nums;}
+.market-explorer-year-grid>span{min-height:32px;padding:7px 9px;border-right:1px solid var(--market-line);border-bottom:1px solid var(--market-line);font-size:10px;text-align:right;}
+.market-explorer-year-grid .year{background:var(--market-paper);color:var(--market-muted);font-family:var(--mono);font-weight:800;text-align:right;}
+.market-explorer-year-grid .label{background:#fbfcfb;color:var(--market-muted);font-weight:700;text-align:left;}
+.market-explorer-year-grid .value.emphasized{color:var(--text);font-family:var(--mono);font-size:13px;font-weight:800;}
+.market-explorer-function-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px;}
+.market-explorer-function-chips button{min-height:27px;padding:3px 8px;border:1px solid var(--market-line);border-radius:4px;background:var(--market-paper);color:var(--text);font:650 9px/1.3 inherit;cursor:pointer;}
+.market-explorer-function-chips button:hover{border-color:var(--green);color:var(--green);}
+.market-explorer-function-chips small{margin-left:3px;color:var(--market-muted);font-size:8px;}
+.market-explorer-overview{display:grid;grid-template-columns:minmax(420px,1.05fr) minmax(0,.95fr);gap:12px;}
+.market-explorer-kpis{display:grid;grid-template-columns:repeat(3,1fr);overflow:hidden;border:1px solid var(--market-line);border-radius:7px;background:#fff;}
+.market-explorer-kpi{min-width:0;padding:18px 16px;border-right:1px solid var(--market-line);}
+.market-explorer-kpi:last-child{border-right:0;}
+.market-explorer-kpi>div{display:flex;align-items:center;gap:7px;color:var(--market-muted);font-size:10px;font-weight:700;}
+.market-explorer-kpi>div i{width:8px;height:8px;border-radius:2px;}
+.market-explorer-kpi>strong{display:block;margin:8px 0 7px;color:var(--text);font-family:var(--mono);font-size:24px;line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap;}
+.market-explorer-kpi>strong small{margin-left:3px;color:var(--market-muted);font-family:inherit;font-size:9px;}
+.market-explorer-kpi p{display:flex;align-items:center;justify-content:space-between;gap:5px;margin:0;font-size:9px;}
+.market-explorer-kpi p>span:last-child{overflow:hidden;color:var(--market-muted);text-overflow:ellipsis;white-space:nowrap;}
+.market-explorer-chart{position:relative;min-height:185px;padding:11px 12px 5px;border:1px solid var(--market-line);border-radius:7px;background:#fff;}
+.market-explorer-function-table,.market-explorer-table-wrap{overflow:auto;border:1px solid var(--market-line);border-radius:7px;background:#fff;scrollbar-width:thin;}
+.market-explorer-function-table{max-height:560px;}
+#market-explorer-function-table{width:100%;min-width:920px;border-collapse:collapse;font-size:10px;table-layout:fixed;}
+#market-explorer-function-table col.market-explorer-function-name{width:185px;}
+#market-explorer-function-table th,#market-explorer-function-table td{height:31px;padding:6px 8px;border-right:1px solid #edf1ef;border-bottom:1px solid #edf1ef;white-space:nowrap;}
+#market-explorer-function-table thead th{position:sticky;z-index:3;top:0;background:#edf2ef;color:var(--market-muted);font-size:9px;font-weight:800;text-align:center;}
+#market-explorer-function-table thead tr:nth-child(2) th{top:31px;}
+#market-explorer-function-table thead th.standard{color:var(--market-standard);}
+#market-explorer-function-table thead th.individual{color:var(--market-individual);}
+#market-explorer-function-table tbody th{position:sticky;z-index:2;left:0;overflow:hidden;background:#fff;color:var(--text);font-weight:700;text-align:left;text-overflow:ellipsis;}
+#market-explorer-function-table td{text-align:right;cursor:pointer;font-variant-numeric:tabular-nums;}
+#market-explorer-function-table td.first{border-left:1px solid var(--market-line);}
+#market-explorer-function-table td.standard{color:var(--market-standard);}
+#market-explorer-function-table td.individual{color:var(--market-individual);}
+#market-explorer-function-table td.empty{color:#a5afaa;}
+#market-explorer-function-table td:hover{background:#f1f6f3;}
+#market-explorer-function-table td.selected{background:#e8f3ee;box-shadow:inset 0 0 0 2px var(--green);color:var(--green);font-weight:800;}
+.market-explorer-panel{margin-top:10px;padding:15px 17px;border:1px solid var(--market-line);border-radius:7px;background:#fff;}
+.market-explorer-panel>header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;padding-bottom:12px;border-bottom:1px solid var(--market-line);}
+.market-explorer-panel>header>div{display:flex;align-items:baseline;gap:8px;}
+.market-explorer-panel>header strong{font-size:15px;}
+.market-explorer-panel>header>div span{color:var(--market-muted);font-family:var(--mono);font-size:9px;}
+.market-explorer-panel>header p{display:flex;flex-wrap:wrap;gap:6px;margin:0;font-size:9px;}
+.market-explorer-panel>header p i{color:#aab3af;font-style:normal;}
+.market-explorer-panel-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:12px;}
+.market-explorer-panel-grid>div+div{padding-left:22px;border-left:1px solid var(--market-line);}
+.market-explorer-panel-grid h4{display:flex;align-items:center;gap:7px;margin:0 0 9px;font-size:10px;}
+.market-explorer-panel-grid h4 b{color:var(--market-muted);font-family:var(--mono);font-size:9px;}
+.market-explorer-panel-grid p{margin:0;color:var(--market-muted);font-size:10px;}
+.market-explorer-material-list{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;align-items:center;}
+.market-explorer-material-list button{overflow:hidden;min-height:28px;padding:4px 7px;border:1px solid var(--market-line);border-radius:4px;background:var(--market-paper);color:var(--text);font:600 9px/1.3 inherit;text-align:left;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;}
+.market-explorer-material-list button:hover{border-color:var(--green);color:var(--green);}
+.market-explorer-material-list span{font-family:var(--mono);font-size:9px;font-weight:800;text-align:right;white-space:nowrap;}
+.market-explorer-material-list span.missing{color:var(--market-muted);font-family:inherit;font-size:8px;font-weight:500;}
+.market-explorer-ingredient-head{margin-bottom:10px;}
+.market-explorer-toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:10px;}
+.market-explorer-controls{display:flex;align-items:center;gap:8px;}
+.market-explorer-tabs,.market-explorer-years{display:flex;overflow:hidden;border:1px solid var(--market-line);border-radius:6px;background:#fff;}
+.market-explorer-tabs button,.market-explorer-years button{height:32px;padding:0 13px;border:0;border-right:1px solid var(--market-line);background:#fff;color:var(--market-muted);font:750 10px/1 inherit;cursor:pointer;}
+.market-explorer-tabs button:last-child,.market-explorer-years button:last-child{border-right:0;}
+.market-explorer-tabs button.active.standard{background:var(--market-standard);color:#fff;}
+.market-explorer-tabs button.active.individual{background:var(--market-individual);color:#fff;}
+.market-explorer-years button.active{background:var(--market-ink);color:#fff;}
+#market-explorer-ingredient-count{color:var(--market-muted);font-size:10px;text-align:right;}
+.market-explorer-table-wrap{max-height:620px;}
+#market-explorer-ingredient-table{width:100%;min-width:820px;border-collapse:collapse;font-size:11px;}
+#market-explorer-ingredient-table th,#market-explorer-ingredient-table td{height:38px;padding:7px 9px;border-bottom:1px solid #edf1ef;}
+#market-explorer-ingredient-table th{position:sticky;z-index:2;top:0;background:#edf2ef;color:var(--market-muted);font-size:9px;font-weight:800;text-align:left;white-space:nowrap;cursor:pointer;}
+#market-explorer-ingredient-table th.number,#market-explorer-ingredient-table td.number{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;}
+#market-explorer-ingredient-table th.sorted::after{content:' ▾';}
+#market-explorer-ingredient-table th.sorted.ascending::after{content:' ▴';}
+#market-explorer-ingredient-table tbody tr{cursor:pointer;}
+#market-explorer-ingredient-table tbody tr:hover{background:#f4f8f6;}
+#market-explorer-ingredient-table td button{max-width:440px;padding:0;border:0;border-bottom:1px solid transparent;background:transparent;color:var(--text);font:650 11px/1.4 inherit;text-align:left;cursor:pointer;}
+#market-explorer-ingredient-table td button:hover{border-bottom-color:var(--green);color:var(--green);}
+#market-explorer-ingredient-table td.muted{color:var(--market-muted);}
+.market-explorer-spark{width:70px;height:20px;vertical-align:middle;}
+.market-explorer-spark polyline{fill:none;stroke:var(--market-muted);stroke-width:1.5;}
+.market-explorer-spark circle{fill:var(--market-ink);}
+.market-explorer-up{color:#19704e;font-weight:800;}
+.market-explorer-down{color:#b04b43;font-weight:800;}
+.market-explorer-new{color:var(--market-muted);font-weight:650;}
+.market-explorer-source{margin:0;padding:11px 13px;border-left:3px solid #aab9b2;background:#f5f7f6;color:var(--market-muted);font-size:9px;line-height:1.55;}
+.market-explorer-load-error{display:grid;gap:6px;padding:36px 16px;border:1px solid #e4c7c2;border-radius:7px;background:#fff8f7;color:#93473e;text-align:center;}
+
+@media(max-width:960px){
+  .market-explorer-title-row{display:grid;}
+  .market-report-library{width:100%;min-width:0;}
+  .market-explorer-overview{grid-template-columns:1fr;}
+  .market-explorer-chart{min-height:240px;}
+}
+
+@media(max-width:700px){
+  .market-explorer-head{align-items:flex-start;flex-direction:column;gap:5px;}
+  .market-explorer-head p{text-align:left;}
+  .market-report-library>div{grid-template-columns:repeat(5,minmax(0,1fr));}
+  .market-report-library a{height:36px;}
+  .market-explorer-search{grid-template-columns:22px minmax(0,1fr);height:48px;}
+  .market-explorer-search kbd{display:none;}
+  .market-explorer-kpis{grid-template-columns:1fr;}
+  .market-explorer-kpi{border-right:0;border-bottom:1px solid var(--market-line);}
+  .market-explorer-kpi:last-child{border-bottom:0;}
+  .market-explorer-kpi>strong{font-size:27px;}
+  .market-explorer-panel>header{flex-direction:column;gap:7px;}
+  .market-explorer-panel-grid{grid-template-columns:1fr;gap:14px;}
+  .market-explorer-panel-grid>div+div{padding-top:14px;padding-left:0;border-top:1px solid var(--market-line);border-left:0;}
+  .market-explorer-toolbar{align-items:flex-start;flex-direction:column;}
+  .market-explorer-controls{width:100%;flex-direction:column;align-items:stretch;}
+  .market-explorer-tabs,.market-explorer-years{width:100%;}
+  .market-explorer-tabs button,.market-explorer-years button{flex:1;}
+  #market-explorer-ingredient-count{text-align:left;}
+  .market-explorer-year-grid{grid-template-columns:58px repeat(3,minmax(64px,1fr));}
+}

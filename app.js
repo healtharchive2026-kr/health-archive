@@ -12,7 +12,7 @@ let precheckSafetyCache = null;
 const scriptLoadPromises = new Map();
 const tabInitPromises = new Map();
 const TAB_SCRIPT_DEPS = {
-  market: ['libs/chart.umd.js', 'market.js?v=20260901-perf1'],
+  market: ['libs/chart.umd.js', 'data/market_explorer_data.js?v=20260903-market1', 'market.js?v=20260903-market1'],
   funding: ['funding.js?v=20260716-member-access1'],
   stats: ['libs/chart.umd.js'],
   ingredients: ['data/ingredient_function_summaries.js?v=20260901-summary2'],
@@ -70,8 +70,8 @@ const HOME_TAB_LABELS = {
   trials: '임상정보 데이터베이스',
   'daily-reports': 'Daily 원료 보고서',
   products: '신규 등록 제품',
-  market: '시장현황',
-  stats: '인정 통계',
+  market: '생산·매출 실적',
+  stats: '개별인정 승인통계',
   funding: '건기식 R&D 과제',
   news: '식품 뉴스',
   events: '학회/박람회',
