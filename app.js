@@ -209,6 +209,25 @@ function renderHeroNews() {
   `).join('');
 }
 
+function renderDailyQuote() {
+  const element = document.getElementById('daily-quote');
+  const quotes = (typeof DAILY_QUOTES !== 'undefined') ? DAILY_QUOTES : [];
+  if (!element || !quotes.length) return;
+
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit'
+  }).formatToParts(new Date()).reduce((result, part) => {
+    result[part.type] = part.value;
+    return result;
+  }, {});
+  const date = Date.UTC(Number(parts.year), Number(parts.month) - 1, Number(parts.day));
+  const yearStart = Date.UTC(Number(parts.year), 0, 0);
+  const dayOfYear = Math.floor((date - yearStart) / 86400000);
+  const quote = quotes[(dayOfYear - 1) % quotes.length];
+
+  element.innerHTML = `<strong>오늘의 한마디</strong><span class="daily-quote-text">${escapeHtml(quote.text)}</span>`;
+}
+
 // ---------- 첫 방문 안내 팝업 ----------
 
 function setupIntroModal() {
@@ -277,6 +296,7 @@ function setupFunctionSummaryIntro() {
   function close() {
     overlay.classList.remove('active');
     document.body.classList.remove('function-summary-intro-open');
+    window.dispatchEvent(new Event('ha-function-summary-intro-closed'));
     previousFocus?.focus?.();
   }
 
@@ -321,6 +341,68 @@ function setupFunctionSummaryIntro() {
 
   protectedAuthStatus().then(authenticated => {
     if (authenticated) window.setTimeout(open, 700);
+  });
+}
+
+function setupMarketExplorerIntro() {
+  const overlay = document.getElementById('market-explorer-intro-overlay');
+  if (!overlay || window.location.hostname === 'localhost') return;
+
+  const closeButton = document.getElementById('market-explorer-intro-close');
+  const openButton = document.getElementById('market-explorer-intro-open');
+  const hideTodayButton = document.getElementById('market-explorer-intro-hide-today');
+  const hideWeekButton = document.getElementById('market-explorer-intro-hide-week');
+  const visual = document.getElementById('market-explorer-intro-visual');
+  const storageKey = 'ha-market-explorer-intro-v1';
+  let previousFocus = null;
+
+  function close() {
+    overlay.classList.remove('active');
+    document.body.classList.remove('function-summary-intro-open');
+    previousFocus?.focus?.();
+  }
+
+  function hideUntil(timestamp) {
+    localStorage.setItem(storageKey, String(timestamp));
+    close();
+  }
+
+  function open() {
+    if (Number(localStorage.getItem(storageKey) || 0) > Date.now()) return;
+    const blockingOverlay = document.querySelector('#intro-modal-overlay.active, #function-summary-intro-overlay.active');
+    if (blockingOverlay) {
+      const eventName = blockingOverlay.id === 'intro-modal-overlay'
+        ? 'ha-intro-modal-closed'
+        : 'ha-function-summary-intro-closed';
+      window.addEventListener(eventName, () => window.setTimeout(open, 250), { once: true });
+      return;
+    }
+    previousFocus = document.activeElement;
+    if (visual && !visual.getAttribute('src')) visual.src = visual.dataset.src || '';
+    overlay.classList.add('active');
+    document.body.classList.add('function-summary-intro-open');
+    window.setTimeout(() => openButton?.focus(), 0);
+  }
+
+  closeButton?.addEventListener('click', close);
+  hideTodayButton?.addEventListener('click', () => {
+    const tomorrow = new Date();
+    tomorrow.setHours(24, 0, 0, 0);
+    hideUntil(tomorrow.getTime());
+  });
+  hideWeekButton?.addEventListener('click', () => hideUntil(Date.now() + (7 * 24 * 60 * 60 * 1000)));
+  openButton?.addEventListener('click', async () => {
+    close();
+    const opened = await window.navigateTo?.('market');
+    if (opened !== false) history.replaceState(null, '', '#market');
+  });
+  overlay.addEventListener('click', event => { if (event.target === overlay) close(); });
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && overlay.classList.contains('active')) close();
+  });
+
+  protectedAuthStatus().then(authenticated => {
+    if (authenticated) window.setTimeout(open, 1200);
   });
 }
 
@@ -5454,9 +5536,11 @@ document.addEventListener('DOMContentLoaded', () => {
   setupOverseasGate();
   registerServiceWorker();
   runStartupTask('renderHeroNews', renderHeroNews);
+  runStartupTask('renderDailyQuote', renderDailyQuote);
   runStartupTask('setupHomeUtilityActions', setupHomeUtilityActions);
   runStartupTask('setupVisitorCounter', setupVisitorCounter);
   runStartupTask('setupIntroModal', setupIntroModal);
   runStartupTask('setupFunctionSummaryIntro', setupFunctionSummaryIntro);
+  runStartupTask('setupMarketExplorerIntro', setupMarketExplorerIntro);
   appDataReady.then(() => { setupGlobalSearch(); renderHomeDashboard(); });
 });

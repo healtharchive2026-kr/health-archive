@@ -221,7 +221,7 @@
             </button>
           </div>
           <p class="hero-utility-status" id="home-bookmark-status" aria-live="polite"></p>
-          <p class="daily-quote-card"><strong>오늘의 한마디</strong> : 관계가 쌓이면 운처럼 보이는 실력이 된다.</p>
+          <p class="daily-quote-card" id="daily-quote"><strong>오늘의 한마디</strong><span class="daily-quote-text">오늘의 문장을 불러오는 중입니다.</span></p>
         </div>
       </div>
 
@@ -2159,14 +2159,14 @@
     <div class="function-summary-intro-content">
       <span class="function-summary-intro-eyebrow">NEW SERVICE</span>
       <h2 id="function-summary-intro-title">원료 기능성<br>요약자료</h2>
-      <p class="function-summary-intro-lede">개별인정 원료의 기능성 근거를 실무에서 바로 확인할 수 있도록, 핵심 자료를 한 페이지로 정리했습니다.</p>
+      <p class="function-summary-intro-lede">개별인정 원료의 기능성 핵심 내용을 한눈에 확인하고, 판단 근거가 된 관련 논문까지 이어서 살펴볼 수 있습니다.</p>
       <div class="function-summary-intro-example" aria-label="완료 예시">
         <span>완료 예시 · 제2026-22호</span>
         <strong>BN-202M</strong>
         <p>체지방 감소 기능성 · 프로바이오틱스 복합물</p>
       </div>
       <div class="function-summary-intro-evidence" aria-label="제공 근거">
-        <span>요약 PDF</span><span>인체 1</span><span>세포 1</span><span>동물 1</span>
+        <span>기능성 요약</span><span>관련 논문</span><span>연구 근거</span>
       </div>
       <div class="function-summary-intro-actions">
         <button type="button" class="function-summary-intro-button function-summary-intro-primary" id="function-summary-intro-example">예시 자료 보기</button>
@@ -2177,6 +2177,31 @@
     <div class="function-summary-intro-art" aria-hidden="true">
       <img id="function-summary-intro-visual" data-src="assets/function-summary-intro.webp" alt="" decoding="async">
       <span class="function-summary-intro-art-caption">Ingredient evidence, made usable.</span>
+    </div>
+  </section>
+</div>
+
+<div class="function-summary-intro-overlay market-intro-overlay" id="market-explorer-intro-overlay">
+  <section class="function-summary-intro market-intro" role="dialog" aria-modal="true" aria-labelledby="market-explorer-intro-title">
+    <button type="button" class="function-summary-intro-close" id="market-explorer-intro-close" aria-label="닫기">×</button>
+    <div class="function-summary-intro-content">
+      <span class="function-summary-intro-eyebrow">UPDATED SERVICE</span>
+      <h2 id="market-explorer-intro-title">생산·매출 실적<br>탐색기</h2>
+      <p class="function-summary-intro-lede">건강기능식품 생산·매출 현황을 연도별로 살펴보고, 기능성별·원료별 상세 매출까지 연결해 확인할 수 있습니다.</p>
+      <div class="market-intro-features" aria-label="주요 제공 정보">
+        <span><strong>기능성별</strong> 연도별 매출과 상세 구성</span>
+        <span><strong>원료별</strong> 총매출·내수·수출 실적</span>
+        <span><strong>시장 흐름</strong> 3개년 추이와 순위 변화</span>
+      </div>
+      <div class="function-summary-intro-actions">
+        <button type="button" class="function-summary-intro-button function-summary-intro-primary" id="market-explorer-intro-open">생산실적 탐색기 보기</button>
+        <button type="button" class="function-summary-intro-button function-summary-intro-secondary" id="market-explorer-intro-hide-today">오늘 그만 보기</button>
+        <button type="button" class="function-summary-intro-button function-summary-intro-secondary" id="market-explorer-intro-hide-week">일주일간 그만 보기</button>
+      </div>
+    </div>
+    <div class="function-summary-intro-art market-intro-art" aria-hidden="true">
+      <img id="market-explorer-intro-visual" data-src="assets/chapter-market.webp" alt="" decoding="async">
+      <span class="function-summary-intro-art-caption">Production and sales, connected.</span>
     </div>
   </section>
 </div>
@@ -2383,8 +2408,9 @@
 <script src="data/products_recent.js?v=20260901-perf1"></script>
 <script src="data/news_recent.js?v=20260901-perf1"></script>
 <script src="data/status.js?v=20260722-runtimefix1"></script>
+<script src="data/daily_quotes.js?v=20260904-quotes1"></script>
 <script src="section-visuals.js?v=20260730-chapters1"></script>
-<script src="app.js?v=20260903-home2"></script>
+<script src="app.js?v=20260904-intros1"></script>
 <script src="simon.js?v=20260730-adminlock1"></script>
 <script src="pc-cinema.js?v=20260903-public3"></script>
 <script src="feedback.js?v=20260714-api1"></script>

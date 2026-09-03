@@ -4038,8 +4038,9 @@ body:has(#home.active){background:#f3f6f4;}
 #workspace-start.hero-dark .workspace-title{max-width:640px;margin:0 0 12px;color:#fff;font-size:38px;line-height:1.2;text-align:left;-webkit-text-fill-color:initial;}
 #workspace-start .hero-lede{max-width:620px;margin:0;color:rgba(255,255,255,.72);font-size:14px;line-height:1.7;text-align:left;}
 #workspace-start .hero-side{display:flex;max-width:none;margin:0;flex-direction:column-reverse;align-items:stretch;gap:10px;}
-#workspace-start .daily-quote-card{min-height:auto;margin:0;padding:0 0 12px;border:0;border-bottom:1px solid rgba(255,255,255,.18);border-radius:0;background:transparent;color:rgba(255,255,255,.72);font-size:12px;line-height:1.65;}
-#workspace-start .daily-quote-card strong{display:block;margin-bottom:3px;color:#8dd5b8;font-size:10px;}
+#workspace-start .daily-quote-card{min-height:auto;margin:0;padding:0 0 17px;border:0;border-bottom:1px solid rgba(255,255,255,.22);border-radius:0;background:transparent;color:#fff;font-size:17px;line-height:1.55;word-break:keep-all;}
+#workspace-start .daily-quote-card strong{display:block;margin-bottom:7px;color:#8dd5b8;font-size:11px;letter-spacing:0;}
+#workspace-start .daily-quote-text{display:block;font-weight:750;text-shadow:0 1px 12px rgba(0,0,0,.22);}
 #workspace-start .hero-utility-actions{width:100%;}
 #workspace-start .hero-utility-action{justify-content:flex-start;width:100%;min-height:40px;padding:8px 0;border:0;background:transparent;color:#fff;}
 #workspace-start .hero-utility-action:hover{background:transparent;color:#9de0c3;}
@@ -4094,7 +4095,7 @@ body:has(#home.active){background:#f3f6f4;}
   #workspace-start .visitor-counter{margin-bottom:22px;}
   #workspace-start.hero-dark .workspace-title{font-size:27px;}
   #workspace-start .hero-side{margin-top:22px;}
-  #workspace-start .daily-quote-card{display:none;}
+  #workspace-start .daily-quote-card{display:block;padding-bottom:14px;font-size:15px;line-height:1.55;}
   #workspace-start .hero-search-board{margin-bottom:30px;}
   #workspace-start .global-search-form{min-height:56px;}
   #workspace-start .global-search-form button{min-width:84px;padding:0 14px;}
@@ -4109,3 +4110,9 @@ body:has(#home.active){background:#f3f6f4;}
   #workspace-start>.hero-section-head small{display:block;margin-top:4px;}
   #workspace-start .home-dash-card{border:1px solid #d7e1dc!important;}
 }
+
+.market-intro-features{display:grid;gap:8px;width:100%;margin-top:24px;}
+.market-intro-features span{display:block;padding:11px 13px;border-left:3px solid #2a7c62;background:#f1f7f3;color:#527064;font-size:12px;line-height:1.45;}
+.market-intro-features strong{display:inline-block;min-width:66px;color:#174d3c;font-size:12px;}
+.market-intro-art img{object-position:center;filter:saturate(.82) brightness(.78);}
+.market-intro-art::after{background:linear-gradient(90deg,rgba(12,45,34,.05),rgba(5,25,19,.16));}

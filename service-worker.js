@@ -1,10 +1,10 @@
-const CACHE_NAME = 'healtharchive-runtime-20260903-consumer1';
+const CACHE_NAME = 'healtharchive-runtime-20260904-intros1';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/style.css?v=20260903-home2',
+  '/style.css?v=20260904-intros1',
   '/simon.css?v=20260730-adminlock1',
-  '/app.js?v=20260903-home2',
+  '/app.js?v=20260904-intros1',
   '/simon.js?v=20260730-adminlock1',
   '/section-visuals.js?v=20260730-chapters1',
   '/pc-cinema.js?v=20260903-public3',
@@ -17,7 +17,8 @@ const CORE_ASSETS = [
   '/data/products_recent.js?v=20260901-perf1',
   '/data/news_recent.js?v=20260901-perf1',
   '/data/minutes.js?v=20260827-app4',
-  '/data/status.js?v=20260722-runtimefix1'
+  '/data/status.js?v=20260722-runtimefix1',
+  '/data/daily_quotes.js?v=20260904-quotes1'
 ];
 
 self.addEventListener('install', event => {
