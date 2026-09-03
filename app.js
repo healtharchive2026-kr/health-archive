@@ -2117,11 +2117,12 @@ function buildYearSidebar(containerId, data, yearFn, activeYear, onSelect) {
     counts.set(y, (counts.get(y) || 0) + 1);
   });
   const years = Array.from(counts.keys()).sort((a, b) => b - a);
+  const isIngredientFilter = containerId === 'ingredient-year-sidebar';
 
-  const allCard = `<div class="year-card${activeYear === 'all' ? ' active' : ''}" data-year="all"><span>전체</span><span class="count">${data.length}</span></div>`;
+  const allCard = `<div class="year-card${activeYear === 'all' ? ' active' : ''}" data-year="all"><span>전체${isIngredientFilter ? ` (${data.length}개)` : ''}</span>${isIngredientFilter ? '' : `<span class="count">${data.length}</span>`}</div>`;
   const cards = years.map(y => `
     <div class="year-card${y === activeYear ? ' active' : ''}" data-year="${y}">
-      <span>${y}년</span><span class="count">${counts.get(y)}</span>
+      <span>${y}년${isIngredientFilter ? ` (${counts.get(y)}개)` : ''}</span>${isIngredientFilter ? '' : `<span class="count">${counts.get(y)}</span>`}
     </div>
   `).join('');
 

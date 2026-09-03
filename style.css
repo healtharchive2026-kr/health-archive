@@ -915,14 +915,18 @@ main{padding:40px 24px 80px;}
 .db-section .table-wrap tbody tr:hover,.db-section .foodraw-table tr:hover td,.db-data-table tbody tr:hover{background:#f7fafc;}
 
 #ingredients .year-layout{display:block;}
+#ingredients .ingredient-page-head{align-items:flex-start;gap:28px;}
+#ingredients .ingredient-page-copy{flex:0 1 390px;min-width:300px;}
+#ingredients .ingredient-year-panel{display:flex;flex:1 1 620px;min-width:0;flex-direction:column;align-items:flex-end;gap:12px;}
 #ingredients .year-sidebar{
-  position:static;display:flex;flex-direction:row;flex-wrap:nowrap;gap:6px;width:100%;
-  margin:0 0 12px;padding:0 0 5px;overflow-x:auto;scrollbar-width:thin;
+  position:static;display:flex;flex-direction:row;flex-wrap:wrap;justify-content:flex-end;gap:7px;width:100%;
+  margin:0;padding:0;overflow:visible;
 }
 #ingredients .year-card{
-  flex:0 0 auto;min-width:78px;padding:8px 10px;border-radius:6px;background:#fff;
+  flex:0 0 auto;min-width:0;padding:8px 11px;border-radius:6px;background:#fff;
+  font-size:12px;line-height:1.2;white-space:nowrap;
 }
-#ingredients .year-card:first-child{min-width:96px;}
+#ingredients .year-card:first-child{min-width:0;}
 #ingredients .year-card.active{
   background:var(--accent);border-color:var(--accent);color:#fff;
   box-shadow:0 3px 8px rgba(48,105,163,.2);
@@ -3501,8 +3505,11 @@ body:not(.site-authenticated) .nav-link:not([data-tab="home"]):hover{opacity:.85
   .db-source-badge{align-self:flex-start;margin-top:0;}
   .db-toolbar{padding:8px;min-height:0;}
   .db-toolbar .result-count,.db-toolbar .foodraw-count{margin-left:0;align-self:flex-start;}
-  #ingredients .year-sidebar{margin-bottom:10px;padding-bottom:4px;}
-  #ingredients .year-card{min-width:74px;padding:8px 9px;}
+  #ingredients .ingredient-page-head{gap:14px;}
+  #ingredients .ingredient-page-copy{flex:auto;min-width:0;}
+  #ingredients .ingredient-year-panel{width:100%;flex:auto;align-items:flex-start;gap:10px;}
+  #ingredients .year-sidebar{justify-content:flex-start;margin-bottom:0;padding-bottom:0;}
+  #ingredients .year-card{min-width:0;padding:8px 9px;font-size:11.5px;}
   .global-search-form input{font-size:13px;padding:13px 2px;}
   .global-search-form button{padding:0 14px;font-size:13px;}
   .global-result-item{grid-template-columns:1fr;gap:5px;padding:13px 14px;}
