@@ -1,8 +1,8 @@
-const CACHE_NAME = 'healtharchive-runtime-20260904-intros1';
+const CACHE_NAME = 'healtharchive-runtime-20260904-quote2';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/style.css?v=20260904-intros1',
+  '/style.css?v=20260904-quote2',
   '/simon.css?v=20260730-adminlock1',
   '/app.js?v=20260904-intros1',
   '/simon.js?v=20260730-adminlock1',

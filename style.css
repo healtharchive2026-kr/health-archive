@@ -4038,8 +4038,8 @@ body:has(#home.active){background:#f3f6f4;}
 #workspace-start.hero-dark .workspace-title{max-width:640px;margin:0 0 12px;color:#fff;font-size:38px;line-height:1.2;text-align:left;-webkit-text-fill-color:initial;}
 #workspace-start .hero-lede{max-width:620px;margin:0;color:rgba(255,255,255,.72);font-size:14px;line-height:1.7;text-align:left;}
 #workspace-start .hero-side{display:flex;max-width:none;margin:0;flex-direction:column-reverse;align-items:stretch;gap:10px;}
-#workspace-start .daily-quote-card{min-height:auto;margin:0;padding:0 0 17px;border:0;border-bottom:1px solid rgba(255,255,255,.22);border-radius:0;background:transparent;color:#fff;font-size:17px;line-height:1.55;word-break:keep-all;}
-#workspace-start .daily-quote-card strong{display:block;margin-bottom:7px;color:#8dd5b8;font-size:11px;letter-spacing:0;}
+#workspace-start .daily-quote-card{min-height:auto;margin:0;padding:0 0 18px;border:0;border-bottom:1px solid rgba(255,255,255,.22);border-radius:0;background:transparent;color:#fff;font-size:22px;line-height:1.48;word-break:keep-all;}
+#workspace-start .daily-quote-card strong{display:block;margin-bottom:8px;color:#8dd5b8;font-size:12px;letter-spacing:0;}
 #workspace-start .daily-quote-text{display:block;font-weight:750;text-shadow:0 1px 12px rgba(0,0,0,.22);}
 #workspace-start .hero-utility-actions{width:100%;}
 #workspace-start .hero-utility-action{justify-content:flex-start;width:100%;min-height:40px;padding:8px 0;border:0;background:transparent;color:#fff;}
@@ -4095,7 +4095,7 @@ body:has(#home.active){background:#f3f6f4;}
   #workspace-start .visitor-counter{margin-bottom:22px;}
   #workspace-start.hero-dark .workspace-title{font-size:27px;}
   #workspace-start .hero-side{margin-top:22px;}
-  #workspace-start .daily-quote-card{display:block;padding-bottom:14px;font-size:15px;line-height:1.55;}
+  #workspace-start .daily-quote-card{display:block;padding-bottom:15px;font-size:19px;line-height:1.5;}
   #workspace-start .hero-search-board{margin-bottom:30px;}
   #workspace-start .global-search-form{min-height:56px;}
   #workspace-start .global-search-form button{min-width:84px;padding:0 14px;}
