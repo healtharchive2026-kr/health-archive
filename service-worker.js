@@ -1,8 +1,8 @@
-const CACHE_NAME = 'healtharchive-runtime-20260904-yearpicker2';
+const CACHE_NAME = 'healtharchive-runtime-20260904-yearspace3';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/style.css?v=20260904-yearpicker2',
+  '/style.css?v=20260904-yearspace3',
   '/simon.css?v=20260730-adminlock1',
   '/app.js?v=20260904-yearpicker2',
   '/simon.js?v=20260730-adminlock1',
