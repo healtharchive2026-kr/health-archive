@@ -465,6 +465,11 @@ function routeHeroSearch(target, q, options = {}) {
     ingredientYear = 'all';
     document.querySelectorAll('#ingredient-year-sidebar .year-card').forEach(c =>
       c.classList.toggle('active', c.dataset.year === 'all'));
+    const yearTrigger = document.getElementById('ingredient-year-trigger');
+    if (yearTrigger) {
+      yearTrigger.classList.remove('active');
+      yearTrigger.innerHTML = '<span>연도별</span><span class="year-picker-caret">▾</span>';
+    }
     document.getElementById('ingredient-search').value = q;
     applyIngredientFilter();
   } else if (target === 'minutes') {
@@ -2119,10 +2124,54 @@ function buildYearSidebar(containerId, data, yearFn, activeYear, onSelect) {
   const years = Array.from(counts.keys()).sort((a, b) => b - a);
   const isIngredientFilter = containerId === 'ingredient-year-sidebar';
 
-  const allCard = `<div class="year-card${activeYear === 'all' ? ' active' : ''}" data-year="all"><span>전체${isIngredientFilter ? ` (${data.length}개)` : ''}</span>${isIngredientFilter ? '' : `<span class="count">${data.length}</span>`}</div>`;
+  if (isIngredientFilter) {
+    const selectedLabel = activeYear === 'all'
+      ? '연도별'
+      : `${activeYear}년 (${counts.get(activeYear) || 0}개)`;
+    container.innerHTML = `
+      <button type="button" class="year-card year-all-card${activeYear === 'all' ? ' active' : ''}" data-year="all">전체 (${data.length}개)</button>
+      <div class="ingredient-year-picker">
+        <button type="button" class="year-picker-trigger${activeYear === 'all' ? '' : ' active'}" id="ingredient-year-trigger" aria-expanded="false" aria-controls="ingredient-year-menu">
+          <span>${selectedLabel}</span><span class="year-picker-caret">▾</span>
+        </button>
+        <div class="ingredient-year-menu" id="ingredient-year-menu" hidden>
+          ${years.map(y => `<button type="button" class="year-card${y === activeYear ? ' active' : ''}" data-year="${y}">${y}년 (${counts.get(y)}개)</button>`).join('')}
+        </div>
+      </div>`;
+
+    const trigger = document.getElementById('ingredient-year-trigger');
+    const menu = document.getElementById('ingredient-year-menu');
+    const closeMenu = () => {
+      menu.hidden = true;
+      trigger.setAttribute('aria-expanded', 'false');
+    };
+    trigger.addEventListener('click', () => {
+      const willOpen = menu.hidden;
+      menu.hidden = !willOpen;
+      trigger.setAttribute('aria-expanded', String(willOpen));
+    });
+    container.querySelectorAll('.year-card').forEach(card => {
+      card.addEventListener('click', () => {
+        container.querySelectorAll('.year-card').forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+        const y = card.dataset.year;
+        const selectedYear = y === 'all' ? 'all' : parseInt(y, 10);
+        trigger.classList.toggle('active', selectedYear !== 'all');
+        trigger.innerHTML = `<span>${selectedYear === 'all' ? '연도별' : `${selectedYear}년 (${counts.get(selectedYear)}개)`}</span><span class="year-picker-caret">▾</span>`;
+        closeMenu();
+        onSelect(selectedYear);
+      });
+    });
+    document.addEventListener('click', event => {
+      if (!container.contains(event.target)) closeMenu();
+    });
+    return;
+  }
+
+  const allCard = `<div class="year-card${activeYear === 'all' ? ' active' : ''}" data-year="all"><span>전체</span><span class="count">${data.length}</span></div>`;
   const cards = years.map(y => `
     <div class="year-card${y === activeYear ? ' active' : ''}" data-year="${y}">
-      <span>${y}년${isIngredientFilter ? ` (${counts.get(y)}개)` : ''}</span>${isIngredientFilter ? '' : `<span class="count">${counts.get(y)}</span>`}
+      <span>${y}년</span><span class="count">${counts.get(y)}</span>
     </div>
   `).join('');
 
