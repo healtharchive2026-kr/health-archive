@@ -11820,5 +11820,55 @@
     "dailyIntake": "하고초추출분말로서 550 mg/일",
     "report": "제2026-21호.pdf",
     "id": 844
+  },
+  {
+    "name": "블랙라즈베리한속단추출복합분말",
+    "noticeNo": "제2026-27호",
+    "company": "㈜나일랜드",
+    "category": "근력 개선",
+    "efficacy": "노화로 인해 감소될 수 있는 근력 유지에 도움을 줄 수 있음",
+    "dailyIntake": "블랙라즈베리한속단추출복합분말로서 1,813 mg/일",
+    "report": null,
+    "id": 845
+  },
+  {
+    "name": "Lactiplantibacillus plantarum NK151과 Bifidobacterium bifidum NK175의&nbsp; 프로바이오틱스 복합물(LB101)",
+    "noticeNo": "제2026-26호",
+    "company": "피비엘바이오랩 주식회사",
+    "category": "눈 건강",
+    "efficacy": "건조한 눈을 개선하여 눈 건강에 도움을 줄 수 있음",
+    "dailyIntake": "&nbsp; &nbsp;Lactiplantibacillus plantarum NK151과 Bifidobacterium bifidum NK175의 프로바이오틱스 복합물(LB101)로서 1.0 × 1010 CFU/일",
+    "report": null,
+    "id": 846
+  },
+  {
+    "name": "고소애가수분해물",
+    "noticeNo": "제2026-25호",
+    "company": "주식회사 한미양행",
+    "category": "근력 개선",
+    "efficacy": "노화로 인해 감소될 수 있는 근력 유지에 도움을 줄 수 있음",
+    "dailyIntake": "고소애가수분해물로서 2,000 mg/일",
+    "report": null,
+    "id": 847
+  },
+  {
+    "name": "돼지뇌효소가수분해물",
+    "noticeNo": "제2026-24호",
+    "company": "유니메드제약㈜",
+    "category": "기억력 개선",
+    "efficacy": "기억력 개선에 도움을 줄 수 있음",
+    "dailyIntake": "돼지뇌효소가수분해물로서 250 mg/일",
+    "report": null,
+    "id": 848
+  },
+  {
+    "name": "연어코연골추출물",
+    "noticeNo": "제2026-23호",
+    "company": "종근당건강(주)",
+    "category": "관절 건강",
+    "efficacy": "&nbsp;",
+    "dailyIntake": "연어코연골추출물 50 mg/일",
+    "report": null,
+    "id": 849
   }
 ]
