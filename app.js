@@ -1260,7 +1260,7 @@ function renderProtectedAccountState(authenticated) {
   const usagePanel = document.getElementById('account-usage-panel');
   document.body.classList.toggle('site-authenticated', authenticated === true);
   if (trigger) trigger.classList.toggle('is-authenticated', authenticated === true);
-  if (label) label.textContent = authenticated ? '로그인됨' : '로그인';
+  if (label) label.textContent = authenticated ? '관리자 로그인됨' : '관리자 로그인';
   if (assistantTrigger) {
     const assistantAdmin = authenticated === true && protectedAdminState;
     assistantTrigger.classList.toggle('is-locked', !assistantAdmin);

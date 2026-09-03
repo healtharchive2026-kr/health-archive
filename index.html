@@ -82,7 +82,7 @@
     </a>
     <button class="account-trigger" type="button" id="account-trigger" aria-haspopup="dialog" aria-controls="account-modal">
       <span class="account-trigger-icon" aria-hidden="true">◉</span>
-      <span id="account-trigger-label">로그인</span>
+      <span id="account-trigger-label">관리자 로그인</span>
     </button>
     <button class="mobile-menu-toggle" type="button" aria-label="메뉴 열기" aria-expanded="false" aria-controls="main-nav">
       <span></span><span></span><span></span>
@@ -168,7 +168,7 @@
         <div class="pc-cinema-preview-head">
           <span>Inside HealthArchive</span>
           <h2 id="cinema-preview-title"><strong>개발의 다음 질문을 위한</strong><br><span>실무 도구를 한곳에.</span></h2>
-          <p>로그인 후 데이터베이스와 검토 도구를 하나의 원료 개발 흐름으로 사용할 수 있습니다.</p>
+          <p>데이터베이스와 검토 도구를 하나의 원료 개발 흐름으로 바로 사용할 수 있습니다.</p>
         </div>
         <div class="pc-cinema-preview-grid" aria-label="제공 기능 미리보기">
           <article>
@@ -187,14 +187,14 @@
             <span class="pc-module-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><em>05</em><h3>시장·동향</h3><ul><li>시장·인정 통계</li><li>건기식 R&amp;D 과제</li><li>식품 뉴스</li><li>학회·박람회</li></ul>
           </article>
         </div>
-        <p class="pc-cinema-preview-note"><a href="ingredient-development/">건강기능식품 원료 개발 실무 가이드</a> · <a href="insights/">주간 제품·규제·R&amp;D 브리프</a> · <a href="en/" lang="en">Global ingredient development</a> · 실제 검색과 상세 자료 열람은 로그인 후 제공됩니다.</p>
+        <p class="pc-cinema-preview-note"><a href="ingredient-development/">건강기능식품 원료 개발 실무 가이드</a> · <a href="insights/">주간 제품·규제·R&amp;D 브리프</a> · <a href="en/" lang="en">Global ingredient development</a> · 검색과 상세 자료를 로그인 없이 이용할 수 있습니다.</p>
       </section>
 
       <section class="pc-cinema-enter" id="cta" data-cinema-scene>
         <span>From evidence to action</span>
         <h2><strong>이제,</strong><br><span>개발자의 작업 공간으로.</span></h2>
         <button type="button" data-cinema-start>HealthArchive 시작하기 <i aria-hidden="true">→</i></button>
-        <p class="pc-cinema-enter-limit">초기 서비스 50명 한정 <span aria-hidden="true">·</span> 신청 즉시 승인</p>
+        <p class="pc-cinema-enter-limit">일반 서비스 공개 운영 중 <span aria-hidden="true">·</span> 로그인 없이 이용</p>
       </section>
 
       <footer class="pc-public-footer">
@@ -2244,8 +2244,8 @@
     <div class="account-dialog-mark" aria-hidden="true">HA</div>
     <div id="account-logged-out">
       <span class="account-eyebrow">Protected Access</span>
-      <h2 id="account-modal-title">전체 기능 로그인</h2>
-      <p>원료 Pre-Check는 누구나 사용할 수 있으며, 자료의 안정적인 운영과 무단 수집 방지를 위해 나머지 실무 기능은 승인된 이용자만 열 수 있습니다.</p>
+      <h2 id="account-modal-title">관리자 로그인</h2>
+      <p>일반 서비스는 로그인 없이 이용할 수 있습니다. 이 로그인은 Daily 원료 검토보고서와 관리 기능 전용입니다.</p>
       <div class="account-security-note" aria-label="로그인 보안 안내">
         <strong>보안·개인정보 보호 방식</strong>
         <span>Cloudflare가 이메일을 인증하며 사이트는 비밀번호를 저장하지 않습니다.</span>
@@ -2253,8 +2253,8 @@
         <span>기능별 이용량만 가명 집계하며 검색어·입력 원문은 수집하지 않습니다.</span>
       </div>
       <button type="button" class="account-primary" data-protected-login>이메일로 로그인</button>
-      <button type="button" class="account-secondary" id="account-request-open">접근 신청</button>
-      <p class="account-help">신규 이용자는 접근 신청 즉시 승인되며, 신청한 이메일로 로그인할 수 있습니다.</p>
+      <button type="button" class="account-secondary" id="account-request-open" hidden>접근 신청</button>
+      <p class="account-help" hidden>신규 이용자는 접근 신청 즉시 승인되며, 신청한 이메일로 로그인할 수 있습니다.</p>
     </div>
     <div id="account-request-panel" hidden>
       <span class="account-eyebrow">Access request</span>
@@ -2428,9 +2428,9 @@
 <script src="data/news_recent.js?v=20260901-perf1"></script>
 <script src="data/status.js?v=20260722-runtimefix1"></script>
 <script src="section-visuals.js?v=20260730-chapters1"></script>
-<script src="app.js?v=20260901-perf1"></script>
+<script src="app.js?v=20260903-public2"></script>
 <script src="simon.js?v=20260730-adminlock1"></script>
-<script src="pc-cinema.js?v=20260825-redesign1"></script>
+<script src="pc-cinema.js?v=20260903-public2"></script>
 <script src="feedback.js?v=20260714-api1"></script>
 </body>
 </html>

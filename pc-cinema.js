@@ -54,13 +54,10 @@
     root.querySelectorAll('[data-cinema-start]').forEach(button => {
       button.addEventListener('click', () => {
         const workspace = document.getElementById('workspace-start');
-        if (document.body.classList.contains('site-authenticated')) {
+        Promise.resolve(window.navigateTo?.('home')).then(() => {
+          history.replaceState(null, '', '#home');
           workspace?.scrollIntoView({behavior: reducedMotion ? 'auto' : 'smooth', block: 'start'});
-          return;
-        }
-        sessionStorage.setItem('ha-enter-workspace-after-login', '1');
-        if (typeof window.openProtectedAccountModal === 'function') window.openProtectedAccountModal();
-        else document.getElementById('account-trigger')?.click();
+        });
       });
     });
   }
