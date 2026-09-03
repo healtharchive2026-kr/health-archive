@@ -1250,7 +1250,6 @@ function protectedGateError(element, message) {
 
 function renderProtectedAccountState(authenticated) {
   const trigger = document.getElementById('account-trigger');
-  const label = document.getElementById('account-trigger-label');
   const assistantTrigger = document.getElementById('simon-trigger');
   const assistantBadge = assistantTrigger?.querySelector('.simon-trigger-beta');
   const loggedOut = document.getElementById('account-logged-out');
@@ -1260,8 +1259,12 @@ function renderProtectedAccountState(authenticated) {
   const adminPanel = document.getElementById('account-admin-panel');
   const usagePanel = document.getElementById('account-usage-panel');
   document.body.classList.toggle('site-authenticated', authenticated === true);
-  if (trigger) trigger.classList.toggle('is-authenticated', authenticated === true);
-  if (label) label.textContent = authenticated ? '관리자 로그인됨' : '관리자 로그인';
+  if (trigger) {
+    const accountLabel = authenticated ? '관리자 로그인됨' : '관리자 로그인';
+    trigger.classList.toggle('is-authenticated', authenticated === true);
+    trigger.setAttribute('aria-label', accountLabel);
+    trigger.title = accountLabel;
+  }
   if (assistantTrigger) {
     const assistantAdmin = authenticated === true && protectedAdminState;
     assistantTrigger.classList.toggle('is-locked', !assistantAdmin);

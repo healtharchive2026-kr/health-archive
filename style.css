@@ -479,13 +479,13 @@ body{
 
 .account-trigger{
   order:5;flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:7px;
-  padding:8px 12px;border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--text);
+  width:38px;height:38px;padding:0;border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--text);
   font-family:inherit;font-size:12.5px;font-weight:750;box-shadow:var(--shadow-sm);cursor:pointer;
   transition:border-color .14s,color .14s,background .14s;
 }
 .account-trigger:hover{border-color:var(--green);color:var(--green);}
 .account-trigger.is-authenticated{border-color:#a7cbbb;background:#f1f8f4;color:var(--green);}
-.account-trigger-icon{font-size:10px;color:#9ba7a2;}
+.account-trigger-icon{font-size:16px;color:#68746f;line-height:1;}
 .account-trigger.is-authenticated .account-trigger-icon{color:#3b9b70;}
 
 /* ── 커맨드 팔레트 ── */
