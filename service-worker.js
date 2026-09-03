@@ -1,4 +1,4 @@
-const CACHE_NAME = 'healtharchive-runtime-20260903-market1';
+const CACHE_NAME = 'healtharchive-runtime-20260903-consumer1';
 const CORE_ASSETS = [
   '/',
   '/index.html',
@@ -13,7 +13,7 @@ const CORE_ASSETS = [
   '/assets/logo-icon-transparent.png',
   '/assets/leaf-badge.png',
   '/assets/pc-landscape-bg.jpg',
-  '/data/ingredients.js?v=20260722-runtimefix1',
+  '/data/ingredients.js?v=20260903-consumer1',
   '/data/products_recent.js?v=20260901-perf1',
   '/data/news_recent.js?v=20260901-perf1',
   '/data/minutes.js?v=20260827-app4',
