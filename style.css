@@ -1067,6 +1067,7 @@ main{padding:40px 24px 80px;}
 
 /* ── PC cinematic introduction ── */
 .pc-cinema{width:var(--pc-cinema-width,100vw);margin:-40px 0 48px calc((100% - var(--pc-cinema-width,100vw))/2);background:#10291e;overflow:hidden;}
+.pc-cinema.is-workspace-entered{display:none;}
 .pc-cinema-opening{position:relative;height:74svh;min-height:600px;max-height:760px;color:#fff;overflow:hidden;}
 .pc-cinema-opening-media{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 48%;animation:pcCinemaDrift 18s ease-in-out infinite alternate;will-change:transform;}
 .pc-cinema-opening-shade{position:absolute;inset:0;background:rgba(5,24,16,.42);}

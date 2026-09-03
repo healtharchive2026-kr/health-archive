@@ -7,6 +7,9 @@
 
     const frames = [...root.querySelectorAll('[data-cinema-scene]')];
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const workspace = document.getElementById('workspace-start');
+    const workspaceEntered = sessionStorage.getItem('ha-workspace-entered') === '1';
+    if (workspaceEntered) root.classList.add('is-workspace-entered');
     const syncWidth = () => {
       root.style.setProperty('--pc-cinema-width', document.documentElement.clientWidth + 'px');
     };
@@ -53,10 +56,14 @@
 
     root.querySelectorAll('[data-cinema-start]').forEach(button => {
       button.addEventListener('click', () => {
-        const workspace = document.getElementById('workspace-start');
+        sessionStorage.setItem('ha-workspace-entered', '1');
+        root.classList.add('is-workspace-entered');
         Promise.resolve(window.navigateTo?.('home')).then(() => {
           history.replaceState(null, '', '#home');
-          workspace?.scrollIntoView({behavior: reducedMotion ? 'auto' : 'smooth', block: 'start'});
+          window.requestAnimationFrame(() => {
+            workspace?.scrollIntoView({behavior: 'auto', block: 'start'});
+            document.getElementById('global-search-input')?.focus({preventScroll: true});
+          });
         });
       });
     });
