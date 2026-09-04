@@ -15,6 +15,8 @@ SCRIPT_TO_KEY = {
     'update_minutes.py': 'minutes',
     'update_products.py': 'products',
     'update_temp_approval.py': 'temp_approval',
+    'update_blocked_ingredients.py': 'blocked',
+    'update_gmo_reviews.py': 'gmo',
     'update_news.py': 'news',
     'update_news_kfri.py': 'news_kfri',
     'update_news_mfds.py': 'news_mfds',

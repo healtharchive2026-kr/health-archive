@@ -21,10 +21,10 @@ const TAB_SCRIPT_DEPS = {
   laws: ['data/guidelines.js?v=20260629-glossary'],
   products: ['data/products.js?v=20260722-runtimefix1'],
   foodraw: ['data/food_ingredients.js?v=20260722-runtimefix1'],
-  'temp-approval': ['data/temp_approval.js?v=20260722-runtimefix1'],
-  blocked: ['data/blocked_ingredients.js?v=20260722-runtimefix1'],
-  'gmo-minutes': ['data/gmo_minutes.js?v=20260722-runtimefix1', 'data/gmo_ingredients.js?v=20260722-runtimefix1'],
-  'gmo-ingredients': ['data/gmo_minutes.js?v=20260722-runtimefix1', 'data/gmo_ingredients.js?v=20260722-runtimefix1'],
+  'temp-approval': ['data/temp_approval.js?v=20260904-regdb1'],
+  blocked: ['data/blocked_ingredients.js?v=20260904-regdb1'],
+  'gmo-minutes': ['data/gmo_minutes.js?v=20260904-regdb1', 'data/gmo_ingredients.js?v=20260904-regdb1'],
+  'gmo-ingredients': ['data/gmo_minutes.js?v=20260904-regdb1', 'data/gmo_ingredients.js?v=20260904-regdb1'],
   'safety-db': ['data/safety_db.js?v=20260709-perf', 'safety-db.js?v=20260709-perf'],
 };
 
@@ -40,9 +40,9 @@ const GLOBAL_SEARCH_SCRIPT_DEPS = [
 
 const PRECHECK_DATA_DEPS = [
   'data/food_ingredients.js?v=20260722-runtimefix1',
-  'data/temp_approval.js?v=20260722-runtimefix1',
-  'data/blocked_ingredients.js?v=20260722-runtimefix1',
-  'data/gmo_ingredients.js?v=20260722-runtimefix1',
+  'data/temp_approval.js?v=20260904-regdb1',
+  'data/blocked_ingredients.js?v=20260904-regdb1',
+  'data/gmo_ingredients.js?v=20260904-regdb1',
   'data/safety_db.js?v=20260709-perf'
 ];
 
@@ -5266,8 +5266,8 @@ function setupBlocked() {
     const showRaw  = chkRaw  ? chkRaw.checked  : true;
 
     const filtered = data.filter(r => {
-      if (r.t === '성분' && !showIngr) return false;
-      if (r.t === '원료' && !showRaw)  return false;
+      if (r.t === '지정' && !showIngr) return false;
+      if (r.t === '해제' && !showRaw)  return false;
       if (!q) return true;
       return (r.nk + r.ne + r.alias).toLowerCase().includes(q);
     });

@@ -70,6 +70,8 @@ jobs:
             scripts/update_minutes.py
             scripts/update_products.py
             scripts/update_temp_approval.py
+            scripts/update_blocked_ingredients.py
+            scripts/update_gmo_reviews.py
             scripts/update_news.py
             scripts/update_news_kfri.py
             scripts/update_news_mfds.py

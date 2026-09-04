@@ -72,8 +72,8 @@
     "error": null
   },
   "temp_approval": {
-    "lastRun": "2026-09-03 22:02:58",
-    "lastSuccess": "2026-09-03 22:02:58",
+    "lastRun": "2026-09-04 09:39:50",
+    "lastSuccess": "2026-09-04 09:39:50",
     "timezone": "Asia/Seoul",
     "count": 36,
     "newCount": 0,
@@ -112,6 +112,24 @@
     "lastSuccess": "2026-09-03 22:03:09",
     "timezone": "Asia/Seoul",
     "count": 83,
+    "newCount": 0,
+    "success": true,
+    "error": null
+  },
+  "blocked": {
+    "lastRun": "2026-09-04 09:39:52",
+    "lastSuccess": "2026-09-04 09:39:52",
+    "timezone": "Asia/Seoul",
+    "count": 316,
+    "newCount": 0,
+    "success": true,
+    "error": null
+  },
+  "gmo": {
+    "lastRun": "2026-09-04 09:39:57",
+    "lastSuccess": "2026-09-04 09:39:57",
+    "timezone": "Asia/Seoul",
+    "count": 60,
     "newCount": 0,
     "success": true,
     "error": null
