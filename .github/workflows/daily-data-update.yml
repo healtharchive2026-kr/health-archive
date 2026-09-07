@@ -21,7 +21,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: master
           fetch-depth: 0
@@ -30,7 +30,7 @@ jobs:
         run: git pull --ff-only origin master
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.12"
           cache: pip
@@ -85,7 +85,8 @@ jobs:
           )
 
           failed_scripts=()
-          total_count=${#scripts[@]}
+          # Include the three post-processing scripts in the health-check denominator.
+          total_count=$(( ${#scripts[@]} + 3 ))
           for script in "${scripts[@]}"; do
             echo "::group::${script}"
             python "$script"
@@ -202,7 +203,7 @@ jobs:
             echo "::warning::Partial collector failures: ${FAILED_NAMES}"
           fi
 
-          threshold=$(( (${TOTAL_COUNT:-14} + 1) / 2 ))
+          threshold=$(( (${TOTAL_COUNT:-19} + 1) / 2 ))
           if [ "${FAILED_COUNT:-0}" -ge "$threshold" ]; then
             echo "::error::A majority of scheduled collectors failed."
             failed=1

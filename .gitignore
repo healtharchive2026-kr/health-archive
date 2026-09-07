@@ -10,6 +10,7 @@ scripts/*
 !scripts/_data_files.py
 !scripts/update_*.py
 !scripts/generate_public_content.py
+!scripts/build_recent_news.py
 !scripts/sync_r2_pdfs.py
 !scripts/register_tasks.ps1
 SETUP.md
