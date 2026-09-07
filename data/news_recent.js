@@ -1,1 +1,1 @@
-var NEWS_RECENT_DATA = [];
+var NEWS_RECENT_DATA = [{"title":"Heart Health Research links xylitol to higher heart risk, but EUFIC urges caution An observational study has indicated that higher circulating xylitol levels are linked to an increased risk of...","link":"https://www.nutritioninsight.com/news/xylitol-cardiovascular-risk-sugar-substitute.html","pubDate":"2026-09-07 00:41:26","sourceLabel":"Nutrition Insight"}];
