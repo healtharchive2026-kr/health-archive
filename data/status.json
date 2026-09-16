@@ -27,47 +27,47 @@
     "error": null
   },
   "news": {
-    "lastRun": "2026-09-16 13:56:11",
-    "lastSuccess": "2026-09-16 13:56:11",
+    "lastRun": "2026-09-16 14:03:26",
+    "lastSuccess": "2026-09-16 14:03:26",
     "timezone": "Asia/Seoul",
     "count": 38,
-    "newCount": 1,
+    "newCount": 0,
     "success": true,
     "error": null
   },
   "news_mfds": {
-    "lastRun": "2026-09-16 13:59:07",
-    "lastSuccess": "2026-09-15 22:40:24",
+    "lastRun": "2026-09-16 14:03:37",
+    "lastSuccess": "2026-09-16 14:03:37",
     "timezone": "Asia/Seoul",
     "count": 33,
     "newCount": 0,
-    "success": false,
-    "error": "update_news_mfds.py failed; the last successful dataset was preserved"
+    "success": true,
+    "error": null
   },
   "news_nutraingredients": {
-    "lastRun": "2026-09-16 13:59:09",
-    "lastSuccess": "2026-09-16 13:59:09",
+    "lastRun": "2026-09-16 14:03:38",
+    "lastSuccess": "2026-09-16 14:03:38",
     "timezone": "Asia/Seoul",
     "count": 361,
-    "newCount": 3,
+    "newCount": 0,
     "success": true,
     "error": null
   },
   "news_supplysidesj": {
-    "lastRun": "2026-09-16 13:59:10",
-    "lastSuccess": "2026-09-16 13:59:10",
+    "lastRun": "2026-09-16 14:03:40",
+    "lastSuccess": "2026-09-16 14:03:40",
     "timezone": "Asia/Seoul",
     "count": 117,
-    "newCount": 1,
+    "newCount": 0,
     "success": true,
     "error": null
   },
   "news_nutritioninsight": {
-    "lastRun": "2026-09-16 13:59:11",
-    "lastSuccess": "2026-09-16 13:59:11",
+    "lastRun": "2026-09-16 14:03:41",
+    "lastSuccess": "2026-09-16 14:03:41",
     "timezone": "Asia/Seoul",
     "count": 287,
-    "newCount": 1,
+    "newCount": 0,
     "success": true,
     "error": null
   },
@@ -108,8 +108,8 @@
     "error": null
   },
   "news_kfri": {
-    "lastRun": "2026-09-16 13:56:21",
-    "lastSuccess": "2026-09-16 13:56:21",
+    "lastRun": "2026-09-16 14:03:35",
+    "lastSuccess": "2026-09-16 14:03:35",
     "timezone": "Asia/Seoul",
     "count": 83,
     "newCount": 0,
