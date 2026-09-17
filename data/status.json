@@ -27,8 +27,8 @@
     "error": null
   },
   "news": {
-    "lastRun": "2026-09-17 14:08:31",
-    "lastSuccess": "2026-09-17 14:08:31",
+    "lastRun": "2026-09-17 22:35:25",
+    "lastSuccess": "2026-09-17 22:35:25",
     "timezone": "Asia/Seoul",
     "count": 39,
     "newCount": 0,
@@ -36,26 +36,26 @@
     "error": null
   },
   "news_mfds": {
-    "lastRun": "2026-09-17 14:08:40",
-    "lastSuccess": "2026-09-17 14:08:40",
+    "lastRun": "2026-09-17 22:35:33",
+    "lastSuccess": "2026-09-17 22:35:33",
     "timezone": "Asia/Seoul",
-    "count": 35,
-    "newCount": 2,
+    "count": 36,
+    "newCount": 1,
     "success": true,
     "error": null
   },
   "news_nutraingredients": {
-    "lastRun": "2026-09-17 14:08:42",
-    "lastSuccess": "2026-09-17 14:08:42",
+    "lastRun": "2026-09-17 22:35:37",
+    "lastSuccess": "2026-09-17 22:35:37",
     "timezone": "Asia/Seoul",
-    "count": 368,
-    "newCount": 0,
+    "count": 372,
+    "newCount": 4,
     "success": true,
     "error": null
   },
   "news_supplysidesj": {
-    "lastRun": "2026-09-17 14:08:44",
-    "lastSuccess": "2026-09-17 14:08:44",
+    "lastRun": "2026-09-17 22:35:37",
+    "lastSuccess": "2026-09-17 22:35:37",
     "timezone": "Asia/Seoul",
     "count": 118,
     "newCount": 0,
@@ -63,11 +63,11 @@
     "error": null
   },
   "news_nutritioninsight": {
-    "lastRun": "2026-09-17 14:08:46",
-    "lastSuccess": "2026-09-17 14:08:46",
+    "lastRun": "2026-09-17 22:35:41",
+    "lastSuccess": "2026-09-17 22:35:41",
     "timezone": "Asia/Seoul",
-    "count": 293,
-    "newCount": 0,
+    "count": 297,
+    "newCount": 4,
     "success": true,
     "error": null
   },
@@ -108,11 +108,11 @@
     "error": null
   },
   "news_kfri": {
-    "lastRun": "2026-09-17 14:08:38",
-    "lastSuccess": "2026-09-17 14:08:38",
+    "lastRun": "2026-09-17 22:35:31",
+    "lastSuccess": "2026-09-17 22:35:31",
     "timezone": "Asia/Seoul",
-    "count": 83,
-    "newCount": 0,
+    "count": 84,
+    "newCount": 1,
     "success": true,
     "error": null
   },
