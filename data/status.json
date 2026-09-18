@@ -27,44 +27,44 @@
     "error": null
   },
   "news": {
-    "lastRun": "2026-09-18 13:50:54",
-    "lastSuccess": "2026-09-18 13:50:54",
+    "lastRun": "2026-09-18 13:53:31",
+    "lastSuccess": "2026-09-18 13:53:31",
     "timezone": "Asia/Seoul",
     "count": 40,
-    "newCount": 1,
-    "success": true,
-    "error": null
-  },
-  "news_mfds": {
-    "lastRun": "2026-09-18 13:51:05",
-    "lastSuccess": "2026-09-18 13:51:05",
-    "timezone": "Asia/Seoul",
-    "count": 36,
     "newCount": 0,
     "success": true,
     "error": null
   },
+  "news_mfds": {
+    "lastRun": "2026-09-18 13:56:26",
+    "lastSuccess": "2026-09-18 13:51:05",
+    "timezone": "Asia/Seoul",
+    "count": 36,
+    "newCount": 0,
+    "success": false,
+    "error": "update_news_mfds.py failed; the last successful dataset was preserved"
+  },
   "news_nutraingredients": {
-    "lastRun": "2026-09-18 13:51:08",
-    "lastSuccess": "2026-09-18 13:51:08",
+    "lastRun": "2026-09-18 13:56:26",
+    "lastSuccess": "2026-09-18 13:56:26",
     "timezone": "Asia/Seoul",
     "count": 375,
-    "newCount": 3,
+    "newCount": 0,
     "success": true,
     "error": null
   },
   "news_supplysidesj": {
-    "lastRun": "2026-09-18 13:51:09",
-    "lastSuccess": "2026-09-18 13:51:09",
+    "lastRun": "2026-09-18 13:56:28",
+    "lastSuccess": "2026-09-18 13:56:28",
     "timezone": "Asia/Seoul",
     "count": 119,
-    "newCount": 1,
+    "newCount": 0,
     "success": true,
     "error": null
   },
   "news_nutritioninsight": {
-    "lastRun": "2026-09-18 13:51:10",
-    "lastSuccess": "2026-09-18 13:51:10",
+    "lastRun": "2026-09-18 13:56:28",
+    "lastSuccess": "2026-09-18 13:56:28",
     "timezone": "Asia/Seoul",
     "count": 297,
     "newCount": 0,
@@ -108,8 +108,8 @@
     "error": null
   },
   "news_kfri": {
-    "lastRun": "2026-09-18 13:51:03",
-    "lastSuccess": "2026-09-18 13:51:03",
+    "lastRun": "2026-09-18 13:53:41",
+    "lastSuccess": "2026-09-18 13:53:41",
     "timezone": "Asia/Seoul",
     "count": 84,
     "newCount": 0,
