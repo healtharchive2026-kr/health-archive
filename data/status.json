@@ -27,8 +27,8 @@
     "error": null
   },
   "news": {
-    "lastRun": "2026-09-18 13:53:31",
-    "lastSuccess": "2026-09-18 13:53:31",
+    "lastRun": "2026-09-18 22:00:55",
+    "lastSuccess": "2026-09-18 22:00:55",
     "timezone": "Asia/Seoul",
     "count": 40,
     "newCount": 0,
@@ -36,26 +36,26 @@
     "error": null
   },
   "news_mfds": {
-    "lastRun": "2026-09-18 13:56:26",
-    "lastSuccess": "2026-09-18 13:51:05",
+    "lastRun": "2026-09-18 22:01:06",
+    "lastSuccess": "2026-09-18 22:01:06",
     "timezone": "Asia/Seoul",
     "count": 36,
-    "newCount": 0,
-    "success": false,
-    "error": "update_news_mfds.py failed; the last successful dataset was preserved"
-  },
-  "news_nutraingredients": {
-    "lastRun": "2026-09-18 13:56:26",
-    "lastSuccess": "2026-09-18 13:56:26",
-    "timezone": "Asia/Seoul",
-    "count": 375,
     "newCount": 0,
     "success": true,
     "error": null
   },
+  "news_nutraingredients": {
+    "lastRun": "2026-09-18 22:01:09",
+    "lastSuccess": "2026-09-18 22:01:09",
+    "timezone": "Asia/Seoul",
+    "count": 380,
+    "newCount": 5,
+    "success": true,
+    "error": null
+  },
   "news_supplysidesj": {
-    "lastRun": "2026-09-18 13:56:28",
-    "lastSuccess": "2026-09-18 13:56:28",
+    "lastRun": "2026-09-18 22:01:10",
+    "lastSuccess": "2026-09-18 22:01:10",
     "timezone": "Asia/Seoul",
     "count": 119,
     "newCount": 0,
@@ -63,11 +63,11 @@
     "error": null
   },
   "news_nutritioninsight": {
-    "lastRun": "2026-09-18 13:56:28",
-    "lastSuccess": "2026-09-18 13:56:28",
+    "lastRun": "2026-09-18 22:01:13",
+    "lastSuccess": "2026-09-18 22:01:13",
     "timezone": "Asia/Seoul",
-    "count": 297,
-    "newCount": 0,
+    "count": 302,
+    "newCount": 5,
     "success": true,
     "error": null
   },
@@ -108,8 +108,8 @@
     "error": null
   },
   "news_kfri": {
-    "lastRun": "2026-09-18 13:53:41",
-    "lastSuccess": "2026-09-18 13:53:41",
+    "lastRun": "2026-09-18 22:01:04",
+    "lastSuccess": "2026-09-18 22:01:04",
     "timezone": "Asia/Seoul",
     "count": 84,
     "newCount": 0,
