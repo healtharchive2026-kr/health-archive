@@ -1114,7 +1114,7 @@ export default {
       return serveMobileSite(request, url);
     }
 
-    if (request.method === 'GET' && url.pathname === '/') {
+    if (request.method === 'GET' && (url.pathname === '/' || url.pathname === '/health')) {
       const response = json({ service: 'HealthArchive API', status: 'ok' }, 200, origin);
       response.headers.set('Cache-Control', 'no-store');
       return response;
