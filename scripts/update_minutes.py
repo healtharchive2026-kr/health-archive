@@ -26,6 +26,11 @@ try:
 except ImportError:
     fitz = None
 
+try:
+    from pypdf import PdfReader
+except ImportError:
+    PdfReader = None
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_FILE = os.path.join(BASE_DIR, 'data', 'minutes.json')
 JS_FILE = os.path.join(BASE_DIR, 'data', 'minutes.js')
@@ -111,19 +116,29 @@ def canonical_meeting_name(meeting_no):
 
 
 def normalize_ingredient_name(name):
+    name = re.sub(r'Lacto\s*b\s*acillus\s*gasseri', 'Lactobacillus gasseri', name)
     replacements = {
         'Lactiplantibacillusplantarum': 'Lactiplantibacillus plantarum',
         'Bifidobacteriumbifidum': 'Bifidobacterium bifidum',
         'Lacticaseibacillusparacasei': 'Lacticaseibacillus paracasei',
+        'Lactobacillushelveticus': 'Lactobacillus helveticus',
+        'Bifidobacteriumlongum': 'Bifidobacterium longum',
+        'CBTLGA2': 'CBT LGA2',
     }
     for source, target in replacements.items():
         name = name.replace(source, target)
-    name = re.sub(r'\b(plantarum|paracasei)(?=[A-Z])', r'\1 ', name)
+    name = re.sub(r'\bgasseri(?=CBT)', 'gasseri ', name)
+    name = re.sub(r'\bLGA2(?=프로바이오틱스)', 'LGA2 ', name)
+    name = re.sub(
+        r'\b(gasseri|helveticus|longum|bifidum|plantarum|paracasei)(?=[A-Z])',
+        r'\1 ',
+        name,
+    )
     return re.sub(r'\s+', ' ', name).strip()
 
 
 def extract_ingredients_from_pdf(path):
-    if not pdfplumber and not fitz:
+    if not pdfplumber and not fitz and not PdfReader:
         return []
     try:
         pages = []
@@ -135,12 +150,16 @@ def extract_ingredients_from_pdf(path):
             with fitz.open(path) as pdf:
                 for p in pdf[:2]:
                     pages.append(p.get_text() or '')
+        elif PdfReader:
+            pdf = PdfReader(path)
+            for page in pdf.pages[:2]:
+                pages.append(page.extract_text() or '')
 
         first_page = pages[0] if pages else ''
         agenda = first_page.split('안 건', 1)[-1]
         agenda = re.sub(r'\s+', ' ', agenda)
         names = re.findall(
-            r'\[제[\d,\s]+호\]\s*(.+?)\s*기능성\s+(?:원료|추가)\s+인정',
+            r'\[제[\d,\s]+호\]\s*(.+?)\s*기능성\s*(?:원료|추가)\s+인정',
             agenda,
         )
         cleaned = []

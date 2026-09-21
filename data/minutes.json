@@ -4,7 +4,22 @@
     "meetingNo": 203,
     "meetingName": "제203차 건강기능식품심의위원회",
     "year": "2026",
-    "ingredients": [],
+    "ingredients": [
+      "장미꽃잎추출물",
+      "카스카라추출분말",
+      "Lactobacillus gasseri CBT LGA2 프로바이오틱스(MI-Pro)",
+      "고소애가수분해물",
+      "블랙엘더베리열매추출물(KSB191)",
+      "돼지뇌효소가수분해물",
+      "호로파종자추출물(Forceterone®)",
+      "Lactobacillus helveticus R0052와 Bifidobacterium longum R0175의 프로바이오틱스 복합물",
+      "블랙라즈베리한속단추출복합분말",
+      "Lactiplantibacillus plantarum NK151과 Bifidobacterium bifidum NK175의 프로바이오틱스 복합물(LB101)",
+      "녹용효소분해추출물(HENKIV®)",
+      "핑거루트추출물(판두라틴)",
+      "프로폴리스추출물",
+      "가자추출물(AyuFlex®)"
+    ],
     "pdf": "제203차.pdf",
     "dept": "영양기능연구과",
     "seq": "33426"
