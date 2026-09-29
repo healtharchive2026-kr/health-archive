@@ -15,7 +15,7 @@ JSON_PATH = BASE_DIR / "data" / "ingredients.json"
 JS_PATH = BASE_DIR / "data" / "ingredients.js"
 REPORT_DIR = BASE_DIR / "reports"
 REPORT_RE = re.compile(
-    r"^(제\d{4}-\d+호)_건강기능식품_기능성_원료_소비자_?리포트_.+\.pdf$",
+    r"^(제\d{4}-\d+호)_건강기능식품_기능성_?원료_소비자_?리포트_.+\.pdf$",
     re.IGNORECASE,
 )
 

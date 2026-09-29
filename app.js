@@ -15,7 +15,7 @@ const TAB_SCRIPT_DEPS = {
   market: ['libs/chart.umd.js', 'data/market_explorer_data.js?v=20260903-market1', 'market.js?v=20260903-market1'],
   funding: ['funding.js?v=20260716-member-access1'],
   stats: ['libs/chart.umd.js'],
-  ingredients: ['data/ingredient_function_summaries.js?v=20260901-summary2'],
+  ingredients: ['data/ingredient_function_summaries.js?v=20260929-summary3'],
   compare: ['data/guidelines.js?v=20260929-growth', 'data/biomarker_protocols.js?v=20260929-growth'],
   biomarkers: ['data/guidelines.js?v=20260929-growth', 'data/biomarker_protocols.js?v=20260929-growth'],
   laws: ['data/guidelines.js?v=20260629-glossary'],
@@ -35,7 +35,7 @@ const GLOBAL_SEARCH_SCRIPT_DEPS = [
   'data/food_ingredients.js?v=20260722-runtimefix1',
   'data/guidelines.js?v=20260629-glossary',
   'data/biomarker_protocols.js?v=20260929-growth',
-  'data/ingredient_function_summaries.js?v=20260901-summary2'
+  'data/ingredient_function_summaries.js?v=20260929-summary3'
 ];
 
 const PRECHECK_DATA_DEPS = [
