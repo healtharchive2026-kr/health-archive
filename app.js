@@ -1355,6 +1355,11 @@ function renderProtectedAccountState(authenticated) {
   const adminPanel = document.getElementById('account-admin-panel');
   const usagePanel = document.getElementById('account-usage-panel');
   document.body.classList.toggle('site-authenticated', authenticated === true);
+  const userTrigger = document.getElementById('user-login-trigger');
+  if (userTrigger) {
+    userTrigger.textContent = authenticated ? '내 계정' : '사용자 로그인';
+    userTrigger.classList.toggle('is-authenticated', authenticated === true);
+  }
   if (trigger) {
     const accountLabel = authenticated ? '관리자 로그인됨' : '관리자 로그인';
     trigger.classList.toggle('is-authenticated', authenticated === true);
@@ -1383,7 +1388,27 @@ function renderProtectedAccountState(authenticated) {
   });
 }
 
-function openProtectedAccountModal() {
+const ACCOUNT_MODAL_COPY = {
+  admin: {
+    title: '관리자 로그인',
+    text: '일반 서비스는 로그인 없이 이용할 수 있습니다. 이 로그인은 Daily 원료 검토보고서와 관리 기능 전용입니다.',
+  },
+  user: {
+    title: '사용자 로그인',
+    text: '기능성 요약자료는 누구나 볼 수 있고, 요약자료에 쓰인 논문 원문은 가입한 회원만 열람할 수 있습니다. 처음이면 이메일로 가입 신청 후 로그인해 주세요.',
+  },
+};
+
+function openProtectedAccountModal(mode = 'admin') {
+  const copy = ACCOUNT_MODAL_COPY[mode] || ACCOUNT_MODAL_COPY.admin;
+  const title = document.getElementById('account-modal-title');
+  const text = title?.nextElementSibling;
+  if (title) title.textContent = copy.title;
+  if (text) text.textContent = copy.text;
+  const isUser = mode === 'user';
+  const requestOpenButton = document.getElementById('account-request-open');
+  if (requestOpenButton) requestOpenButton.hidden = !isUser;
+  document.querySelectorAll('#account-logged-out .account-help').forEach(el => { el.hidden = !isUser; });
   const modal = document.getElementById('account-modal');
   const loggedOut = document.getElementById('account-logged-out');
   const loggedIn = document.getElementById('account-logged-in');
@@ -1560,7 +1585,8 @@ function setupProtectedAccountUi() {
   const usageRefresh = document.getElementById('account-usage-refresh');
   const usageRange = document.querySelector('.account-usage-range');
   let usageDays = 30;
-  const openModal = () => {
+  const userTrigger = document.getElementById('user-login-trigger');
+  const openModal = (mode = 'admin') => {
     if (protectedAuthState === true) {
       if (loggedIn) loggedIn.hidden = false;
       if (adminPanel) adminPanel.hidden = true;
@@ -1570,7 +1596,7 @@ function setupProtectedAccountUi() {
       close?.focus();
       return;
     }
-    openProtectedAccountModal();
+    openProtectedAccountModal(mode);
   };
   const closeModal = () => {
     if (!modal) return;
@@ -1579,7 +1605,20 @@ function setupProtectedAccountUi() {
     trigger?.focus();
   };
 
-  trigger?.addEventListener('click', openModal);
+  trigger?.addEventListener('click', () => openModal('admin'));
+  userTrigger?.addEventListener('click', () => openModal('user'));
+  // 논문 원문은 회원 전용: 비로그인 클릭은 사용자 로그인 창으로 안내한다.
+  document.addEventListener('click', event => {
+    if (protectedAuthState === true || !event.target.closest('a[data-paper]')) return;
+    event.preventDefault();
+    openModal('user');
+  });
+  const pageUrl = new URL(window.location.href);
+  if (pageUrl.searchParams.get('paper_login') === '1') {
+    pageUrl.searchParams.delete('paper_login');
+    window.history.replaceState({}, '', `${pageUrl.pathname}${pageUrl.search}${pageUrl.hash}`);
+    protectedAuthStatus().then(authenticated => { if (!authenticated) openModal('user'); });
+  }
   close?.addEventListener('click', closeModal);
   modal?.addEventListener('click', event => {
     if (event.target === modal) closeModal();
@@ -2893,8 +2932,8 @@ function ingredientEvidenceLinksHtml(row, className = 'evidence-tag') {
   const evidence = Array.isArray(summary?.evidence) ? summary.evidence : [];
   return evidence.map(item => {
     if (!item?.file || !item?.label) return '';
-    const href = functionSummaryPdfHref(item.file);
-    return `<a class="${className}" href="${escapeHtml(href)}" target="_blank" rel="noopener">${escapeHtml(item.label)}</a>`;
+    const href = `${PROTECTED_AUTH_API}/protected/papers/${item.file}`;
+    return `<a class="${className}" href="${escapeHtml(href)}" target="_blank" rel="noopener" data-paper title="논문 원문 (회원 전용)">${escapeHtml(item.label)}</a>`;
   }).join('');
 }
 

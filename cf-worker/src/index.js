@@ -803,6 +803,31 @@ async function handleProtectedData(request, env, url, origin) {
   });
 }
 
+// 기능성 요약자료 근거 논문: 승인된 회원만 열람. 비로그인은 사이트로 돌려보내 로그인 창을 띄운다.
+async function handleProtectedPaper(request, env, url) {
+  const match = url.pathname.match(/^\/protected\/papers\/(\d{4}-\d{1,3})\/([a-z0-9-]{1,40}\.pdf)$/);
+  if (!match || (request.method !== 'GET' && request.method !== 'HEAD')) return null;
+  const session = await readAuthorizedSession(request, env);
+  if (!session) {
+    return new Response(null, {
+      status: 302,
+      headers: { 'Location': 'https://www.healtharchive.kr/?paper_login=1#ingredients', 'Cache-Control': 'no-store' },
+    });
+  }
+  const key = `${match[1]}/${match[2]}`;
+  const object = request.method === 'HEAD' ? await env.PAPERS.head(key) : await env.PAPERS.get(key);
+  if (!object) return new Response('Not found', { status: 404 });
+  return new Response(request.method === 'HEAD' ? null : object.body, {
+    headers: {
+      'Content-Type': 'application/pdf',
+      'Content-Length': String(object.size),
+      'Content-Disposition': `inline; filename="${match[1]}-${match[2]}"`,
+      'Cache-Control': 'private, no-store',
+      'X-Content-Type-Options': 'nosniff',
+    },
+  });
+}
+
 async function handleGuidelineDownload(request, env, url, origin) {
   if (url.pathname !== '/public/guideline-download' || request.method !== 'GET') return null;
   const filename = String(url.searchParams.get('file') || '').trim();
@@ -1170,6 +1195,10 @@ export default {
       if (adminUsageResponse) return adminUsageResponse;
     }
 
+    if (url.pathname.startsWith('/protected/papers/')) {
+      const paperResponse = await handleProtectedPaper(request, env, url);
+      if (paperResponse) return paperResponse;
+    }
     if (url.pathname.startsWith('/protected/data/')) {
       const protectedResponse = await handleProtectedData(request, env, url, origin);
       if (protectedResponse) return protectedResponse;

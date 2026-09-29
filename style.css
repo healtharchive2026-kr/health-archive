@@ -484,6 +484,14 @@ body{
   transition:border-color .14s,color .14s,background .14s;
 }
 .account-trigger:hover{border-color:var(--green);color:var(--green);}
+.user-login-trigger{
+  order:5;flex:0 0 auto;height:38px;padding:0 13px;margin-right:6px;border:1px solid var(--green);border-radius:10px;
+  background:var(--green);color:#fff;font-family:inherit;font-size:12.5px;font-weight:750;white-space:nowrap;cursor:pointer;
+  box-shadow:var(--shadow-sm);transition:background .14s;
+}
+.user-login-trigger:hover{background:#245a47;}
+.user-login-trigger.is-authenticated{background:#f1f8f4;border-color:#a7cbbb;color:var(--green);}
+body:not(.site-authenticated) a[data-paper]::before{content:"🔒";margin-right:3px;font-size:.9em;}
 .account-trigger.is-authenticated{border-color:#a7cbbb;background:#f1f8f4;color:var(--green);}
 .account-trigger-icon{font-size:16px;color:#68746f;line-height:1;}
 .account-trigger.is-authenticated .account-trigger-icon{color:#3b9b70;}
@@ -3436,11 +3444,12 @@ body:not(.site-authenticated) .nav-link:not([data-tab="home"]):hover{opacity:.85
   .container{padding:0 18px;}
   .footer-legal{flex-wrap:wrap;gap:8px 14px;}
   main{padding:26px 0 64px;}
-  .header-inner{height:auto;min-height:58px;gap:0;padding:9px 0;display:grid;grid-template-columns:1fr auto auto auto auto;align-items:center;}
+  .header-inner{height:auto;min-height:58px;gap:0;padding:9px 0;display:grid;grid-template-columns:1fr auto auto auto auto auto;align-items:center;}
   .logo{order:1;flex:0 0 auto;font-size:18px;}
   .cmdk-trigger{order:2;}
   .mobile-version-link{order:3;margin-left:8px;width:40px;height:40px;min-height:40px;padding:0;border-radius:8px;}
   .mobile-version-label{display:none;}
+  .user-login-trigger{order:4;margin:0 0 0 8px;height:40px;padding:0 9px;font-size:12px;}
   .account-trigger{order:4;margin-left:8px;width:40px;height:40px;padding:0;}
   .account-trigger span:last-child{display:none;}
   .mobile-menu-toggle{order:5;}
@@ -3773,6 +3782,7 @@ body:not(.site-authenticated) .nav-link:not([data-tab="home"]):hover{opacity:.85
   .logo-icon{height:24px;}
   .logo-leaf{display:none;}
   .mobile-version-link,.cmdk-trigger,.account-trigger,.mobile-menu-toggle{width:36px;height:36px;min-height:36px;margin-left:0;}
+  .user-login-trigger{height:36px;margin-left:0;padding:0 7px;font-size:11.5px;}
 }
 
 /* Public resource links below the cinematic service overview. */
@@ -4206,3 +4216,6 @@ body:has(#home.active){background:#f3f6f4;}
   .rg-arrow{transform:rotate(90deg);}
   .rg-bars li{grid-template-columns:120px 1fr 24px;font-size:12px;}
 }
+
+/* hidden 속성이 버튼 display 규칙에 덮이지 않도록 */
+.account-dialog [hidden]{display:none!important;}
