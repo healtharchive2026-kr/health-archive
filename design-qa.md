@@ -37,4 +37,5 @@ final result: passed
 - Global search control, primary workflow links, data counts, and recent-update lists: rendered and interactive.
 - Functional-protocol navigation and search: passed, including the new 어린이 키성장 result and official guide link.
 - Home social-channel cards: passed. Instagram and Naver Blog marks, labels, target URLs, two-column desktop layout, and stacked compact layout were verified; both links are visible and keyboard-reachable above the daily note.
+- Ingredient AI-summary notice: passed. The notice sits directly below the ingredient-database heading, remains inside the content width without horizontal overflow, clearly identifies AI-generated reference material and user verification responsibility, and links to the expanded terms. Its compact breakpoint stacks the AI mark above the copy.
 - Console errors and warnings after the final cache-busted load: none attributable to the implementation.
