@@ -344,21 +344,22 @@ function setupFunctionSummaryIntro() {
   });
 }
 
-function setupMarketExplorerIntro() {
-  const overlay = document.getElementById('market-explorer-intro-overlay');
+// 신규 서비스 안내 팝업 공통: 다른 안내 팝업이 떠 있으면 닫힌 뒤 순서대로 띄운다.
+function setupServiceIntro(prefix, tab, delay) {
+  const overlay = document.getElementById(`${prefix}-intro-overlay`);
   if (!overlay || window.location.hostname === 'localhost') return;
 
-  const closeButton = document.getElementById('market-explorer-intro-close');
-  const openButton = document.getElementById('market-explorer-intro-open');
-  const hideTodayButton = document.getElementById('market-explorer-intro-hide-today');
-  const hideWeekButton = document.getElementById('market-explorer-intro-hide-week');
-  const visual = document.getElementById('market-explorer-intro-visual');
-  const storageKey = 'ha-market-explorer-intro-v1';
+  const $ = id => document.getElementById(`${prefix}-intro-${id}`);
+  const openButton = $('open');
+  const visual = $('visual');
+  const storageKey = `ha-${prefix}-intro-v1`;
+  const waitEvents = ['ha-intro-modal-closed', 'ha-function-summary-intro-closed', 'ha-service-intro-closed'];
   let previousFocus = null;
 
   function close() {
     overlay.classList.remove('active');
     document.body.classList.remove('function-summary-intro-open');
+    window.dispatchEvent(new Event('ha-service-intro-closed'));
     previousFocus?.focus?.();
   }
 
@@ -369,12 +370,12 @@ function setupMarketExplorerIntro() {
 
   function open() {
     if (Number(localStorage.getItem(storageKey) || 0) > Date.now()) return;
-    const blockingOverlay = document.querySelector('#intro-modal-overlay.active, #function-summary-intro-overlay.active');
-    if (blockingOverlay) {
-      const eventName = blockingOverlay.id === 'intro-modal-overlay'
-        ? 'ha-intro-modal-closed'
-        : 'ha-function-summary-intro-closed';
-      window.addEventListener(eventName, () => window.setTimeout(open, 250), { once: true });
+    if (document.querySelector('#intro-modal-overlay.active, .function-summary-intro-overlay.active')) {
+      const retry = () => {
+        waitEvents.forEach(name => window.removeEventListener(name, retry));
+        window.setTimeout(open, 250);
+      };
+      waitEvents.forEach(name => window.addEventListener(name, retry));
       return;
     }
     previousFocus = document.activeElement;
@@ -384,17 +385,17 @@ function setupMarketExplorerIntro() {
     window.setTimeout(() => openButton?.focus(), 0);
   }
 
-  closeButton?.addEventListener('click', close);
-  hideTodayButton?.addEventListener('click', () => {
+  $('close')?.addEventListener('click', close);
+  $('hide-today')?.addEventListener('click', () => {
     const tomorrow = new Date();
     tomorrow.setHours(24, 0, 0, 0);
     hideUntil(tomorrow.getTime());
   });
-  hideWeekButton?.addEventListener('click', () => hideUntil(Date.now() + (7 * 24 * 60 * 60 * 1000)));
+  $('hide-week')?.addEventListener('click', () => hideUntil(Date.now() + (7 * 24 * 60 * 60 * 1000)));
   openButton?.addEventListener('click', async () => {
     close();
-    const opened = await window.navigateTo?.('market');
-    if (opened !== false) history.replaceState(null, '', '#market');
+    const opened = await window.navigateTo?.(tab);
+    if (opened !== false) history.replaceState(null, '', `#${tab}`);
   });
   overlay.addEventListener('click', event => { if (event.target === overlay) close(); });
   document.addEventListener('keydown', event => {
@@ -402,8 +403,16 @@ function setupMarketExplorerIntro() {
   });
 
   protectedAuthStatus().then(authenticated => {
-    if (authenticated) window.setTimeout(open, 1200);
+    if (authenticated) window.setTimeout(open, delay);
   });
+}
+
+function setupMarketExplorerIntro() {
+  setupServiceIntro('market-explorer', 'market', 1200);
+}
+
+function setupReviewGuideIntro() {
+  setupServiceIntro('review-guide', 'review-guide', 1400);
 }
 
 // ---------- 방문자 카운터 (Cloudflare Worker + D1) ----------
@@ -5592,5 +5601,6 @@ document.addEventListener('DOMContentLoaded', () => {
   runStartupTask('setupIntroModal', setupIntroModal);
   runStartupTask('setupFunctionSummaryIntro', setupFunctionSummaryIntro);
   runStartupTask('setupMarketExplorerIntro', setupMarketExplorerIntro);
+  runStartupTask('setupReviewGuideIntro', setupReviewGuideIntro);
   appDataReady.then(() => { setupGlobalSearch(); renderHomeDashboard(); });
 });
