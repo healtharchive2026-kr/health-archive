@@ -16,8 +16,8 @@ const TAB_SCRIPT_DEPS = {
   funding: ['funding.js?v=20260716-member-access1'],
   stats: ['libs/chart.umd.js'],
   ingredients: ['data/ingredient_function_summaries.js?v=20260901-summary2'],
-  compare: ['data/guidelines.js?v=20260629-glossary', 'data/biomarker_protocols.js?v=20260711-terms1'],
-  biomarkers: ['data/guidelines.js?v=20260629-glossary', 'data/biomarker_protocols.js?v=20260711-terms1'],
+  compare: ['data/guidelines.js?v=20260929-growth', 'data/biomarker_protocols.js?v=20260929-growth'],
+  biomarkers: ['data/guidelines.js?v=20260929-growth', 'data/biomarker_protocols.js?v=20260929-growth'],
   laws: ['data/guidelines.js?v=20260629-glossary'],
   products: ['data/products.js?v=20260722-runtimefix1'],
   foodraw: ['data/food_ingredients.js?v=20260722-runtimefix1'],
@@ -34,7 +34,7 @@ const GLOBAL_SEARCH_SCRIPT_DEPS = [
   'data/products.js?v=20260722-runtimefix1',
   'data/food_ingredients.js?v=20260722-runtimefix1',
   'data/guidelines.js?v=20260629-glossary',
-  'data/biomarker_protocols.js?v=20260711-terms1',
+  'data/biomarker_protocols.js?v=20260929-growth',
   'data/ingredient_function_summaries.js?v=20260901-summary2'
 ];
 
