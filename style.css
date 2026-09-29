@@ -4143,3 +4143,24 @@ body:has(#home.active){background:#f3f6f4;}
 .market-intro-features strong{display:inline-block;min-width:66px;color:#174d3c;font-size:12px;}
 .market-intro-art img{object-position:center;filter:saturate(.82) brightness(.78);}
 .market-intro-art::after{background:linear-gradient(90deg,rgba(12,45,34,.05),rgba(5,25,19,.16));}
+
+/* ---------- 심의 길라잡이 ---------- */
+.rg-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:0 0 28px;}
+.rg-stat{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow-sm);}
+.rg-stat b{display:block;font-size:22px;color:var(--green);line-height:1.2;}
+.rg-stat span{font-size:12px;color:var(--muted);line-height:1.45;}
+.rg-stat-key{background:var(--green-light);border-color:var(--green);}
+.rg-list{margin:0 0 16px;padding-left:18px;font-size:14px;line-height:1.7;}
+.rg-list li{margin-bottom:6px;}
+.rg-note{font-size:13px;color:var(--muted);margin:-6px 0 12px;}
+.rg-table{font-size:13px;}
+.rg-table td:first-child{font-weight:600;white-space:nowrap;}
+.rg-table td:last-child{color:var(--muted);font-size:12px;min-width:180px;}
+.rg-cols{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:32px;}
+.rg-col{background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px 22px;box-shadow:var(--shadow-sm);min-width:0;}
+.rg-col h3{font-size:17px;color:var(--green);margin:0 0 4px;}
+.rg-col h4{font-size:14px;margin:18px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border);}
+.rg-sub{font-size:12px;color:var(--muted);margin:0 0 6px;}
+.rg-callout{background:var(--accent-light);border-left:3px solid var(--accent);border-radius:8px;padding:12px 14px;font-size:13px;line-height:1.6;}
+.rg-foot{font-size:12px;color:var(--muted);line-height:1.6;}
+@media (max-width:820px){.rg-cols{grid-template-columns:1fr;}.rg-table td:first-child{white-space:normal;}}
