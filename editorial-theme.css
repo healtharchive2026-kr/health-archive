@@ -361,6 +361,19 @@ body:has(#home.active){background:#f5f2eb;}
 }
 #workspace-start .hero-lede{max-width:690px;margin:0;color:#636b65;font-size:14px;line-height:1.8;text-align:left;}
 #workspace-start .hero-side{display:flex;max-width:none;margin:0;flex-direction:column-reverse;align-items:stretch;gap:14px;}
+.home-social-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:2px;}
+.home-social-link{display:flex;min-width:0;align-items:center;gap:10px;padding:12px 11px;border:1px solid #c4c9c2;background:rgba(255,254,250,.72);color:#14312a;text-decoration:none;transition:border-color .14s,background .14s;}
+.home-social-link:hover{border-color:#711f2b;background:#fffefa;}
+.home-social-logo{display:grid;flex:0 0 32px;width:32px;height:32px;place-items:center;border-radius:50%;}
+.home-social-logo img{display:block;width:16px;height:16px;}
+.home-social-instagram .home-social-logo{background:#711f2b;}
+.home-social-instagram .home-social-logo img{filter:invert(1);}
+.home-social-naver .home-social-logo{background:#03c75a;}
+.home-social-naver .home-social-logo img{filter:invert(1);}
+.home-social-link>span:last-child{min-width:0;}
+.home-social-link small,.home-social-link strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.home-social-link small{margin-bottom:4px;color:#777970;font-size:8px;font-weight:750;letter-spacing:.08em;}
+.home-social-link strong{font-size:10.5px;font-weight:750;}
 #workspace-start .daily-quote-card{
   display:block;
   min-height:0;
@@ -448,6 +461,7 @@ body:has(#home.active){background:#f5f2eb;}
   #workspace-start .hero-intro{display:block;margin-bottom:25px;}
   #workspace-start.hero-dark .workspace-title{font-size:30px;}
   #workspace-start .hero-side{margin-top:25px;}
+  .home-social-links{grid-template-columns:1fr 1fr;}
   #workspace-start .daily-quote-card{font-size:16px;}
   #workspace-start .hero-search-board{margin-bottom:38px;}
   #workspace-start .global-search-form{min-height:58px;}
@@ -464,4 +478,8 @@ body:has(#home.active){background:#f5f2eb;}
   #workspace-start .home-dash{grid-template-columns:1fr;}
   #workspace-start .home-dash-card{border-right:0;border-bottom:1px solid #d1cec5;}
   #workspace-start .home-dash-card:last-child{border-bottom:0;}
+}
+
+@media(max-width:460px){
+  .home-social-links{grid-template-columns:1fr;}
 }

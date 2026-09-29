@@ -36,4 +36,5 @@ final result: passed
 - Enter workspace from the public landing page: passed.
 - Global search control, primary workflow links, data counts, and recent-update lists: rendered and interactive.
 - Functional-protocol navigation and search: passed, including the new 어린이 키성장 result and official guide link.
+- Home social-channel cards: passed. Instagram and Naver Blog marks, labels, target URLs, two-column desktop layout, and stacked compact layout were verified; both links are visible and keyboard-reachable above the daily note.
 - Console errors and warnings after the final cache-busted load: none attributable to the implementation.
