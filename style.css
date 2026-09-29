@@ -3133,7 +3133,7 @@ td.name{font-weight:600;}
 .nifds-committee-table thead th{text-align:center;font-size:12px;line-height:1.4;vertical-align:middle;}
 .nifds-committee-table .th-sub{font-weight:400;color:var(--muted);font-size:11px;}
 .nifds-committee-table tbody td{text-align:center;padding:8px 10px;}
-.nifds-committee-table tbody td:first-child{width:48px;color:var(--muted);font-size:12px;}
+.nifds-committee-table th:nth-child(odd),.nifds-committee-table tbody td:nth-child(odd){width:48px;color:var(--muted);font-size:12px;}
 
 /* ---------- 학회/박람회 일정 ---------- */
 .events-yeartab{
