@@ -126,68 +126,6 @@ body{
   line-height:1.8;
 }
 
-.editorial-hero-search{
-  display:grid;
-  grid-template-columns:48px minmax(0,1fr) auto;
-  width:min(100%,690px);
-  min-height:64px;
-  margin-top:30px;
-  border:1px solid #c9c5ba;
-  background:#fffefa;
-  box-shadow:0 12px 30px rgba(32,40,34,.08);
-}
-
-.editorial-hero-search>span{display:grid;place-items:center;color:var(--green);font-size:26px;}
-.editorial-hero-search input{
-  min-width:0;
-  border:0;
-  outline:0;
-  background:transparent;
-  color:var(--text);
-  font:500 15px/1.4 inherit;
-}
-.editorial-hero-search button{
-  min-width:126px;
-  border:0;
-  border-left:1px solid #5e1823;
-  border-radius:0;
-  background:#711f2b;
-  color:#fff;
-  font:750 14px/1 inherit;
-  cursor:pointer;
-}
-.editorial-hero-search button:hover{background:#5c1822;}
-.editorial-hero-search:focus-within{outline:2px solid rgba(113,31,43,.22);outline-offset:2px;}
-.editorial-hero-links{display:flex;gap:30px;margin-top:24px;}
-.editorial-hero-links a{padding-bottom:5px;border-bottom:1px solid #9ca49e;color:var(--public-ink);font-size:13px;font-weight:750;text-decoration:none;}
-.editorial-hero-links a:hover{border-color:var(--signal);color:var(--signal);}
-.editorial-hero-links i{margin-left:8px;font-style:normal;}
-
-.pc-public-stats{gap:0;padding:0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:#fffefa;}
-.pc-public-stats div{min-height:128px;border-right:1px solid var(--border);background:#fffefa;}
-.pc-public-stats div:last-child{border-right:0;}
-.pc-public-stats strong{font-family:"Noto Serif KR","Batang",serif;font-size:38px;font-weight:600;}
-.pc-public-stats span{font-size:11px;letter-spacing:.03em;}
-
-.pc-popular-shortcuts a{
-  position:relative;
-  display:flex;
-  min-height:142px;
-  flex-direction:column;
-  justify-content:center;
-  padding:24px 28px;
-  border-right:1px solid var(--border);
-  background:#fffefa;
-  color:var(--ink);
-  text-decoration:none;
-  transition:background .25s ease,color .25s ease;
-}
-.pc-popular-shortcuts a:last-child{border-right:0;}
-.pc-popular-shortcuts a:hover{background:#eee9df;color:var(--signal);}
-.pc-popular-shortcuts strong{color:var(--signal);font:800 10px/1.1 ui-monospace,"SFMono-Regular",Consolas,monospace;letter-spacing:.12em;}
-.pc-popular-shortcuts span{margin-top:17px;color:inherit;font-family:"Noto Serif KR","Batang",serif;font-size:18px;font-weight:700;letter-spacing:-.025em;}
-.pc-popular-shortcuts small{margin-top:6px;color:#777b76;font-size:11px;line-height:1.45;}
-
 .pc-feature-film{background:#111c18;color:#fff;}
 .pc-feature-film-head{
   display:grid;
@@ -399,8 +337,6 @@ input[type="text"],input[type="search"],input[type="email"],select,textarea{
 }
 button,.btn,.button{border-radius:2px!important;}
 button[type="submit"],.btn-primary,.primary-button{background:var(--green);}
-.editorial-hero-search button{background:var(--signal);}
-.editorial-hero-search button:hover{background:#5c1822;}
 table{background:#fffefa;}
 thead th{border-color:var(--border)!important;background:#ebe8df!important;color:var(--ink)!important;}
 tbody td{border-color:#e4e0d7!important;}
@@ -441,9 +377,6 @@ tbody tr:hover{background:#f6f1e8!important;}
   .pc-public-home .pc-cinema-opening-copy{order:1;padding:58px 24px 44px;}
   .pc-public-home .pc-cinema-opening-copy h1{font-size:42px;}
   .pc-public-home .pc-cinema-opening-copy p{font-size:14px;}
-  .editorial-hero-search{grid-template-columns:42px minmax(0,1fr);}
-  .editorial-hero-search button{grid-column:1/-1;min-height:50px;border-top:1px solid #5e1823;border-left:0;}
-  .editorial-hero-links{gap:18px;}
   .pc-feature-film-head{grid-template-columns:1fr;gap:18px;padding:76px 24px;}
   .pc-feature-film-head>span{grid-column:auto;}
   .pc-feature-scene,.pc-feature-scene.is-reverse{grid-template-columns:1fr;min-height:0;}
@@ -507,11 +440,6 @@ tbody tr:hover{background:#f6f1e8!important;}
   .pc-public-home .pc-cinema-opening-copy{padding-top:48px;}
   .pc-public-home .pc-cinema-opening-copy h1{font-size:36px;line-height:1.25;}
   .pc-public-home .pc-cinema-opening-media{height:260px;min-height:260px;}
-  .pc-popular-shortcuts a{min-height:116px;padding:20px;}
-  .pc-popular-shortcuts a:nth-child(2){border-right:0;}
-  .pc-popular-shortcuts a:nth-child(-n+2){border-bottom:1px solid var(--border);}
-  .pc-public-stats strong{font-size:30px;}
-  .pc-popular-shortcuts strong{font-size:10px;}
   .pc-public-home .pc-cinema-preview-grid article{min-height:auto;border-right:0;border-bottom:1px solid var(--border);}
   .section-chapter-image{width:34%;opacity:.78;}
   .section-chapter-copy{width:75%;}
