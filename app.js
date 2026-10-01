@@ -4012,15 +4012,16 @@ function setupTabs() {
   });
 
   async function activateFromLocation() {
-    const tab = location.hash.replace('#', '') || 'home';
+    const tab = location.hash.replace('#', '') || 'intro';
     if (document.getElementById(tab)) await activate(tab, { initial: true });
   }
 
   window.addEventListener('hashchange', activateFromLocation);
   window.addEventListener('popstate', activateFromLocation);
 
-  const initial = location.hash.replace('#', '') || 'home';
+  const initial = location.hash.replace('#', '') || 'intro';
   if (document.getElementById(initial)) {
+    if (!location.hash) history.replaceState(null, '', '#intro');
     activate(initial, { initial: true });
     window.requestAnimationFrame(() => {
       window.requestAnimationFrame(() => window.scrollTo({top: 0, behavior: 'auto'}));
