@@ -16,8 +16,8 @@ const TAB_SCRIPT_DEPS = {
   funding: ['funding.js?v=20260716-member-access1'],
   stats: ['libs/chart.umd.js'],
   ingredients: ['data/ingredient_function_summaries.js?v=20260929-summary3'],
-  compare: ['data/guidelines.js?v=20260929-growth', 'data/biomarker_protocols.js?v=20260929-growth'],
-  biomarkers: ['data/guidelines.js?v=20260929-growth', 'data/biomarker_protocols.js?v=20260929-growth'],
+  compare: ['data/guidelines.js?v=20260929-growth', 'data/biomarker_protocols.js?v=20261001-protocolfix1'],
+  biomarkers: ['data/guidelines.js?v=20260929-growth', 'data/biomarker_protocols.js?v=20261001-protocolfix1'],
   laws: ['data/guidelines.js?v=20260629-glossary'],
   products: ['data/products.js?v=20260722-runtimefix1'],
   foodraw: ['data/food_ingredients.js?v=20260722-runtimefix1'],
@@ -34,7 +34,7 @@ const GLOBAL_SEARCH_SCRIPT_DEPS = [
   'data/products.js?v=20260722-runtimefix1',
   'data/food_ingredients.js?v=20260722-runtimefix1',
   'data/guidelines.js?v=20260629-glossary',
-  'data/biomarker_protocols.js?v=20260929-growth',
+  'data/biomarker_protocols.js?v=20261001-protocolfix1',
   'data/ingredient_function_summaries.js?v=20260929-summary3'
 ];
 
@@ -3588,7 +3588,7 @@ const SYSTEM_DEFS = [
   { key: '심혈관계', figures: ['man', 'woman'], dot: { man: { top: 30, left: 78 }, woman: { top: 34, left: 36 } },
     categories: ['콜레스테롤', '혈압조절', '혈행개선', '혈중중성지방'] },
   { key: '소화/대사계', figures: ['man', 'woman'], dot: { man: { top: 30, left: 64 }, woman: { top: 34, left: 22 } },
-    categories: ['간 건강', '위 건강', '장 건강', '체지방 감소', '칼슘', '효소 활성화'] },
+    categories: ['간 건강', '위 건강', '장 건강', '체지방 감소', '칼슘'] },
   { key: '내분비계', figures: ['man', 'woman'], dot: { man: { top: 34, left: 71 }, woman: { top: 38, left: 29 } },
     categories: ['혈당', '여성 갱년기', '남성 갱년기'] },
   { key: '생식계', figures: ['man', 'woman'], dot: { man: { top: 38, left: 66 }, woman: { top: 42, left: 24 } },

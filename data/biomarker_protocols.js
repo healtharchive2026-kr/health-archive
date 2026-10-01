@@ -66,19 +66,6 @@ Object.assign(BIOMARKER_PROTOCOL_DEFS, {
       biomarkers: ['유해균 부착 억제', 'Lactobacillus 정착', '질 pH', '염증성 사이토카인']
     }
   },
-  '효소 활성화': {
-    clinical: {
-      model: '해당 효소 활성과 연계된 기능성 평가가 가능한 건강한 성인',
-      duration: '원료의 작용기전과 선행 인체적용시험을 근거로 8-12주를 우선 검토한다.',
-      primaryBiomarkers: ['표적 효소 활성', '표적 효소 관련 대사산물'],
-      secondaryBiomarkers: ['산화스트레스 지표', '관련 생리기능 지표', '안전성 혈액검사']
-    },
-    preclinical: {
-      cellModels: ['표적 효소 발현 세포 모델'],
-      animalModels: ['표적 효소 저하 또는 산화스트레스 유도 동물 모델'],
-      biomarkers: ['표적 효소 활성·발현', '관련 대사산물', '산화손상 지표']
-    }
-  },
   '간 건강': { clinical: { model: '만 19-75세 성인 중 영상의학적 방법(초음파, MRI 등)으로 지방간이 확인되고 ALT, AST가 정상치를 초과하되 정상 상한치의 3배 미만인 자' }, preclinical: { animalModels: ['고지방식이 유도 NAFLD/NASH 모델', 'CCl4 또는 thioacetamide 유도 간손상 모델', '알코올 또는 acetaminophen 유도 간독성 모델'] } },
   '갱년기 남성건강': { clinical: { model: '남성호르몬 결핍 의심 증상(신체·심리·심장대사·성적 증상)이 있고 총 테스토스테론이 정상 참고범위(예: 3.0 ng/mL 이상)에 있는 남성, 예: AMS 27-50점 및 총 테스토스테론 3.0-5.0 ng/mL' }, preclinical: { animalModels: ['노화 수컷 동물 모델', 'testosterone 저하 또는 orchiectomy 유도 모델', '대사증후군 동반 남성 갱년기 유사 모델'] } },
   '갱년기 여성건강': { clinical: { model: '폐경 이행기 또는 폐경 여성, FSH 30 mIU/mL 초과, 만 40-65세, 쿠퍼만 지수(Kupperman Index) 25점 이상 또는 임상적으로 갱년기 증상을 호소하는 자' }, preclinical: { animalModels: ['난소절제(OVX) 갱년기 모델', 'estrogen 결핍 골·혈관·체온조절 모델', '열감 또는 불안행동 평가 모델'] } },
@@ -127,10 +114,6 @@ var BIOMARKER_ENDPOINT_DETAILS = {
   '질 건강': {
     primary: ['Nugent score: 표준화된 질도말 그람염색 판독으로 기저치 대비 변화와 정상화 비율을 평가', '질 pH 및 Lactobacillus 비율: 동일 채취시점과 검사조건에서 질내 환경 및 미생물 균형 변화를 평가'],
     secondary: ['질 불편감·분비물·냄새 등 증상 점수와 삶의 질을 평가', '16S rRNA 기반 미생물 다양성, 유해균 정량 및 재발 빈도를 탐색적으로 평가']
-  },
-  '효소 활성화': {
-    primary: ['원료의 기능성 표현과 직접 연결되는 표적 효소의 활성 또는 발현 변화를 사전 지정해 평가', '표적 효소 반응의 기질·생성물 등 관련 대사산물 변화를 함께 평가'],
-    secondary: ['산화스트레스·항산화 방어 및 관련 생리기능 지표를 보조 평가', '간·신장 기능과 이상반응 등 안전성 항목을 확인']
   },
   '간 건강': {
     primary: ['ALT·AST·γ-GTP: 공복 혈청에서 기저치와 섭취 종료 시점의 변화량 및 군간 차이를 평가', '간 지방량: 초음파 등급 또는 MRI-PDFF로 동일 판독기준을 적용하여 기저치 대비 변화 평가'],
@@ -413,7 +396,6 @@ var BIOMARKER_TERM_GLOSSARY = {
 var BIOMARKER_MECHANISM_DEFS = {
   '어린이 키성장': ['성장호르몬-IGF-1 축과 성장판 연골세포 증식·분화 조절', '성장판 기질 합성과 연골 내 골화 과정을 통한 장골 성장 보조', '영양상태·수면·신체활동을 포함한 성장 관련 환경요인의 영향 확인'],
   '질 건강': ['질내 Lactobacillus 우점과 젖산 생성을 통한 산성 환경 유지', '유해균의 상피 부착 및 biofilm 형성 억제', '질 점막 장벽과 국소 면역·염증 반응 조절'],
-  '효소 활성화': ['표적 효소의 발현 또는 촉매 활성 조절', '표적 효소와 연결된 대사경로 및 산화환원 균형 조절', '효소 활성 변화와 기능성 평가지표 간 용량반응성 확인'],
   '간 건강': ['간세포 손상 억제와 ALT/AST 등 간 효소 개선', '지방산 합성·산화 및 간 내 지질축적 조절', '산화스트레스와 염증성 사이토카인 완화를 통한 간조직 보호'],
   '갱년기 남성건강': ['남성호르몬 생성·대사 및 androgen 신호 조절', '피로, 활력, 성기능 관련 신경내분비 균형 개선', '전립선 및 대사 안전성 지표를 동반한 남성 갱년기 증상 완화'],
   '갱년기 여성건강': ['에스트로겐 저하에 따른 혈관운동성 증상 완화', 'FSH·estradiol 등 성호르몬 균형 및 HPA axis 조절', '골대사·수면·기분 관련 갱년기 동반 증상 개선'],
@@ -511,7 +493,7 @@ var BIOMARKER_PROTOCOLS = {};
     .forEach(function(g) {
       BIOMARKER_PROTOCOLS[g.name] = mergeBiomarkerProtocol(g.name, g.file);
     });
-  ['질 건강', '효소 활성화'].forEach(function(name) {
+  ['질 건강'].forEach(function(name) {
     if (!BIOMARKER_PROTOCOLS[name]) BIOMARKER_PROTOCOLS[name] = mergeBiomarkerProtocol(name, '');
   });
 })();

@@ -63,7 +63,7 @@
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.css">
 <link rel="stylesheet" href="style.css?v=20261001-intro-tab3">
 <link rel="stylesheet" href="simon.css?v=20260730-adminlock1">
-<link rel="stylesheet" href="editorial-theme.css?v=20261001-intro-features1">
+<link rel="stylesheet" href="editorial-theme.css?v=20261001-protocolfix1">
 </head>
 <body>
 <a class="skip-link" href="#main-content">본문 바로가기</a>
@@ -201,23 +201,30 @@
             <div class="pc-feature-scene-copy">
               <span>핵심 데이터 허브</span>
               <h3>인정 이력부터 안전성까지,<br><strong>원료 DB</strong></h3>
-              <p>개별인정·고시형 원료의 인정번호, 업체, 기능성, 섭취량과 근거 자료를 찾고 안전성 DB에서 다시 확인합니다.</p>
-              <ul><li>2026년 신규 인정원료 지속 갱신</li><li>기능성 요약자료와 공식 원문 연결</li><li>식품원료·GMO·반입차단 교차검색</li></ul>
-              <div class="pc-feature-actions"><a data-goto="ingredients">인정원료 DB <i aria-hidden="true">→</i></a><a data-goto="safety-db">안전성 검색 <i aria-hidden="true">→</i></a></div>
+              <p>개별인정원료와 한시적 원료의 인정 이력을 찾고, 안전성 DB에서 식품원료·GMO·반입차단 정보를 다시 확인합니다.</p>
+              <ul><li>2026년 신규 개별인정원료 지속 갱신</li><li>한시적 기준·규격 인정 현황 연결</li><li>식품원료·GMO·반입차단 교차검색</li></ul>
+              <div class="pc-feature-actions"><a data-goto="ingredients">개별인정원료 <i aria-hidden="true">→</i></a><a data-goto="temp-approval">한시적 원료 <i aria-hidden="true">→</i></a><a data-goto="safety-db">안전성 DB <i aria-hidden="true">→</i></a></div>
             </div>
           </article>
 
           <article class="pc-feature-scene scene-protocol" data-cinema-scene>
-            <figure class="pc-feature-scene-media">
-              <img src="assets/chapter-research.webp" alt="기능성 연구를 설계하는 실험실 장비와 시료">
-              <figcaption>03 · NEW PROTOCOLS</figcaption>
+            <figure class="pc-feature-scene-media protocol-library-media" aria-label="여러 기능성별 연구 프로토콜 첫 페이지가 겹쳐 놓인 문서 일러스트">
+              <div class="protocol-document-stack" aria-hidden="true">
+                <div class="protocol-cover protocol-cover-fat"><span>RESEARCH PROTOCOL · ARCHIVE</span><h4>체지방 감소</h4><p>기능성 연구 프로토콜</p><dl><div><dt>대상자</dt><dd>정상·과체중 성인</dd></div><div><dt>핵심 변수</dt><dd>체지방량 · 허리둘레</dd></div></dl></div>
+                <div class="protocol-cover protocol-cover-sleep"><span>RESEARCH PROTOCOL · ARCHIVE</span><h4>수면건강</h4><p>기능성 연구 프로토콜</p><dl><div><dt>대상자</dt><dd>수면 불편 성인</dd></div><div><dt>핵심 변수</dt><dd>PSQI · 수면효율</dd></div></dl></div>
+                <div class="protocol-cover protocol-cover-eye"><span>RESEARCH PROTOCOL · ARCHIVE</span><h4>눈 건강</h4><p>기능성 연구 프로토콜</p><dl><div><dt>대상자</dt><dd>눈 피로 성인</dd></div><div><dt>핵심 변수</dt><dd>눈 피로도 · 조절력</dd></div></dl></div>
+                <div class="protocol-cover protocol-cover-vaginal"><span>RESEARCH PROTOCOL · NEW</span><h4>질 건강</h4><p>기능성 연구 프로토콜</p><dl><div><dt>대상자</dt><dd>질 불편감 성인 여성</dd></div><div><dt>핵심 변수</dt><dd>Nugent score · 질 pH</dd></div></dl></div>
+                <div class="protocol-cover protocol-cover-growth"><span>RESEARCH PROTOCOL · NEW</span><h4>어린이 키성장</h4><p>기능성 연구 프로토콜</p><dl><div><dt>대상자</dt><dd>성장기 어린이</dd></div><div><dt>핵심 변수</dt><dd>신장 변화량 · 성장속도</dd></div><div><dt>기간</dt><dd>24주 이상</dd></div></dl></div>
+                <span class="protocol-binder-clip"></span>
+              </div>
+              <figcaption>03 · PROTOCOL LIBRARY</figcaption>
             </figure>
             <div class="pc-feature-scene-copy">
               <span>새로 추가된 기능</span>
               <h3>기능성별로 바로 설계하는<br><strong>연구 프로토콜</strong></h3>
               <p>대상자, 평가변수, 시험기간과 전임상 모델을 기능성별로 연결해 초기 연구설계를 빠르게 시작할 수 있습니다.</p>
-              <ul><li><b>NEW</b> 어린이 키성장</li><li><b>NEW</b> 질 건강</li><li><b>NEW</b> 효소 활성화</li></ul>
-              <a data-goto="biomarkers">39개 기능성 프로토콜 보기 <i aria-hidden="true">→</i></a>
+              <ul><li><b>NEW</b> 어린이 키성장</li><li><b>NEW</b> 질 건강</li><li>38개 기능성별 대상자·평가변수·시험모델</li></ul>
+              <a data-goto="biomarkers">38개 기능성 프로토콜 보기 <i aria-hidden="true">→</i></a>
             </div>
           </article>
 
@@ -230,8 +237,8 @@
               <span>최근 업데이트</span>
               <h3>결정의 맥락을 읽는<br><strong>심의 회의록</strong></h3>
               <p>최신 건강기능식품심의위원회 회의록과 대상 원료를 연결해 어떤 쟁점이 검토됐는지 빠르게 확인합니다.</p>
-              <ul><li><b>UPDATED</b> 제203차 회의록 PDF</li><li>심의 대상 원료명 연결</li><li>과거 회차와 함께 검색</li></ul>
-              <div class="pc-feature-actions"><a data-goto="minutes">최신 회의록 보기 <i aria-hidden="true">→</i></a><a data-goto="nifds">심의 정보 보기 <i aria-hidden="true">→</i></a></div>
+              <ul><li><b>UPDATED</b> 제203차 최신 회의록</li><li>심의위원 구성과 공개 회의록 분석</li><li>중점 심의사항·선행자료 검토 리뷰</li></ul>
+              <div class="pc-feature-actions"><a data-goto="minutes">최신 회의록 보기 <i aria-hidden="true">→</i></a><a data-goto="nifds">심의위원 <i aria-hidden="true">→</i></a><a data-goto="review-guide">심의 중점사항 <i aria-hidden="true">→</i></a><a data-goto="review-guide">선행자료 검토 리뷰 <i aria-hidden="true">→</i></a></div>
             </div>
           </article>
         </div>
@@ -2711,7 +2718,7 @@
 <script src="data/status.js?v=20260904-regdb1"></script>
 <script src="data/daily_quotes.js?v=20260904-quotes1"></script>
 <script src="section-visuals.js?v=20260730-chapters1"></script>
-<script src="app.js?v=20261001-intro-tab1"></script>
+<script src="app.js?v=20261001-protocolfix1"></script>
 <script src="simon.js?v=20260730-adminlock1"></script>
 <script src="pc-cinema.js?v=20261001-intro-tab1"></script>
 <script src="editorial-theme.js?v=20260921-editorial1"></script>
