@@ -59,11 +59,11 @@
 <link rel="icon" href="data:,">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
-<link rel="preload" as="image" href="assets/pc-landscape-bg.jpg" fetchpriority="high">
+<link rel="preload" as="image" href="assets/editorial-ingredient-still-life.jpg" fetchpriority="high">
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.css">
 <link rel="stylesheet" href="style.css?v=20261001-intro-tab3">
 <link rel="stylesheet" href="simon.css?v=20260730-adminlock1">
-<link rel="stylesheet" href="editorial-theme.css?v=20261001-intro-tab1">
+<link rel="stylesheet" href="editorial-theme.css?v=20261001-intro-features1">
 </head>
 <body>
 <a class="skip-link" href="#main-content">본문 바로가기</a>
@@ -87,8 +87,8 @@
       <span></span><span></span><span></span>
     </button>
     <nav class="main-nav" id="main-nav">
-      <a href="#home" data-tab="home" class="nav-link">홈</a>
       <a href="#intro" data-tab="intro" class="nav-link active">소개</a>
+      <a href="#home" data-tab="home" class="nav-link">홈</a>
       <div class="nav-group" data-tabs="precheck devmap material-dev whitespace">
         <button type="button" class="nav-group-label" aria-expanded="false">개발검토 <span class="nav-caret" aria-hidden="true">▾</span></button>
         <div class="nav-dropdown">
@@ -148,9 +148,9 @@
         <img src="assets/editorial-ingredient-still-life.jpg" alt="건강기능식품 원료 표본과 규제 검토 문서가 놓인 연구 작업대" class="pc-cinema-opening-media">
         <div class="pc-cinema-opening-shade" aria-hidden="true"></div>
         <div class="pc-cinema-opening-copy">
-          <span>Inside HealthArchive</span>
-          <h1>좋은 원료는,<br><b>좋은 질문에서 시작됩니다.</b></h1>
-          <p>식약처·식품안전나라 공개자료를 바탕으로 기능성원료 DB와 식품 개발 검토 도구를 하나의 흐름으로 연결합니다.</p>
+          <span>Explore HealthArchive</span>
+          <h1>원료를 찾고,<br><b>개발 근거를 연결합니다.</b></h1>
+          <p>자주 찾는 원료 Pre-Check와 인정원료·안전성 DB부터 새로 추가된 기능성 프로토콜과 최신 심의 회의록까지, 실제 개발 흐름을 따라 살펴보세요.</p>
           <form class="editorial-hero-search" id="editorial-hero-search-form" role="search">
             <label class="sr-only" for="editorial-hero-search-input">통합검색</label>
             <span aria-hidden="true">⌕</span>
@@ -164,37 +164,79 @@
         </div>
       </section>
 
-      <section class="pc-public-stats" aria-label="HealthArchive 서비스 현황">
-        <div><strong>5</strong><span>개발 모듈</span></div>
-        <div><strong>58</strong><span>연결 데이터베이스</span></div>
-        <div><strong>6</strong><span>뉴스 출처</span></div>
-        <div><strong>Daily</strong><span>매일 갱신</span></div>
+      <section class="pc-public-stats pc-popular-shortcuts" aria-label="자주 찾는 주요 기능">
+        <a data-goto="precheck"><strong>01</strong><span>원료 Pre-Check</span><small>개발 가능성 사전점검</small></a>
+        <a data-goto="ingredients"><strong>02</strong><span>인정원료 DB</span><small>개별·고시형 원료 조회</small></a>
+        <a data-goto="safety-db"><strong>03</strong><span>안전성 DB</span><small>식품원료·차단성분 대조</small></a>
+        <a data-goto="biomarkers"><strong>NEW</strong><span>기능성별 프로토콜</span><small>키성장 등 신규 기능성 추가</small></a>
       </section>
 
-      <section class="pc-cinema-preview" data-cinema-scene aria-labelledby="cinema-preview-title">
-        <div class="pc-cinema-preview-head">
-          <span>Inside HealthArchive</span>
-          <h2 id="cinema-preview-title"><strong>개발의 다음 질문을 위한</strong><br><span>실무 도구를 한곳에.</span></h2>
-          <p>식약처·식품안전나라 공개자료를 바탕으로 기능성원료 DB와 식품 개발 검토 도구를 하나의 플랫폼에서 연결합니다.</p>
+      <section class="pc-feature-film" aria-labelledby="cinema-preview-title">
+        <header class="pc-feature-film-head" data-cinema-scene>
+          <span>Popular tools · New releases</span>
+          <h2 id="cinema-preview-title">많이 찾는 기능에서,<br><strong>새로운 개발 도구까지.</strong></h2>
+          <p>원료의 가능성을 확인하고, 인정 이력과 안전성을 대조하고, 연구 프로토콜과 최신 심의 결과로 다음 결정을 준비하는 흐름입니다.</p>
+        </header>
+
+        <div class="pc-feature-scenes">
+          <article class="pc-feature-scene scene-precheck" data-cinema-scene>
+            <figure class="pc-feature-scene-media">
+              <img src="assets/chapter-development.webp" alt="식물성 원료와 시료를 검토하는 연구 작업대">
+              <figcaption>01 · START HERE</figcaption>
+            </figure>
+            <div class="pc-feature-scene-copy">
+              <span>자주 찾는 시작점</span>
+              <h3>개발 전에 먼저,<br><strong>원료 Pre-Check</strong></h3>
+              <p>원재료명 하나로 식품원료 여부, 개별인정 이력, 반입차단·안전성 정보를 한 번에 대조합니다.</p>
+              <ul><li>동일·유사 명칭 빠른 탐색</li><li>인정·안전성 데이터 연결</li><li>초기 개발 리스크 정리</li></ul>
+              <a data-goto="precheck">Pre-Check 시작하기 <i aria-hidden="true">→</i></a>
+            </div>
+          </article>
+
+          <article class="pc-feature-scene scene-database is-reverse" data-cinema-scene>
+            <figure class="pc-feature-scene-media">
+              <img src="assets/chapter-database.webp" alt="기능성 원료 표본과 문서를 정리한 아카이브">
+              <figcaption>02 · EVIDENCE ARCHIVE</figcaption>
+            </figure>
+            <div class="pc-feature-scene-copy">
+              <span>핵심 데이터 허브</span>
+              <h3>인정 이력부터 안전성까지,<br><strong>원료 DB</strong></h3>
+              <p>개별인정·고시형 원료의 인정번호, 업체, 기능성, 섭취량과 근거 자료를 찾고 안전성 DB에서 다시 확인합니다.</p>
+              <ul><li>2026년 신규 인정원료 지속 갱신</li><li>기능성 요약자료와 공식 원문 연결</li><li>식품원료·GMO·반입차단 교차검색</li></ul>
+              <div class="pc-feature-actions"><a data-goto="ingredients">인정원료 DB <i aria-hidden="true">→</i></a><a data-goto="safety-db">안전성 검색 <i aria-hidden="true">→</i></a></div>
+            </div>
+          </article>
+
+          <article class="pc-feature-scene scene-protocol" data-cinema-scene>
+            <figure class="pc-feature-scene-media">
+              <img src="assets/chapter-research.webp" alt="기능성 연구를 설계하는 실험실 장비와 시료">
+              <figcaption>03 · NEW PROTOCOLS</figcaption>
+            </figure>
+            <div class="pc-feature-scene-copy">
+              <span>새로 추가된 기능</span>
+              <h3>기능성별로 바로 설계하는<br><strong>연구 프로토콜</strong></h3>
+              <p>대상자, 평가변수, 시험기간과 전임상 모델을 기능성별로 연결해 초기 연구설계를 빠르게 시작할 수 있습니다.</p>
+              <ul><li><b>NEW</b> 어린이 키성장</li><li><b>NEW</b> 질 건강</li><li><b>NEW</b> 효소 활성화</li></ul>
+              <a data-goto="biomarkers">39개 기능성 프로토콜 보기 <i aria-hidden="true">→</i></a>
+            </div>
+          </article>
+
+          <article class="pc-feature-scene scene-minutes is-reverse" data-cinema-scene>
+            <figure class="pc-feature-scene-media">
+              <img src="assets/chapter-regulatory.webp" alt="규제 심의 문서와 원료 표본을 검토하는 책상">
+              <figcaption>04 · LATEST REVIEW</figcaption>
+            </figure>
+            <div class="pc-feature-scene-copy">
+              <span>최근 업데이트</span>
+              <h3>결정의 맥락을 읽는<br><strong>심의 회의록</strong></h3>
+              <p>최신 건강기능식품심의위원회 회의록과 대상 원료를 연결해 어떤 쟁점이 검토됐는지 빠르게 확인합니다.</p>
+              <ul><li><b>UPDATED</b> 제203차 회의록 PDF</li><li>심의 대상 원료명 연결</li><li>과거 회차와 함께 검색</li></ul>
+              <div class="pc-feature-actions"><a data-goto="minutes">최신 회의록 보기 <i aria-hidden="true">→</i></a><a data-goto="nifds">심의 정보 보기 <i aria-hidden="true">→</i></a></div>
+            </div>
+          </article>
         </div>
-        <div class="pc-cinema-preview-grid" aria-label="제공 기능 미리보기">
-          <article>
-            <span class="pc-module-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/></svg></span><em>01</em><h3>개발검토</h3><ul><li>원료 Pre-Check</li><li>개발방향 매핑</li><li>원료 개발 가이드</li><li>화이트스페이스맵</li></ul>
-          </article>
-          <article>
-            <span class="pc-module-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg></span><em>02</em><h3>원료·제품 DB</h3><ul><li>개별·고시형 원료</li><li>식품원료목록</li><li>한시적 인정 원료</li><li>안전성·제품 현황</li></ul>
-          </article>
-          <article>
-            <span class="pc-module-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></span><em>03</em><h3>규제·인허가</h3><ul><li>법령·공전·가이드라인</li><li>국내·해외 인허가</li><li>심의 정보</li><li>위원회 회의록</li></ul>
-          </article>
-          <article>
-            <span class="pc-module-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M9 3h6M10 9 6 19a2 2 0 0 0 2 3h8a2 2 0 0 0 2-3L14 9V3"/><path d="M8.5 15h7"/></svg></span><em>04</em><h3>연구설계</h3><ul><li>기능성별 원료 비교</li><li>기능성별 프로토콜</li><li>임상정보 DB</li><li>Daily 원료 보고서</li></ul>
-          </article>
-          <article>
-            <span class="pc-module-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><em>05</em><h3>시장·동향</h3><ul><li>생산·매출 실적</li><li>개별인정 승인통계</li><li>건기식 R&amp;D 과제</li><li>식품 뉴스</li></ul>
-          </article>
-        </div>
-        <p class="pc-cinema-preview-note"><a href="ingredient-development/">건강기능식품 원료 개발 실무 가이드</a> · <a href="insights/">주간 제품·규제·R&amp;D 브리프</a> · <a href="en/" lang="en">Global ingredient development</a> · 검색과 상세 자료를 로그인 없이 이용할 수 있습니다.</p>
+
+        <p class="pc-feature-foot"><a href="ingredient-development/">원료 개발 실무 가이드</a><a href="insights/">주간 제품·규제·R&amp;D 브리프</a><a href="en/" lang="en">Global ingredient development</a></p>
       </section>
 
       <section class="pc-cinema-enter" id="cta" data-cinema-scene>

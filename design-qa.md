@@ -33,8 +33,9 @@ final result: passed
 
 ## Workspace-home interaction checks
 
-- Intro/home separation: passed. A bare-site visit resolves to `#intro`, the cinematic page is a persistent `소개` tab beside `홈`, the primary start button opens the workspace at `#home`, and browser Back returns to the introduction. Both tab states and active navigation labels were verified.
-- Intro responsive behavior: passed at the desktop viewport and a 390 × 844 compact viewport. The mobile menu exposes both `홈` and `소개`, the compact header stays within the viewport, and the cinematic page has no horizontal overflow.
+- Intro/home separation: passed. Navigation order is `소개` then `홈`; a bare-site visit resolves to `#intro`, the primary start button opens `#home`, and every introduction shortcut opens its corresponding workspace tab.
+- Cinematic feature introduction: passed. Four large documentary-image scenes present Pre-Check, recognized-ingredient and safety databases, newly added protocols (어린이 키성장·질 건강·효소 활성화), and the latest 203rd committee minutes in the user’s working sequence.
+- Intro responsive behavior: passed at the desktop viewport and a 390 × 844 compact viewport. The mobile menu exposes both `소개` and `홈`, the feature scenes stack into one column, the compact header stays within the viewport, and the page has no horizontal overflow.
 - Enter workspace from the public landing page: passed.
 - Global search control, primary workflow links, data counts, and recent-update lists: rendered and interactive.
 - Functional-protocol navigation and search: passed, including the new 어린이 키성장 result and official guide link.
