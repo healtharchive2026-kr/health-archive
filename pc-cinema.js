@@ -63,6 +63,38 @@
         });
       });
     });
+
+    root.querySelectorAll('.pc-feature-scene').forEach(scene => {
+      const previewItems = [...scene.querySelectorAll('[data-feature-preview]')];
+      if (!previewItems.length) return;
+
+      const activatePreview = item => {
+        scene.dataset.activePreview = item.dataset.featurePreview;
+        previewItems.forEach(candidate => {
+          candidate.setAttribute('aria-pressed', candidate === item ? 'true' : 'false');
+        });
+      };
+      const clearPreview = () => {
+        delete scene.dataset.activePreview;
+        previewItems.forEach(item => item.setAttribute('aria-pressed', 'false'));
+      };
+
+      previewItems.forEach(item => {
+        item.setAttribute('aria-pressed', 'false');
+        item.addEventListener('pointerenter', () => activatePreview(item));
+        item.addEventListener('focus', () => activatePreview(item));
+        item.addEventListener('click', () => activatePreview(item));
+        item.addEventListener('keydown', event => {
+          if (event.key !== 'Enter' && event.key !== ' ') return;
+          event.preventDefault();
+          activatePreview(item);
+        });
+      });
+      scene.addEventListener('pointerleave', clearPreview);
+      scene.addEventListener('focusout', event => {
+        if (!scene.contains(event.relatedTarget)) clearPreview();
+      });
+    });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initCinema);

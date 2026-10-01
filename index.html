@@ -63,7 +63,7 @@
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.css">
 <link rel="stylesheet" href="style.css?v=20261001-intro-tab3">
 <link rel="stylesheet" href="simon.css?v=20260730-adminlock1">
-<link rel="stylesheet" href="editorial-theme.css?v=20261001-cinematicclean1">
+<link rel="stylesheet" href="editorial-theme.css?v=20261001-hoverpreview1">
 </head>
 <body>
 <a class="skip-link" href="#main-content">본문 바로가기</a>
@@ -163,7 +163,7 @@
 
         <div class="pc-feature-scenes">
           <article class="pc-feature-scene scene-precheck" data-cinema-scene>
-            <figure class="pc-feature-scene-media precheck-showcase-media" aria-label="포니오, 시서스, 녹차추출물의 실제 원료 Pre-Check 결과 미리보기">
+            <figure class="pc-feature-scene-media precheck-showcase-media" id="preview-precheck" aria-label="포니오, 시서스, 녹차추출물의 실제 원료 Pre-Check 결과 미리보기">
               <div class="precheck-result-stack" aria-hidden="true">
                 <div class="precheck-snapshot precheck-snapshot-fonio">
                   <div class="precheck-snapshot-bar"><span></span><span></span><span></span><b>RAW MATERIAL PRE-CHECK</b></div>
@@ -205,14 +205,15 @@
               <span>자주 찾는 시작점</span>
               <h3>개발 전에 먼저,<br><strong>원료 Pre-Check</strong></h3>
               <p>원재료명 하나로 식품원료 여부, 개별인정 이력, 반입차단·안전성 정보를 한 번에 대조합니다.</p>
-              <ul><li>동일·유사 명칭 빠른 탐색</li><li>인정·안전성 데이터 연결</li><li>초기 개발 리스크 정리</li></ul>
+              <ul class="pc-feature-preview-list" aria-label="항목별 실제 화면 미리보기"><li tabindex="0" role="button" data-feature-preview="precheck-green" aria-controls="preview-precheck">동일·유사 명칭 빠른 탐색</li><li tabindex="0" role="button" data-feature-preview="precheck-cissus" aria-controls="preview-precheck">인정·안전성 데이터 연결</li><li tabindex="0" role="button" data-feature-preview="precheck-fonio" aria-controls="preview-precheck">초기 개발 리스크 정리</li></ul>
               <a data-goto="precheck">Pre-Check 시작하기 <i aria-hidden="true">→</i></a>
             </div>
           </article>
 
           <article class="pc-feature-scene scene-database is-reverse" data-cinema-scene>
-            <figure class="pc-feature-scene-media database-showcase-media" aria-label="개별인정원료, 한시적 원료, 안전성 데이터베이스의 실제 첫 화면 미리보기">
+            <figure class="pc-feature-scene-media database-showcase-media" id="preview-database" aria-label="개별인정원료, 한시적 원료, 안전성 데이터베이스와 과학적 요약 보고서의 실제 화면 미리보기">
               <div class="database-window-stack" aria-hidden="true">
+                <img class="database-summary-report" src="assets/ingredient-summary-report-preview.webp" width="900" height="1274" loading="lazy" alt="">
                 <div class="database-preview-window database-preview-safety">
                   <div class="database-preview-bar"><span></span><span></span><span></span><b>SAFETY DB</b></div>
                   <div class="database-preview-body">
@@ -244,19 +245,23 @@
             <div class="pc-feature-scene-copy">
               <span>핵심 데이터 허브</span>
               <h3>인정 이력부터 안전성까지,<br><strong>원료 DB</strong></h3>
-              <p>개별인정원료와 한시적 원료의 인정 이력을 찾고, 안전성 DB에서 식품원료·GMO·반입차단 정보를 다시 확인합니다.</p>
-              <ul><li>2026년 신규 개별인정원료 지속 갱신</li><li>한시적 기준·규격 인정 현황 연결</li><li>식품원료·GMO·반입차단 교차검색</li></ul>
+              <p>개별인정원료와 한시적 원료의 인정 이력을 찾고, 안전성 DB와 원료별 과학적 요약 보고서까지 이어서 확인합니다.</p>
+              <ul class="pc-feature-preview-list" aria-label="항목별 실제 화면 미리보기"><li tabindex="0" role="button" data-feature-preview="database-ingredient" aria-controls="preview-database">2026년 신규 개별인정원료 지속 갱신</li><li tabindex="0" role="button" data-feature-preview="database-temp" aria-controls="preview-database">한시적 기준·규격 인정 현황 연결</li><li tabindex="0" role="button" data-feature-preview="database-safety" aria-controls="preview-database">식품원료·GMO·반입차단 교차검색</li><li tabindex="0" role="button" data-feature-preview="database-summary" aria-controls="preview-database"><b>PDF</b> 개별인정원료 과학적 요약 보고서 제공</li></ul>
               <div class="pc-feature-actions"><a data-goto="ingredients">개별인정원료 <i aria-hidden="true">→</i></a><a data-goto="temp-approval">한시적 원료 <i aria-hidden="true">→</i></a><a data-goto="safety-db">안전성 DB <i aria-hidden="true">→</i></a></div>
             </div>
           </article>
 
           <article class="pc-feature-scene scene-protocol" data-cinema-scene>
-            <figure class="pc-feature-scene-media protocol-library-media" aria-label="어린이 키성장, 눈 건강, 수면건강, 체지방 감소 기능성 평가 가이드라인 실제 첫 페이지 미리보기">
+            <figure class="pc-feature-scene-media protocol-library-media" id="preview-protocol" aria-label="어린이 키성장, 눈 건강, 수면건강, 체지방 감소 기능성 평가 가이드라인과 기능성별 프로토콜 실제 화면 미리보기">
               <div class="guideline-page-stack" aria-hidden="true">
                 <img class="guideline-preview-page guideline-preview-fat" src="assets/guideline-preview-fat.webp" width="900" height="1231" loading="lazy" alt="">
                 <img class="guideline-preview-page guideline-preview-sleep" src="assets/guideline-preview-sleep.webp" width="900" height="1272" loading="lazy" alt="">
                 <img class="guideline-preview-page guideline-preview-eye" src="assets/guideline-preview-eye.webp" width="900" height="1273" loading="lazy" alt="">
                 <img class="guideline-preview-page guideline-preview-growth" src="assets/guideline-preview-growth.webp" width="900" height="1272" loading="lazy" alt="">
+                <div class="protocol-live-card" aria-hidden="true">
+                  <div class="protocol-live-bar"><span></span><span></span><span></span><b>FUNCTIONALITY PROTOCOL</b></div>
+                  <div class="protocol-live-body"><small>기능성별 프로토콜</small><h4>질 건강</h4><div class="protocol-live-tabs"><b>임상 프로토콜</b><span>전임상 프로토콜</span></div><dl><div><dt>대상자 모델</dt><dd>질 건강 개선이 필요한 성인 여성</dd></div><div><dt>1차 평가변수</dt><dd>Nugent score · 질내 유익균 비율</dd></div><div><dt>주요 작용기전</dt><dd>Lactobacillus 우점 · 점막 장벽 유지</dd></div></dl></div>
+                </div>
               </div>
               <figcaption>03 · ACTUAL FUNCTIONALITY GUIDELINES</figcaption>
             </figure>
@@ -264,13 +269,13 @@
               <span>새로 추가된 기능</span>
               <h3>기능성별로 바로 설계하는<br><strong>연구 프로토콜</strong></h3>
               <p>대상자, 평가변수, 시험기간과 전임상 모델을 기능성별로 연결해 초기 연구설계를 빠르게 시작할 수 있습니다.</p>
-              <ul><li><b>NEW</b> 어린이 키성장</li><li><b>NEW</b> 질 건강</li><li>38개 기능성별 대상자·평가변수·시험모델</li></ul>
+              <ul class="pc-feature-preview-list" aria-label="항목별 실제 화면 미리보기"><li tabindex="0" role="button" data-feature-preview="protocol-growth" aria-controls="preview-protocol"><b>NEW</b> 어린이 키성장</li><li tabindex="0" role="button" data-feature-preview="protocol-vaginal" aria-controls="preview-protocol"><b>NEW</b> 질 건강</li><li tabindex="0" role="button" data-feature-preview="protocol-library" aria-controls="preview-protocol">38개 기능성별 대상자·평가변수·시험모델</li></ul>
               <a data-goto="biomarkers">38개 기능성 프로토콜 보기 <i aria-hidden="true">→</i></a>
             </div>
           </article>
 
           <article class="pc-feature-scene scene-minutes is-reverse" data-cinema-scene>
-            <figure class="pc-feature-scene-media minutes-showcase-media" aria-label="제200차부터 제203차 건강기능식품심의위원회 회의록 실제 첫 페이지 미리보기">
+            <figure class="pc-feature-scene-media minutes-showcase-media" id="preview-minutes" aria-label="제200차부터 제203차 건강기능식품심의위원회 회의록 실제 첫 페이지 미리보기">
               <div class="minutes-page-stack" aria-hidden="true">
                 <img class="minutes-preview-page minutes-preview-200" src="assets/minutes-preview-200.webp" width="900" height="1272" loading="lazy" alt="">
                 <img class="minutes-preview-page minutes-preview-201" src="assets/minutes-preview-201.webp" width="900" height="1272" loading="lazy" alt="">
@@ -283,7 +288,7 @@
               <span>최근 업데이트</span>
               <h3>결정의 맥락을 읽는<br><strong>심의 회의록</strong></h3>
               <p>최신 건강기능식품심의위원회 회의록과 대상 원료를 연결해 어떤 쟁점이 검토됐는지 빠르게 확인합니다.</p>
-              <ul><li><b>UPDATED</b> 제203차 최신 회의록</li><li>심의위원 구성과 공개 회의록 분석</li><li>중점 심의사항·선행자료 검토 리뷰</li></ul>
+              <ul class="pc-feature-preview-list" aria-label="항목별 실제 화면 미리보기"><li tabindex="0" role="button" data-feature-preview="minutes-203" aria-controls="preview-minutes"><b>UPDATED</b> 제203차 최신 회의록</li><li tabindex="0" role="button" data-feature-preview="minutes-202" aria-controls="preview-minutes">심의위원 구성과 공개 회의록 분석</li><li tabindex="0" role="button" data-feature-preview="minutes-review" aria-controls="preview-minutes">중점 심의사항·선행자료 검토 리뷰</li></ul>
               <div class="pc-feature-actions"><a data-goto="minutes">최신 회의록 보기 <i aria-hidden="true">→</i></a><a data-goto="nifds">심의위원 <i aria-hidden="true">→</i></a><a data-goto="review-guide">심의 중점사항 <i aria-hidden="true">→</i></a><a data-goto="review-guide">선행자료 검토 리뷰 <i aria-hidden="true">→</i></a></div>
             </div>
           </article>
@@ -2766,7 +2771,7 @@
 <script src="section-visuals.js?v=20260730-chapters1"></script>
 <script src="app.js?v=20261001-protocolfix1"></script>
 <script src="simon.js?v=20260730-adminlock1"></script>
-<script src="pc-cinema.js?v=20261001-intro-tab1"></script>
+<script src="pc-cinema.js?v=20261001-hoverpreview1"></script>
 <script src="feedback.js?v=20260714-api1"></script>
 </body>
 </html>
