@@ -11870,5 +11870,75 @@
     "dailyIntake": "연어코연골추출물 50 mg/일",
     "report": "제2026-23호.pdf",
     "id": 849
+  },
+  {
+    "name": "천마추출물",
+    "noticeNo": "제2026-34호",
+    "company": "전북특별자치도농업기술원",
+    "category": "기억력 개선",
+    "efficacy": "기억력 개선에 도움을 줄 수 있음",
+    "dailyIntake": "천마추출물로서 500 mg/일",
+    "report": null,
+    "id": 850
+  },
+  {
+    "name": "Lacticaseibacillus paracasei subsp. paracasei ABF21013 프로바이오틱스(ACE-01)",
+    "noticeNo": "제2026-33호",
+    "company": "㈜에이스바이옴",
+    "category": "",
+    "efficacy": "&nbsp;",
+    "dailyIntake": "Lacticaseibacillus paracasei subsp. paracasei ABF21013 프로바이오틱스(ACE-01)로서 1.0 × 1010 CFU/일",
+    "report": null,
+    "id": 851
+  },
+  {
+    "name": "황칠나무잎추출물",
+    "noticeNo": "제2026-32호",
+    "company": "네오그린",
+    "category": "잇몸 건강",
+    "efficacy": "잇몸 건강에 도움을 줄 수 있음",
+    "dailyIntake": "황칠나무잎추출물로서 100 mg/일",
+    "report": null,
+    "id": 852
+  },
+  {
+    "name": "황칠나무잎추출물",
+    "noticeNo": "제2026-31호",
+    "company": "롯데웰푸드㈜",
+    "category": "잇몸 건강",
+    "efficacy": "잇몸 건강에 도움을 줄 수 있음",
+    "dailyIntake": "황칠나무잎추출물로서 100 mg/일",
+    "report": null,
+    "id": 853
+  },
+  {
+    "name": "무청추출분말(RGE)",
+    "noticeNo": "제2026-30호",
+    "company": "㈜함소아제약 익산공장",
+    "category": "체지방 감소",
+    "efficacy": "체지방 감소에 도움을 줄 수 있음",
+    "dailyIntake": "무청추출분말(RGE)로서 500 mg/일",
+    "report": null,
+    "id": 854
+  },
+  {
+    "name": "목련꽃봉오리추출물",
+    "noticeNo": "제2026-29호",
+    "company": "주식회사 뉴온",
+    "category": "잇몸 건강",
+    "efficacy": "잇몸 건강에 도움을 줄 수 있음",
+    "dailyIntake": "목련꽃봉오리추출물로서 450 mg/일",
+    "report": null,
+    "id": 855
+  },
+  {
+    "name": "차즈기추출물",
+    "noticeNo": "제2026-28호",
+    "company": "보람바이오 주식회사",
+    "category": "인지 개선",
+    "efficacy": "노화로 인해 저하된 인지기능 개선에 도움을 줄 수 있음",
+    "dailyIntake": "차즈기추출물로서 500 mg/일",
+    "report": null,
+    "id": 856
   }
 ]
