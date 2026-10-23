@@ -27,47 +27,47 @@
     "error": null
   },
   "news": {
-    "lastRun": "2026-10-23 14:02:51",
-    "lastSuccess": "2026-10-23 14:02:51",
+    "lastRun": "2026-10-23 22:35:17",
+    "lastSuccess": "2026-10-23 22:35:17",
     "timezone": "Asia/Seoul",
-    "count": 54,
-    "newCount": 0,
+    "count": 55,
+    "newCount": 1,
     "success": true,
     "error": null
   },
   "news_mfds": {
-    "lastRun": "2026-10-23 14:03:01",
+    "lastRun": "2026-10-23 22:38:16",
     "lastSuccess": "2026-10-23 14:03:01",
     "timezone": "Asia/Seoul",
     "count": 48,
     "newCount": 0,
-    "success": true,
-    "error": null
+    "success": false,
+    "error": "update_news_mfds.py failed; the last successful dataset was preserved"
   },
   "news_nutraingredients": {
-    "lastRun": "2026-10-23 14:03:03",
-    "lastSuccess": "2026-10-23 14:03:03",
+    "lastRun": "2026-10-23 22:38:18",
+    "lastSuccess": "2026-10-23 22:38:18",
     "timezone": "Asia/Seoul",
-    "count": 547,
-    "newCount": 0,
+    "count": 548,
+    "newCount": 1,
     "success": true,
     "error": null
   },
   "news_supplysidesj": {
-    "lastRun": "2026-10-23 14:03:03",
-    "lastSuccess": "2026-10-23 14:03:03",
+    "lastRun": "2026-10-23 22:38:19",
+    "lastSuccess": "2026-10-23 22:38:19",
     "timezone": "Asia/Seoul",
-    "count": 154,
-    "newCount": 0,
+    "count": 155,
+    "newCount": 1,
     "success": true,
     "error": null
   },
   "news_nutritioninsight": {
-    "lastRun": "2026-10-23 14:03:04",
-    "lastSuccess": "2026-10-23 14:03:04",
+    "lastRun": "2026-10-23 22:38:22",
+    "lastSuccess": "2026-10-23 22:38:22",
     "timezone": "Asia/Seoul",
-    "count": 417,
-    "newCount": 0,
+    "count": 420,
+    "newCount": 3,
     "success": true,
     "error": null
   },
@@ -108,8 +108,8 @@
     "error": null
   },
   "news_kfri": {
-    "lastRun": "2026-10-23 14:02:59",
-    "lastSuccess": "2026-10-23 14:02:59",
+    "lastRun": "2026-10-23 22:35:32",
+    "lastSuccess": "2026-10-23 22:35:32",
     "timezone": "Asia/Seoul",
     "count": 87,
     "newCount": 0,
