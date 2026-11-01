@@ -1,7 +1,7 @@
 {
   "ingredients": {
-    "lastRun": "2026-11-01 15:14:30",
-    "lastSuccess": "2026-11-01 15:14:30",
+    "lastRun": "2026-11-02 00:28:36",
+    "lastSuccess": "2026-11-02 00:28:36",
     "timezone": "Asia/Seoul",
     "count": 856,
     "newCount": 0,
@@ -9,8 +9,8 @@
     "error": null
   },
   "minutes": {
-    "lastRun": "2026-11-01 15:14:33",
-    "lastSuccess": "2026-11-01 15:14:33",
+    "lastRun": "2026-11-02 00:28:39",
+    "lastSuccess": "2026-11-02 00:28:39",
     "timezone": "Asia/Seoul",
     "count": 38,
     "newCount": 0,
@@ -18,8 +18,8 @@
     "error": null
   },
   "products": {
-    "lastRun": "2026-11-01 15:15:12",
-    "lastSuccess": "2026-11-01 15:15:12",
+    "lastRun": "2026-11-02 00:29:17",
+    "lastSuccess": "2026-11-02 00:29:17",
     "timezone": "Asia/Seoul",
     "count": 2539,
     "newCount": 0,
@@ -27,8 +27,8 @@
     "error": null
   },
   "news": {
-    "lastRun": "2026-11-02 00:17:34",
-    "lastSuccess": "2026-11-02 00:17:34",
+    "lastRun": "2026-11-02 00:29:32",
+    "lastSuccess": "2026-11-02 00:29:32",
     "timezone": "Asia/Seoul",
     "count": 56,
     "newCount": 0,
@@ -36,8 +36,8 @@
     "error": null
   },
   "news_mfds": {
-    "lastRun": "2026-11-02 00:17:44",
-    "lastSuccess": "2026-11-02 00:17:44",
+    "lastRun": "2026-11-02 00:29:41",
+    "lastSuccess": "2026-11-02 00:29:41",
     "timezone": "Asia/Seoul",
     "count": 56,
     "newCount": 0,
@@ -45,8 +45,8 @@
     "error": null
   },
   "news_nutraingredients": {
-    "lastRun": "2026-11-02 00:17:46",
-    "lastSuccess": "2026-11-02 00:17:46",
+    "lastRun": "2026-11-02 00:29:43",
+    "lastSuccess": "2026-11-02 00:29:43",
     "timezone": "Asia/Seoul",
     "count": 581,
     "newCount": 0,
@@ -54,8 +54,8 @@
     "error": null
   },
   "news_supplysidesj": {
-    "lastRun": "2026-11-02 00:17:47",
-    "lastSuccess": "2026-11-02 00:17:47",
+    "lastRun": "2026-11-02 00:29:44",
+    "lastSuccess": "2026-11-02 00:29:44",
     "timezone": "Asia/Seoul",
     "count": 156,
     "newCount": 0,
@@ -63,8 +63,8 @@
     "error": null
   },
   "news_nutritioninsight": {
-    "lastRun": "2026-11-02 00:17:48",
-    "lastSuccess": "2026-11-02 00:17:48",
+    "lastRun": "2026-11-02 00:29:45",
+    "lastSuccess": "2026-11-02 00:29:45",
     "timezone": "Asia/Seoul",
     "count": 444,
     "newCount": 0,
@@ -72,8 +72,8 @@
     "error": null
   },
   "temp_approval": {
-    "lastRun": "2026-11-01 15:15:17",
-    "lastSuccess": "2026-11-01 15:15:17",
+    "lastRun": "2026-11-02 00:29:22",
+    "lastSuccess": "2026-11-02 00:29:22",
     "timezone": "Asia/Seoul",
     "count": 36,
     "newCount": 0,
@@ -81,17 +81,17 @@
     "error": null
   },
   "news_sciencedaily": {
-    "lastRun": "2026-11-01 15:15:41",
-    "lastSuccess": "2026-11-01 15:15:41",
+    "lastRun": "2026-11-02 00:29:47",
+    "lastSuccess": "2026-11-02 00:29:47",
     "timezone": "Asia/Seoul",
-    "count": 156,
-    "newCount": 0,
+    "count": 158,
+    "newCount": 2,
     "success": true,
     "error": null
   },
   "news_yakup": {
-    "lastRun": "2026-11-01 15:15:44",
-    "lastSuccess": "2026-11-01 15:15:44",
+    "lastRun": "2026-11-02 00:29:50",
+    "lastSuccess": "2026-11-02 00:29:50",
     "timezone": "Asia/Seoul",
     "count": 209,
     "newCount": 0,
@@ -99,8 +99,8 @@
     "error": null
   },
   "papers": {
-    "lastRun": "2026-11-01 15:15:45",
-    "lastSuccess": "2026-11-01 15:15:45",
+    "lastRun": "2026-11-02 00:29:54",
+    "lastSuccess": "2026-11-02 00:29:54",
     "timezone": "Asia/Seoul",
     "count": 0,
     "newCount": 0,
@@ -108,8 +108,8 @@
     "error": null
   },
   "news_kfri": {
-    "lastRun": "2026-11-02 00:17:42",
-    "lastSuccess": "2026-11-02 00:17:42",
+    "lastRun": "2026-11-02 00:29:39",
+    "lastSuccess": "2026-11-02 00:29:39",
     "timezone": "Asia/Seoul",
     "count": 89,
     "newCount": 0,
@@ -117,8 +117,8 @@
     "error": null
   },
   "blocked": {
-    "lastRun": "2026-11-01 15:15:22",
-    "lastSuccess": "2026-11-01 15:15:22",
+    "lastRun": "2026-11-02 00:29:26",
+    "lastSuccess": "2026-11-02 00:29:26",
     "timezone": "Asia/Seoul",
     "count": 316,
     "newCount": 0,
@@ -126,8 +126,8 @@
     "error": null
   },
   "gmo": {
-    "lastRun": "2026-11-01 15:15:26",
-    "lastSuccess": "2026-11-01 15:15:26",
+    "lastRun": "2026-11-02 00:29:30",
+    "lastSuccess": "2026-11-02 00:29:30",
     "timezone": "Asia/Seoul",
     "count": 71,
     "newCount": 0,
