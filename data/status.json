@@ -27,8 +27,8 @@
     "error": null
   },
   "news": {
-    "lastRun": "2026-11-05 16:00:00",
-    "lastSuccess": "2026-11-05 16:00:00",
+    "lastRun": "2026-11-06 01:33:09",
+    "lastSuccess": "2026-11-06 01:33:09",
     "timezone": "Asia/Seoul",
     "count": 58,
     "newCount": 0,
@@ -36,38 +36,38 @@
     "error": null
   },
   "news_mfds": {
-    "lastRun": "2026-11-05 16:00:12",
-    "lastSuccess": "2026-11-05 16:00:12",
+    "lastRun": "2026-11-06 01:33:20",
+    "lastSuccess": "2026-11-06 01:33:20",
     "timezone": "Asia/Seoul",
     "count": 59,
-    "newCount": 1,
+    "newCount": 0,
     "success": true,
     "error": null
   },
   "news_nutraingredients": {
-    "lastRun": "2026-11-05 16:00:13",
-    "lastSuccess": "2026-11-05 16:00:13",
+    "lastRun": "2026-11-06 01:33:23",
+    "lastSuccess": "2026-11-06 01:33:23",
     "timezone": "Asia/Seoul",
-    "count": 599,
-    "newCount": 0,
+    "count": 605,
+    "newCount": 6,
     "success": true,
     "error": null
   },
   "news_supplysidesj": {
-    "lastRun": "2026-11-05 16:00:13",
-    "lastSuccess": "2026-11-05 16:00:13",
+    "lastRun": "2026-11-06 01:33:24",
+    "lastSuccess": "2026-11-06 01:33:24",
     "timezone": "Asia/Seoul",
-    "count": 160,
-    "newCount": 0,
+    "count": 161,
+    "newCount": 1,
     "success": true,
     "error": null
   },
   "news_nutritioninsight": {
-    "lastRun": "2026-11-05 16:00:14",
-    "lastSuccess": "2026-11-05 16:00:14",
+    "lastRun": "2026-11-06 01:33:27",
+    "lastSuccess": "2026-11-06 01:33:27",
     "timezone": "Asia/Seoul",
-    "count": 457,
-    "newCount": 0,
+    "count": 461,
+    "newCount": 4,
     "success": true,
     "error": null
   },
@@ -108,11 +108,11 @@
     "error": null
   },
   "news_kfri": {
-    "lastRun": "2026-11-05 16:00:10",
-    "lastSuccess": "2026-11-05 16:00:10",
+    "lastRun": "2026-11-06 01:33:18",
+    "lastSuccess": "2026-11-06 01:33:18",
     "timezone": "Asia/Seoul",
-    "count": 89,
-    "newCount": 0,
+    "count": 92,
+    "newCount": 3,
     "success": true,
     "error": null
   },
