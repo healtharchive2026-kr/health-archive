@@ -14,6 +14,7 @@ import json
 import os
 import re
 import shutil
+import subprocess
 import sys
 import time
 from datetime import datetime, timezone, timedelta
@@ -244,6 +245,16 @@ def candidate_from_approved_source(
             }, timeout=45)
             response.raise_for_status()
             raw = response.content
+            if not raw.startswith(b"%PDF-"):
+                curl_path = destination.with_suffix(".curl.pdf")
+                result = subprocess.run([
+                    "curl", "-L", "--fail", "--retry", "3",
+                    "-A", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0 Safari/537.36",
+                    "-o", str(curl_path), pdf_url,
+                ], check=False, capture_output=True, timeout=120)
+                if result.returncode == 0 and curl_path.exists():
+                    raw = curl_path.read_bytes()
+                curl_path.unlink(missing_ok=True)
             if raw.startswith(b"%PDF-") and len(raw) > 10_000:
                 destination.parent.mkdir(parents=True, exist_ok=True)
                 destination.write_bytes(raw)
