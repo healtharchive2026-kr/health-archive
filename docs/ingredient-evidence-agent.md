@@ -17,6 +17,8 @@
 8. `data/ingredient_evidence_registry.json`에서 사이트용 JS를 재생성한다.
 
 GitHub Actions의 `Ingredient evidence agent`가 매일 11:13 KST에 한 건씩 실행된다.
+PubMed 색인 전 최신 논문은 DOI, 공개 PDF URL, 라이선스를 `approvedSources`에 기록하면
+동일한 원료 검증과 PDF 생성 절차로 처리할 수 있다.
 
 ## 사람 검토가 필요한 경우
 

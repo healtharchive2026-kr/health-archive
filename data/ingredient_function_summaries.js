@@ -1,4 +1,11 @@
 var INGREDIENT_FUNCTION_SUMMARIES = {
+  "제2026-26호": {
+    summary: "2026-26/summary.pdf",
+    evidence: [
+      { label: "인체 1", file: "2026-26/human-1.pdf" },
+      { label: "동물 1", file: "2026-26/animal-1.pdf" }
+    ]
+  },
   "제2026-22호": {
     summary: "2026-22/summary.pdf",
     evidence: [

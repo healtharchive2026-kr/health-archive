@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-19T14:37:28+09:00",
+  "updatedAt": "2026-11-19T15:13:08+09:00",
   "items": {
     "제2026-20호": {
       "noticeNo": "제2026-20호",
@@ -479,6 +479,168 @@
               "memory"
             ],
             "significantFindingCount": 0
+          }
+        }
+      ],
+      "reviewInstruction": "승인할 논문의 PMID를 ingredient_evidence_overrides.json의 approvedPmids.clinical/animal에 입력하세요."
+    },
+    "제2026-26호": {
+      "noticeNo": "제2026-26호",
+      "ingredient": "Lactiplantibacillus plantarum NK151과 Bifidobacterium bifidum NK175의 프로바이오틱스 복합물(LB101)",
+      "company": "피비엘바이오랩 주식회사",
+      "efficacy": "건조한 눈을 개선하여 눈 건강에 도움을 줄 수 있음",
+      "aliases": [
+        "Lactiplantibacillus plantarum NK151",
+        "Bifidobacterium bifidum NK175",
+        "Bifidobacterium bifidum NK175 LB101",
+        "Lactiplantibacillus plantarum NK151 NK175",
+        "LB101",
+        "LB-101",
+        "Lactiplantibacillus plantarum",
+        "Bifidobacterium bifidum"
+      ],
+      "materialIdentifiers": [
+        "NK151",
+        "NK175",
+        "LB101",
+        "LB-101"
+      ],
+      "functionTerms": [
+        "dry eye",
+        "tear film",
+        "ocular surface",
+        "eye",
+        "visual",
+        "ocular"
+      ],
+      "status": "published",
+      "decision": "approved_sources",
+      "checkedAt": "2026-11-19T15:13:07+09:00",
+      "candidateCount": 2,
+      "candidates": [
+        {
+          "pmid": "",
+          "doi": "10.1038/s41598-026-79278-4",
+          "title": "Efficacy and safety of a lactiplantibacillus plantarum and bifidobacterium bifidum complex for dry eye disease: a randomized, double-blind, placebo-controlled trial",
+          "citation": "Son et al. Scientific Reports. 2026.",
+          "journal": "Scientific Reports",
+          "year": "2026",
+          "studyType": "clinical",
+          "sourceUrl": "https://www.nature.com/articles/s41598-026-79278-4",
+          "pubmedUrl": "",
+          "openAccessPdf": true,
+          "sha256": "d22a351e28b8d3f8204c5170027312342355ebf9252a5ae55113b668d3f9d623",
+          "aliasHits": [
+            "Lactiplantibacillus plantarum NK151",
+            "Bifidobacterium bifidum NK175",
+            "LB101",
+            "LB-101",
+            "Lactiplantibacillus plantarum",
+            "Bifidobacterium bifidum"
+          ],
+          "identifierHits": [
+            "NK151",
+            "NK175",
+            "LB101",
+            "LB-101"
+          ],
+          "score": 12,
+          "materialMatch": "strong",
+          "manualApproved": true,
+          "license": "CC BY-NC-ND 4.0",
+          "resultSummary": "8주 후 TBUT가 위약군 대비 평균 1.01초 개선됨(95% CI 0.01~2.01, p=0.047). 일부 OSDI 개별 문항은 개선됐으나 총 OSDI와 대부분의 객관적 안구표면 지표는 군간 유의차가 없었고 중대한 이상사례는 보고되지 않음.",
+          "limitations": "논문 투여량(1 × 10^9 CFU/일)은 인정원료 표시 섭취량(1 × 10^10 CFU/일)보다 낮음. 80명 중 62명이 최종 유효성 분석에 포함됐으며, 현재 논문은 최종 교정 전 공개 버전임.",
+          "analysis": {
+            "design": [
+              "무작위배정",
+              "이중눈가림",
+              "위약대조",
+              "평행설계"
+            ],
+            "sampleInfo": [
+              "건성안 성인 80명 무작위배정",
+              "유효성 분석 62명"
+            ],
+            "groupN": [],
+            "models": [
+              "건성안 성인"
+            ],
+            "doses": [
+              "LB-101 1 × 10^9 CFU/일"
+            ],
+            "durations": [
+              "8주"
+            ],
+            "biomarkers": [
+              "눈물막 파괴시간(TBUT)",
+              "OSDI",
+              "안구표면 지표",
+              "장내미생물"
+            ],
+            "significantFindingCount": 1
+          }
+        },
+        {
+          "pmid": "38885258",
+          "doi": "10.1371/journal.pone.0303423",
+          "title": "Probiotic LB101 alleviates dry eye in mice by suppressing matrix metalloproteinase-9 expression through the regulation of gut microbiota-involved NF-κB signaling",
+          "citation": "Ma et al. PLOS ONE. 2024.",
+          "journal": "PLOS ONE",
+          "year": "2024",
+          "studyType": "animal",
+          "sourceUrl": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11182509/",
+          "pubmedUrl": "https://pubmed.ncbi.nlm.nih.gov/38885258/",
+          "openAccessPdf": true,
+          "sha256": "e03095122eb5cf601d8274729e4672319324128df2dda032950c45fe8509b447",
+          "aliasHits": [
+            "Bifidobacterium bifidum NK175",
+            "LB101",
+            "Bifidobacterium bifidum"
+          ],
+          "identifierHits": [
+            "NK151",
+            "NK175",
+            "LB101"
+          ],
+          "score": 12,
+          "materialMatch": "strong",
+          "manualApproved": true,
+          "license": "CC BY 4.0",
+          "resultSummary": "LB101은 두 건성안 모델에서 눈물량을 회복시키고 눈깜박임을 감소시켰으며, 결막의 MMP-9·염증성 사이토카인·NF-κB 신호를 낮추고 장벽 단백질 occludin을 증가시킴.",
+          "limitations": "동물시험 결과로 인체 효능을 직접 확정할 수 없으며, mouse당 CFU 용량을 사람의 일일섭취량과 단순 환산할 수 없음.",
+          "analysis": {
+            "design": [
+              "건성안 유발 마우스 모델",
+              "경구 투여",
+              "대조군 비교"
+            ],
+            "sampleInfo": [
+              "군당 C57BL/6 마우스 6마리"
+            ],
+            "groupN": [
+              "n=6/군"
+            ],
+            "models": [
+              "눈물샘 절제·atropine/benzalkonium chloride 유발",
+              "건성안 분변미생물 이식 유발"
+            ],
+            "doses": [
+              "LB101 5 × 10^8 CFU/mouse/일"
+            ],
+            "durations": [
+              "2주, 주 6일"
+            ],
+            "biomarkers": [
+              "눈물량",
+              "눈깜박임",
+              "MMP-9",
+              "IL-1β",
+              "TNF-α",
+              "IL-10",
+              "NF-κB",
+              "occludin"
+            ],
+            "significantFindingCount": 13
           }
         }
       ],

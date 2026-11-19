@@ -20,6 +20,7 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Any
 
+import requests
 from pypdf import PdfReader
 
 from update_paper_reports import (
@@ -47,7 +48,7 @@ KST = timezone(timedelta(hours=9))
 USER_AGENT = {"User-Agent": "HealthArchiveEvidenceAgent/1.0 (healtharchive2026@gmail.com)"}
 
 LATIN_BINOMIAL = re.compile(r"\b([A-Z][a-z]{2,}\s+[a-z][a-z.-]{2,})\b")
-STRAIN_TOKEN = re.compile(r"\b(?=[A-Z0-9-]{3,20}\b)(?=[A-Z0-9-]*[A-Z])(?=[A-Z0-9-]*\d)[A-Z0-9-]+\b")
+STRAIN_TOKEN = re.compile(r"(?<![A-Z0-9-])(?=[A-Z0-9-]{3,20}(?![A-Z0-9-]))(?=[A-Z0-9-]*[A-Z])(?=[A-Z0-9-]*\d)[A-Z0-9-]+(?![A-Z0-9-])")
 NOTICE_RE = re.compile(r"제(\d{4})-(\d{1,3})호")
 
 FUNCTION_TERMS = {
@@ -227,6 +228,86 @@ def download_open_pdf(record: dict[str, Any], destination: Path) -> tuple[Path |
     return None, ""
 
 
+def candidate_from_approved_source(
+    source: dict[str, Any], aliases: list[str], identifiers: list[str], slot: int
+) -> tuple[dict[str, Any], Path | None]:
+    """PubMed 색인 전 최신 논문 등 사람이 확인한 공개 원문을 후보로 만든다."""
+    pdf_url = str(source.get("pdfUrl") or "")
+    safe_id = str(source.get("pmid") or re.sub(r"[^A-Za-z0-9]+", "-", str(source.get("doi") or f"approved-{slot}")))
+    destination = DOWNLOAD_DIR / f"approved-{safe_id.strip('-')}.pdf"
+    path: Path | None = None
+    if pdf_url:
+        try:
+            response = requests.get(pdf_url, headers={
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/131.0 Safari/537.36",
+                "Accept": "application/pdf,*/*;q=0.8",
+            }, timeout=45)
+            response.raise_for_status()
+            raw = response.content
+            if raw.startswith(b"%PDF-") and len(raw) > 10_000:
+                destination.parent.mkdir(parents=True, exist_ok=True)
+                destination.write_bytes(raw)
+                path = destination
+        except Exception as exc:
+            print(f"WARN 승인 원문 다운로드 실패 {pdf_url}: {exc}", file=sys.stderr)
+
+    full_text = ""
+    if path:
+        try:
+            full_text = extract_pdf_text(path)
+        except Exception as exc:
+            print(f"WARN 승인 PDF 텍스트 추출 실패 {path.name}: {exc}", file=sys.stderr)
+    record = {
+        "pmid": str(source.get("pmid") or ""),
+        "doi": str(source.get("doi") or ""),
+        "title": str(source.get("title") or ""),
+        "journal": str(source.get("journal") or ""),
+        "year": str(source.get("year") or ""),
+        "authors": list(source.get("authors") or []),
+        "abstract": str(source.get("abstract") or ""),
+        "studyType": str(source.get("studyType") or "unknown"),
+        "url": str(source.get("sourceUrl") or ""),
+    }
+    searchable = f"{record['title']}\n{record['abstract']}\n{full_text}"
+    hits = alias_hits(searchable, aliases)
+    identifier_hits = [identifier for identifier in identifiers if identifier.casefold() in searchable.casefold()]
+    analysis = analyze(record, full_text) if full_text else {}
+    verified_analysis = source.get("analysis") or {}
+    sha256 = hashlib.sha256(path.read_bytes()).hexdigest() if path else ""
+    candidate = {
+        "pmid": record["pmid"],
+        "doi": record["doi"],
+        "title": record["title"],
+        "citation": build_citation(record),
+        "journal": record["journal"],
+        "year": record["year"],
+        "studyType": record["studyType"],
+        "sourceUrl": record["url"],
+        "pubmedUrl": f"https://pubmed.ncbi.nlm.nih.gov/{record['pmid']}/" if record["pmid"] else "",
+        "openAccessPdf": bool(path),
+        "sha256": sha256,
+        "aliasHits": hits,
+        "identifierHits": identifier_hits,
+        "score": 12 if path and identifier_hits else 0,
+        "materialMatch": "strong" if identifier_hits else "none",
+        "manualApproved": True,
+        "license": str(source.get("license") or ""),
+        "resultSummary": str(source.get("resultSummary") or ""),
+        "limitations": str(source.get("limitations") or ""),
+        "analysis": {
+            "design": verified_analysis.get("design", analysis.get("design", [])),
+            "sampleInfo": verified_analysis.get("sampleInfo", analysis.get("sampleInfo", [])),
+            "groupN": verified_analysis.get("groupN", analysis.get("groupN", [])),
+            "models": verified_analysis.get("models", analysis.get("models", [])),
+            "doses": verified_analysis.get("doses", analysis.get("doses", [])),
+            "durations": verified_analysis.get("durations", analysis.get("durations", [])),
+            "biomarkers": verified_analysis.get("biomarkers", analysis.get("biomarkers", [])),
+            "significantFindingCount": verified_analysis.get("significantFindingCount", len(analysis.get("significantFindings", []))),
+        },
+    }
+    return candidate, path
+
+
 def candidate_from_record(
     record: dict[str, Any], aliases: list[str], identifiers: list[str], slot: int
 ) -> tuple[dict[str, Any], Path | None]:
@@ -396,6 +477,8 @@ def make_summary_pdf(row: dict[str, Any], selected: list[dict[str, Any]], output
             ["기간", join_values(analysis.get("durations") or [])],
             ["주요 평가변수", join_values(analysis.get("biomarkers") or [])],
             ["통계 결과 탐지", f"p값이 포함된 결과 문장 {analysis.get('significantFindingCount', 0)}건 · 방향과 임상적 의미는 원문 확인 필요"],
+            ["핵심 결과", str(item.get("resultSummary") or "원문에서 직접 확인 필요")],
+            ["해석 제한", str(item.get("limitations") or "시험물질 규격과 인정원료 규격의 동일성 추가 확인 필요")],
             ["원문 식별자", f"PMID {item.get('pmid') or '-'} / DOI {item.get('doi') or '-'}"],
             ["원문 SHA-256", str(item.get("sha256") or "-")],
         ]
@@ -436,6 +519,12 @@ def generate_js(registry: dict[str, Any]) -> None:
 
 
 def select_candidates(candidates: list[dict[str, Any]], override: dict[str, Any], auto: bool) -> tuple[list[dict[str, Any]], str]:
+    manually_approved = [item for item in candidates if item.get("manualApproved") and item.get("openAccessPdf") and item.get("identifierHits")]
+    if manually_approved:
+        study_types = {str(item.get("studyType")) for item in manually_approved}
+        if {"clinical", "animal"}.issubset(study_types):
+            return manually_approved, "approved_sources"
+        return [], "approved_study_type_missing"
     approved = override.get("approvedPmids") or {}
     approved_ids = {str(value) for values in approved.values() for value in (values or [])}
     if approved_ids:
@@ -467,8 +556,10 @@ def process_ingredient(row: dict[str, Any], override: dict[str, Any], auto: bool
     aliases = derive_aliases(row, report_text, override)
     terms = derive_function_terms(row, override)
     identifiers = material_identifiers(row, aliases)
-    records = search_records(aliases, terms, retmax) if aliases else []
+    records = search_records(aliases, terms, retmax) if aliases and not override.get("skipSearch") else []
     candidates_with_paths = [candidate_from_record(record, aliases, identifiers, index) for index, record in enumerate(records)]
+    for index, source in enumerate(override.get("approvedSources") or []):
+        candidates_with_paths.append(candidate_from_approved_source(source, aliases, identifiers, index))
     candidates_with_paths.sort(key=lambda item: (item[0].get("score", 0), item[0].get("year", "")), reverse=True)
     candidates = [item[0] for item in candidates_with_paths]
     # 균주/연구코드가 있는 원료는 그 코드가 확인된 후보만, 식물 원료는 학명/별칭이
@@ -557,7 +648,14 @@ def main() -> int:
     if not args.notice:
         queued_notices = set(queue.get("items") or {})
         rows = [row for row in rows if row.get("noticeNo") not in queued_notices]
-    rows.sort(key=lambda row: notice_sort_key(str(row.get("noticeNo") or "")), reverse=True)
+    def row_priority(row: dict[str, Any]) -> tuple[int, int, int]:
+        notice = str(row.get("noticeNo") or "")
+        config = overrides.get(notice) or {}
+        has_approval = bool(config.get("approvedSources") or config.get("approvedPmids"))
+        year, number = notice_sort_key(notice)
+        return (1 if has_approval else 0, year, number)
+
+    rows.sort(key=row_priority, reverse=True)
     rows = rows[:max(0, args.max_items)]
     if not rows:
         print("처리할 신규 인정원료가 없습니다.")
@@ -567,8 +665,11 @@ def main() -> int:
     uploads: list[dict[str, Any]] = []
     for row in rows:
         notice = str(row.get("noticeNo") or "")
+        config = overrides.get(notice) or {}
+        if config.get("displayDailyIntake"):
+            row = {**row, "dailyIntake": str(config["displayDailyIntake"])}
         print(f"[{notice}] {row.get('name')} 검색 시작")
-        queue_item, selected = process_ingredient(row, overrides.get(notice) or {}, args.auto, max(4, args.retmax))
+        queue_item, selected = process_ingredient(row, config, args.auto, max(4, args.retmax))
         queue.setdefault("items", {})[notice] = queue_item
         if selected:
             uploads.extend(publish(row, selected, registry))
