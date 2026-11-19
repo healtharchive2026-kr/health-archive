@@ -2,8 +2,8 @@
 """ingredient_evidence_agent가 승인한 PDF만 지정된 R2 버킷에 업로드한다."""
 import json
 import os
+import subprocess
 from pathlib import Path
-from urllib import error, request
 
 import boto3
 from botocore.config import Config
@@ -34,22 +34,22 @@ def main() -> None:
             if not protected_token:
                 raise RuntimeError("PROTECTED_UPDATE_TOKEN이 필요합니다.")
             upload_url = f"{protected_api}/admin/protected/papers/{key}"
-            upload_request = request.Request(
-                upload_url,
-                data=path.read_bytes(),
-                method="PUT",
-                headers={
-                    "Authorization": f"Bearer {protected_token}",
-                    "Content-Type": "application/pdf",
-                },
+            result = subprocess.run(
+                [
+                    "curl", "--fail", "--silent", "--show-error", "--retry", "3",
+                    "-X", "PUT",
+                    "-H", f"Authorization: Bearer {protected_token}",
+                    "-H", "Content-Type: application/pdf",
+                    "--data-binary", f"@{path}",
+                    upload_url,
+                ],
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=180,
             )
-            try:
-                with request.urlopen(upload_request, timeout=120) as response:
-                    if response.status != 200:
-                        raise RuntimeError(f"논문 업로드 실패: HTTP {response.status}")
-            except error.HTTPError as exc:
-                detail = exc.read().decode("utf-8", errors="replace")
-                raise RuntimeError(f"논문 업로드 실패: HTTP {exc.code} {detail}") from exc
+            if result.returncode != 0:
+                raise RuntimeError(f"논문 업로드 실패: {result.stderr.strip() or 'curl 오류'}")
             print(f"uploaded protected paper {key}")
             continue
         if s3 is None:
