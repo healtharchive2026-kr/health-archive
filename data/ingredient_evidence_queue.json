@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-19T15:14:14+09:00",
+  "updatedAt": "2026-11-19T15:46:14+09:00",
   "items": {
     "제2026-20호": {
       "noticeNo": "제2026-20호",
@@ -513,11 +513,73 @@
         "visual",
         "ocular"
       ],
-      "status": "review_required",
-      "decision": "approved_study_type_missing",
-      "checkedAt": "2026-11-19T15:14:14+09:00",
-      "candidateCount": 1,
+      "status": "published",
+      "decision": "approved_sources",
+      "checkedAt": "2026-11-19T15:46:13+09:00",
+      "candidateCount": 2,
       "candidates": [
+        {
+          "pmid": "",
+          "doi": "10.1038/s41598-026-79278-4",
+          "title": "Efficacy and safety of a lactiplantibacillus plantarum and bifidobacterium bifidum complex for dry eye disease: a randomized, double-blind, placebo-controlled trial",
+          "citation": "Son et al. Scientific Reports. 2026.",
+          "journal": "Scientific Reports",
+          "year": "2026",
+          "studyType": "clinical",
+          "sourceUrl": "https://www.nature.com/articles/s41598-026-79278-4",
+          "pubmedUrl": "",
+          "openAccessPdf": true,
+          "sha256": "d22a351e28b8d3f8204c5170027312342355ebf9252a5ae55113b668d3f9d623",
+          "aliasHits": [
+            "Bifidobacterium bifidum NK175",
+            "Lactiplantibacillus plantarum NK151",
+            "LB101",
+            "LB-101",
+            "Lactiplantibacillus plantarum",
+            "Bifidobacterium bifidum"
+          ],
+          "identifierHits": [
+            "NK151",
+            "NK175",
+            "LB101",
+            "LB-101"
+          ],
+          "score": 12,
+          "materialMatch": "strong",
+          "manualApproved": true,
+          "license": "CC BY-NC-ND 4.0",
+          "resultSummary": "8주 후 TBUT가 위약군 대비 평균 1.01초 개선됨(95% CI 0.01~2.01, p=0.047). 일부 OSDI 개별 문항은 개선됐으나 총 OSDI와 대부분의 객관적 안구표면 지표는 군간 유의차가 없었고 중대한 이상사례는 보고되지 않음.",
+          "limitations": "논문 투여량(1 × 10^9 CFU/일)은 인정원료 표시 섭취량(1 × 10^10 CFU/일)보다 낮음. 80명 중 62명이 최종 유효성 분석에 포함됐으며, 현재 논문은 최종 교정 전 공개 버전임.",
+          "analysis": {
+            "design": [
+              "무작위배정",
+              "이중눈가림",
+              "위약대조",
+              "평행설계"
+            ],
+            "sampleInfo": [
+              "건성안 성인 80명 무작위배정",
+              "유효성 분석 62명"
+            ],
+            "groupN": [],
+            "models": [
+              "건성안 성인"
+            ],
+            "doses": [
+              "LB-101 1 × 10^9 CFU/일"
+            ],
+            "durations": [
+              "8주"
+            ],
+            "biomarkers": [
+              "눈물막 파괴시간(TBUT)",
+              "OSDI",
+              "안구표면 지표",
+              "장내미생물"
+            ],
+            "significantFindingCount": 1
+          }
+        },
         {
           "pmid": "38885258",
           "doi": "10.1371/journal.pone.0303423",
