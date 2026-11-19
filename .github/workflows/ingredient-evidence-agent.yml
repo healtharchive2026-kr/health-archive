@@ -1,0 +1,87 @@
+name: Ingredient evidence agent
+
+on:
+  workflow_dispatch:
+    inputs:
+      notice:
+        description: "재검사할 인정번호 (예: 제2026-20호, 비우면 신규 1건)"
+        required: false
+        type: string
+  schedule:
+    - cron: "13 2 * * *" # 11:13 KST, daily data update 이후
+
+permissions:
+  contents: write
+
+concurrency:
+  group: healtharchive-ingredient-evidence
+  cancel-in-progress: false
+
+jobs:
+  collect-review-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - name: Sync latest master
+        run: git pull --ff-only origin master
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install PDF runtime
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fonts-nanum poppler-utils
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Collect and evaluate evidence
+        env:
+          NOTICE: ${{ inputs.notice }}
+        run: |
+          args=(--max-items 1 --retmax 12 --auto)
+          if [ -n "${NOTICE}" ]; then
+            args+=(--notice "${NOTICE}")
+          fi
+          python scripts/ingredient_evidence_agent.py "${args[@]}"
+
+      - name: Validate generated summary PDFs
+        run: |
+          find tmp/ingredient-evidence-agent/publish -name 'summary.pdf' -print0 2>/dev/null \
+            | xargs -0 -r -n1 pdfinfo >/dev/null
+
+      - name: Upload approved PDFs to Cloudflare R2
+        env:
+          R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: python scripts/upload_ingredient_evidence.py
+
+      - name: Commit evidence ledger and site mapping
+        run: |
+          git config user.name "healtharchive-evidence-agent"
+          git config user.email "healtharchive2026@gmail.com"
+          git add -f \
+            data/ingredient_evidence_queue.json \
+            data/ingredient_evidence_registry.json \
+            data/ingredient_function_summaries.js
+          if git diff --cached --quiet; then
+            echo "No evidence changes to commit."
+            exit 0
+          fi
+          git commit -m "Update ingredient evidence review queue"
+          for i in 1 2 3 4 5; do
+            git push && exit 0
+            git fetch origin master
+            git rebase origin/master || { git rebase --abort || true; exit 1; }
+          done
+          exit 1

@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "ingredients": {
+    "제2026-34호": {
+      "aliases": [
+        "Gastrodia elata",
+        "Gastrodia elata extract"
+      ],
+      "functionTerms": [
+        "memory",
+        "cognition",
+        "cognitive impairment"
+      ],
+      "note": "천마추출물 검색용 학명. 제조물 동일성은 PMID 승인 전까지 자동 게시하지 않음"
+    },
+    "제2026-20호": {
+      "aliases": [
+        "Ecklonia cava",
+        "Ecklonia cava extract"
+      ],
+      "functionTerms": [
+        "stress",
+        "anxiety",
+        "sleep"
+      ],
+      "note": "감태추출물 검색용 학명. 특정 제조물 동일성은 PMID 승인 전까지 자동 게시하지 않음"
+    },
+    "제2026-21호": {
+      "aliases": [
+        "Prunella vulgaris",
+        "Prunella vulgaris spike extract",
+        "PVE"
+      ],
+      "functionTerms": [
+        "benign prostatic hyperplasia",
+        "lower urinary tract symptoms",
+        "prostate"
+      ],
+      "note": "기존 하고초추출분말 자료의 검색 재현용 설정"
+    }
+  }
+}

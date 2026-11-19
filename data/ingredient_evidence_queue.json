@@ -1,0 +1,488 @@
+{
+  "version": 1,
+  "updatedAt": "2026-11-19T14:37:28+09:00",
+  "items": {
+    "제2026-20호": {
+      "noticeNo": "제2026-20호",
+      "ingredient": "감태추출물",
+      "company": "한국식품연구원",
+      "efficacy": "스트레스로 인한 긴장완화에 도움",
+      "aliases": [
+        "Ecklonia cava",
+        "Ecklonia cava extract"
+      ],
+      "materialIdentifiers": [],
+      "functionTerms": [
+        "stress",
+        "anxiety",
+        "sleep"
+      ],
+      "status": "review_required",
+      "decision": "review_required",
+      "checkedAt": "2026-11-19T14:32:56+09:00",
+      "candidateCount": 8,
+      "candidates": [
+        {
+          "pmid": "42435522",
+          "doi": "10.1016/j.phymed.2026.158510",
+          "title": "Ecklonia cava extract attenuates PM-exacerbated allergic asthma by modulating pulmonary macrophage polarization to suppress macrophage extracellular trap (MET) formation.",
+          "citation": "Kim et al. Phytomedicine. 2026;159:158510.",
+          "journal": "Phytomedicine",
+          "year": "2026",
+          "studyType": "animal",
+          "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/42435522/",
+          "pubmedUrl": "https://pubmed.ncbi.nlm.nih.gov/42435522/",
+          "openAccessPdf": false,
+          "sha256": "",
+          "aliasHits": [
+            "Ecklonia cava",
+            "Ecklonia cava extract"
+          ],
+          "identifierHits": [],
+          "score": 6,
+          "materialMatch": "name_only",
+          "analysis": {
+            "design": [],
+            "sampleInfo": [],
+            "groupN": [],
+            "models": [],
+            "doses": [],
+            "durations": [],
+            "biomarkers": [
+              "MDA",
+              "AST"
+            ],
+            "significantFindingCount": 0
+          }
+        },
+        {
+          "pmid": "39195446",
+          "doi": "10.3390/md22080330",
+          "title": "Brown Algae Ecklonia cava Extract Modulates Adipogenesis and Browning in 3T3-L1 Preadipocytes through HO-1/Nrf2 Signaling.",
+          "citation": "Suryaningtyas et al. Mar Drugs. 2024;22(8).",
+          "journal": "Mar Drugs",
+          "year": "2024",
+          "studyType": "animal",
+          "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/39195446/",
+          "pubmedUrl": "https://pubmed.ncbi.nlm.nih.gov/39195446/",
+          "openAccessPdf": false,
+          "sha256": "",
+          "aliasHits": [
+            "Ecklonia cava",
+            "Ecklonia cava extract"
+          ],
+          "identifierHits": [],
+          "score": 6,
+          "materialMatch": "name_only",
+          "analysis": {
+            "design": [],
+            "sampleInfo": [],
+            "groupN": [],
+            "models": [],
+            "doses": [],
+            "durations": [],
+            "biomarkers": [
+              "ALT"
+            ],
+            "significantFindingCount": 0
+          }
+        },
+        {
+          "pmid": "42750283",
+          "doi": "10.1111/gcb.71106",
+          "title": "Unprecedented Warming and Increased Herbivory Drive Collapse of Japan's Kelp Forests.",
+          "citation": "Harvey et al. Glob Chang Biol. 2026;32(9):e71106.",
+          "journal": "Glob Chang Biol",
+          "year": "2026",
+          "studyType": "animal",
+          "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/42750283/",
+          "pubmedUrl": "https://pubmed.ncbi.nlm.nih.gov/42750283/",
+          "openAccessPdf": false,
+          "sha256": "",
+          "aliasHits": [
+            "Ecklonia cava"
+          ],
+          "identifierHits": [],
+          "score": 4,
+          "materialMatch": "name_only",
+          "analysis": {
+            "design": [],
+            "sampleInfo": [],
+            "groupN": [],
+            "models": [],
+            "doses": [],
+            "durations": [
+              "86 days"
+            ],
+            "biomarkers": [
+              "ALT",
+              "AST"
+            ],
+            "significantFindingCount": 0
+          }
+        },
+        {
+          "pmid": "41650520",
+          "doi": "10.1016/j.phymed.2026.157906",
+          "title": "Dieckol, a phlorotannin from Ecklonia cava, alleviates stress hormone-induced depressive-like behaviors through glucocorticoid receptor antagonism.",
+          "citation": "Park et al. Phytomedicine. 2026;153:157906.",
+          "journal": "Phytomedicine",
+          "year": "2026",
+          "studyType": "animal",
+          "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/41650520/",
+          "pubmedUrl": "https://pubmed.ncbi.nlm.nih.gov/41650520/",
+          "openAccessPdf": false,
+          "sha256": "",
+          "aliasHits": [
+            "Ecklonia cava"
+          ],
+          "identifierHits": [],
+          "score": 4,
+          "materialMatch": "name_only",
+          "analysis": {
+            "design": [],
+            "sampleInfo": [],
+            "groupN": [],
+            "models": [],
+            "doses": [],
+            "durations": [],
+            "biomarkers": [
+              "BDNF",
+              "ALT"
+            ],
+            "significantFindingCount": 0
+          }
+        },
+        {
+          "pmid": "41338025",
+          "doi": "10.1016/j.jneuroim.2025.578821",
+          "title": "Neurobiotech innovative strategies targeting Alzheimer's disease through therapeutic micro and macroalgae potentials.",
+          "citation": "Wagdy et al. J Neuroimmunol. 2026;411:578821.",
+          "journal": "J Neuroimmunol",
+          "year": "2026",
+          "studyType": "animal",
+          "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/41338025/",
+          "pubmedUrl": "https://pubmed.ncbi.nlm.nih.gov/41338025/",
+          "openAccessPdf": false,
+          "sha256": "",
+          "aliasHits": [
+            "Ecklonia cava"
+          ],
+          "identifierHits": [],
+          "score": 4,
+          "materialMatch": "name_only",
+          "analysis": {
+            "design": [],
+            "sampleInfo": [],
+            "groupN": [],
+            "models": [],
+            "doses": [
+              "9 g"
+            ],
+            "durations": [],
+            "biomarkers": [
+              "ALT",
+              "AST",
+              "memory"
+            ],
+            "significantFindingCount": 0
+          }
+        },
+        {
+          "pmid": "41125915",
+          "doi": "10.1007/s00210-025-04674-y",
+          "title": "Molecular insights into the anticancer properties of dieckol: a comprehensive review.",
+          "citation": "Pandi et al. Naunyn Schmiedebergs Arch Pharmacol. 2026;399(3):3303-3319.",
+          "journal": "Naunyn Schmiedebergs Arch Pharmacol",
+          "year": "2026",
+          "studyType": "animal",
+          "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/41125915/",
+          "pubmedUrl": "https://pubmed.ncbi.nlm.nih.gov/41125915/",
+          "openAccessPdf": false,
+          "sha256": "",
+          "aliasHits": [
+            "Ecklonia cava"
+          ],
+          "identifierHits": [],
+          "score": 4,
+          "materialMatch": "name_only",
+          "analysis": {
+            "design": [],
+            "sampleInfo": [],
+            "groupN": [],
+            "models": [],
+            "doses": [],
+            "durations": [],
+            "biomarkers": [
+              "ALT",
+              "AST",
+              "VAS"
+            ],
+            "significantFindingCount": 0
+          }
+        },
+        {
+          "pmid": "39631587",
+          "doi": "10.1016/j.ijbiomac.2024.138254",
+          "title": "Wound healing effect of fucoidan-loaded gelatin/oxidized carboxymethyl cellulose hydrogel.",
+          "citation": "Jeong et al. Int J Biol Macromol. 2025;286:138254.",
+          "journal": "Int J Biol Macromol",
+          "year": "2025",
+          "studyType": "animal",
+          "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/39631587/",
+          "pubmedUrl": "https://pubmed.ncbi.nlm.nih.gov/39631587/",
+          "openAccessPdf": false,
+          "sha256": "",
+          "aliasHits": [
+            "Ecklonia cava"
+          ],
+          "identifierHits": [],
+          "score": 4,
+          "materialMatch": "name_only",
+          "analysis": {
+            "design": [],
+            "sampleInfo": [],
+            "groupN": [],
+            "models": [],
+            "doses": [],
+            "durations": [],
+            "biomarkers": [
+              "AST"
+            ],
+            "significantFindingCount": 0
+          }
+        },
+        {
+          "pmid": "39199197",
+          "doi": "10.3390/antiox13080951",
+          "title": "Ecklonia cava Ameliorates Cognitive Impairment on Amyloid β-Induced Neurotoxicity by Modulating Oxidative Stress and Synaptic Function in Institute of Cancer Research (ICR) Mice.",
+          "citation": "Lee et al. Antioxidants (Basel). 2024;13(8).",
+          "journal": "Antioxidants (Basel)",
+          "year": "2024",
+          "studyType": "animal",
+          "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/39199197/",
+          "pubmedUrl": "https://pubmed.ncbi.nlm.nih.gov/39199197/",
+          "openAccessPdf": false,
+          "sha256": "",
+          "aliasHits": [
+            "Ecklonia cava"
+          ],
+          "identifierHits": [],
+          "score": 4,
+          "materialMatch": "name_only",
+          "analysis": {
+            "design": [],
+            "sampleInfo": [],
+            "groupN": [],
+            "models": [],
+            "doses": [],
+            "durations": [],
+            "biomarkers": [
+              "BDNF",
+              "MDA",
+              "malondialdehyde",
+              "SOD",
+              "superoxide dismutase",
+              "GSH",
+              "glutathione",
+              "cognitive function",
+              "memory"
+            ],
+            "significantFindingCount": 0
+          }
+        }
+      ],
+      "reviewInstruction": "승인할 논문의 PMID를 ingredient_evidence_overrides.json의 approvedPmids.clinical/animal에 입력하세요."
+    },
+    "제2026-33호": {
+      "noticeNo": "제2026-33호",
+      "ingredient": "Lacticaseibacillus paracasei subsp. paracasei ABF21013 프로바이오틱스(ACE-01)",
+      "company": "㈜에이스바이옴",
+      "efficacy": "",
+      "aliases": [
+        "Lacticaseibacillus paracasei ABF21013",
+        "Lacticaseibacillus paracasei",
+        "Lacticaseibacillus paracasei subsp. paracasei ABF21013"
+      ],
+      "materialIdentifiers": [
+        "ABF21013",
+        "ACE-01"
+      ],
+      "functionTerms": [],
+      "status": "review_required",
+      "decision": "review_required",
+      "checkedAt": "2026-11-19T14:34:49+09:00",
+      "candidateCount": 0,
+      "candidates": [],
+      "reviewInstruction": "승인할 논문의 PMID를 ingredient_evidence_overrides.json의 approvedPmids.clinical/animal에 입력하세요."
+    },
+    "제2026-34호": {
+      "noticeNo": "제2026-34호",
+      "ingredient": "천마추출물",
+      "company": "전북특별자치도농업기술원",
+      "efficacy": "기억력 개선에 도움을 줄 수 있음",
+      "aliases": [
+        "Gastrodia elata",
+        "Gastrodia elata extract"
+      ],
+      "materialIdentifiers": [],
+      "functionTerms": [
+        "memory",
+        "cognition",
+        "cognitive impairment"
+      ],
+      "status": "review_required",
+      "decision": "review_required",
+      "checkedAt": "2026-11-19T14:37:28+09:00",
+      "candidateCount": 4,
+      "candidates": [
+        {
+          "pmid": "42822611",
+          "doi": "10.1016/j.jep.2026.122454",
+          "title": "Protocatechualdehyde ameliorates temporal lobe epilepsy via synergistic regulation of HMGB1-TLR4-NF-κB pathway and metabolic reprogramming.",
+          "citation": "Chen et al. J Ethnopharmacol. 2027;374(Pt 2):122454.",
+          "journal": "J Ethnopharmacol",
+          "year": "2027",
+          "studyType": "animal",
+          "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/42822611/",
+          "pubmedUrl": "https://pubmed.ncbi.nlm.nih.gov/42822611/",
+          "openAccessPdf": false,
+          "sha256": "",
+          "aliasHits": [
+            "Gastrodia elata"
+          ],
+          "identifierHits": [],
+          "score": 4,
+          "materialMatch": "name_only",
+          "analysis": {
+            "design": [],
+            "sampleInfo": [],
+            "groupN": [],
+            "models": [],
+            "doses": [],
+            "durations": [
+              "28 days"
+            ],
+            "biomarkers": [
+              "glucose",
+              "ALT",
+              "AST"
+            ],
+            "significantFindingCount": 0
+          }
+        },
+        {
+          "pmid": "42642005",
+          "doi": "10.1016/j.jep.2026.122340",
+          "title": "Gastrodia elata Blume-Acorus tatarinowii Schott herb pair alleviates seizures and hippocampal injury in TLE rats with alterations in mitophagy and NLRP3 inflammasome pathways.",
+          "citation": "Hu et al. J Ethnopharmacol. 2027;373:122340.",
+          "journal": "J Ethnopharmacol",
+          "year": "2027",
+          "studyType": "animal",
+          "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/42642005/",
+          "pubmedUrl": "https://pubmed.ncbi.nlm.nih.gov/42642005/",
+          "openAccessPdf": false,
+          "sha256": "",
+          "aliasHits": [
+            "Gastrodia elata"
+          ],
+          "identifierHits": [],
+          "score": 4,
+          "materialMatch": "name_only",
+          "analysis": {
+            "design": [],
+            "sampleInfo": [],
+            "groupN": [],
+            "models": [],
+            "doses": [],
+            "durations": [],
+            "biomarkers": [
+              "ALT",
+              "AST",
+              "memory"
+            ],
+            "significantFindingCount": 0
+          }
+        },
+        {
+          "pmid": "42824700",
+          "doi": "10.1002/fsn3.72413",
+          "title": "Gastrodia elata Polysaccharide Attenuates Aging by Modulating Oxidative Stress, Inflammation, and Gut Microbiota.",
+          "citation": "Shi et al. Food Sci Nutr. 2026;14(10):e72413.",
+          "journal": "Food Sci Nutr",
+          "year": "2026",
+          "studyType": "animal",
+          "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/42824700/",
+          "pubmedUrl": "https://pubmed.ncbi.nlm.nih.gov/42824700/",
+          "openAccessPdf": false,
+          "sha256": "",
+          "aliasHits": [
+            "Gastrodia elata"
+          ],
+          "identifierHits": [],
+          "score": 4,
+          "materialMatch": "name_only",
+          "analysis": {
+            "design": [],
+            "sampleInfo": [],
+            "groupN": [],
+            "models": [],
+            "doses": [],
+            "durations": [],
+            "biomarkers": [
+              "IL-6",
+              "IL-1β",
+              "TNF-α",
+              "BDNF",
+              "MDA",
+              "malondialdehyde",
+              "SOD",
+              "superoxide dismutase",
+              "catalase",
+              "AST",
+              "BUN",
+              "fecal microbiota"
+            ],
+            "significantFindingCount": 0
+          }
+        },
+        {
+          "pmid": "42679235",
+          "doi": "10.1093/jpp/rgag096",
+          "title": "Gastrodia elata Blume and Acorus tatarinowii Schott mixtures alleviate pentylenetetrazol-induced seizures in mice: association with NLRP3 inflammasome signaling changes.",
+          "citation": "He et al. J Pharm Pharmacol. 2026;78(9).",
+          "journal": "J Pharm Pharmacol",
+          "year": "2026",
+          "studyType": "animal",
+          "sourceUrl": "https://pubmed.ncbi.nlm.nih.gov/42679235/",
+          "pubmedUrl": "https://pubmed.ncbi.nlm.nih.gov/42679235/",
+          "openAccessPdf": false,
+          "sha256": "",
+          "aliasHits": [
+            "Gastrodia elata"
+          ],
+          "identifierHits": [],
+          "score": 4,
+          "materialMatch": "name_only",
+          "analysis": {
+            "design": [],
+            "sampleInfo": [],
+            "groupN": [],
+            "models": [],
+            "doses": [],
+            "durations": [],
+            "biomarkers": [
+              "IL-1β",
+              "BDNF",
+              "AST",
+              "cognitive function",
+              "memory"
+            ],
+            "significantFindingCount": 0
+          }
+        }
+      ],
+      "reviewInstruction": "승인할 논문의 PMID를 ingredient_evidence_overrides.json의 approvedPmids.clinical/animal에 입력하세요."
+    }
+  }
+}
