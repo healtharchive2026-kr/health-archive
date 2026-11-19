@@ -6,6 +6,7 @@
 Windows 작업 스케줄러에 등록해서 매일 자동 실행하도록 구성한다.
 """
 import json
+import html as html_lib
 import os
 import re
 import sys
@@ -90,6 +91,27 @@ CATEGORY_RULES = [
     ("전립선", "전립선 건강"),
     ("요로", "요로 건강"),
 ]
+
+
+def clean_text(value):
+    """Decode HTML entities and normalize whitespace from upstream board fields."""
+    decoded = html_lib.unescape(str(value or '')).replace('\xa0', ' ')
+    return re.sub(r'\s+', ' ', decoded).strip()
+
+
+def sanitize_ingredients(ingredients):
+    changed = 0
+    text_fields = ('name', 'company', 'category', 'efficacy', 'dailyIntake', 'intakeBase')
+    for row in ingredients:
+        for key in text_fields:
+            if key not in row:
+                continue
+            original = row.get(key) or ''
+            cleaned = clean_text(original)
+            if cleaned != original:
+                row[key] = cleaned
+                changed += 1
+    return changed
 
 
 def infer_category(text):
@@ -179,7 +201,7 @@ def fetch_detail(ntctxt_no):
         if not fm:
             return ''
         val = re.sub(r'<[^>]+>', '', fm.group(1))
-        return val.strip()
+        return clean_text(val)
 
     def field_bulleted(label):
         # 일부 게시물은 "○ 기능성내용<br> - 항목1<br> - 항목2<br> ○ 다음필드..." 처럼
@@ -189,7 +211,7 @@ def fetch_detail(ntctxt_no):
             return ''
         raw = fm.group(1)
         items = re.findall(r'-\s*([^<]+?)(?:<br|$)', raw)
-        items = [re.sub(r'&nbsp;', ' ', i).strip() for i in items if i.strip()]
+        items = [clean_text(i) for i in items if clean_text(i)]
         return ' - '.join(items)
 
     name = field('원료명')
@@ -212,6 +234,7 @@ def fetch_detail(ntctxt_no):
 
 def main():
     ingredients = read_records(DATA_FILE, JS_FILE)
+    sanitized_count = sanitize_ingredients(ingredients)
     filled_count = fill_missing_categories(ingredients)
 
     known_notices = {r['noticeNo'] for r in ingredients if r.get('noticeNo')}
@@ -259,9 +282,13 @@ def main():
 
     record_new('ingredients', radar_entries)
 
-    if new_count or filled_count:
+    if new_count or filled_count or sanitized_count:
         write_records(ingredients, DATA_FILE, JS_FILE, 'INGREDIENTS_DATA')
-        log(f"DONE: {new_count} new ingredient(s) added, {filled_count} category value(s) filled. total={len(ingredients)}")
+        log(
+            f"DONE: {new_count} new ingredient(s) added, "
+            f"{filled_count} category value(s) filled, "
+            f"{sanitized_count} text value(s) sanitized. total={len(ingredients)}"
+        )
     else:
         log("DONE: no new ingredients found.")
 

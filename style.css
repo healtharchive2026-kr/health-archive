@@ -463,7 +463,7 @@ body{
 .cmdk-trigger-icon{font-size:15px;line-height:1;}
 .cmdk-trigger-kbd{display:inline-flex;gap:3px;}
 .cmdk-trigger-kbd kbd{
-  font-family:inherit;font-size:10px;font-weight:700;color:var(--muted);
+  font-family:inherit;font-size:10px;font-weight:700;color:#525e58;
   background:var(--paper-soft,#f4f7f4);border:1px solid var(--border);border-bottom-width:2px;
   border-radius:5px;padding:1px 5px;line-height:1.4;
 }
@@ -3300,19 +3300,19 @@ body.function-summary-intro-open{overflow:hidden;}
 }
 
 .site-footer{
-  border-top:1px solid var(--border);padding:24px 0;color:var(--muted);
+  border-top:1px solid var(--border);padding:24px 0;color:#626b65;
   font-size:13px;text-align:center;
 }
 .footer-notice{
-  color:#5b8def;
+  color:#315f9c;
   font-size:14px;
   font-weight:700;
   line-height:1.6;
   margin-bottom:18px;
 }
-.footer-notice a{color:#5b8def;font-weight:800;text-decoration:underline;}
+.footer-notice a{color:#315f9c;font-weight:800;text-decoration:underline;}
 .footer-legal{display:flex;align-items:center;justify-content:center;gap:18px;margin:0 0 16px;}
-.footer-legal a{color:var(--muted);font-size:12px;font-weight:700;text-decoration:none;}
+.footer-legal a{color:#626b65;font-size:12px;font-weight:700;text-decoration:none;}
 .footer-legal a:hover{color:var(--green);text-decoration:underline;}
 .footer-logo{display:flex;align-items:center;justify-content:center;gap:6px;font-size:18px;letter-spacing:0;margin-bottom:10px;}
 .footer-logo .logo-icon{height:24px;}

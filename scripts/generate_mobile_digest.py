@@ -89,6 +89,25 @@ def compact_minutes() -> list[dict]:
     ]
 
 
+def compact_ingredients() -> list[dict]:
+    ingredients = [item for item in load_json(DATA / "ingredients.json") if item.get("noticeConverted") is not True]
+
+    def notice_rank(item: dict) -> int:
+        match = re.search(r"제(\d{4})-(\d+)호", str(item.get("noticeNo") or ""))
+        return int(match.group(1)) * 1000 + int(match.group(2)) if match else int(item.get("year") or 0) * 1000
+
+    ingredients.sort(key=notice_rank, reverse=True)
+    return [
+        {
+            "name": item.get("name") or "-",
+            "company": item.get("company") or "-",
+            "efficacy": item.get("efficacy") or "기능성 자료 확인 중",
+            "noticeNo": item.get("noticeNo") or "최근 인정",
+        }
+        for item in ingredients[:4]
+    ]
+
+
 def compact_news() -> list[dict]:
     merged: list[dict] = []
     seen: set[str] = set()
@@ -117,8 +136,34 @@ def compact_news() -> list[dict]:
     ]
 
 
+def compact_stats() -> dict[str, int]:
+    ingredients = load_json(DATA / "ingredients.json")
+    temporary = load_json(DATA / "temp_approval.json")
+    blocked = load_js_array(DATA / "blocked_ingredients.js", "BLOCKED_INGREDIENTS_DATA")
+    try:
+        food_text = (DATA / "food_ingredients.js").read_text(encoding="utf-8")
+        food_count = len(re.findall(r"^\s*\{\s*\"t\"\s*:", food_text, re.M))
+    except OSError:
+        food_count = 0
+    try:
+        guideline_text = (DATA / "guidelines.js").read_text(encoding="utf-8")
+        protocol_names = set(re.findall(r"type:\s*'기능성',\s*name:\s*'([^']+)'", guideline_text))
+        protocol_names.add("질 건강")
+    except OSError:
+        protocol_names = set()
+    return {
+        "individual": sum(1 for item in ingredients if item.get("noticeConverted") is not True),
+        "temporary": len(temporary),
+        "food": food_count,
+        "blocked": sum(1 for item in blocked if item.get("t") != "해제"),
+        "protocols": len(protocol_names),
+    }
+
+
 def main() -> None:
     payload = {
+        "stats": compact_stats(),
+        "ingredients": compact_ingredients(),
         "products": compact_products(),
         "minutes": compact_minutes(),
         "news": compact_news(),

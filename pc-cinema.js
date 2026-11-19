@@ -8,6 +8,12 @@
     const frames = [...root.querySelectorAll('[data-cinema-scene]')];
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const workspace = document.getElementById('workspace-start');
+    const deferredImages = [...root.querySelectorAll('img[data-cinema-src]')];
+    const loadDeferredImage = image => {
+      if (!image.dataset.cinemaSrc) return;
+      image.src = image.dataset.cinemaSrc;
+      delete image.dataset.cinemaSrc;
+    };
     const syncWidth = () => {
       root.style.setProperty('--pc-cinema-width', document.documentElement.clientWidth + 'px');
     };
@@ -26,6 +32,20 @@
       frames.forEach(frame => observer.observe(frame));
     } else {
       frames.forEach(frame => frame.classList.add('is-visible'));
+    }
+
+    if ('IntersectionObserver' in window) {
+      const imageObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          entry.target.querySelectorAll('img[data-cinema-src]').forEach(loadDeferredImage);
+          imageObserver.unobserve(entry.target);
+        });
+      }, {rootMargin: '450px 0px'});
+      [...new Set(deferredImages.map(image => image.closest('[data-cinema-scene]')).filter(Boolean))]
+        .forEach(scene => imageObserver.observe(scene));
+    } else {
+      deferredImages.forEach(loadDeferredImage);
     }
 
     const opening = root.querySelector('.pc-cinema-opening');
@@ -54,7 +74,7 @@
 
     root.querySelectorAll('[data-cinema-start]').forEach(button => {
       button.addEventListener('click', () => {
-        Promise.resolve(window.navigateTo?.('home')).then(() => {
+        Promise.resolve(window.ensureHealthArchiveApp?.()).then(() => window.navigateTo?.('home')).then(() => {
           if (location.hash !== '#home') history.pushState(null, '', '#home');
           window.requestAnimationFrame(() => {
             workspace?.scrollIntoView({behavior: 'auto', block: 'start'});
@@ -84,11 +104,6 @@
         item.addEventListener('pointerenter', () => activatePreview(item));
         item.addEventListener('focus', () => activatePreview(item));
         item.addEventListener('click', () => activatePreview(item));
-        item.addEventListener('keydown', event => {
-          if (event.key !== 'Enter' && event.key !== ' ') return;
-          event.preventDefault();
-          activatePreview(item);
-        });
       });
       scene.addEventListener('pointerleave', clearPreview);
       scene.addEventListener('focusout', event => {

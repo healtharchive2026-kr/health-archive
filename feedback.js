@@ -2,6 +2,7 @@
   var API = 'https://api.healtharchive.kr';
   var CONTACT_EMAIL = 'healtharchive2026@gmail.com';
   var TOKENS_KEY = 'ha_board_tokens';
+  var LOCAL_PREVIEW = location.hostname === '127.0.0.1' || location.hostname === 'localhost';
 
   function getTokens() {
     try { return JSON.parse(localStorage.getItem(TOKENS_KEY) || '{}'); } catch (e) { return {}; }
@@ -59,6 +60,10 @@
   }
 
   function loadPosts() {
+    if (LOCAL_PREVIEW) {
+      renderList([]);
+      return Promise.resolve();
+    }
     return fetch(API + '/posts')
       .then(function (response) {
         if (!response.ok) throw new Error('목록 응답 오류');
@@ -110,6 +115,10 @@
     function submitPost() {
       var text = input.value.trim();
       if (!text || submit.disabled) return;
+      if (LOCAL_PREVIEW) {
+        alert('로컬 미리보기에서는 의견을 등록하지 않습니다.');
+        return;
+      }
       submit.disabled = true;
       submit.textContent = '등록 중';
 

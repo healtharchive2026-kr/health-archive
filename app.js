@@ -5620,7 +5620,9 @@ function setupDossierBridge() {
   render();
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+function initHealthArchiveApp() {
+  if (window.__healthArchiveAppInitialized) return;
+  window.__healthArchiveAppInitialized = true;
   showAccessStatusNotice();
   appDataReady = loadData().catch(err => console.error('loadData failed', err));
   setupTabs();
@@ -5643,4 +5645,10 @@ document.addEventListener('DOMContentLoaded', () => {
   runStartupTask('setupMarketExplorerIntro', setupMarketExplorerIntro);
   runStartupTask('setupReviewGuideIntro', setupReviewGuideIntro);
   appDataReady.then(() => { setupGlobalSearch(); renderHomeDashboard(); });
-});
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initHealthArchiveApp, {once: true});
+} else {
+  initHealthArchiveApp();
+}

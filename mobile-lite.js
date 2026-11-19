@@ -1,6 +1,8 @@
 (function () {
   'use strict';
 
+  function bootMobileLite() {
+
   const esc = value => String(value == null ? '' : value).replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
   const norm = value => String(value || '').trim().toLowerCase();
   const noticeRank = item => {
@@ -51,6 +53,11 @@
   }
 
   async function getAuthStatus(force) {
+    if (localPreview) {
+      authState = true;
+      renderAuthState(true);
+      return true;
+    }
     if (!force && authState !== null) return authState;
     if (!force && authCheck) return authCheck;
     authCheck = fetch(`${AUTH_API}/auth/status`, {credentials: 'include', cache: 'no-store'})
@@ -84,7 +91,7 @@
   }
 
   function trackUsage(target) {
-    if (authState !== true || !target) return;
+    if (localPreview || authState !== true || !target) return;
     const key = `mobile:${target}`;
     const now = Date.now();
     if (now - (usageTimes.get(key) || 0) < 10000) return;
@@ -239,17 +246,25 @@
 
   function setupHome() {
     const assignedBlocked = blockedIngredients.filter(item => item.t !== '해제');
-    document.getElementById('home-individual-count').textContent = individualIngredients.length.toLocaleString('ko-KR');
-    document.getElementById('home-temp-count').textContent = temporaryIngredients.length.toLocaleString('ko-KR');
-    document.getElementById('home-food-count').textContent = foodIngredients.length.toLocaleString('ko-KR');
-    document.getElementById('home-blocked-count').textContent = assignedBlocked.length.toLocaleString('ko-KR');
-    document.getElementById('home-protocol-count').textContent = Object.keys(protocols).length.toLocaleString('ko-KR');
-    document.getElementById('home-total-ingredient-count').textContent = (individualIngredients.length + temporaryIngredients.length).toLocaleString('ko-KR');
-    document.getElementById('hub-individual-count').textContent = (individualIngredients.length + temporaryIngredients.length).toLocaleString('ko-KR');
-    document.getElementById('hub-food-count').textContent = foodIngredients.length.toLocaleString('ko-KR');
-    document.getElementById('hub-protocol-count').textContent = Object.keys(protocols).length.toLocaleString('ko-KR');
+    const stats = mobileDigest.stats || {};
+    const individualCount = stats.individual ?? individualIngredients.length;
+    const temporaryCount = stats.temporary ?? temporaryIngredients.length;
+    const foodCount = stats.food ?? foodIngredients.length;
+    const blockedCount = stats.blocked ?? assignedBlocked.length;
+    const protocolCount = stats.protocols ?? Object.keys(protocols).length;
+    document.getElementById('home-individual-count').textContent = individualCount.toLocaleString('ko-KR');
+    document.getElementById('home-temp-count').textContent = temporaryCount.toLocaleString('ko-KR');
+    document.getElementById('home-food-count').textContent = foodCount.toLocaleString('ko-KR');
+    document.getElementById('home-blocked-count').textContent = blockedCount.toLocaleString('ko-KR');
+    document.getElementById('home-protocol-count').textContent = protocolCount.toLocaleString('ko-KR');
+    document.getElementById('home-total-ingredient-count').textContent = (individualCount + temporaryCount).toLocaleString('ko-KR');
+    document.getElementById('hub-individual-count').textContent = (individualCount + temporaryCount).toLocaleString('ko-KR');
+    document.getElementById('hub-food-count').textContent = foodCount.toLocaleString('ko-KR');
+    document.getElementById('hub-protocol-count').textContent = protocolCount.toLocaleString('ko-KR');
 
-    const newestIngredients = individualIngredients.slice(0, 2);
+    const newestIngredients = individualIngredients.length
+      ? individualIngredients.slice(0, 2)
+      : (Array.isArray(mobileDigest.ingredients) ? mobileDigest.ingredients.slice(0, 2) : []);
     const newestBlocked = assignedBlocked.slice(0, 1);
     const updateFeed = document.getElementById('lite-update-feed');
     updateFeed.innerHTML = [
@@ -711,24 +726,47 @@
     renderOptions();
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
+  function initMobileLite() {
+    const initialTarget = location.hash.slice(1) || 'home';
     setupHome();
     setupAppHome();
-    setupUnifiedSearch();
     setupMobileAccount();
     setupNavigation();
-    setupWork();
-    setupMinutes();
-    setupNews();
-    setupIngredientSearch();
-    setupSafetySearch();
-    setupProtocols();
-    setupCompare();
-  });
+    if (initialTarget !== 'home') {
+      setupUnifiedSearch();
+      setupWork();
+      setupMinutes();
+      setupNews();
+      setupIngredientSearch();
+      setupSafetySearch();
+      setupProtocols();
+      setupCompare();
+    }
+    const pendingSearch = sessionStorage.getItem('ha-mobile-pending-search');
+    if (pendingSearch) {
+      sessionStorage.removeItem('ha-mobile-pending-search');
+      const input = document.getElementById('lite-unified-input');
+      if (input) {
+        input.value = pendingSearch;
+        document.getElementById('lite-unified-form')?.requestSubmit();
+      }
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMobileLite, {once: true});
+  } else {
+    initMobileLite();
+  }
 
   if ('serviceWorker' in navigator && !localPreview) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/service-worker.js').catch(() => undefined);
     });
   }
+  }
+
+  Promise.resolve(window.__mobileAppDataReady).then(bootMobileLite).catch(error => {
+    console.error('Mobile detail data failed to load', error);
+  });
 })();

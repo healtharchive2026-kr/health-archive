@@ -223,5 +223,9 @@
   }
 
   window.HealthArchiveVerdict = {judge};
-  document.addEventListener('DOMContentLoaded', setupVerdict);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupVerdict, {once: true});
+  } else {
+    setupVerdict();
+  }
 })();

@@ -153,3 +153,17 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 @media(min-width:560px){.lite-task-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.lite-app-hero{padding-left:24px;padding-right:24px}.lite-app-body{padding-left:20px;padding-right:20px}.lite-title,.lite-context-head{margin-left:-16px;margin-right:-16px}}
 @media(max-width:420px){.lite-main{padding-left:14px;padding-right:14px}.is-home .lite-main{padding-left:0;padding-right:0}.lite-app-body{padding-left:14px;padding-right:14px}.lite-title,.lite-context-head{margin-left:-14px;margin-right:-14px}.lite-filter{grid-template-columns:1fr}.lite-filter select[hidden]{display:none}}
 @media(max-width:370px){.lite-header{padding-left:10px;padding-right:10px}.lite-brand{font-size:14px}.lite-data-status{display:none}.lite-app-hero{min-height:400px;padding:58px 16px 66px}.lite-app-hero h1{font-size:34px}.lite-home-search{grid-template-columns:21px minmax(0,1fr) 56px}.lite-home-stats article{padding-left:10px;padding-right:10px}.lite-home-stats strong{font-size:21px}.lite-task-grid span{padding-left:11px;padding-right:11px}.lite-task-grid b{font-size:12px}}
+
+/* 2026-11 accessibility and narrow-screen fixes */
+:root{--subtle:#5f6e67}
+.lite-app-kicker{color:rgba(255,255,255,.76)}
+.lite-app-hero>p{color:rgba(255,255,255,.8)}
+.lite-home-stats small,.lite-update-card small{color:#5f6e67}
+.lite-bottom-nav button,.is-home .lite-bottom-nav button{color:#5f6e67}
+.lite-account-overlay{padding:12px;box-sizing:border-box}
+.lite-account-dialog{width:min(calc(100vw - 24px),430px);max-height:calc(100svh - 24px);box-sizing:border-box}
+.lite-account-form input[type="text"],.lite-account-form input[type="email"],.lite-account-form textarea{box-sizing:border-box}
+@media(max-width:760px){
+  .lite-task-grid small,.lite-compact-row p,.lite-update-card p{font-size:12px}
+  .lite-app-kicker,.lite-section-head span,.lite-section-head>small,.lite-section-head>button,.lite-home-stats span,.lite-home-stats small,.lite-update-card small{font-size:11px}
+}

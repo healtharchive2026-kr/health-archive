@@ -1,24 +1,26 @@
-const CACHE_NAME = 'healtharchive-runtime-20260904-regdb2';
+const CACHE_NAME = 'healtharchive-runtime-20261119-perf-a11y';
 const CORE_ASSETS = [
   '/',
   '/index.html',
-  '/style.css?v=20260904-yearspace3',
+  '/style.css?v=20261119-a11y2',
+  '/editorial-theme.css?v=20261119-a11y1',
   '/simon.css?v=20260730-adminlock1',
-  '/app.js?v=20260904-regdb2',
+  '/app-loader.js?v=20261119-perf1',
+  '/app.js?v=20261119-perf1',
   '/simon.js?v=20260730-adminlock1',
-  '/section-visuals.js?v=20260730-chapters1',
-  '/pc-cinema.js?v=20260903-public3',
-  '/device-routing.js?v=20260714-mobile1',
+  '/section-visuals.js?v=20261119-perf1',
+  '/pc-cinema.js?v=20261119-perf1',
+  '/device-routing.js?v=20261119-deeplink1',
+  '/feedback.js?v=20261119-local1',
+  '/mobile-lite.html',
+  '/mobile-lite.css?v=20261119-a11y2',
+  '/mobile-data-loader.js?v=20261119-perf1',
+  '/mobile-lite.js?v=20261119-perf2',
   '/assets/logo-icon.png',
   '/assets/logo-icon-transparent.png',
   '/assets/leaf-badge.png',
-  '/assets/pc-landscape-bg.jpg',
-  '/data/ingredients.js?v=20260903-consumer1',
-  '/data/products_recent.js?v=20260901-perf1',
-  '/data/news_recent.js?v=20260901-perf1',
-  '/data/minutes.js?v=20260827-app4',
-  '/data/status.js?v=20260904-regdb1',
-  '/data/daily_quotes.js?v=20260904-quotes1'
+  '/assets/editorial-ingredient-still-life.jpg',
+  '/data/mobile_digest.js?v=20261119-perf1'
 ];
 
 self.addEventListener('install', event => {
