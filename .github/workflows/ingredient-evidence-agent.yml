@@ -71,6 +71,7 @@ jobs:
           R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }}
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          PROTECTED_UPDATE_TOKEN: ${{ secrets.PROTECTED_UPDATE_TOKEN }}
         run: python scripts/upload_ingredient_evidence.py
 
       - name: Commit evidence ledger and site mapping

@@ -828,6 +828,39 @@ async function handleProtectedPaper(request, env, url) {
   });
 }
 
+// Evidence agent upload route. Reuse the existing protected-update token so
+// GitHub Actions can write to the private papers binding without a second R2 key.
+async function handleProtectedPaperUpload(request, env, url, origin) {
+  const match = url.pathname.match(/^\/admin\/protected\/papers\/(\d{4}-\d{1,3})\/([a-z0-9-]{1,40}\.pdf)$/);
+  if (!match) return null;
+  if (request.method !== 'PUT') {
+    return new Response('Method not allowed', { status: 405, headers: { Allow: 'PUT' } });
+  }
+  const authorization = request.headers.get('Authorization') || '';
+  const expected = env.PROTECTED_UPDATE_TOKEN ? `Bearer ${env.PROTECTED_UPDATE_TOKEN}` : '';
+  if (!expected || !(await secureEqual(authorization, expected))) {
+    return authJson({ error: 'Unauthorized' }, 401, origin);
+  }
+
+  const payload = await request.arrayBuffer();
+  if (payload.byteLength < 5 || payload.byteLength > 30 * 1024 * 1024) {
+    return authJson({ error: 'PDF 용량이 허용 범위를 벗어났습니다.' }, 413, origin);
+  }
+  if (new TextDecoder('ascii').decode(payload.slice(0, 5)) !== '%PDF-') {
+    return authJson({ error: '유효한 PDF 파일이 아닙니다.' }, 400, origin);
+  }
+
+  const key = `${match[1]}/${match[2]}`;
+  await env.PAPERS.put(key, payload, {
+    httpMetadata: {
+      contentType: 'application/pdf',
+      contentDisposition: `inline; filename="${match[1]}-${match[2]}"`,
+      cacheControl: 'private, no-store',
+    },
+  });
+  return authJson({ ok: true, key, size: payload.byteLength }, 200, origin);
+}
+
 async function handleGuidelineDownload(request, env, url, origin) {
   if (url.pathname !== '/public/guideline-download' || request.method !== 'GET') return null;
   const filename = String(url.searchParams.get('file') || '').trim();
@@ -1195,6 +1228,10 @@ export default {
       if (adminUsageResponse) return adminUsageResponse;
     }
 
+    if (url.pathname.startsWith('/admin/protected/papers/')) {
+      const paperUploadResponse = await handleProtectedPaperUpload(request, env, url, origin);
+      if (paperUploadResponse) return paperUploadResponse;
+    }
     if (url.pathname.startsWith('/protected/papers/')) {
       const paperResponse = await handleProtectedPaper(request, env, url);
       if (paperResponse) return paperResponse;
