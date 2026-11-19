@@ -9,11 +9,6 @@ on:
         type: string
   schedule:
     - cron: "13 2 * * *" # 11:13 KST, daily data update 이후
-  push:
-    branches: [master]
-    paths:
-      - "data/ingredient_evidence_overrides.json"
-      - "scripts/ingredient_evidence_agent.py"
 
 permissions:
   contents: write
@@ -52,13 +47,10 @@ jobs:
       - name: Collect and evaluate evidence
         env:
           NOTICE: ${{ inputs.notice }}
-          EVENT_NAME: ${{ github.event_name }}
         run: |
           args=(--max-items 1 --retmax 12 --auto)
           if [ -n "${NOTICE}" ]; then
             args+=(--notice "${NOTICE}")
-          elif [ "${EVENT_NAME}" = "push" ]; then
-            args+=(--notice "제2026-26호" --include-published)
           fi
           python scripts/ingredient_evidence_agent.py "${args[@]}"
 
