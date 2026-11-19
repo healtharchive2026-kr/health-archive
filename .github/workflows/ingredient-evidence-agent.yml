@@ -13,6 +13,8 @@ on:
     branches: [master]
     paths:
       - "scripts/ingredient_evidence_agent.py"
+      - "scripts/upload_ingredient_evidence.py"
+      - ".github/workflows/ingredient-evidence-agent.yml"
 
 permissions:
   contents: write
