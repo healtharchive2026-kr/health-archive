@@ -37,6 +37,18 @@ jobs:
       - name: Sync latest master
         run: git pull --ff-only origin master
 
+      - name: Verify protected paper upload authorization
+        env:
+          PROTECTED_UPDATE_TOKEN: ${{ secrets.PROTECTED_UPDATE_TOKEN }}
+        run: |
+          status=$(curl --silent --output /dev/null --write-out '%{http_code}' \
+            -X PUT \
+            -H "Authorization: Bearer ${PROTECTED_UPDATE_TOKEN}" \
+            -H "Content-Type: application/pdf" \
+            --data-binary '%' \
+            https://api.healtharchive.kr/admin/protected/papers/0000-0/probe.pdf)
+          test "${status}" = "413"
+
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
