@@ -26,7 +26,7 @@
     .sort((a, b) => (Number(b.year) - Number(a.year)) || (Number(b.meetingNo) - Number(a.meetingNo)));
   const mobileDigest = window.MOBILE_DIGEST_DATA || {products: [], minutes: [], news: []};
   const SUMMARY_ASSET_BASE = 'https://assets.healtharchive.kr/function-summaries/';
-  const SUMMARY_ASSET_VERSION = '20260901';
+  const SUMMARY_ASSET_VERSION = '20261120';
   const categoryNames = [...new Set(individualIngredients.map(item => item.category).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ko'));
   const AUTH_API = 'https://api.healtharchive.kr';
   const publicViews = new Set(['home', 'verdict']);

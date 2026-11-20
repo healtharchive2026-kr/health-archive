@@ -1,0 +1,143 @@
+{
+  "version": "2.1",
+  "reviewDate": "2026.11.20",
+  "shortTitle": "LB101 · 제2026-26호",
+  "kicker": "제2026-26호 · 기능성 근거 통합 요약",
+  "title": "LB101 프로바이오틱스 복합물",
+  "subtitle": "NK151 + NK175 · 건조한 눈 개선 근거를 인체·동물시험으로 교차 검토",
+  "verdicts": [
+    {"label": "인체 유효성", "title": "핵심 지표 1개 유의", "detail": "TBUT 군간 차이 1.01초, p=0.047", "tone": "green"},
+    {"label": "근거 일관성", "title": "기전 방향은 연결", "detail": "눈물·염증·장내미생물 축이 동물과 인체에서 일부 일치", "tone": "green"},
+    {"label": "해석 주의", "title": "확증 수준은 제한적", "detail": "PP 분석, 8주, 용량 10배 차이, 다수 2차 지표 비유의", "tone": "orange"}
+  ],
+  "keyMetrics": [
+    {"label": "인체 무작위배정", "value": "80명", "detail": "안전성 분석 40명 대 40명"},
+    {"label": "유효성 분석", "value": "62명", "detail": "PP 분석 31명 대 31명"},
+    {"label": "투여 기간", "value": "8주", "detail": "LB-101 1 × 10^9 CFU/일"},
+    {"label": "인정 섭취량", "value": "1 × 10^10", "detail": "CFU/일 · 인체논문의 10배"}
+  ],
+  "coverNote": "인체 무작위대조시험을 효능 판단의 중심에 두고, 동물시험은 생물학적 개연성과 작용 경로를 보완하는 근거로만 사용했습니다. 통계적 유의성과 실제 임상적 의미를 구분했습니다.",
+  "doseGap": "인체논문 투여량은 1 × 10^9 CFU/일, 인정 일일섭취량은 1 × 10^10 CFU/일입니다. 논문은 더 낮은 용량에서 수행됐지만, 이 차이만으로 인정 용량의 효능·안전성을 확대 해석할 수 없습니다.",
+  "questions": [
+    {"question": "시험물질은 인정원료와 직접 연결되는가?", "answer": "두 원문 모두 NK151, NK175 및 LB101/LB-101을 명시해 식별자 수준에서 직접 연결됩니다."},
+    {"question": "인체에서 무엇이 개선됐는가?", "answer": "눈물막 파괴시간(TBUT)은 위약 대비 유의하게 개선됐지만 총 OSDI와 대부분의 객관 지표는 유의하지 않았습니다."},
+    {"question": "동물시험은 인체 결과를 어떻게 보완하는가?", "answer": "눈물량, MMP-9, NF-κB, occludin 및 장내미생물 변화를 통해 장-눈 축의 기전적 개연성을 제공합니다."}
+  ],
+  "human": {
+    "design": [
+      ["설계", "무작위배정 · 이중눈가림 · 위약대조 · 평행군"],
+      ["기관·기간", "동국대학교 일산병원 · 2022.12.15-2023.07.25 · 중재 8주"],
+      ["대상", "19세 이상, 스크리닝과 기저시점 모두 TBUT < 10초"],
+      ["중재", "LB-101 1 × 10^9 CFU/일, 2캡슐 · 위약 전분 2캡슐"],
+      ["분석", "안전성 80명 · 유효성 PP 62명(각 군 31명) · ITT 민감도 분석 없음"],
+      ["등록·윤리", "CRIS KCT0010196 · IRB 2022-09-007-023"]
+    ],
+    "flow": [
+      {"label": "선별", "value": "97명", "detail": "17명 선별 탈락", "tone": "green"},
+      {"label": "무작위배정", "value": "80명", "detail": "LB-101 40 / 위약 40", "tone": "green"},
+      {"label": "PP 제외", "value": "18명", "detail": "각 군 9명 제외", "tone": "orange"},
+      {"label": "최종 분석", "value": "62명", "detail": "LB-101 31 / 위약 31", "tone": "green"}
+    ],
+    "tbutBars": [
+      {"label": "LB-101군 8주 변화", "scale": 1.52, "display": "+1.52 ± 2.09초", "color": "#2F8068"},
+      {"label": "위약군 8주 변화", "scale": 0.45, "display": "+0.45 ± 1.96초", "color": "#B9B5AE"},
+      {"label": "보정 군간 차이", "scale": 1.01, "display": "+1.01초 · p=0.047", "color": "#B64A2B"}
+    ],
+    "primaryInterpretation": "기저값을 보정한 군간 차이는 1.01초(95% CI 0.01-2.01)로 통계적으로 유의했습니다. 신뢰구간 하한이 0.01초로 경계에 가까워 재현성 확인이 중요합니다.",
+    "clinicalMeaning": "형광 TBUT의 확립된 최소임상중요차이(MCID)는 없습니다. 논문은 약 1초 차이를 긍정 신호로 보되 임상적 의미를 과장하지 말아야 한다고 명시합니다.",
+    "outcomes": [
+      {"endpoint": "TBUT", "test": "+1.52 ± 2.09초", "placebo": "+0.45 ± 1.96초", "between": "+1.01초, p=0.047", "interpretation": "유의 · 핵심 긍정 신호"},
+      {"endpoint": "각막 염색", "test": "+0.08 ± 1.73", "placebo": "+0.35 ± 1.61", "between": "p=0.5398", "interpretation": "유의차 없음"},
+      {"endpoint": "지질층 두께", "test": "-3.08 ± 17.49 nm", "placebo": "-7.42 ± 24.31 nm", "between": "p=0.4303", "interpretation": "유의차 없음"},
+      {"endpoint": "마이봄샘 소실", "test": "+3.35 ± 9.47", "placebo": "0.00 ± 9.75", "between": "p=0.4252", "interpretation": "유의차 없음"},
+      {"endpoint": "Schirmer II", "test": "+0.15 ± 5.90 mm", "placebo": "+0.85 ± 6.96 mm", "between": "p=0.8054", "interpretation": "유의차 없음"},
+      {"endpoint": "총 OSDI", "test": "-11.78 ± 17.05", "placebo": "-6.19 ± 14.17", "between": "p=0.0718", "interpretation": "군간 유의차 없음"},
+      {"endpoint": "혈청 염증표지", "test": "IL-1β·IL-6·IL-10·MMP-9", "placebo": "동일 항목 비교", "between": "모두 p>0.05", "interpretation": "유의차 없음"}
+    ],
+    "osdiSignals": [
+      {"item": "빛에 민감한 눈", "test": "-0.81 ± 0.98", "placebo": "-0.13 ± 0.92", "p": "0.0192*", "note": "Wilcoxon 보조분석"},
+      {"item": "아프거나 쓰린 눈", "test": "-0.55 ± 0.93", "placebo": "-0.10 ± 0.98", "p": "0.0356", "note": "개별 문항"},
+      {"item": "컴퓨터/ATM 사용", "test": "-0.23 ± 0.56", "placebo": "+0.06 ± 0.57", "p": "0.0142", "note": "개별 문항"},
+      {"item": "낮은 습도 장소", "test": "-0.86 ± 1.18", "placebo": "-0.33 ± 0.96", "p": "0.0337*", "note": "Wilcoxon 보조분석"}
+    ],
+    "safety": [
+      {"label": "LB-101군 이상사례", "value": "6/40명", "detail": "9건 · 15.0%"},
+      {"label": "위약군 이상사례", "value": "9/40명", "detail": "11건 · 22.5%"},
+      {"label": "중대한 이상사례", "value": "0건", "detail": "두 군 모두 없음"}
+    ],
+    "overallConclusion": "TBUT 개선은 확인됐지만 총 OSDI, 각막 염색, 눈물 분비, 지질층 및 염증표지 대부분은 군간 유의차가 없었습니다. 따라서 결과는 '핵심 지표의 제한적 긍정 신호'로 읽는 것이 적절합니다.",
+    "microbiome": [
+      {"analysis": "α-diversity", "result": "Shannon index 군간 차이 없음", "stats": "유의차 없음", "level": "부정적/중립"},
+      {"analysis": "β-diversity", "result": "UniFrac 군집 양상 차이 관찰", "stats": "탐색 분석", "level": "가설 생성"},
+      {"analysis": "Carnobacteriaceae", "result": "LB-101군 증가", "stats": "p<0.05", "level": "탐색적"},
+      {"analysis": "Oxalobacteraceae", "result": "LB-101군 감소", "stats": "p<0.05", "level": "탐색적"},
+      {"analysis": "Roseburia sp.", "result": "증가 신호", "stats": "t-test p<0.05; Wilcoxon p=0.0531", "level": "분석법 불일치"}
+    ],
+    "microbiomeInterpretation": "장내미생물 변화는 동물시험의 장-눈 축 가설과 방향상 연결되지만, 일부 참가자만 분변을 제출했고 다중비교·분석법 차이가 있어 확증적 매개효과로 볼 수 없습니다.",
+    "limitations": [
+      {"priority": "높음", "limitation": "PP 분석만 수행, ITT/mITT 민감도 분석 없음", "impact": "중도탈락·제외로 치료효과가 과대평가될 가능성"},
+      {"priority": "높음", "limitation": "총 OSDI 군간 비유의, 개별 문항 중심 해석", "impact": "환자 수준 증상 개선의 일관성이 제한됨"},
+      {"priority": "높음", "limitation": "인체 투여량이 인정 섭취량의 1/10", "impact": "인정 용량으로 결과를 직접 확대할 수 없음"},
+      {"priority": "중간", "limitation": "기저 증상 기준 없이 TBUT만으로 등록", "impact": "무증상·경증 대상 포함 가능"},
+      {"priority": "중간", "limitation": "인공눈물 사용과 VDT 시간이 엄격히 통제되지 않음", "impact": "TBUT·증상 결과의 교란 가능성"},
+      {"priority": "중간", "limitation": "8주, 계절 변화, 건성안 아형 미구분", "impact": "장기·아형별 일반화 제한"}
+    ],
+    "confidence": "무작위·이중눈가림·위약대조라는 설계 강점은 분명하지만, PP 분석과 결과의 선택성 때문에 인체 효능 확신도는 '중간 이하'로 평가합니다. 후속 대규모 ITT 연구가 필요합니다."
+  },
+  "animal": {
+    "design": [
+      {"label": "유발 방식", "eb": "눈물샘 절제 + atropine/benzalkonium chloride", "efmt": "건성안 마우스의 분변미생물 이식"},
+      {"label": "대상·규모", "eb": "수컷 C57BL/6 · n=6/군", "efmt": "수컷 C57BL/6 · n=6/군"},
+      {"label": "LB101", "eb": "5 × 10^8 CFU/mouse/일 · 2주 · 주 6일", "efmt": "5 × 10^8 CFU/mouse/일 · 2주 · 주 6일"},
+      {"label": "평가", "eb": "눈물량·눈깜박임·결막 염증·장 염증", "efmt": "동일 + 분변 세균군 qPCR"}
+    ],
+    "bars": [
+      {"label": "EB 모델 · 질환군 눈물량", "scale": 16.7, "display": "Sham의 16.7%", "color": "#B9B5AE"},
+      {"label": "EB 모델 · LB101 눈물량", "scale": 28.1, "display": "Sham의 28.1%", "color": "#2F8068"},
+      {"label": "EB 모델 · 질환군 눈깜박임", "scale": 237.3, "display": "Sham의 237.3%", "color": "#B64A2B"},
+      {"label": "EB 모델 · LB101 눈깜박임", "scale": 166.7, "display": "Sham의 166.7%", "color": "#2F8068"},
+      {"label": "eFMT 모델 · 질환군 눈물량", "scale": 72.9, "display": "hFMT의 72.9%", "color": "#B9B5AE"},
+      {"label": "eFMT 모델 · LB101 눈물량", "scale": 104.4, "display": "hFMT의 104.4%", "color": "#2F8068"},
+      {"label": "eFMT 모델 · 질환군 눈깜박임", "scale": 155.1, "display": "hFMT의 155.1%", "color": "#B64A2B"},
+      {"label": "eFMT 모델 · LB101 눈깜박임", "scale": 119.4, "display": "hFMT의 119.4%", "color": "#2F8068"}
+    ],
+    "interpretation": "LB101은 두 모델에서 눈물·눈깜박임과 염증·장벽 지표를 같은 방향으로 변화시켰습니다. 다만 군당 6마리의 탐색적 동물시험이며, mouse당 CFU를 사람 섭취량으로 단순 환산할 수 없습니다."
+  },
+  "synthesis": [
+    {"axis": "원료 동일성", "human": "NK151 + NK175 + LB-101", "animal": "NK151 + NK175 4:1 + LB101", "integrated": "고유 식별자 직접 일치"},
+    {"axis": "눈물 기능", "human": "TBUT 유의 개선", "animal": "눈물량 회복·눈깜박임 감소", "integrated": "기능 방향 일치"},
+    {"axis": "염증", "human": "혈청 표지 비유의", "animal": "MMP-9·TNF-α·IL-1β 감소", "integrated": "국소 기전은 동물 중심"},
+    {"axis": "장내미생물", "human": "일부 과·속 탐색 신호", "animal": "eFMT 및 세균군 변화", "integrated": "장-눈 축 가설 지지, 확증 아님"},
+    {"axis": "안전성", "human": "SAE 0건, 8주", "animal": "효능·기전 중심", "integrated": "단기 안전성 신호 양호"},
+    {"axis": "일반화", "human": "PP 62명·8주·한국 성인", "animal": "n=6/군·수컷 마우스", "integrated": "장기·다양 인구집단 확인 필요"}
+  ],
+  "supportScope": {
+    "supports": [
+      "LB101과 NK151·NK175의 직접적인 원료 식별 연결",
+      "8주 섭취 후 TBUT의 제한적 개선 신호",
+      "두 동물모델에서 장-눈 축 관련 기전의 생물학적 개연성",
+      "80명 안전성 집단에서 중대한 이상사례가 없었다는 단기 정보"
+    ],
+    "doesNotSupport": [
+      "모든 건성안 증상과 객관적 지표의 일관된 개선",
+      "인정 섭취량 1 × 10^10 CFU/일의 우월한 효과 또는 장기 안전성",
+      "특정 완제품의 효능·안전성 또는 치료 효과",
+      "동물 용량을 사람 용량으로 단순 환산한 결론"
+    ]
+  },
+  "finalAssessment": "현재 공개 근거는 LB101이 건성안 성인의 눈물막 안정성(TBUT)을 개선할 가능성과 장-눈 축 관련 기전을 지지합니다. 그러나 인체 결과가 하나의 핵심 지표에 집중되고 다수 2차 지표가 비유의이므로, 표현은 '도움을 줄 수 있음' 수준을 넘어서 확정적으로 확대하지 않는 것이 타당합니다.",
+  "beforeUse": "인정자료의 제조공정·균주 비율·규격·보관 안정성, 최신 논문 교정본, 섭취량 차이, 표시·광고 가능 범위를 별도로 확인하세요. 이 보고서는 인정 신청서, 임상·법률·안전성 판단을 대체하지 않습니다.",
+  "references": [
+    "Son Y, Shin YJ, Jang SW, et al. Efficacy and safety of a Lactiplantibacillus plantarum and Bifidobacterium bifidum complex for dry eye disease: a randomized, double-blind, placebo-controlled trial. Scientific Reports. 2026. doi:10.1038/s41598-026-79278-4.",
+    "Ma X, Shin YJ, Yun SW, et al. Probiotic LB101 alleviates dry eye in mice by suppressing matrix metalloproteinase-9 expression through the regulation of gut microbiota-involved NF-κB signaling. PLOS ONE. 2024;19:e0303423. doi:10.1371/journal.pone.0303423.",
+    "식품안전나라 인정원료 DB. 제2026-26호 LB101 프로바이오틱스 복합물 공개정보."
+  ],
+  "methods": [
+    ["1. 식별", "인정번호, 원료명, 균주코드 NK151·NK175, 복합물 코드 LB101/LB-101을 대조했습니다."],
+    ["2. 설계 평가", "무작위화, 눈가림, 대조군, 분석집단, 표본수, 기간 및 용량을 구조화했습니다."],
+    ["3. 결과 추출", "군간 효과, 95% 신뢰구간, p값, 비유의 결과와 이상사례를 함께 기록했습니다."],
+    ["4. 통합", "인체시험을 중심 근거로 두고 동물시험은 기전·방향성 보조 근거로 제한했습니다."],
+    ["5. 품질관리", "원문 PDF SHA-256, DOI/PMID, 라이선스와 인정 섭취량 차이를 표시했습니다."]
+  ],
+  "disclaimer": "본 자료는 공개 원문과 공개 인정정보를 바탕으로 AI 보조 방식으로 생성·검수한 비상업적 참고자료입니다. 정확성·완전성·최신성·특정 목적 적합성을 보증하지 않습니다. 신청·신고·제품개발·계약·표시광고·의학적 또는 안전성 판단 전 식약처 등 관할기관의 최신 원문과 인정자료를 반드시 직접 확인해야 합니다. 자료의 선택·해석·이용과 이에 따른 의사결정은 이용자의 책임이며, 관련 법령상 배제할 수 없는 책임을 제외하고 운영자는 본 자료 이용으로 발생한 손해에 책임을 부담하지 않습니다."
+}

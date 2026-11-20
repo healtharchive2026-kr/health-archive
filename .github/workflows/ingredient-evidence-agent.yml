@@ -13,7 +13,9 @@ on:
     branches: [master]
     paths:
       - "scripts/ingredient_evidence_agent.py"
+      - "scripts/ingredient_evidence_report.py"
       - "scripts/upload_ingredient_evidence.py"
+      - "data/ingredient_evidence_reports/**"
       - ".github/workflows/ingredient-evidence-agent.yml"
 
 permissions:

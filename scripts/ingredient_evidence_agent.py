@@ -45,6 +45,7 @@ WORK_DIR = ROOT / "tmp" / "ingredient-evidence-agent"
 DOWNLOAD_DIR = WORK_DIR / "downloads"
 PUBLISH_DIR = WORK_DIR / "publish"
 UPLOAD_MANIFEST = WORK_DIR / "upload-manifest.json"
+REPORTS_DIR = DATA_DIR / "ingredient_evidence_reports"
 KST = timezone(timedelta(hours=9))
 USER_AGENT = {"User-Agent": "HealthArchiveEvidenceAgent/1.0 (healtharchive2026@gmail.com)"}
 
@@ -396,6 +397,23 @@ def join_values(values: list[str], fallback: str = "확인 필요") -> str:
 
 
 def make_summary_pdf(row: dict[str, Any], selected: list[dict[str, Any]], output: Path) -> None:
+    report_profile_path = REPORTS_DIR / f"{notice_slug(str(row.get('noticeNo') or ''))}.json"
+    if report_profile_path.exists():
+        from ingredient_evidence_report import build_evidence_report
+
+        regular, bold = font_paths()
+        build_evidence_report(
+            row=row,
+            selected=selected,
+            profile=load_json(report_profile_path, {}),
+            output=output,
+            regular_font=regular,
+            bold_font=bold,
+            root=ROOT,
+            timezone=KST,
+        )
+        return
+
     from reportlab.lib import colors
     from reportlab.lib.enums import TA_LEFT
     from reportlab.lib.pagesizes import A4
