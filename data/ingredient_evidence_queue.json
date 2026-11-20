@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-20T09:27:53+09:00",
+  "updatedAt": "2026-11-20T09:31:20+09:00",
   "items": {
     "제2026-20호": {
       "noticeNo": "제2026-20호",
@@ -490,8 +490,8 @@
       "company": "피비엘바이오랩 주식회사",
       "efficacy": "건조한 눈을 개선하여 눈 건강에 도움을 줄 수 있음",
       "aliases": [
-        "Lactiplantibacillus plantarum NK151",
         "Bifidobacterium bifidum NK175",
+        "Lactiplantibacillus plantarum NK151",
         "Bifidobacterium bifidum NK175 LB101",
         "Lactiplantibacillus plantarum NK151 NK175",
         "LB101",
@@ -515,7 +515,7 @@
       ],
       "status": "published",
       "decision": "approved_sources",
-      "checkedAt": "2026-11-20T09:27:52+09:00",
+      "checkedAt": "2026-11-20T09:31:20+09:00",
       "candidateCount": 2,
       "candidates": [
         {
@@ -531,8 +531,8 @@
           "openAccessPdf": true,
           "sha256": "d22a351e28b8d3f8204c5170027312342355ebf9252a5ae55113b668d3f9d623",
           "aliasHits": [
-            "Lactiplantibacillus plantarum NK151",
             "Bifidobacterium bifidum NK175",
+            "Lactiplantibacillus plantarum NK151",
             "LB101",
             "LB-101",
             "Lactiplantibacillus plantarum",
