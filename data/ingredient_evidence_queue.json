@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-24T21:28:10+09:00",
+  "updatedAt": "2026-11-25T20:16:34+09:00",
   "items": {
     "제2026-20호": {
       "noticeNo": "제2026-20호",
@@ -672,6 +672,25 @@
       "status": "review_required",
       "decision": "review_required",
       "checkedAt": "2026-11-24T21:28:10+09:00",
+      "candidateCount": 0,
+      "candidates": [],
+      "reviewInstruction": "승인할 논문의 PMID를 ingredient_evidence_overrides.json의 approvedPmids.clinical/animal에 입력하세요."
+    },
+    "제2026-30호": {
+      "noticeNo": "제2026-30호",
+      "ingredient": "무청추출분말(RGE)",
+      "company": "㈜함소아제약 익산공장",
+      "efficacy": "체지방 감소에 도움을 줄 수 있음",
+      "aliases": [],
+      "materialIdentifiers": [],
+      "functionTerms": [
+        "body fat",
+        "obesity",
+        "weight loss"
+      ],
+      "status": "review_required",
+      "decision": "review_required",
+      "checkedAt": "2026-11-25T20:16:34+09:00",
       "candidateCount": 0,
       "candidates": [],
       "reviewInstruction": "승인할 논문의 PMID를 ingredient_evidence_overrides.json의 approvedPmids.clinical/animal에 입력하세요."
