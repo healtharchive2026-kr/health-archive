@@ -27,35 +27,35 @@
     "error": null
   },
   "news": {
-    "lastRun": "2026-11-27 06:43:41",
-    "lastSuccess": "2026-11-27 06:43:41",
+    "lastRun": "2026-11-27 17:48:07",
+    "lastSuccess": "2026-11-27 17:48:07",
     "timezone": "Asia/Seoul",
-    "count": 67,
-    "newCount": 0,
+    "count": 69,
+    "newCount": 2,
     "success": true,
     "error": null
   },
   "news_mfds": {
-    "lastRun": "2026-11-27 06:43:52",
-    "lastSuccess": "2026-11-27 06:43:52",
+    "lastRun": "2026-11-27 17:48:19",
+    "lastSuccess": "2026-11-27 17:48:19",
     "timezone": "Asia/Seoul",
-    "count": 68,
-    "newCount": 0,
+    "count": 74,
+    "newCount": 6,
     "success": true,
     "error": null
   },
   "news_nutraingredients": {
-    "lastRun": "2026-11-27 06:43:55",
-    "lastSuccess": "2026-11-27 06:43:55",
+    "lastRun": "2026-11-27 17:48:21",
+    "lastSuccess": "2026-11-27 17:48:21",
     "timezone": "Asia/Seoul",
-    "count": 694,
-    "newCount": 3,
+    "count": 695,
+    "newCount": 1,
     "success": true,
     "error": null
   },
   "news_supplysidesj": {
-    "lastRun": "2026-11-27 06:43:55",
-    "lastSuccess": "2026-11-27 06:43:55",
+    "lastRun": "2026-11-27 17:48:21",
+    "lastSuccess": "2026-11-27 17:48:21",
     "timezone": "Asia/Seoul",
     "count": 184,
     "newCount": 0,
@@ -63,11 +63,11 @@
     "error": null
   },
   "news_nutritioninsight": {
-    "lastRun": "2026-11-27 06:43:59",
-    "lastSuccess": "2026-11-27 06:43:59",
+    "lastRun": "2026-11-27 17:48:23",
+    "lastSuccess": "2026-11-27 17:48:23",
     "timezone": "Asia/Seoul",
-    "count": 531,
-    "newCount": 5,
+    "count": 532,
+    "newCount": 1,
     "success": true,
     "error": null
   },
@@ -108,11 +108,11 @@
     "error": null
   },
   "news_kfri": {
-    "lastRun": "2026-11-27 06:43:50",
-    "lastSuccess": "2026-11-27 06:43:50",
+    "lastRun": "2026-11-27 17:48:17",
+    "lastSuccess": "2026-11-27 17:48:17",
     "timezone": "Asia/Seoul",
-    "count": 95,
-    "newCount": 0,
+    "count": 96,
+    "newCount": 1,
     "success": true,
     "error": null
   },
